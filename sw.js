@@ -1,4 +1,4 @@
-const VERSION = 'farming420-0.5.0';
+const VERSION = 'farming420-0.6.0';
 const APP_FILES = [
   './',
   './index.html',
@@ -14,6 +14,7 @@ const APP_FILES = [
   './src/backup.js',
   './src/hypixel-import.js',
   './src/profile-normalizer.js',
+  './src/profile-sync.js',
   './src/foundation.js',
   './src/foundation.css',
 ];
