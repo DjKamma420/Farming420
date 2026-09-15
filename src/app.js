@@ -1,9 +1,8 @@
 import { CROPS, UPGRADES, HIDDEN_INTERACTIONS, COMING_SOON } from './data.js';
-
-const STORAGE_KEY = 'skyblock-farming-maxer-v1';
+import { DATA_SCHEMA_VERSION, STORAGE_KEY } from './config.js';
 
 const NAV = [
-  ['dashboard', 'Übersicht'],
+  ['dashboard', 'Dashboard'],
   ['account', 'Account'],
   ['crops', 'Crops'],
   ['tools', 'Tools'],
@@ -13,18 +12,19 @@ const NAV = [
   ['shards', 'Shards'],
   ['buffs', 'Buffs'],
   ['pests', 'Pests'],
-  ['planner', 'Upgrade-Planer'],
-  ['research', 'Mechaniken'],
+  ['planner', 'Upgrade Planner'],
+  ['research', 'Mechanics'],
   ['coming', 'Coming Soon'],
 ];
 
 const defaultState = {
+  schemaVersion: DATA_SCHEMA_VERSION,
   page: 'dashboard',
   selectedCrop: 'melon',
   search: '',
   drawer: null,
   profile: {
-    name: 'Mein Profil',
+    name: 'My Profile',
     globalFortune: 0,
     cropFortune: {},
     cropProgress: {},
@@ -41,11 +41,13 @@ function loadState() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return structuredClone(defaultState);
     const saved = JSON.parse(raw);
-    return {
+    const loaded = {
       ...structuredClone(defaultState),
       ...saved,
       profile: { ...structuredClone(defaultState.profile), ...(saved.profile || {}) }
     };
+    loaded.schemaVersion = Number(saved.schemaVersion || DATA_SCHEMA_VERSION);
+    return loaded;
   } catch {
     return structuredClone(defaultState);
   }
@@ -54,6 +56,8 @@ function loadState() {
 let state = loadState();
 
 function saveState() {
+  if (Number(state.schemaVersion || DATA_SCHEMA_VERSION) > DATA_SCHEMA_VERSION) return;
+  state.schemaVersion = DATA_SCHEMA_VERSION;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
@@ -229,11 +233,11 @@ function card(item, compact=false) {
           <div class="eyebrow">${esc(item.category)}</div>
           <div class="item-title">${esc(item.name)}</div>
         </div>
-        ${badge(item.status === 'VERIFY' ? 'prüfen' : (isMaxed(item) ? 'max' : isOwned(item) ? 'vorhanden' : 'fehlt'), status)}
+        ${badge(item.status === 'VERIFY' ? 'verify' : (isMaxed(item) ? 'max' : isOwned(item) ? 'owned' : 'missing'), status)}
       </div>
       <div class="card-meta">
-        ${max > 1 ? `<span>Level ${level}/${max}</span>` : `<span>${isOwned(item) ? 'Besitzt' : 'Nicht gesetzt'}</span>`}
-        ${gain ? `<span>+${Number(gain).toLocaleString('de-DE')} ${esc(item.metric === 'Crop Yield' ? 'Fortune/Schritt' : item.metric)}</span>` : '<span>dynamisch</span>'}
+        ${max > 1 ? `<span>Level ${level}/${max}</span>` : `<span>${isOwned(item) ? 'Owned' : 'Not set'}</span>`}
+        ${gain ? `<span>+${Number(gain).toLocaleString('en-US')} ${esc(item.metric === 'Crop Yield' ? 'Fortune/step' : item.metric)}</span>` : '<span>dynamic</span>'}
       </div>
       <div class="progress"><i style="width:${Math.min(100,(level/max)*100)}%"></i></div>
       <div class="chips">
@@ -257,10 +261,10 @@ function shell(content) {
         ${NAV.map(([id,label]) => `<button class="nav-link ${state.page===id?'active':''}" data-page="${id}">${esc(label)}</button>`).join('')}
       </nav>
       <div class="side-foot">
-        <div class="mini-label">Profil</div>
+        <div class="mini-label">Profile</div>
         <input id="profileName" value="${esc(state.profile.name)}" />
-        <button class="ghost small" id="exportBtn">Profil exportieren</button>
-        <label class="ghost small file-label">Profil importieren<input id="importInput" type="file" accept="application/json" hidden></label>
+        <button class="ghost small" id="exportBtn">Export profile</button>
+        <label class="ghost small file-label">Import profile<input id="importInput" type="file" accept="application/json" hidden></label>
       </div>
     </aside>
     <main class="main">
@@ -272,8 +276,8 @@ function shell(content) {
             ${CROPS.map(c => `<option value="${c.id}" ${c.id===state.selectedCrop?'selected':''}>${esc(c.name)}</option>`).join('')}
           </select>
         </div>
-        <div class="search-wrap"><input id="search" placeholder="Item, Upgrade, Effekt suchen…" value="${esc(state.search)}" /></div>
-        <div class="fortune-pill"><span>Effektiv</span><strong>${effectiveFortune().toLocaleString('de-DE')} FF</strong></div>
+        <div class="search-wrap"><input id="search" placeholder="Search item, upgrade or effect…" value="${esc(state.search)}" /></div>
+        <div class="fortune-pill"><span>Effective</span><strong>${effectiveFortune().toLocaleString('en-US')} FF</strong></div>
       </header>
       <section class="content">${content}</section>
     </main>
@@ -292,25 +296,25 @@ function dashboard() {
   const cropItems = UPGRADES.filter(appliesToCrop);
   const cropMaxed = cropItems.filter(isMaxed).length;
   return `
-    ${pageHeader('Übersicht', 'Dein Farming-Fortschritt', 'Nur das Wesentliche. Details öffnen sich erst bei Klick.')}
+    ${pageHeader('Dashboard', 'Your Farming Progress', 'Only the important decisions are shown here. Open a layer for details.')}
     <div class="hero-grid">
       <div class="hero-card primary">
-        <div class="eyebrow">Nächstes Upgrade</div>
+        <div class="eyebrow">Next upgrade</div>
         ${candidate ? `
           <h2>${esc(candidate.item.name)}</h2>
-          <p>+${candidate.gain.toLocaleString('de-DE')} marginaler Stat · ca. ${candidate.rel.toFixed(2)}% relativer Zugewinn im aktuellen ${esc(crop().name)}-Setup.</p>
-          <button class="primary-btn" data-open="${candidate.item.id}">Details öffnen</button>
-        ` : `<h2>Profil vollständig</h2><p>Für die aktuellen Eingaben gibt es kein aktives Upgrade mit berechenbarem Zugewinn.</p>`}
+          <p>+${candidate.gain.toLocaleString('en-US')} marginal stat · about ${candidate.rel.toFixed(2)}% relative gain in the current ${esc(crop().name)}-Setup.</p>
+          <button class="primary-btn" data-open="${candidate.item.id}">Open details</button>
+        ` : `<h2>No calculated upgrade</h2><p>No active upgrade with a calculated marginal gain is available for the current profile state.</p>`}
       </div>
-      <div class="stat-card"><span>Gesamt</span><strong>${maxed}/${active}</strong><small>aktive Einträge maxed</small></div>
-      <div class="stat-card"><span>${esc(crop().name)}</span><strong>${cropMaxed}/${cropItems.length}</strong><small>relevante Einträge maxed</small></div>
-      <div class="stat-card"><span>Effektive Fortune</span><strong>${effectiveFortune()}</strong><small>global + ${esc(crop().name)}</small></div>
+      <div class="stat-card"><span>Total</span><strong>${maxed}/${active}</strong><small>active entries maxed</small></div>
+      <div class="stat-card"><span>${esc(crop().name)}</span><strong>${cropMaxed}/${cropItems.length}</strong><small>relevant entries maxed</small></div>
+      <div class="stat-card"><span>Effective Fortune</span><strong>${effectiveFortune()}</strong><small>global + ${esc(crop().name)}</small></div>
     </div>
 
-    <div class="section-row"><div><h2>Account-Layer</h2><p>Globale Fortschritte, die mehrere Crops gleichzeitig beeinflussen.</p></div><button class="ghost" data-page="account">Alle anzeigen</button></div>
+    <div class="section-row"><div><h2>Account layer</h2><p>Global progression that affects multiple crops.</p></div><button class="ghost" data-page="account">View all</button></div>
     <div class="card-grid">${visibleUpgrades('account').slice(0,6).map(x=>card(x,true)).join('')}</div>
 
-    <div class="section-row"><div><h2>${esc(crop().name)}-Layer</h2><p>Crop-spezifische Progression und das zugehörige Tool.</p></div><button class="ghost" data-page="crops">Crop öffnen</button></div>
+    <div class="section-row"><div><h2>${esc(crop().name)} layer</h2><p>Crop-specific progression and its physical farming tool.</p></div><button class="ghost" data-page="crops">Open crop</button></div>
     ${cropFocusCard()}
   `;
 }
@@ -319,12 +323,12 @@ function accountPage() {
   const groups = [
     ['Account & Skill',['Account/Skill','Account Upgrade','Anita']],
     ['Garden',['Garden','Greenhouse']],
-    ['Accessoires & permanente Items',['Accessory','Consumable','Jacob Accessory','Chocolate Factory']]
+    ['Accessories & permanent items',['Accessory','Consumable','Jacob Accessory','Chocolate Factory']]
   ];
-  return `${pageHeader('Account', 'Globale Account-Progression', 'Alles, was nicht an einen einzelnen Crop oder ein einzelnes Tool gebunden ist.')}
+  return `${pageHeader('Account', 'Global Account Progression', 'Progress that is not bound to one crop or one physical farming tool.')}
     <div class="input-strip">
-      <label>Globale Farming Fortune<input type="number" id="globalFortune" value="${Number(state.profile.globalFortune||0)}"></label>
-      <div class="hint">Wird nur für die relative Upgrade-Bewertung benutzt. Besitzstatus bleibt davon getrennt.</div>
+      <label>Global Farming Fortune<input type="number" id="globalFortune" value="${Number(state.profile.globalFortune||0)}"></label>
+      <div class="hint">Used only for relative upgrade evaluation. Ownership remains a separate state.</div>
     </div>
     ${groups.map(([title,cats]) => `<div class="group"><div class="section-row"><div><h2>${title}</h2></div></div><div class="card-grid">${visibleUpgrades('account').filter(x=>cats.includes(x.category)).map(x=>card(x)).join('')}</div></div>`).join('')}`;
 }
@@ -337,13 +341,13 @@ function cropFocusCard() {
   const total = specific.length + toolSpecific.length;
   return `<button class="crop-feature" data-page="crops">
     <div class="crop-icon">${esc(c.icon)}</div>
-    <div><div class="eyebrow">${esc(c.name)}</div><h3>${esc(c.tool)}</h3><p>${complete}/${total} zugehörige Layer abgeschlossen</p></div>
+    <div><div class="eyebrow">${esc(c.name)}</div><h3>${esc(c.tool)}</h3><p>${complete}/${total} related layers completed</p></div>
     <div class="crop-arrow">→</div>
   </button>`;
 }
 
 function cropsPage() {
-  return `${pageHeader('Crops', 'Ein Crop = eine eigene Arbeitsfläche', 'Jeder Crop bündelt sein Tool, crop-spezifische Fortune und seine Progression.')}
+  return `${pageHeader('Crops', 'One crop, one workspace', 'Each crop combines its progression, crop-specific Fortune and physical farming tool.')}
     <div class="crop-grid">
       ${CROPS.map(c => {
         const selected = c.id===state.selectedCrop;
@@ -354,11 +358,11 @@ function cropsPage() {
       }).join('')}
     </div>
     <div class="crop-detail-panel">
-      <div class="section-row"><div><div class="eyebrow">Aktiver Crop</div><h2>${esc(crop().name)}</h2><p>${esc(crop().tool)}</p></div>
+      <div class="section-row"><div><div class="eyebrow">Active crop</div><h2>${esc(crop().name)}</h2><p>${esc(crop().tool)}</p></div>
       <label class="inline-input">Crop Fortune<input type="number" id="cropFortune" value="${Number(state.profile.cropFortune[state.selectedCrop]||0)}"></label></div>
-      <div class="layer-tabs"><span>Crop-Progression</span><span>Tool</span><span>Account-Effekte werden automatisch geerbt</span></div>
+      <div class="layer-tabs"><span>Crop progression</span><span>Tool</span><span>Account effects are inherited automatically</span></div>
       <div class="card-grid">${visibleUpgrades('crops').filter(appliesToCrop).map(x=>card(x)).join('')}</div>
-      <div class="section-row"><div><h2>${esc(crop().tool)}</h2><p>Alle Tool-Upgrades gehören nur in diesen Layer und werden nicht mit Account-Upgrades vermischt.</p></div><button class="ghost" data-page="tools">Tool-Layer öffnen</button></div>
+      <div class="section-row"><div><h2>${esc(crop().tool)}</h2><p>Tool upgrades belong to the physical tool layer and are not mixed with account progression.</p></div><button class="ghost" data-page="tools">Open tool layer</button></div>
       <div class="card-grid">${visibleUpgrades('tools').slice(0,8).map(x=>card(x,true)).join('')}</div>
     </div>`;
 }
@@ -366,42 +370,42 @@ function cropsPage() {
 function genericSectionPage(section, kicker, title, text) {
   const items = visibleUpgrades(section);
   return `${pageHeader(kicker,title,text)}
-    <div class="filter-line">${badge(`${items.length} Einträge`,'soft')} ${section==='tools'?badge(crop().tool,'soft'):''}</div>
-    <div class="card-grid">${items.map(x=>card(x)).join('') || '<div class="empty">Keine Treffer.</div>'}</div>`;
+    <div class="filter-line">${badge(`${items.length} entries`,'soft')} ${section==='tools'?badge(crop().tool,'soft'):''}</div>
+    <div class="card-grid">${items.map(x=>card(x)).join('') || '<div class="empty">No matches.</div>'}</div>`;
 }
 
 function plannerPage() {
   const candidates = plannerCandidates().slice(0,20);
-  return `${pageHeader('Planer', 'Was lohnt sich als Nächstes?', 'Die App bewertet den marginalen Zugewinn auf deinem aktuellen Fortune-Niveau. Kosten kannst du pro Upgrade im Detail-Layer hinterlegen.')}
+  return `${pageHeader('Planner', 'What should you do next?', 'The current prototype ranks marginal gain at your present Fortune level. The target system will rank profit, payback and unlock paths.')}
     <div class="planner-context">
       <div><span>Crop</span><strong>${esc(crop().name)}</strong></div>
       <div><span>Global FF</span><strong>${Number(state.profile.globalFortune||0)}</strong></div>
       <div><span>Crop FF</span><strong>${Number(state.profile.cropFortune[state.selectedCrop]||0)}</strong></div>
-      <div><span>Effektiv</span><strong>${effectiveFortune()}</strong></div>
+      <div><span>Effective</span><strong>${effectiveFortune()}</strong></div>
     </div>
     <div class="planner-list">
       ${candidates.map((x,i)=>`<button class="planner-row" data-open="${x.item.id}">
         <div class="rank">${i+1}</div>
         <div class="planner-main"><strong>${esc(x.item.name)}</strong><span>${esc(x.item.category)} · ${esc(x.item.metric)}</span></div>
-        <div class="planner-number"><strong>+${x.gain.toLocaleString('de-DE')}</strong><span>marginal</span></div>
-        <div class="planner-number"><strong>${x.rel.toFixed(2)}%</strong><span>relativ</span></div>
-        <div class="planner-number"><strong>${x.cost?`${Math.round(x.cost).toLocaleString('de-DE')} Coins`:'—'}</strong><span>${x.efficiency!==null?`${x.efficiency.toFixed(3)} / 1M`:'Kosten fehlen'}</span></div>
-      </button>`).join('') || '<div class="empty">Keine berechenbaren Upgrades für den aktuellen Zustand.</div>'}
+        <div class="planner-number"><strong>+${x.gain.toLocaleString('en-US')}</strong><span>marginal</span></div>
+        <div class="planner-number"><strong>${x.rel.toFixed(2)}%</strong><span>relative</span></div>
+        <div class="planner-number"><strong>${x.cost?`${Math.round(x.cost).toLocaleString('en-US')} Coins`:'—'}</strong><span>${x.efficiency!==null?`${x.efficiency.toFixed(3)} / 1M`:'Cost missing'}</span></div>
+      </button>`).join('') || '<div class="empty">No calculated upgrades for the current state.</div>'}
     </div>`;
 }
 
 function researchPage() {
-  return `${pageHeader('Mechaniken', 'Versteckte und nichtlineare Effekte', 'Diese Regeln werden nicht als simple +Fortune-Zeilen behandelt.')}
+  return `${pageHeader('Mechanics', 'Hidden and nonlinear effects', 'These rules are intentionally modeled separately instead of being treated as simple additive Fortune.')}
     <div class="research-list">${HIDDEN_INTERACTIONS.map(x=>`<article class="research-card">
       <div class="research-head"><div><div class="eyebrow">${esc(x.status)}</div><h3>${esc(x.name)}</h3></div>${badge(x.status, x.status==='VERIFY'?'verify':'soft')}</div>
-      <p><strong>Effekt:</strong> ${esc(x.effect)}</p><p><strong>Warum separat:</strong> ${esc(x.why)}</p><p><strong>App-Logik:</strong> ${esc(x.handling)}</p>
-      <a href="${esc(x.source)}" target="_blank" rel="noreferrer">Quelle öffnen</a>
+      <p><strong>Effect:</strong> ${esc(x.effect)}</p><p><strong>Why separate:</strong> ${esc(x.why)}</p><p><strong>App logic:</strong> ${esc(x.handling)}</p>
+      <a href="${esc(x.source)}" target="_blank" rel="noreferrer">Open source</a>
     </article>`).join('')}</div>`;
 }
 
 function comingPage() {
-  return `${pageHeader('Coming Soon', 'Angekündigt, aber nicht eingerechnet', 'Diese Inhalte erhalten im Planer absichtlich Gewicht 0, bis sie live sind.')}
-    <div class="research-list">${COMING_SOON.map(x=>`<article class="research-card coming"><div class="research-head"><div><div class="eyebrow">${esc(x.status)}</div><h3>${esc(x.name)}</h3></div>${badge('0 Gewicht','coming')}</div><p>${esc(x.effect)}</p><p>${esc(x.notes)}</p><a href="${esc(x.source)}" target="_blank" rel="noreferrer">Quelle öffnen</a></article>`).join('')}</div>`;
+  return `${pageHeader('Coming Soon', 'Announced but not included', 'These entries intentionally have zero planner weight until they are live and verified.')}
+    <div class="research-list">${COMING_SOON.map(x=>`<article class="research-card coming"><div class="research-head"><div><div class="eyebrow">${esc(x.status)}</div><h3>${esc(x.name)}</h3></div>${badge('0 weight','coming')}</div><p>${esc(x.effect)}</p><p>${esc(x.notes)}</p><a href="${esc(x.source)}" target="_blank" rel="noreferrer">Open source</a></article>`).join('')}</div>`;
 }
 
 function drawer() {
@@ -416,16 +420,16 @@ function drawer() {
   return `<div class="drawer-backdrop" data-close-drawer><aside class="drawer" onclick="event.stopPropagation()">
     <div class="drawer-top"><div><div class="eyebrow">${esc(item.category)}</div><h2>${esc(item.name)}</h2></div><button class="close" data-close-drawer>×</button></div>
     <div class="drawer-badges">${badge(item.status,item.status==='VERIFY'?'verify':'soft')} ${isCropScopedItem(item)?badge(crop().name,'soft'):(item.cropScope!=='Any'?badge(item.cropScope,'soft'):'')} ${item.modeScope!=='Any'?badge(item.modeScope,'soft'):''}</div>
-    <div class="drawer-section"><h3>Besitz & Level</h3>
-      ${max>1 ? `<div class="stepper"><button data-step="-1" data-id="${item.id}">−</button><strong>${level}/${max}</strong><button data-step="1" data-id="${item.id}">+</button><button class="ghost small" data-max="${item.id}">Max</button></div>` : `<label class="switch-row"><span>Vorhanden</span><input type="checkbox" data-owned="${item.id}" ${isOwned(item)?'checked':''}></label>`}
+    <div class="drawer-section"><h3>Ownership & Level</h3>
+      ${max>1 ? `<div class="stepper"><button data-step="-1" data-id="${item.id}">−</button><strong>${level}/${max}</strong><button data-step="1" data-id="${item.id}">+</button><button class="ghost small" data-max="${item.id}">Max</button></div>` : `<label class="switch-row"><span>Owned</span><input type="checkbox" data-owned="${item.id}" ${isOwned(item)?'checked':''}></label>`}
     </div>
-    <div class="drawer-section"><h3>Bewertung</h3><div class="detail-grid"><div><span>Nächster Schritt</span><strong>+${gainFor(item).toLocaleString('de-DE')}</strong></div><div><span>Relativer Effekt</span><strong>${relativeGainPct(item).toFixed(2)}%</strong></div></div>
-      <label>Nächste Kosten (Coins)<input type="number" data-cost="${item.id}" value="${esc(cost)}" placeholder="optional"></label>
-      <label>Manueller marginaler Wert<input type="number" step="0.01" data-manual="${item.id}" value="${esc(manual)}" placeholder="nur bei dynamischen Werten"></label>
+    <div class="drawer-section"><h3>Evaluation</h3><div class="detail-grid"><div><span>Next step</span><strong>+${gainFor(item).toLocaleString('en-US')}</strong></div><div><span>Relative effect</span><strong>${relativeGainPct(item).toFixed(2)}%</strong></div></div>
+      <label>Next cost (Coins)<input type="number" data-cost="${item.id}" value="${esc(cost)}" placeholder="optional"></label>
+      <label>Manual marginal value<input type="number" step="0.01" data-manual="${item.id}" value="${esc(manual)}" placeholder="only for dynamic values"></label>
     </div>
-    <div class="drawer-section"><h3>Regel</h3><p>${esc(item.notes || 'Keine Zusatznotiz.')}</p></div>
-    <div class="drawer-section"><h3>Scope</h3><div class="detail-grid"><div><span>Metric</span><strong>${esc(item.metric)}</strong></div><div><span>Mode</span><strong>${esc(item.modeScope)}</strong></div><div><span>Crop</span><strong>${esc(item.cropScope)}</strong></div><div><span>Hypercharge</span><strong>${item.hypercharge?'Ja':'Nein'}</strong></div></div></div>
-    ${item.source?`<a class="source-btn" href="${esc(item.source)}" target="_blank" rel="noreferrer">Quelle öffnen</a>`:''}
+    <div class="drawer-section"><h3>Rule</h3><p>${esc(item.notes || 'No additional note.')}</p></div>
+    <div class="drawer-section"><h3>Scope</h3><div class="detail-grid"><div><span>Metric</span><strong>${esc(item.metric)}</strong></div><div><span>Mode</span><strong>${esc(item.modeScope)}</strong></div><div><span>Crop</span><strong>${esc(item.cropScope)}</strong></div><div><span>Hypercharge</span><strong>${item.hypercharge?'Yes':'No'}</strong></div></div></div>
+    ${item.source?`<a class="source-btn" href="${esc(item.source)}" target="_blank" rel="noreferrer">Open source</a>`:''}
   </aside></div>`;
 }
 
@@ -435,13 +439,13 @@ function render() {
     case 'dashboard': content = dashboard(); break;
     case 'account': content = accountPage(); break;
     case 'crops': content = cropsPage(); break;
-    case 'tools': content = genericSectionPage('tools','Tools',`${crop().tool} & Tool-Upgrades`,'Nur Tool-spezifische Progression: Enchants, Reforge, Gemstone, Dummies und Counter.'); break;
-    case 'gear': content = genericSectionPage('gear','Gear','Armor & Equipment','Armor, Equipment, Reforges, Gems und Enchants bleiben ein eigener Layer.'); break;
-    case 'pets': content = genericSectionPage('pets','Pets','Pets & Pet Items','Pets werden als gegenseitig ausschließende Setups behandelt, nicht additiv gestapelt.'); break;
-    case 'chips': content = genericSectionPage('chips','Garden Chips','Garden Chips','Jeder Chip hat seinen eigenen Levelpfad und seine eigene Bedingung.'); break;
-    case 'shards': content = genericSectionPage('shards','Attribute Shards','Shards','Day/Night-, Pest- und allgemeine Fortune-Shards getrennt verwalten.'); break;
-    case 'buffs': content = genericSectionPage('buffs','Buffs','Temporäre Buffs & Mixins','God Pot, Mixins, Cake und saisonale Effekte werden nicht mit permanenten Upgrades vermischt.'); break;
-    case 'pests': content = genericSectionPage('pests','Pests','Pest-Setup','Pest-spezifische Werte und Spawn-Mechaniken bleiben getrennt von normalem Crop Farming.'); break;
+    case 'tools': content = genericSectionPage('tools','Tools',`${crop().tool} & Tool Upgrades`,'Physical tool progression: enchantments, reforge, gemstone, Farming for Dummies, counters and tool levels.'); break;
+    case 'gear': content = genericSectionPage('gear','Gear','Armor & Equipment','Armor, equipment, reforges, gemstones and enchantments remain a separate setup layer.'); break;
+    case 'pets': content = genericSectionPage('pets','Pets','Pets & Pet Items','Pets are mutually exclusive setup choices and are never added together.'); break;
+    case 'chips': content = genericSectionPage('chips','Garden Chips','Garden Chips','Each chip has its own level path and activation conditions.'); break;
+    case 'shards': content = genericSectionPage('shards','Attribute Shards','Shards','Track day/night, pest-conditional and general Farming Fortune shards separately.'); break;
+    case 'buffs': content = genericSectionPage('buffs','Buffs','Temporary Buffs & Mixins','God Potion, mixins, cakes and seasonal effects are kept separate from permanent progression.'); break;
+    case 'pests': content = genericSectionPage('pests','Pests','Pest Setup','Pest-specific stats, spawn mechanics and loot logic stay separate from normal crop farming.'); break;
     case 'planner': content = plannerPage(); break;
     case 'research': content = researchPage(); break;
     case 'coming': content = comingPage(); break;
@@ -505,7 +509,7 @@ function bind() {
   if(importInput) importInput.addEventListener('change', async e=>{
     const file=e.target.files?.[0]; if(!file) return;
     try { const profile=JSON.parse(await file.text()); state.profile={...structuredClone(defaultState.profile),...profile}; saveState(); render(); }
-    catch { alert('Ungültige Profil-Datei.'); }
+    catch { alert('Invalid profile file.'); }
   });
 }
 
