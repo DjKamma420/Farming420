@@ -83,6 +83,24 @@ reliably: Hypixel's `name` parameter is deprecated and not guaranteed correct,
 return the key owner's UUID was disabled in August 2023. A UUID field needs no
 third-party service and cannot silently resolve to the wrong account.
 
+### Where do I find a value?
+
+The app asks for values you have to read out of the game, which only helps if
+you can find them. Two places answer that:
+
+- **What to enter** in the sidebar lists everything a sync cannot fill, biggest
+  win first, with each entry's explanation and a direct link to its source.
+- Every card's detail drawer has a **Where do I find this?** section.
+
+An entry is one of three things: filled by the sync and needing no lookup at
+all; carrying a documented in-game location; or not documented yet, in which
+case the app says so and offers the source instead of guessing at a menu path.
+A wrong path is worse than none, so `src/help-locations.js` never invents one.
+See [`docs/FINDING_VALUES.md`](docs/FINDING_VALUES.md).
+
+Today 20 of 77 entries are filled by the sync, and the in-game locations for the
+remaining 57 still need a research pass.
+
 ### What gets filled in
 
 Farming Skill level, Garden plots, per-crop Garden upgrades, and — from the

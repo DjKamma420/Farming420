@@ -31,12 +31,12 @@ jobs:
                       src/enhancements.js src/foundation.js src/hypixel-import.js \
                       src/nbt.js src/item-normalizer.js src/profile-items.js \
                       src/profile-normalizer.js src/profile-sync.js src/scopes.js \
-                      src/credentials.js src/hypixel-client.js src/live-sync.js src/snapshot-apply.js \
+                      src/credentials.js src/hypixel-client.js src/live-sync.js src/snapshot-apply.js src/help-locations.js \
                       proxy/hypixel-proxy.js proxy/README.md \
                       src/styles.css src/enhancements.css src/foundation.css \
                       assets/icon.svg \
                       AGENTS.md README.md \
-                      docs/PRODUCT_SPEC.md docs/PROFILE_DATA_MATRIX.md docs/PROFILE_MODEL.md docs/MATH_MODEL.md; do
+                      docs/PRODUCT_SPEC.md docs/PROFILE_DATA_MATRIX.md docs/PROFILE_MODEL.md docs/MATH_MODEL.md docs/FINDING_VALUES.md; do
             test -f "$file" || { echo "missing required file: $file"; exit 1; }
           done
 

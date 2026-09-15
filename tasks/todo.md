@@ -331,3 +331,56 @@ Entering the key with no UUID stored did nothing visible: `syncIfConfigured`
 returned silently. It now names the missing field. The same re-render-wipes-the-
 status ordering bug as before had also crept into the key, proxy and clear-key
 handlers; all three now set the status after the re-render.
+
+---
+
+# Where do I find this value?
+
+Feedback: the app asks for stats without saying where to find them in game, so
+they cannot be entered. Screenshots were suggested.
+
+## What was built
+
+- `src/help-locations.js` — the source-controlled location table, with a status
+  per entry (`SYNCED` / `VERIFIED` / `UNVERIFIED` / `NEEDS_RESEARCH`).
+- A **What to enter** page: the 57 entries a sync cannot fill, ordered by the
+  value they add, each with its explanation, its state and a direct source link.
+- A **Where do I find this?** section in every card drawer.
+- Location hints next to the two Fortune number inputs on Account and Crops,
+  which is where people get stuck first.
+- `docs/FINDING_VALUES.md` — the research protocol for filling the table.
+
+The synced set is derived from `MAPPABLE_ENTRY_IDS` in the apply layer rather
+than duplicated, so it can never disagree with what the sync actually does. A
+test pins that.
+
+## What is deliberately missing
+
+In-game menu paths for the 57 manual entries. An in-game path is a claim about
+the game, so rule 1 applies to it as it does to a formula, and a guessed path is
+worse than none: it sends a player hunting for a menu that may not exist and
+risks a value read off the wrong screen.
+
+All SkyBlock sources — `wiki.hypixel.net`, `wiki.eliteskyblock.com`,
+`hypixel-skyblock.fandom.com`, `hypixelskyblock.minecraft.wiki` — are blocked by
+this environment's egress proxy, so no path could be verified here. Only the two
+Fortune inputs carry a location, taken from the official wiki Stats page via
+search results and marked `UNVERIFIED` with that caveat visible in the UI.
+
+Filling the rest is a data-only change: the table and the UI are ready.
+
+## On screenshots
+
+Not added, for three reasons recorded in `docs/FINDING_VALUES.md`: they cannot
+be produced from this repository, game screenshots are Hypixel/Mojang assets so
+redistributing them in a public repo is a licensing question, and a screenshot
+goes stale silently while a dated text path shows its own age.
+
+## Verification
+
+- `npm test`: 160 tests, 10 new, including that no location may claim `VERIFIED`
+  without a source and a date, that every manual entry still offers a source,
+  and that the synced set matches the apply layer exactly.
+- Browser: the checklist renders 57 rows with 57 source links, a synced entry’s
+  drawer says it needs no lookup, an undocumented entry says so rather than
+  showing a path, and the page has no overflow at 390px.

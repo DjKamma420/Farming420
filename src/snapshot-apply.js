@@ -251,19 +251,26 @@ export function applySnapshotToProgress(state, snapshot) {
   };
 }
 
+/**
+ * Every entry a sync is able to fill.
+ *
+ * Exported so the "where do I find this?" layer can tell synced entries from
+ * manual ones without keeping a second copy of the list, which would drift.
+ */
+export const MAPPABLE_ENTRY_IDS = Object.freeze(new Set([
+  ...Object.values(TOOL_COUNTERS), ...Object.values(TOOL_ENCHANTS), ...Object.values(TOOL_REFORGES),
+  ...Object.values(ARMOR_REFORGES), ...Object.values(ARMOR_ENCHANTS), ...Object.values(EQUIPMENT_REFORGES),
+  ...Object.values(EQUIPMENT_ENCHANTS),
+  'tool-enchant-turbo-crop', 'tool-recombobulator-effect-on-tool-stats',
+  'tool-gem-perfect-peridot-on-farming-tool', 'armor-gem-perfect-peridot-on-full-armor',
+  'account-skill-farming-skill-level', 'garden-garden-plots-unlocked',
+  'crop-progression-crop-upgrade-selected-crop',
+]));
+
 /** Entries the sync cannot currently fill, so the UI can ask for them. */
 function unmappedEntryIds(applied) {
   const filled = new Set(applied.map(entry => entry.id));
-  const mappable = new Set([
-    ...Object.values(TOOL_COUNTERS), ...Object.values(TOOL_ENCHANTS), ...Object.values(TOOL_REFORGES),
-    ...Object.values(ARMOR_REFORGES), ...Object.values(ARMOR_ENCHANTS), ...Object.values(EQUIPMENT_REFORGES),
-    ...Object.values(EQUIPMENT_ENCHANTS),
-    'tool-enchant-turbo-crop', 'tool-recombobulator-effect-on-tool-stats',
-    'tool-gem-perfect-peridot-on-farming-tool', 'armor-gem-perfect-peridot-on-full-armor',
-    'account-skill-farming-skill-level', 'garden-garden-plots-unlocked',
-    'crop-progression-crop-upgrade-selected-crop',
-  ]);
-  return UPGRADES.filter(entry => !mappable.has(entry.id) && !filled.has(entry.id)).map(entry => entry.id);
+  return UPGRADES.filter(entry => !MAPPABLE_ENTRY_IDS.has(entry.id) && !filled.has(entry.id)).map(entry => entry.id);
 }
 
 /** True when this entry's current value came from a sync rather than the user. */
