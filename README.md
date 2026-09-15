@@ -37,7 +37,8 @@ Read these files before changing progression or calculation logic:
 - raw Hypixel profile/profiles JSON import
 - Farming Skill XP detection and level derivation through Hypixel's current public skill resource table
 - Garden crop-upgrade and unlocked-plot import
-- live sync from a Minecraft username, in one click, with per-field provenance
+- live sync from your own API key, run automatically once it is entered
+- synced values written straight onto the cards and marked as `synced`
 - an optional server-side proxy so the key can stay off the client
 - current `pets_data.pets` import with hidden-data semantics instead of treating missing data as no pets
 - normalized profile snapshots with explicit provenance and unknown/hidden states
@@ -57,34 +58,50 @@ Read these files before changing progression or calculation logic:
 
 ## Getting your data in
 
-Open **Settings** (top bar), enter your Minecraft username and press **Sync now**.
-Farming420 resolves the username to a UUID, reads your selected SkyBlock profile
-and its Garden, and fills in everything the API exposes: Farming XP and level,
-crop upgrades, unlocked plots, visitors, composter state, pets, community
-upgrades and your decoded farming items.
+Open **Settings** (top bar) and fill in two fields:
 
-Profile and Garden endpoints require a Hypixel API key, so pick one of these:
+1. **Your Hypixel API key** — create one at
+   [developer.hypixel.net](https://developer.hypixel.net/).
+2. **Your Minecraft UUID** — the 32-character id of your account, with or
+   without dashes.
 
-- **Your own key** (default, nothing to deploy): create one at
-  [developer.hypixel.net](https://developer.hypixel.net/) and paste it into
-  Settings. It is stored in your browser only, under a storage entry separate
-  from the app state, so it is **never** written into an exported backup, and it
-  is sent only to `api.hypixel.net`.
-- **A proxy** (key stays on a server): deploy `proxy/` and put its URL into
-  Settings. See [`proxy/README.md`](proxy/README.md). A proxy URL overrides any
-  stored key.
+That is all. The moment both are present Farming420 syncs on its own, and it
+syncs again whenever you change either field or pick a different profile. It
+reads your selected SkyBlock profile and its Garden and writes every value it
+can derive onto the cards, where they show a `synced` badge. Editing such a
+value by hand overrides it until the next sync.
 
-Neither is needed for raw JSON import, which still works entirely offline.
+The key is stored in your browser only, under a storage entry separate from the
+app state, so it is **never** written into an exported backup, and it is sent
+only to `api.hypixel.net`.
 
-### Username resolution
+### Why a UUID and not a username
 
-Hypixel's `name` parameter is deprecated and unreliable, and `api.mojang.com`
-sends no CORS headers, so a static site cannot use either on its own.
-Farming420 tries official Mojang lookups first and falls back to a CORS-enabled
-community mirror, reporting a warning when the mirror answered. A response it
-cannot parse into a valid UUID is skipped rather than trusted. Entering your
-UUID directly in Settings skips resolution completely.
+The app asks for a UUID because a static site cannot turn a username into one
+reliably: Hypixel's `name` parameter is deprecated and not guaranteed correct,
+`api.mojang.com` sends no CORS headers, and the `/key` endpoint that used to
+return the key owner's UUID was disabled in August 2023. A UUID field needs no
+third-party service and cannot silently resolve to the wrong account.
 
+### What gets filled in
+
+Farming Skill level, Garden plots, per-crop Garden upgrades, and — from the
+decoded item NBT of your farming tools — Farming for Dummies, Overclocker 3000,
+Dedication, Cultivating, Harvesting, Turbo-Crop, the reforge, a Perfect Peridot
+and the Recombobulator, plus set-wide armour and equipment reforges and
+enchantments when every slot is visible.
+
+Entries that would need an item-id table this repository has not verified — tool
+Mk. II/III tiers, armour set identity, accessories, pets, chips and shards — are
+deliberately left for you to enter, and reported rather than silently set to
+zero. `docs/PROFILE_DATA_MATRIX.md` lists exactly what is mapped and what is not.
+
+### Without a key
+
+- **A proxy** keeps the key on a server instead: deploy `proxy/` and put its URL
+  into Settings. See [`proxy/README.md`](proxy/README.md). A proxy URL overrides
+  any stored key.
+- **Raw JSON import** needs no key at all and still works entirely offline.
 
 ## Hypixel API architecture
 

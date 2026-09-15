@@ -261,3 +261,73 @@ and rejects any real network call, and asserts after every sync that none was
 made. Reverting the fix makes that test fail locally, which was verified.
 Two direct tests in `tests/hypixel-import.test.js` cover the supplied-null and
 supplied-table cases. 143 tests total.
+
+---
+
+# API-key-only sync, and synced values on the cards
+
+Three changes, from user feedback that username sync did not work in practice
+while the API key did.
+
+## 1. Username resolution removed
+
+`src/mojang.js` and its tests are deleted, the Mojang and mirror origins are out
+of the `connect-src` list again, and `syncByUsername` is now `syncProfile`,
+taking the UUID the user stores in Settings.
+
+The API key cannot replace it: the `/key` endpoint that used to return the key
+owner's UUID was disabled in August 2023. So one identity field remains, and the
+UUID is the right one — Hypixel's `name` parameter is deprecated and not
+guaranteed correct, `api.mojang.com` sends no CORS headers, and a UUID needs no
+third party and cannot silently resolve to the wrong account.
+
+## 2. Sync runs by itself
+
+Entering the API key, the UUID or a proxy URL triggers a sync as soon as both
+halves are present. When only one is present the status line says which field is
+still missing, instead of appearing to ignore what was typed.
+
+## 3. Synced values are written onto the cards
+
+This was the real gap: before, a sync filled the normalized snapshot but only
+three entries reached the UI. `src/snapshot-apply.js` now projects the snapshot
+onto the progression store and stamps each value as auto, so cards show a
+`synced` badge and the drawer explains that editing overrides it until the next
+sync.
+
+What it maps is deliberately narrow, because rule 1 forbids inventing a field or
+mechanic. Only self-evident links are allowed: NBT counters whose field names
+the mechanic (`farming_for_dummies_count`, `levelable_overclocks`,
+`rarity_upgrades`), enchantments (the `enchantments` object is keyed by the
+enchantment's own id), reforges (`modifier` is the reforge's lowercase name),
+gemstone slot and quality, and — for which crop a tool belongs to — the tool
+names already in `src/data.js` rather than an item-id table. Turbo-Crop is read
+by the `turbo_` prefix so no crop suffix has to be known.
+
+Mk. II/III tiers, armour set identity, accessories, pets, chips and shards need
+a table this repo has not verified. They stay unmapped and are reported, never
+set to zero as if the API had denied them. Set-wide entries only count when
+every slot is visible and carries the effect.
+
+## Verification
+
+- `npm test`: 150 tests, including 20 new ones for the apply layer covering tool
+  matching, the shared Eclipse Hoe, both gem shapes, clamping to each entry's
+  maximum, incomplete sets, the lowest-level rule across a set, manual entries
+  surviving a sync, and unknown crop ids being ignored.
+- Browser, Hypixel stubbed: entering the UUID does nothing, entering the key
+  then syncs by itself; Farming level 3 and 5 plots appear on the account cards
+  with `synced` badges without a reload, and Wheat shows crop upgrade 9/9.
+- Browser with the repo's own NBT fixture (a Euclid's Wheat Hoe): 11 values
+  written; Farming for Dummies 5/5, Overclocker 3/10, Cultivating 10/10,
+  Harvesting 6/6, Turbo-Crop 5/5, Blessed, Perfect Peridot and Recombobulator
+  all marked synced on the wheat tool, Mk. II correctly left unset, and the
+  melon tool untouched.
+- Six error paths each give an actionable message; Settings still fits 390px.
+
+## Bug found while verifying
+
+Entering the key with no UUID stored did nothing visible: `syncIfConfigured`
+returned silently. It now names the missing field. The same re-render-wipes-the-
+status ordering bug as before had also crept into the key, proxy and clear-key
+handlers; all three now set the status after the re-render.

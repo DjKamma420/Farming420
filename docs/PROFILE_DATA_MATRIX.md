@@ -25,34 +25,24 @@ Therefore:
 - **Development/static fallback:** import raw Hypixel JSON files.
 - Never ask users to paste a shared Farming420 production API key into the client.
 
-## Username -> UUID resolution
+## Player identity
 
-Every keyed endpoint is addressed by UUID, so a username must be resolved first.
-Two constraints decide how:
+Every keyed endpoint is addressed by UUID, and the app asks for that UUID
+directly. Resolving a username in the browser is not possible without adding a
+third party, for three separate reasons:
 
 1. Hypixel's own `name` parameter is documented as **deprecated**, separately
    rate limited, not guaranteed to return correct data and removable at any
-   time. Farming420 never uses it.
+   time.
 2. `api.mojang.com` sends no `Access-Control-Allow-Origin` header, so a browser
-   cannot read its response. A static site therefore cannot rely on it alone.
+   cannot read its response.
+3. The `/key` endpoint that used to return the key owner's UUID was **disabled
+   in August 2023**, so the API key itself no longer identifies a player.
 
-`src/mojang.js` resolves through an ordered chain and uses the first resolver
-that returns a well-formed UUID:
-
-| Order | Resolver | Official | Note |
-| --- | --- | --- | --- |
-| 1 | `api.minecraftservices.com/minecraft/profile/lookup/name/{name}` | yes | Preferred. |
-| 2 | `api.mojang.com/users/profiles/minecraft/{name}` | yes | Usable from a proxy or a browser that can read it. |
-| 3 | `playerdb.co/api/player/minecraft/{name}` | no | CORS-enabled community mirror, fallback only. |
-
-Rules this chain follows:
-
-- a response whose UUID cannot be parsed and validated is **skipped**, never
-  guessed at, so an unknown upstream schema cannot produce a wrong id
-- a resolution served by the non-official mirror is reported as a sync warning
-  and recorded in `resolverIsOfficial`
-- entering a UUID directly in Settings bypasses resolution entirely, which is
-  the privacy-preserving path
+An earlier build resolved usernames through a chain of Mojang endpoints with a
+CORS-enabled community mirror as fallback. It was removed: it did not work
+reliably in practice, and a UUID field needs no third party, cannot silently
+return the wrong account and keeps the username out of any external request.
 
 ## Access modes
 
@@ -69,11 +59,10 @@ above forbids.
 
 `src/live-sync.js` performs the smallest sequence that fills the most fields:
 
-1. username -> UUID (resolver chain, skipped when a UUID is supplied)
-2. `/v2/resources/skyblock/skills` (keyless) for the Farming level table
-3. `/v2/skyblock/profiles?uuid=...` -> profile selection, Farming XP, pets,
+1. `/v2/resources/skyblock/skills` (keyless) for the Farming level table
+2. `/v2/skyblock/profiles?uuid=...` -> profile selection, Farming XP, pets,
    community upgrades, item NBT
-4. `/v2/skyblock/garden?profile=...` -> crop upgrades, plots, visitors,
+3. `/v2/skyblock/garden?profile=...` -> crop upgrades, plots, visitors,
    composter, resources collected
 
 Failure policy:
@@ -85,6 +74,47 @@ Failure policy:
 
 Both payloads go through the same normalizers as raw JSON import, so live sync
 and file import produce identical, provenance-bearing snapshots.
+
+## What a sync writes onto the cards
+
+The snapshot records what the API said; `src/snapshot-apply.js` projects it onto
+the progression entries the app's cards read, and stamps each one as auto so the
+UI can show a `synced` badge.
+
+A mapping is only allowed where the link is self-evident rather than remembered,
+because rule 1 forbids inventing a field or mechanic:
+
+| Source | Written to | Why it is safe |
+| --- | --- | --- |
+| Derived Farming level | Farming Skill level | Already derived from the official skill table. |
+| `garden.unlocked_plots_ids` | Garden plots unlocked | Counted, then clamped to the entry maximum. |
+| `garden.crop_upgrade_levels` | Crop upgrade, per crop | Direct per-crop field. |
+| `farming_for_dummies_count` | Farming for Dummies | The NBT field names the mechanic. |
+| `levelable_overclocks` | Overclocker 3000 | The NBT field names the mechanic. |
+| `rarity_upgrades` | Recombobulator effect | The NBT field names the mechanic. |
+| `enchantments.dedication` / `.cultivating` / `.harvesting` | the matching tool entries | `enchantments` is keyed by the enchantment's own id. |
+| `enchantments.turbo_*` | Turbo-Crop | Matched by prefix, so no crop suffix has to be known. |
+| `enchantments.pesterminator` / `.sunset` / `.green_thumb` | the matching set entries | Same keying, applied only when every slot carries it. |
+| `modifier` | Blessed / Bountiful / Mossy / Rooted / Beady | `modifier` is the reforge's own lowercase name. |
+| `gems` | Perfect Peridot entries | Slot type and quality are already in the decoded object. |
+
+Which crop a tool belongs to is decided by matching the item's display name
+against the tool names already in `src/data.js`, not against an item-id table.
+
+### Deliberately not mapped
+
+These need an item-id or effect table this repository has not verified, so they
+stay unmapped and are reported to the user instead of being left at zero as if
+the API had denied them:
+
+- Tool Mk. II / Mk. III tiers
+- armour and equipment set identity (Helianthus, Blossom, Zorro's Cape)
+- accessories, relics and permanent consumables
+- pet choice and pet items
+- Garden Chips, Attribute Shards, buffs and pest setups
+
+Set-wide entries ("on full armor", "on full equipment") are only written when
+every slot is visible and carries the effect; an incomplete set is reported.
 
 ## Official Hypixel endpoints relevant to Farming420
 
