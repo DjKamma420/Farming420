@@ -42,7 +42,7 @@ test('empty profile snapshots have stable top-level sections', () => {
   ]);
 });
 
-test('profile normalization resolves identity, farming skill, upgrades and pets', () => {
+test('profile normalization resolves identity, farming skill, upgrades and current pets_data', () => {
   const snapshot = normalizeProfilePayload({
     profiles: [{
       profile_id: 'profile-1',
@@ -57,15 +57,17 @@ test('profile normalization resolves identity, farming skill, upgrades and pets'
       members: {
         '1111aaaa': {
           player_data: { experience: { SKILL_FARMING: 200 } },
-          pets: [{
-            uuid: 'pet-1',
-            type: 'ELEPHANT',
-            tier: 'LEGENDARY',
-            exp: 1234,
-            active: true,
-            heldItem: 'GREEN_BANDANA',
-            candyUsed: 2,
-          }],
+          pets_data: {
+            pets: [{
+              uuid: 'pet-1',
+              type: 'ELEPHANT',
+              tier: 'LEGENDARY',
+              exp: 1234,
+              active: true,
+              heldItem: 'GREEN_BANDANA',
+              candyUsed: 2,
+            }],
+          },
         },
       },
     }],
@@ -119,13 +121,22 @@ test('profile normalization does not invent pet fields that are absent', () => {
   const snapshot = normalizeProfilePayload({
     profiles: [{
       profile_id: 'profile-1',
-      members: { '1111aaaa': { pets: [{ type: 'MOOSHROOM_COW' }] } },
+      members: { '1111aaaa': { pets_data: { pets: [{ type: 'MOOSHROOM_COW' }] } } },
     }],
   });
   assert.equal(snapshot.pets[0].type, 'MOOSHROOM_COW');
   assert.equal(snapshot.pets[0].active, null);
   assert.equal(snapshot.pets[0].experience, null);
   assert.equal(snapshot.pets[0].heldItem, null);
+});
+
+test('missing pet API data is hidden instead of meaning the player owns no pets', () => {
+  const snapshot = normalizeProfilePayload({
+    profiles: [{ profile_id: 'profile-1', members: { '1111aaaa': {} } }],
+  });
+  assert.deepEqual(snapshot.pets, []);
+  assert.equal(snapshot.provenance.pets.status, PROFILE_DATA_STATUS.HIDDEN);
+  assert.ok(snapshot.sync.warnings.some(message => message.includes('pet list')));
 });
 
 test('garden normalization preserves plot ids, upgrades, visitors and unknown keys', () => {
@@ -163,7 +174,12 @@ test('snapshot merge combines profile and Garden sections without losing either'
     profiles: [{
       profile_id: 'profile-1',
       cute_name: 'Mango',
-      members: { '1111aaaa': { player_data: { experience: { SKILL_FARMING: 200 } } } },
+      members: {
+        '1111aaaa': {
+          player_data: { experience: { SKILL_FARMING: 200 } },
+          pets_data: { pets: [] },
+        },
+      },
     }],
   }, { skillResources: SKILL_RESOURCES });
   const gardenPatch = normalizeGardenPayload({
@@ -177,6 +193,24 @@ test('snapshot merge combines profile and Garden sections without losing either'
   assert.equal(merged.garden.unlockedPlotCount, 2);
   assert.ok(merged.provenance.identity);
   assert.ok(merged.provenance.garden);
+});
+
+test('hidden item or pet collections keep last known values while marking provenance hidden', () => {
+  const base = createEmptyProfileSnapshot();
+  base.pets = [{ uuid: 'pet-1', type: 'ELEPHANT' }];
+  base.items = [{ itemUuid: 'item-1', skyblockId: 'FARMING_TOOL' }];
+  base.provenance.pets = { status: PROFILE_DATA_STATUS.AUTO, sources: [] };
+  base.provenance.items = { status: PROFILE_DATA_STATUS.AUTO, sources: [] };
+
+  const patch = createEmptyProfileSnapshot();
+  patch.provenance.pets = { status: PROFILE_DATA_STATUS.HIDDEN, sources: [] };
+  patch.provenance.items = { status: PROFILE_DATA_STATUS.HIDDEN, sources: [] };
+
+  const merged = mergeProfileSnapshots(base, patch);
+  assert.equal(merged.pets[0].type, 'ELEPHANT');
+  assert.equal(merged.items[0].skyblockId, 'FARMING_TOOL');
+  assert.equal(merged.provenance.pets.status, PROFILE_DATA_STATUS.HIDDEN);
+  assert.equal(merged.provenance.items.status, PROFILE_DATA_STATUS.HIDDEN);
 });
 
 test('snapshot merge de-duplicates warnings', () => {
