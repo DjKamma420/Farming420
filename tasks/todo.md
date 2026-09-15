@@ -234,3 +234,30 @@ URL) and a Manual import section that keeps the existing keyless workflows.
 Unchanged and still the largest gap: `src/data.js` has no `lastVerified` dates,
 which `AGENTS.md` rule 2 requires. That needs a real verification pass, not a
 code change.
+
+## CI fix after the first PR run
+
+`tests/live-sync.test.js` "a missing skill table leaves the level underived"
+failed on CI while passing locally. Not a flake and not an environment quirk —
+a real bug that local egress blocking had been hiding.
+
+`importProfilePayload` resolved its skill table with
+`options.skillResources || await fetchSkillResources()`. When live sync had
+already tried the table and failed, it passes `skillResources: null` to say so;
+`||` treated that as "nothing supplied" and issued a second, real request to
+`api.hypixel.net`. Locally that request was blocked, so the level stayed null
+and the test passed. On the CI runner the request succeeded, the level was
+derived from a table the sync had reported as unavailable, and the assertion
+failed.
+
+Fixed by making transport ownership explicit: a caller that supplies
+`skillResources` owns it, including when it supplies `null`. Only a caller that
+omits the option entirely — raw file import, which has no other source — gets
+the built-in fetch.
+
+The test was also strengthened so it cannot pass for the wrong reason again:
+`tests/live-sync.test.js` now installs a `globalThis.fetch` guard that records
+and rejects any real network call, and asserts after every sync that none was
+made. Reverting the fix makes that test fail locally, which was verified.
+Two direct tests in `tests/hypixel-import.test.js` cover the supplied-null and
+supplied-table cases. 143 tests total.

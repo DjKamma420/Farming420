@@ -138,3 +138,54 @@ test('an unusable resource table yields null rather than a guessed level', () =>
   assert.equal(farmingLevelFromResources(1000, {}), null);
   assert.equal(farmingLevelFromResources(1000, { skills: { FARMING: {} } }), null);
 });
+
+/**
+ * Who owns the skill-table request.
+ *
+ * A caller that passes `skillResources` owns the transport, including when it
+ * passes null to mean "I tried and it is unavailable". Only a caller that omits
+ * the option entirely gets the built-in network fetch.
+ */
+test('an explicitly supplied null skill table is respected instead of re-fetched', async () => {
+  const { installLocalStorage, uninstallLocalStorage } = await import('./local-storage-stub.js');
+  const { importProfilePayload } = await import('../src/hypixel-import.js');
+  installLocalStorage();
+  const originalFetch = globalThis.fetch;
+  const calls = [];
+  globalThis.fetch = async url => { calls.push(String(url)); throw new Error('network must not be used'); };
+
+  try {
+    const report = await importProfilePayload({
+      profiles: [{ profile_id: 'p1', cute_name: 'Solo', members: { '1111aaaa': { player_data: { experience: { SKILL_FARMING: 5000 } } } } }],
+    }, { skillResources: null });
+
+    assert.deepEqual(calls, [], 'a supplied null table must not trigger a request');
+    assert.equal(report.farmingXp, 5000, 'raw XP is still recorded');
+    assert.equal(report.farmingLevel, null, 'the level must not be guessed');
+    assert.ok(report.warnings.some(warning => /no skill-level table was available/.test(warning)));
+  } finally {
+    globalThis.fetch = originalFetch;
+    uninstallLocalStorage();
+  }
+});
+
+test('a supplied skill table derives the level without any request', async () => {
+  const { installLocalStorage, uninstallLocalStorage } = await import('./local-storage-stub.js');
+  const { importProfilePayload } = await import('../src/hypixel-import.js');
+  installLocalStorage();
+  const originalFetch = globalThis.fetch;
+  const calls = [];
+  globalThis.fetch = async url => { calls.push(String(url)); throw new Error('network must not be used'); };
+
+  try {
+    const report = await importProfilePayload({
+      profiles: [{ profile_id: 'p1', members: { '1111aaaa': { player_data: { experience: { SKILL_FARMING: 200 } } } } }],
+    }, { skillResources: SKILL_RESOURCES });
+
+    assert.deepEqual(calls, []);
+    assert.equal(report.farmingLevel, 2);
+  } finally {
+    globalThis.fetch = originalFetch;
+    uninstallLocalStorage();
+  }
+});

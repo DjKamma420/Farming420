@@ -73,8 +73,27 @@ function baseOptions(routes, extra = {}) {
   };
 }
 
-test.beforeEach(() => installLocalStorage());
-test.afterEach(() => uninstallLocalStorage());
+let globalFetchCalls = [];
+let originalFetch;
+
+test.beforeEach(() => {
+  installLocalStorage();
+  // Nothing in a sync may reach the real network. Without this guard the
+  // "missing skill table" case passed only where egress happened to be
+  // blocked, and hit api.hypixel.net for real on CI.
+  globalFetchCalls = [];
+  originalFetch = globalThis.fetch;
+  globalThis.fetch = async url => {
+    globalFetchCalls.push(String(url));
+    throw new Error(`unexpected real network call to ${url}`);
+  };
+});
+
+test.afterEach(() => {
+  globalThis.fetch = originalFetch;
+  uninstallLocalStorage();
+  assert.deepEqual(globalFetchCalls, [], 'a sync reached the network outside the injected fetch');
+});
 
 test('the in-game selected profile is chosen by default', () => {
   assert.equal(selectProfile(profilesPayload()).profile_id, 'profile-b');
@@ -189,6 +208,13 @@ test('a missing skill table leaves the level underived instead of guessed', asyn
   assert.equal(report.farmingXp, 200, 'raw XP is still recorded');
   assert.equal(report.farmingLevel, null);
   assert.ok(report.warnings.some(warning => /skill level table/.test(warning)));
+  // The afterEach guard proves the failed table was not silently re-fetched
+  // through a second, real request.
+  assert.deepEqual(globalFetchCalls, []);
+
+  const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
+  assert.equal(stored.profile.normalizedSnapshot.skills.farming.xp, 200);
+  assert.equal(stored.profile.normalizedSnapshot.skills.farming.level, null);
 });
 
 test('a failing profiles request aborts the sync', async () => {
