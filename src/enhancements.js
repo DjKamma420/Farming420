@@ -1,15 +1,15 @@
 const GROUPS = [
-  ['Fortschritt', ['dashboard', 'account', 'crops', 'tools']],
+  ['Progress', ['dashboard', 'account', 'crops', 'tools']],
   ['Loadout', ['gear', 'pets', 'buffs']],
-  ['Spezial', ['chips', 'shards', 'pests']],
-  ['Analyse', ['planner', 'research', 'coming']],
+  ['Specialized', ['chips', 'shards', 'pests']],
+  ['Analysis', ['planner', 'research', 'coming']],
 ];
 
 const HUBS = [
-  ['account', 'Layer 1', 'Account', 'Skills, Garden, Anita und globale Upgrades.'],
-  ['crops', 'Layer 2', 'Crop', 'Crop-spezifische Fortune und Fortschritte.'],
-  ['tools', 'Layer 3', 'Tool', 'Reforge, Enchants, Gemstone und Dummies.'],
-  ['gear', 'Layer 4', 'Items & Setup', 'Armor, Equipment, Pets, Chips, Shards und Buffs.'],
+  ['account', 'Layer 1', 'Account', 'Skills, Garden, Anita and global upgrades.'],
+  ['crops', 'Layer 2', 'Crop', 'Crop-specific Fortune and progression.'],
+  ['tools', 'Layer 3', 'Tool', 'Reforge, enchantments, gemstones and Farming for Dummies.'],
+  ['gear', 'Layer 4', 'Items & Setup', 'Armor, equipment, pets, chips, shards and buffs.'],
 ];
 
 const CROP_LAYER_KEY = 'farming420-crop-layer';
@@ -46,7 +46,7 @@ function addMobileNavigation(root) {
 
   const select = document.createElement('select');
   select.className = 'mobile-page-select-addon';
-  select.setAttribute('aria-label', 'Bereich auswählen');
+  select.setAttribute('aria-label', 'Choose section');
 
   const buttons = [...root.querySelectorAll('.sidebar [data-page]')];
   for (const button of buttons) {
@@ -63,7 +63,7 @@ function addMobileNavigation(root) {
 
 function simplifyDashboard(root) {
   const heading = root.querySelector('.page-head h1');
-  if (!heading || heading.textContent.trim() !== 'Dein Farming-Fortschritt') return;
+  if (!heading || heading.textContent.trim() !== 'Your Farming Progress') return;
   const content = root.querySelector('.content');
   const hero = content?.querySelector('.hero-grid');
   if (!content || !hero || content.querySelector('.layer-hub-grid-addon')) return;
@@ -74,7 +74,7 @@ function simplifyDashboard(root) {
 
   const section = document.createElement('section');
   section.className = 'dashboard-layer-addon';
-  section.innerHTML = '<div class="section-row"><div><h2>Fortschritts-Layer</h2><p>Account → Crop → Tool → Items. Details erscheinen erst nach dem Öffnen.</p></div></div>';
+  section.innerHTML = '<div class="section-row"><div><h2>Progress layers</h2><p>Account → Crop → Tool → Items. Details appear only after opening a layer.</p></div></div>';
 
   const grid = document.createElement('div');
   grid.className = 'layer-hub-grid-addon';
@@ -82,7 +82,7 @@ function simplifyDashboard(root) {
   for (const [page, eyebrow, title, description] of HUBS) {
     const button = document.createElement('button');
     button.className = 'layer-hub-addon';
-    button.innerHTML = `<span>${eyebrow}</span><strong>${title}</strong><p>${description}</p><b>Öffnen →</b>`;
+    button.innerHTML = `<span>${eyebrow}</span><strong>${title}</strong><p>${description}</p><b>Open →</b>`;
     button.addEventListener('click', () => clickPage(page));
     grid.appendChild(button);
   }
@@ -114,7 +114,7 @@ function setCropWorkspaceLayer(panel, layer) {
 
 function enhanceCropWorkspace(root) {
   const heading = root.querySelector('.page-head h1');
-  if (!heading || heading.textContent.trim() !== 'Ein Crop = eine eigene Arbeitsfläche') return;
+  if (!heading || heading.textContent.trim() !== 'One crop, one workspace') return;
 
   const picker = root.querySelector('.crop-grid');
   const panel = root.querySelector('.crop-detail-panel');
@@ -171,8 +171,8 @@ function improveToolsPage(root) {
   context.innerHTML = `
     <div><span>Crop</span><strong>${cropName}</strong></div>
     <div class="tool-context-arrow">→</div>
-    <div><span>Aktives Tool</span><strong>${toolName}</strong></div>
-    <button type="button">Crop-Arbeitsfläche</button>
+    <div><span>Active tool</span><strong>${toolName}</strong></div>
+    <button type="button">Crop workspace</button>
   `;
   context.querySelector('button').addEventListener('click', () => clickPage('crops'));
   heading.insertAdjacentElement('afterend', context);
