@@ -28,6 +28,7 @@ const defaultState = {
     globalFortune: 0,
     cropFortune: {},
     cropProgress: {},
+    toolProgress: {},
     levels: {},
     owned: {},
     costs: {},
@@ -68,11 +69,13 @@ function isCropScopedItem(item) {
   return item.section === 'crops' || item.section === 'tools';
 }
 
-function itemStore(item) {
-  if (!isCropScopedItem(item)) return state.profile;
-  state.profile.cropProgress ||= {};
-  const cropId = state.selectedCrop;
-  const bucket = state.profile.cropProgress[cropId] ||= {};
+function toolKeyForCrop(cropId = state.selectedCrop) {
+  const info = CROPS.find(c => c.id === cropId) || crop();
+  return info.tool.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+function ensureBucket(container, key) {
+  const bucket = container[key] ||= {};
   bucket.levels ||= {};
   bucket.owned ||= {};
   bucket.costs ||= {};
@@ -80,28 +83,57 @@ function itemStore(item) {
   return bucket;
 }
 
-function migrateLegacyCropProgress() {
-  state.profile.cropProgress ||= {};
-  const scopedItems = UPGRADES.filter(isCropScopedItem);
-  const fields = ['levels', 'owned', 'costs', 'manualGain'];
-  const hasLegacy = scopedItems.some(item => fields.some(field => state.profile[field]?.[item.id] !== undefined));
-  if (!hasLegacy) return;
-
-  const cropId = state.selectedCrop || 'melon';
-  const bucket = state.profile.cropProgress[cropId] ||= {};
-  fields.forEach(field => bucket[field] ||= {});
-
-  for (const item of scopedItems) {
-    for (const field of fields) {
-      if (state.profile[field]?.[item.id] === undefined) continue;
-      if (bucket[field][item.id] === undefined) bucket[field][item.id] = state.profile[field][item.id];
-      delete state.profile[field][item.id];
-    }
+function itemStore(item) {
+  if (item.section === 'crops') {
+    state.profile.cropProgress ||= {};
+    return ensureBucket(state.profile.cropProgress, state.selectedCrop);
   }
-  saveState();
+  if (item.section === 'tools') {
+    state.profile.toolProgress ||= {};
+    return ensureBucket(state.profile.toolProgress, toolKeyForCrop());
+  }
+  return state.profile;
 }
 
-migrateLegacyCropProgress();
+function migrateScopedProgress() {
+  const profile = state.profile;
+  profile.cropProgress ||= {};
+  profile.toolProgress ||= {};
+  const fields = ['levels', 'owned', 'costs', 'manualGain'];
+  let changed = false;
+
+  // Very early builds stored crop/tool entries at account scope. Preserve them on the selected setup.
+  for (const item of UPGRADES.filter(isCropScopedItem)) {
+    const destination = item.section === 'tools'
+      ? ensureBucket(profile.toolProgress, toolKeyForCrop())
+      : ensureBucket(profile.cropProgress, state.selectedCrop || 'melon');
+    for (const field of fields) {
+      if (profile[field]?.[item.id] === undefined) continue;
+      if (destination[field][item.id] === undefined) destination[field][item.id] = profile[field][item.id];
+      delete profile[field][item.id];
+      changed = true;
+    }
+  }
+
+  // v0.2 stored tool data inside each crop bucket. Move it to the physical tool bucket.
+  const toolItems = UPGRADES.filter(item => item.section === 'tools');
+  for (const [cropId, cropBucket] of Object.entries(profile.cropProgress)) {
+    const destination = ensureBucket(profile.toolProgress, toolKeyForCrop(cropId));
+    for (const field of fields) {
+      cropBucket[field] ||= {};
+      for (const item of toolItems) {
+        if (cropBucket[field][item.id] === undefined) continue;
+        if (destination[field][item.id] === undefined) destination[field][item.id] = cropBucket[field][item.id];
+        delete cropBucket[field][item.id];
+        changed = true;
+      }
+    }
+  }
+
+  if (changed) saveState();
+}
+
+migrateScopedProgress();
 
 function currentLevel(item) {
   const store = itemStore(item);

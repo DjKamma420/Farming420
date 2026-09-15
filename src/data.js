@@ -65,9 +65,30 @@ export const CROPS = [
   {
     "id": "nether-wart",
     "name": "Nether Wart",
-    "tool": "Newton Nether Warts Hoe",
+    "tool": "Newton Nether Wart Hoe",
     "color": "crimson",
     "icon": "N"
+  },
+  {
+    "id": "sunflower",
+    "name": "Sunflower",
+    "tool": "Eclipse Hoe",
+    "color": "gold",
+    "icon": "Su"
+  },
+  {
+    "id": "moonflower",
+    "name": "Moonflower",
+    "tool": "Eclipse Hoe",
+    "color": "violet",
+    "icon": "Mo"
+  },
+  {
+    "id": "wild-rose",
+    "name": "Wild Rose",
+    "tool": "Wild Rose Hoe",
+    "color": "rose",
+    "icon": "WR"
   }
 ];
 
@@ -290,10 +311,28 @@ export const UPGRADES = [
   },
   {
     "id": "tool-tool-base-counter-fortune",
-    "category": "Tool",
+    "category": "Tool Level",
     "section": "tools",
-    "name": "Tool base/counter fortune",
+    "name": "Farming Tool level",
     "metric": "Crop Yield",
+    "modeScope": "Any",
+    "cropScope": "Any",
+    "status": "ACTIVE",
+    "max": 50,
+    "stepGain": 4,
+    "manualDefault": null,
+    "rawMarginal": 4,
+    "hypercharge": false,
+    "notes": "Current Greenhouse tool system: each tool level grants +4 Fortune for its crop(s), up to +200 at level 50. Mk. II/Mk. III and Overclocker 3000 gate later levels; levels 41-50 each require an Overclocker 3000.",
+    "source": "https://hypixel-skyblock.fandom.com/wiki/Eclipse_Hoe",
+    "workbookRank": 12
+  },
+  {
+    "id": "tool-mk-ii",
+    "category": "Tool Tier",
+    "section": "tools",
+    "name": "Tool Mk. II",
+    "metric": "Progress Gate",
     "modeScope": "Any",
     "cropScope": "Any",
     "status": "ACTIVE",
@@ -302,8 +341,44 @@ export const UPGRADES = [
     "manualDefault": null,
     "rawMarginal": 0,
     "hypercharge": false,
-    "notes": "Mathematical hoe/dicer/tool progression is nonlinear. Enter next-upgrade marginal Crop Fortune manually.",
-    "source": "https://wiki.eliteskyblock.com/Farming_Fortune",
+    "notes": "Raises the tool tier/rarity and is required for later tool levels. It also changes reforge and gemstone scaling, so its exact marginal Fortune is setup-dependent.",
+    "source": "https://hypixel-skyblock.fandom.com/wiki/Eclipse_Hoe",
+    "workbookRank": null
+  },
+  {
+    "id": "tool-mk-iii",
+    "category": "Tool Tier",
+    "section": "tools",
+    "name": "Tool Mk. III",
+    "metric": "Progress Gate",
+    "modeScope": "Any",
+    "cropScope": "Any",
+    "status": "ACTIVE",
+    "max": 1,
+    "stepGain": 0,
+    "manualDefault": null,
+    "rawMarginal": 0,
+    "hypercharge": false,
+    "notes": "Final crafted tier for specialized farming tools. Required for the high-level portion of the level path; rarity also affects reforges and gemstone value.",
+    "source": "https://hypixel-skyblock.fandom.com/wiki/Eclipse_Hoe",
+    "workbookRank": null
+  },
+  {
+    "id": "tool-overclocker-3000",
+    "category": "Tool Level Gate",
+    "section": "tools",
+    "name": "Overclocker 3000",
+    "metric": "Progress Gate",
+    "modeScope": "Any",
+    "cropScope": "Any",
+    "status": "ACTIVE",
+    "max": 10,
+    "stepGain": 0,
+    "manualDefault": null,
+    "rawMarginal": 0,
+    "hypercharge": false,
+    "notes": "One is required for each Farming Tool level from 41 through 50. Ten are required to unlock level 50; the Fortune itself is counted by Farming Tool level to avoid double counting.",
+    "source": "https://hypixel-skyblock.fandom.com/wiki/Eclipse_Hoe",
     "workbookRank": null
   },
   {
