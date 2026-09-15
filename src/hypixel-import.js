@@ -275,14 +275,25 @@ export async function importProfilePayload(payload, options = {}) {
   if (report.playerUuid) profile.playerUuid = report.playerUuid;
 
   if (report.farmingXp !== null) {
+    // A caller that supplies `skillResources` owns the transport: live sync
+    // fetches the table once and passes it in, and passes null when that fetch
+    // failed. Falling back to a request here would silently re-fetch a table
+    // the caller already established is unavailable. Only a caller that omits
+    // the option entirely -- raw file import, which has no other source --
+    // gets the built-in fetch.
+    const callerSuppliedResources = Object.hasOwn(options, 'skillResources');
     try {
-      const resources = await fetchSkillResources();
-      report.farmingLevel = farmingLevelFromResources(report.farmingXp, resources);
-      if (report.farmingLevel !== null) {
-        profile.levels[FARMING_LEVEL_ID] = report.farmingLevel;
-        profile.owned[FARMING_LEVEL_ID] = report.farmingLevel > 0;
+      const resources = callerSuppliedResources ? options.skillResources : await fetchSkillResources();
+      if (!resources) {
+        report.warnings.push('Farming XP was found, but no skill-level table was available, so the level stays underived.');
       } else {
-        report.warnings.push('Farming XP was found, but the current skill resource format could not be mapped to a level.');
+        report.farmingLevel = farmingLevelFromResources(report.farmingXp, resources);
+        if (report.farmingLevel !== null) {
+          profile.levels[FARMING_LEVEL_ID] = report.farmingLevel;
+          profile.owned[FARMING_LEVEL_ID] = report.farmingLevel > 0;
+        } else {
+          report.warnings.push('Farming XP was found, but the current skill resource format could not be mapped to a level.');
+        }
       }
     } catch (error) {
       report.warnings.push(`Farming XP was found, but the official skill-level table could not be loaded: ${error.message}`);

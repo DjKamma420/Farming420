@@ -25,6 +25,67 @@ Therefore:
 - **Development/static fallback:** import raw Hypixel JSON files.
 - Never ask users to paste a shared Farming420 production API key into the client.
 
+## Username -> UUID resolution
+
+Every keyed endpoint is addressed by UUID, so a username must be resolved first.
+Two constraints decide how:
+
+1. Hypixel's own `name` parameter is documented as **deprecated**, separately
+   rate limited, not guaranteed to return correct data and removable at any
+   time. Farming420 never uses it.
+2. `api.mojang.com` sends no `Access-Control-Allow-Origin` header, so a browser
+   cannot read its response. A static site therefore cannot rely on it alone.
+
+`src/mojang.js` resolves through an ordered chain and uses the first resolver
+that returns a well-formed UUID:
+
+| Order | Resolver | Official | Note |
+| --- | --- | --- | --- |
+| 1 | `api.minecraftservices.com/minecraft/profile/lookup/name/{name}` | yes | Preferred. |
+| 2 | `api.mojang.com/users/profiles/minecraft/{name}` | yes | Usable from a proxy or a browser that can read it. |
+| 3 | `playerdb.co/api/player/minecraft/{name}` | no | CORS-enabled community mirror, fallback only. |
+
+Rules this chain follows:
+
+- a response whose UUID cannot be parsed and validated is **skipped**, never
+  guessed at, so an unknown upstream schema cannot produce a wrong id
+- a resolution served by the non-official mirror is reported as a sync warning
+  and recorded in `resolverIsOfficial`
+- entering a UUID directly in Settings bypasses resolution entirely, which is
+  the privacy-preserving path
+
+## Access modes
+
+| Mode | Where the key lives | When to use |
+| --- | --- | --- |
+| Own key | The visitor's `localStorage`, under a storage entry separate from the app state so it is never written into a backup. Sent only to `api.hypixel.net`. | Default. Needs no deployment; the app stays a static GitHub Pages site. |
+| Proxy | A server-side deployment (`proxy/`). The browser holds no key. | When the key must not be in a browser. Requires adding the proxy origin to `connect-src` in `index.html`. |
+
+A personal key that the user pastes into their own browser is not the shared
+production key baked into a public bundle that the architecture constraint
+above forbids.
+
+## Live sync request sequence
+
+`src/live-sync.js` performs the smallest sequence that fills the most fields:
+
+1. username -> UUID (resolver chain, skipped when a UUID is supplied)
+2. `/v2/resources/skyblock/skills` (keyless) for the Farming level table
+3. `/v2/skyblock/profiles?uuid=...` -> profile selection, Farming XP, pets,
+   community upgrades, item NBT
+4. `/v2/skyblock/garden?profile=...` -> crop upgrades, plots, visitors,
+   composter, resources collected
+
+Failure policy:
+
+- a failed profiles request aborts the sync; there is nothing to normalize
+- a failed Garden request keeps the profile data and reports a warning
+- a failed skill table leaves the Farming level `null` rather than guessed;
+  the raw XP is still stored
+
+Both payloads go through the same normalizers as raw JSON import, so live sync
+and file import produce identical, provenance-bearing snapshots.
+
 ## Official Hypixel endpoints relevant to Farming420
 
 | Endpoint | Key required | Use |
