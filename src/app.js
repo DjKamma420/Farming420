@@ -27,6 +27,7 @@ const defaultState = {
     name: 'Mein Profil',
     globalFortune: 0,
     cropFortune: {},
+    cropProgress: {},
     levels: {},
     owned: {},
     costs: {},
@@ -63,12 +64,53 @@ function crop() {
   return CROPS.find(c => c.id === state.selectedCrop) || CROPS[0];
 }
 
+function isCropScopedItem(item) {
+  return item.section === 'crops' || item.section === 'tools';
+}
+
+function itemStore(item) {
+  if (!isCropScopedItem(item)) return state.profile;
+  state.profile.cropProgress ||= {};
+  const cropId = state.selectedCrop;
+  const bucket = state.profile.cropProgress[cropId] ||= {};
+  bucket.levels ||= {};
+  bucket.owned ||= {};
+  bucket.costs ||= {};
+  bucket.manualGain ||= {};
+  return bucket;
+}
+
+function migrateLegacyCropProgress() {
+  state.profile.cropProgress ||= {};
+  const scopedItems = UPGRADES.filter(isCropScopedItem);
+  const fields = ['levels', 'owned', 'costs', 'manualGain'];
+  const hasLegacy = scopedItems.some(item => fields.some(field => state.profile[field]?.[item.id] !== undefined));
+  if (!hasLegacy) return;
+
+  const cropId = state.selectedCrop || 'melon';
+  const bucket = state.profile.cropProgress[cropId] ||= {};
+  fields.forEach(field => bucket[field] ||= {});
+
+  for (const item of scopedItems) {
+    for (const field of fields) {
+      if (state.profile[field]?.[item.id] === undefined) continue;
+      if (bucket[field][item.id] === undefined) bucket[field][item.id] = state.profile[field][item.id];
+      delete state.profile[field][item.id];
+    }
+  }
+  saveState();
+}
+
+migrateLegacyCropProgress();
+
 function currentLevel(item) {
-  return Math.max(0, Math.min(Number(item.max || 1), Number(state.profile.levels[item.id] || 0)));
+  const store = itemStore(item);
+  return Math.max(0, Math.min(Number(item.max || 1), Number(store.levels[item.id] || 0)));
 }
 
 function isOwned(item) {
-  return Boolean(state.profile.owned[item.id]) || currentLevel(item) > 0;
+  const store = itemStore(item);
+  return Boolean(store.owned[item.id]) || currentLevel(item) > 0;
 }
 
 function isMaxed(item) {
@@ -89,7 +131,7 @@ function visibleUpgrades(section) {
 }
 
 function gainFor(item) {
-  const manual = state.profile.manualGain[item.id];
+  const manual = itemStore(item).manualGain[item.id];
   if (manual !== undefined && manual !== '' && !Number.isNaN(Number(manual))) return Number(manual);
   if (item.name === 'Switch to best farming pet') return item.rawMarginal || 0;
   return Number(item.stepGain || item.rawMarginal || 0);
@@ -116,7 +158,7 @@ function plannerCandidates() {
     .filter(item => !isMaxed(item))
     .map(item => {
       const gain = gainFor(item);
-      const cost = Number(state.profile.costs[item.id] || 0);
+      const cost = Number(itemStore(item).costs[item.id] || 0);
       const rel = relativeGainPct(item);
       const efficiency = cost > 0 ? rel / (cost / 1_000_000) : null;
       return { item, gain, rel, cost, efficiency };
@@ -163,7 +205,7 @@ function card(item, compact=false) {
       </div>
       <div class="progress"><i style="width:${Math.min(100,(level/max)*100)}%"></i></div>
       <div class="chips">
-        ${cropLimited ? badge(item.cropScope, 'soft') : ''}
+        ${isCropScopedItem(item) ? badge(crop().name, 'soft') : (cropLimited ? badge(item.cropScope, 'soft') : '')}
         ${item.hypercharge ? badge('Hypercharge', 'soft') : ''}
         ${item.modeScope !== 'Any' ? badge(item.modeScope, 'soft') : ''}
       </div>
@@ -336,11 +378,12 @@ function drawer() {
   if (!item) return '';
   const level = currentLevel(item);
   const max = Number(item.max||1);
-  const cost = state.profile.costs[item.id] ?? '';
-  const manual = state.profile.manualGain[item.id] ?? '';
+  const store = itemStore(item);
+  const cost = store.costs[item.id] ?? '';
+  const manual = store.manualGain[item.id] ?? '';
   return `<div class="drawer-backdrop" data-close-drawer><aside class="drawer" onclick="event.stopPropagation()">
     <div class="drawer-top"><div><div class="eyebrow">${esc(item.category)}</div><h2>${esc(item.name)}</h2></div><button class="close" data-close-drawer>×</button></div>
-    <div class="drawer-badges">${badge(item.status,item.status==='VERIFY'?'verify':'soft')} ${item.cropScope!=='Any'?badge(item.cropScope,'soft'):''} ${item.modeScope!=='Any'?badge(item.modeScope,'soft'):''}</div>
+    <div class="drawer-badges">${badge(item.status,item.status==='VERIFY'?'verify':'soft')} ${isCropScopedItem(item)?badge(crop().name,'soft'):(item.cropScope!=='Any'?badge(item.cropScope,'soft'):'')} ${item.modeScope!=='Any'?badge(item.modeScope,'soft'):''}</div>
     <div class="drawer-section"><h3>Besitz & Level</h3>
       ${max>1 ? `<div class="stepper"><button data-step="-1" data-id="${item.id}">−</button><strong>${level}/${max}</strong><button data-step="1" data-id="${item.id}">+</button><button class="ghost small" data-max="${item.id}">Max</button></div>` : `<label class="switch-row"><span>Vorhanden</span><input type="checkbox" data-owned="${item.id}" ${isOwned(item)?'checked':''}></label>`}
     </div>
@@ -395,21 +438,30 @@ function bind() {
 
   document.querySelectorAll('[data-step]').forEach(el => el.addEventListener('click', () => {
     const item = UPGRADES.find(x=>x.id===el.dataset.id); if (!item) return;
-    state.profile.levels[item.id] = Math.max(0, Math.min(Number(item.max||1), currentLevel(item)+Number(el.dataset.step)));
-    state.profile.owned[item.id] = state.profile.levels[item.id] > 0;
+    const store = itemStore(item);
+    store.levels[item.id] = Math.max(0, Math.min(Number(item.max||1), currentLevel(item)+Number(el.dataset.step)));
+    store.owned[item.id] = store.levels[item.id] > 0;
     saveState(); render();
   }));
   document.querySelectorAll('[data-max]').forEach(el => el.addEventListener('click', () => {
     const item = UPGRADES.find(x=>x.id===el.dataset.max); if (!item) return;
-    state.profile.levels[item.id]=Number(item.max||1); state.profile.owned[item.id]=true; saveState(); render();
+    const store = itemStore(item);
+    store.levels[item.id]=Number(item.max||1); store.owned[item.id]=true; saveState(); render();
   }));
   document.querySelectorAll('[data-owned]').forEach(el => el.addEventListener('change', e => {
-    state.profile.owned[e.target.dataset.owned]=e.target.checked;
-    state.profile.levels[e.target.dataset.owned]=e.target.checked?1:0; saveState(); render();
+    const item = UPGRADES.find(x=>x.id===e.target.dataset.owned); if (!item) return;
+    const store = itemStore(item);
+    store.owned[item.id]=e.target.checked;
+    store.levels[item.id]=e.target.checked?1:0; saveState(); render();
   }));
-  document.querySelectorAll('[data-cost]').forEach(el => el.addEventListener('change', e => { state.profile.costs[e.target.dataset.cost]=Number(e.target.value||0); saveState(); render(); }));
+  document.querySelectorAll('[data-cost]').forEach(el => el.addEventListener('change', e => {
+    const item = UPGRADES.find(x=>x.id===e.target.dataset.cost); if (!item) return;
+    itemStore(item).costs[item.id]=Number(e.target.value||0); saveState(); render();
+  }));
   document.querySelectorAll('[data-manual]').forEach(el => el.addEventListener('change', e => {
-    const v=e.target.value; if(v==='') delete state.profile.manualGain[e.target.dataset.manual]; else state.profile.manualGain[e.target.dataset.manual]=Number(v); saveState(); render();
+    const item = UPGRADES.find(x=>x.id===e.target.dataset.manual); if (!item) return;
+    const store = itemStore(item);
+    const v=e.target.value; if(v==='') delete store.manualGain[item.id]; else store.manualGain[item.id]=Number(v); saveState(); render();
   }));
 
   const exportBtn=document.getElementById('exportBtn');
