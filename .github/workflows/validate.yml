@@ -20,7 +20,7 @@ jobs:
 
       - name: Validate JavaScript syntax
         run: |
-          for file in src/*.js tests/*.test.js sw.js; do
+          for file in src/*.js tests/*.js proxy/*.js scripts/*.js sw.js; do
             node --check "$file"
           done
 
@@ -30,7 +30,9 @@ jobs:
                       src/app.js src/config.js src/data.js src/migrations.js src/backup.js \
                       src/enhancements.js src/foundation.js src/hypixel-import.js \
                       src/nbt.js src/item-normalizer.js src/profile-items.js \
-                      src/profile-normalizer.js src/profile-sync.js \
+                      src/profile-normalizer.js src/profile-sync.js src/scopes.js \
+                      src/credentials.js src/mojang.js src/hypixel-client.js src/live-sync.js \
+                      proxy/hypixel-proxy.js proxy/README.md \
                       src/styles.css src/enhancements.css src/foundation.css \
                       assets/icon.svg \
                       AGENTS.md README.md \

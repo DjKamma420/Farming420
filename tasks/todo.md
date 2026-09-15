@@ -158,3 +158,79 @@ Two bugs already found by real-browser verification and now tested:
 5. Implement the tested profit engine.
 6. Build prerequisite-aware next-action recommendations.
 7. Add advanced pest/contest/RNG strategies.
+
+---
+
+# Live profile sync from a username
+
+Closes item 3 of the next development sequence ("Live profile proxy"). The
+merged work already normalized raw JSON payloads; what was missing was the live
+path that produces those payloads.
+
+## What was built
+
+| File | Purpose |
+| --- | --- |
+| `src/mojang.js` | Username -> UUID through an ordered resolver chain |
+| `src/hypixel-client.js` | Hypixel transport, direct-key and proxy modes behind one interface |
+| `src/credentials.js` | API key storage, deliberately outside the app state |
+| `src/live-sync.js` | Orchestration: username -> profiles -> garden -> normalizers |
+| `proxy/hypixel-proxy.js` | Optional server-side proxy (portable `fetch` handler) |
+| `proxy/README.md` | Deployment for Workers / Deno / Netlify / Vercel / Node |
+
+Settings gained a Live sync section (username, profile picker, Sync now, last
+sync summary, per-sync warnings), a Hypixel access section (own key or proxy
+URL) and a Manual import section that keeps the existing keyless workflows.
+
+## Decisions worth recording
+
+- **Hypixel's `name` parameter is never used.** It is documented as deprecated,
+  separately rate limited and not guaranteed correct.
+- **`api.mojang.com` sends no CORS headers**, so a static site cannot resolve
+  usernames through it alone. The resolver chain tries official Mojang services
+  first and falls back to a CORS-enabled community mirror, warns when the mirror
+  answered, and skips any response it cannot parse into a valid UUID.
+- **The API key never touches the app state.** `src/backup.js` serializes the
+  whole state into a downloadable file; a key stored there would travel inside
+  every backup. It lives under its own storage entry, and a test asserts it
+  cannot appear in an exported backup.
+- **A personal key in the user's own browser is not the forbidden case.**
+  `AGENTS.md` forbids embedding a shared production key in client code. The
+  proxy remains available for anyone who wants the key server-side.
+- **Failure policy is explicit**: profiles failing aborts the sync, Garden
+  failing keeps the profile data with a warning, and a missing skill table
+  leaves the Farming level `null` rather than guessed.
+
+## Verification
+
+- `npm test`: 141 tests (up from 83), covering the resolver chain and its
+  fallbacks, both transport modes, every Hypixel error shape, key isolation
+  from backups, the full sync orchestration and the proxy's allow-list.
+- Real browser, Hypixel and Mojang stubbed at the network layer: entering a
+  username and pressing Sync fills UUID, profile name, Farming XP 400 -> level 3
+  (DERIVED), three crop upgrades, four plots, Garden XP, visitor counts and the
+  pet list; the wheat crop card shows upgrade level 9; the profile picker lists
+  both profiles; the key stays out of the stored state and is sent only to
+  `api.hypixel.net`; no console errors; usable at 390px width.
+- Error paths verified in the browser: unconfigured access, invalid key format,
+  too-short username, unresolvable username, a Hypixel 403 and an unreachable
+  proxy each produce a specific, actionable message.
+
+## Bugs found and fixed while verifying
+
+1. Sync resolved the username **before** checking that any access was
+   configured, so an unconfigured user got "could not be resolved" instead of
+   "no key configured", after spending three resolver requests.
+2. A user-configured proxy origin is blocked by the page CSP, because a `<meta>`
+   CSP cannot be extended at runtime. The error now names the required
+   `connect-src` edit, and Settings and `proxy/README.md` say it up front.
+3. The sync success message was wiped by the re-render that followed it.
+4. Pre-existing, from the parallel work on `main`: `src/scopes.js` shipped
+   without being listed in the service worker cache, which would have let an
+   update mix old and new files. `scripts/check-sw-manifest.js` caught it.
+
+## Still open
+
+Unchanged and still the largest gap: `src/data.js` has no `lastVerified` dates,
+which `AGENTS.md` rule 2 requires. That needs a real verification pass, not a
+code change.

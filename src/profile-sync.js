@@ -105,10 +105,13 @@ export async function syncProfilePayload(payload, options = {}) {
   const patch = applyDerivedFarmingLevel(
     normalizeProfilePayload(payload, {
       playerUuid: options.playerUuid,
+      skillResources: options.skillResources,
       fetchedAt,
     }),
     report,
   );
+  // Only live sync knows the player's name; raw JSON payloads do not carry it.
+  if (options.playerName) patch.identity.playerName = String(options.playerName);
   const itemReport = await applyProfileItems(patch, payload, {
     playerUuid: options.playerUuid,
     fetchedAt,

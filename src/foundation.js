@@ -12,6 +12,8 @@ import {
 } from './backup.js';
 import { migrateState } from './migrations.js';
 import { syncGardenPayload, syncProfilePayload } from './profile-sync.js';
+import { maskApiKey, readApiKey, writeApiKey } from './credentials.js';
+import { syncByUsername } from './live-sync.js';
 
 let deferredInstallPrompt = null;
 let settingsDialog = null;
@@ -66,6 +68,13 @@ function settingsMarkup() {
   const state = readState();
   const meta = currentMeta();
   const playerUuid = state.profile?.playerUuid || '';
+  const playerName = state.profile?.playerName || '';
+  const proxyUrl = state.profile?.proxyUrl || '';
+  const storedKey = readApiKey();
+  const sync = state.profile?.lastSync || {};
+  const profileOptions = Array.isArray(sync.availableProfiles) ? sync.availableProfiles : [];
+  const selectedProfileId = state.profile?.skyblockProfileId || '';
+  const accessModeLabel = proxyUrl ? 'Proxy' : (storedKey ? 'Own API key' : 'Not configured');
   return `
     <div class="settings-shell" role="document">
       <div class="settings-header">
@@ -80,12 +89,60 @@ function settingsMarkup() {
 
       <section class="settings-section">
         <div class="settings-section-copy">
-          <h3>Profile & API</h3>
-          <p>Raw Hypixel JSON import works without storing an API key. Production live sync will use a server-side proxy later.</p>
+          <h3>Live sync</h3>
+          <p>Enter your Minecraft username and sync. Farming420 resolves the username to a UUID, reads your selected SkyBlock profile and Garden, and fills in everything the API exposes.</p>
+        </div>
+        <label class="settings-field">
+          <span>Minecraft username</span>
+          <input type="text" data-player-name value="${escapeHtml(playerName)}" placeholder="e.g. Notch" autocomplete="off" spellcheck="false">
+        </label>
+        ${profileOptions.length > 1 ? `
+        <label class="settings-field">
+          <span>SkyBlock profile</span>
+          <select data-profile-select>
+            ${profileOptions.map(option => `<option value="${escapeHtml(option.profileId)}" ${option.profileId === selectedProfileId ? 'selected' : ''}>${escapeHtml(option.profileName || option.profileId)}${option.selected ? ' (in game)' : ''}</option>`).join('')}
+          </select>
+        </label>` : ''}
+        <div class="settings-actions">
+          <button class="settings-button primary" type="button" data-sync-now>Sync now</button>
+        </div>
+        <div class="settings-meta-grid">
+          <div><span>Last sync</span><strong>${escapeHtml(formatTime(sync.finishedAt))}</strong></div>
+          <div><span>Access mode</span><strong>${escapeHtml(accessModeLabel)}</strong></div>
+          <div><span>Profile</span><strong>${escapeHtml(state.profile?.skyblockProfileName || 'Not linked')}</strong></div>
+          <div><span>Farming level</span><strong>${escapeHtml(meta.profile?.farmingLevel ?? 'Not synced')}</strong></div>
+          <div><span>Items detected</span><strong>${escapeHtml(sync.itemsNormalized ?? 'Not synced')}</strong></div>
+          <div><span>Crop upgrades</span><strong>${escapeHtml(sync.cropUpgradesImported ?? 'Not synced')}</strong></div>
+        </div>
+        ${sync.warnings?.length ? `<div class="settings-warnings"><strong>${sync.warnings.length} note${sync.warnings.length === 1 ? '' : 's'} from the last sync</strong><ul>${sync.warnings.map(warning => `<li>${escapeHtml(warning)}</li>`).join('')}</ul></div>` : ''}
+      </section>
+
+      <section class="settings-section">
+        <div class="settings-section-copy">
+          <h3>Hypixel access</h3>
+          <p>Profile and Garden endpoints require a key. Use <strong>either</strong> your own key, which stays in this browser and is sent only to api.hypixel.net, <strong>or</strong> a proxy URL if you deployed the proxy in <code>proxy/</code>. A key is never written into a backup.</p>
+        </div>
+        <label class="settings-field">
+          <span>Your Hypixel API key <a href="https://developer.hypixel.net/" target="_blank" rel="noreferrer">(get one)</a></span>
+          <input type="password" data-api-key placeholder="${escapeHtml(storedKey ? maskApiKey(storedKey) : 'Paste your personal key')}" autocomplete="off" spellcheck="false">
+        </label>
+        <label class="settings-field">
+          <span>Proxy URL (optional, overrides the key &mdash; also needs its origin in the index.html connect-src list)</span>
+          <input type="url" data-proxy-url value="${escapeHtml(proxyUrl)}" placeholder="https://your-proxy.example.workers.dev" autocomplete="off" spellcheck="false">
+        </label>
+        <div class="settings-actions">
+          <button class="settings-button danger" type="button" data-clear-key ${storedKey ? '' : 'disabled'}>Forget stored key</button>
+        </div>
+      </section>
+
+      <section class="settings-section">
+        <div class="settings-section-copy">
+          <h3>Manual import</h3>
+          <p>Raw Hypixel JSON import needs no key at all and stays available for offline, privacy-first and debugging workflows. The UUID below also overrides username resolution.</p>
         </div>
         <label class="settings-field">
           <span>Your Minecraft UUID</span>
-          <input type="text" data-player-uuid value="${escapeHtml(playerUuid)}" placeholder="Optional for solo profiles, required to disambiguate co-op imports">
+          <input type="text" data-player-uuid value="${escapeHtml(playerUuid)}" placeholder="Optional; skips username resolution and disambiguates co-op imports">
         </label>
         <div class="settings-actions">
           <label class="settings-button file-button">Import profile JSON<input data-profile-json type="file" accept="application/json,.json" hidden></label>
@@ -94,8 +151,6 @@ function settingsMarkup() {
         <div class="settings-meta-grid">
           <div><span>Profile import</span><strong>${escapeHtml(formatTime(meta.profile?.importedAt))}</strong></div>
           <div><span>Garden import</span><strong>${escapeHtml(formatTime(meta.garden?.importedAt))}</strong></div>
-          <div><span>Profile</span><strong>${escapeHtml(state.profile?.skyblockProfileName || 'Not linked')}</strong></div>
-          <div><span>Farming level</span><strong>${escapeHtml(meta.profile?.farmingLevel ?? 'Not synced')}</strong></div>
         </div>
       </section>
 
@@ -149,6 +204,67 @@ function openSettings() {
   settingsDialog.showModal();
 }
 
+function saveProfileField(field, value) {
+  const state = readState();
+  state.profile ||= {};
+  state.profile[field] = value;
+  writeState(state);
+}
+
+function saveLastSync(report) {
+  const state = readState();
+  state.profile ||= {};
+  if (report.playerName) state.profile.playerName = report.playerName;
+  if (report.playerUuid) state.profile.playerUuid = report.playerUuid;
+  if (report.profileId) state.profile.skyblockProfileId = report.profileId;
+  // Only the sync summary is stored, never the raw API payloads.
+  state.profile.lastSync = {
+    finishedAt: report.finishedAt,
+    mode: report.mode,
+    resolver: report.resolver,
+    resolverIsOfficial: report.resolverIsOfficial,
+    availableProfiles: report.availableProfiles,
+    itemsNormalized: report.itemsNormalized,
+    cropUpgradesImported: report.cropUpgradesImported,
+    unlockedPlots: report.unlockedPlots,
+    gardenSynced: report.gardenSynced,
+    warnings: report.warnings,
+  };
+  writeState(state);
+}
+
+async function handleLiveSync() {
+  const state = readState();
+  const username = settingsDialog.querySelector('[data-player-name]')?.value?.trim() || '';
+  const uuid = settingsDialog.querySelector('[data-player-uuid]')?.value?.trim() || '';
+  const profileId = settingsDialog.querySelector('[data-profile-select]')?.value || '';
+  if (!username && !uuid) throw new Error('Enter your Minecraft username first.');
+
+  setStatus(`Syncing ${username || uuid}…`, 'neutral');
+  const report = await syncByUsername({
+    username,
+    playerUuid: uuid,
+    profileId,
+    apiKey: readApiKey(),
+    proxyUrl: state.profile?.proxyUrl || '',
+  });
+  saveLastSync(report);
+
+  const parts = [
+    report.farmingLevel === null ? 'Farming level not derived' : `Farming level ${report.farmingLevel}`,
+    report.itemsNormalized === null ? 'no item data' : `${report.itemsNormalized} items`,
+    report.gardenSynced ? `${report.cropUpgradesImported ?? 0} crop upgrades` : 'Garden not synced',
+  ];
+  // Re-render first so the profile picker and freshly imported values appear,
+  // then write the status: re-rendering replaces the status element.
+  settingsDialog.innerHTML = settingsMarkup();
+  bindSettings();
+  setStatus(
+    `Synced ${report.profileName || report.playerName || report.playerUuid}: ${parts.join(', ')}.`,
+    report.warnings.length ? 'warning' : 'success',
+  );
+}
+
 function savePlayerUuid(input) {
   const state = readState();
   state.profile ||= {};
@@ -176,6 +292,55 @@ function bindSettings() {
   settingsDialog.querySelector('[data-settings-close]')?.addEventListener('click', closeSettings);
 
   settingsDialog.querySelector('[data-player-uuid]')?.addEventListener('change', event => savePlayerUuid(event.target));
+
+  settingsDialog.querySelector('[data-player-name]')?.addEventListener('change', event => {
+    saveProfileField('playerName', String(event.target.value || '').trim());
+  });
+
+  settingsDialog.querySelector('[data-proxy-url]')?.addEventListener('change', event => {
+    const value = String(event.target.value || '').trim();
+    if (value && !/^https:\/\//i.test(value)) {
+      setStatus('The proxy URL must start with https://.', 'error');
+      return;
+    }
+    saveProfileField('proxyUrl', value);
+    setStatus(value ? 'Proxy URL saved. It takes precedence over a stored key.' : 'Proxy URL cleared.', 'success');
+    settingsDialog.innerHTML = settingsMarkup();
+    bindSettings();
+  });
+
+  settingsDialog.querySelector('[data-api-key]')?.addEventListener('change', event => {
+    const value = String(event.target.value || '').trim();
+    if (!value) return;
+    try {
+      writeApiKey(value);
+      event.target.value = '';
+      setStatus('API key stored in this browser only. It is never included in a backup.', 'success');
+      settingsDialog.innerHTML = settingsMarkup();
+      bindSettings();
+    } catch (error) {
+      setStatus(error.message, 'error');
+    }
+  });
+
+  settingsDialog.querySelector('[data-clear-key]')?.addEventListener('click', () => {
+    writeApiKey('');
+    setStatus('Stored API key removed from this browser.', 'success');
+    settingsDialog.innerHTML = settingsMarkup();
+    bindSettings();
+  });
+
+  settingsDialog.querySelector('[data-sync-now]')?.addEventListener('click', async event => {
+    event.target.disabled = true;
+    try {
+      await handleLiveSync();
+    } catch (error) {
+      setStatus(error.message, 'error');
+    } finally {
+      const button = settingsDialog.querySelector('[data-sync-now]');
+      if (button) button.disabled = false;
+    }
+  });
 
   settingsDialog.querySelector('[data-profile-json]')?.addEventListener('change', async event => {
     try {

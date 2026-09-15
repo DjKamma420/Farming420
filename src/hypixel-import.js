@@ -276,7 +276,8 @@ export async function importProfilePayload(payload, options = {}) {
 
   if (report.farmingXp !== null) {
     try {
-      const resources = await fetchSkillResources();
+      // Live sync fetches the table once and passes it in; file import fetches it.
+      const resources = options.skillResources || await fetchSkillResources();
       report.farmingLevel = farmingLevelFromResources(report.farmingXp, resources);
       if (report.farmingLevel !== null) {
         profile.levels[FARMING_LEVEL_ID] = report.farmingLevel;

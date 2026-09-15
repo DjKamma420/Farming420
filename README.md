@@ -37,6 +37,8 @@ Read these files before changing progression or calculation logic:
 - raw Hypixel profile/profiles JSON import
 - Farming Skill XP detection and level derivation through Hypixel's current public skill resource table
 - Garden crop-upgrade and unlocked-plot import
+- live sync from a Minecraft username, in one click, with per-field provenance
+- an optional server-side proxy so the key can stay off the client
 - current `pets_data.pets` import with hidden-data semantics instead of treating missing data as no pets
 - normalized profile snapshots with explicit provenance and unknown/hidden states
 - profile and Garden imports merge into one stable internal model instead of exposing raw API field names to future calculators
@@ -52,6 +54,37 @@ Read these files before changing progression or calculation logic:
 - a dependency-free test suite covering migrations, backups, Hypixel adapters, NBT decoding, item/profile normalization, data-layer invariants and CSP-safe markup
 - JavaScript validation, service-worker cache completeness and tests through GitHub Actions
 - automatic GitHub Pages deployment from `main`
+
+## Getting your data in
+
+Open **Settings** (top bar), enter your Minecraft username and press **Sync now**.
+Farming420 resolves the username to a UUID, reads your selected SkyBlock profile
+and its Garden, and fills in everything the API exposes: Farming XP and level,
+crop upgrades, unlocked plots, visitors, composter state, pets, community
+upgrades and your decoded farming items.
+
+Profile and Garden endpoints require a Hypixel API key, so pick one of these:
+
+- **Your own key** (default, nothing to deploy): create one at
+  [developer.hypixel.net](https://developer.hypixel.net/) and paste it into
+  Settings. It is stored in your browser only, under a storage entry separate
+  from the app state, so it is **never** written into an exported backup, and it
+  is sent only to `api.hypixel.net`.
+- **A proxy** (key stays on a server): deploy `proxy/` and put its URL into
+  Settings. See [`proxy/README.md`](proxy/README.md). A proxy URL overrides any
+  stored key.
+
+Neither is needed for raw JSON import, which still works entirely offline.
+
+### Username resolution
+
+Hypixel's `name` parameter is deprecated and unreliable, and `api.mojang.com`
+sends no CORS headers, so a static site cannot use either on its own.
+Farming420 tries official Mojang lookups first and falls back to a CORS-enabled
+community mirror, reporting a warning when the mirror answered. A response it
+cannot parse into a valid UUID is skipped rather than trusted. Entering your
+UUID directly in Settings skips resolution completely.
+
 
 ## Hypixel API architecture
 
@@ -71,7 +104,10 @@ small server-side/serverless proxy
 Hypixel Public API
 ```
 
-Until that proxy exists, the app supports importing raw Hypixel JSON responses. Public resource endpoints can still be used directly where appropriate.
+The proxy now exists in [`proxy/`](proxy/README.md) and is optional: by default
+each visitor supplies their own key, which keeps Farming420 a pure static site
+with nothing else to deploy. Raw JSON import remains available and needs no key
+at all. Public resource endpoints are always called directly.
 
 See `docs/PROFILE_DATA_MATRIX.md` for the exact automation plan and `docs/PROFILE_MODEL.md` for the internal normalized representation.
 
