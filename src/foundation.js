@@ -1,10 +1,16 @@
 import {
   APP_VERSION,
-  BACKUP_FORMAT,
-  BACKUP_VERSION,
   DATA_SCHEMA_VERSION,
   STORAGE_KEY,
 } from './config.js';
+import {
+  backupFilename,
+  createBackupPayload,
+  downloadJson,
+  readJsonFile,
+  validateBackupPayload,
+} from './backup.js';
+import { migrateState } from './migrations.js';
 import { importGardenPayload, importProfilePayload } from './hypixel-import.js';
 
 let deferredInstallPrompt = null;
@@ -13,59 +19,19 @@ let serviceWorkerRegistration = null;
 let reloadingForUpdate = false;
 
 function readState() {
+  let stored = {};
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
   } catch {
-    return {};
+    stored = {};
   }
+  // Settings must never write an outdated shape back, and must never stamp an
+  // unmigrated state with the current schema version.
+  return migrateState(stored).state;
 }
 
 function writeState(state) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
-
-function downloadJson(filename, payload) {
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
-}
-
-function createBackup() {
-  const state = readState();
-  return {
-    format: BACKUP_FORMAT,
-    backupVersion: BACKUP_VERSION,
-    appVersion: APP_VERSION,
-    schemaVersion: Number(state.schemaVersion || DATA_SCHEMA_VERSION),
-    exportedAt: new Date().toISOString(),
-    state,
-  };
-}
-
-function validateBackup(payload) {
-  if (!payload || typeof payload !== 'object') throw new Error('The backup is not a JSON object.');
-  if (payload.format !== BACKUP_FORMAT) throw new Error('This file is not a Farming420 backup.');
-  if (Number(payload.backupVersion) > BACKUP_VERSION) throw new Error('This backup format is newer than this app version. Update Farming420 before restoring it.');
-  if (!payload.state || typeof payload.state !== 'object') throw new Error('The backup does not contain application state.');
-  const schema = Number(payload.schemaVersion || payload.state.schemaVersion || 0);
-  if (schema > DATA_SCHEMA_VERSION) throw new Error('This backup uses a newer data schema. Update Farming420 before restoring it.');
-  return structuredClone(payload.state);
-}
-
-async function readJsonFile(file) {
-  if (!file) throw new Error('No file selected.');
-  if (file.size > 25 * 1024 * 1024) throw new Error('The selected JSON file is too large.');
-  try {
-    return JSON.parse(await file.text());
-  } catch {
-    throw new Error('The selected file is not valid JSON.');
-  }
 }
 
 function formatTime(value) {
@@ -187,7 +153,6 @@ function savePlayerUuid(input) {
   const state = readState();
   state.profile ||= {};
   state.profile.playerUuid = String(input.value || '').replaceAll('-', '').trim().toLowerCase();
-  state.schemaVersion ||= DATA_SCHEMA_VERSION;
   writeState(state);
 }
 
@@ -233,16 +198,16 @@ function bindSettings() {
   });
 
   settingsDialog.querySelector('[data-backup-download]')?.addEventListener('click', () => {
-    const date = new Date().toISOString().slice(0, 10);
-    downloadJson(`farming420-backup-${date}.json`, createBackup());
+    downloadJson(backupFilename(), createBackupPayload(readState()));
     setStatus('Backup downloaded.', 'success');
   });
 
   settingsDialog.querySelector('[data-backup-restore]')?.addEventListener('change', async event => {
     try {
-      const payload = await readJsonFile(event.target.files?.[0]);
-      const restored = validateBackup(payload);
-      writeState(restored);
+      // The restored state is migrated to the current schema before it is
+      // written, so an older backup cannot reintroduce an outdated data shape.
+      const restored = validateBackupPayload(await readJsonFile(event.target.files?.[0]));
+      writeState(restored.state);
       location.reload();
     } catch (error) {
       setStatus(error.message, 'error');
@@ -281,18 +246,22 @@ function bindSettings() {
   });
 }
 
+/**
+ * Settings lives in the top bar rather than the sidebar: the sidebar is hidden
+ * below 780px, which would otherwise leave backup, restore, import and update
+ * controls unreachable on exactly the mobile-first layout the app targets.
+ */
 function addSettingsButton() {
-  const sidebar = document.querySelector('.sidebar');
-  if (!sidebar || sidebar.querySelector('[data-open-settings]')) return;
-  const sideFoot = sidebar.querySelector('.side-foot');
+  const topbar = document.querySelector('.topbar');
+  if (!topbar || topbar.querySelector('[data-open-settings]')) return;
   const button = document.createElement('button');
   button.type = 'button';
-  button.className = 'ghost small settings-entry';
+  button.className = 'settings-entry';
   button.dataset.openSettings = '1';
-  button.textContent = 'Settings';
+  button.setAttribute('aria-label', 'Open settings');
+  button.innerHTML = '<span aria-hidden="true">\u2699</span><span class="settings-entry-label">Settings</span>';
   button.addEventListener('click', openSettings);
-  if (sideFoot) sideFoot.prepend(button);
-  else sidebar.appendChild(button);
+  topbar.appendChild(button);
 }
 
 async function registerServiceWorker() {

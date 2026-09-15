@@ -34,9 +34,18 @@ Read these files before changing progression or calculation logic:
 - raw Hypixel profile/profiles JSON import
 - Farming Skill XP detection and level derivation through Hypixel's current public skill resource table
 - Garden crop-upgrade and unlocked-plot import
+- an explicit, versioned migration registry (`src/migrations.js`) that upgrades
+  stored data on load and on backup restore
+- a single validated backup contract (`src/backup.js`) shared by the sidebar and
+  the Settings dialog
+- Settings reachable at every viewport width, including the mobile layout where
+  the sidebar is hidden
 - installable/offline PWA foundation
 - coherent versioned service-worker cache so application updates do not mix old and new files
-- JavaScript validation through GitHub Actions
+- a dependency-free test suite covering migrations, backups, the Hypixel
+  adapters, the data layer and CSP-safe markup
+- JavaScript validation, service-worker cache completeness and tests through
+  GitHub Actions
 
 ## Hypixel API architecture
 
@@ -71,7 +80,24 @@ The persistence/update model is intentionally similar to the proven patterns in 
 - the PWA cache is versioned as a coherent unit
 - a failed update should leave the previous coherent application version available
 
-Later development should add migration tests before increasing the data schema version.
+### Data schema and migrations
+
+`DATA_SCHEMA_VERSION` in `src/config.js` is the version of the locally stored
+state. `src/migrations.js` holds an ordered registry of migrations; each entry
+raises the stored state to one specific version and must be idempotent, because
+the same migration also runs when an older backup is restored.
+
+Rules for changing the schema:
+
+1. add a migration entry instead of editing an existing one — old backups still
+   need to arrive at the old versions
+2. raise `DATA_SCHEMA_VERSION`
+3. add tests to `tests/migrations.test.js` covering the old shape, the migrated
+   shape and idempotence
+
+State written by a newer app version is never overwritten: it is loaded
+read-only and reported in the console, and a newer backup is refused with an
+explanatory message rather than partially imported.
 
 ## Project structure
 
@@ -90,6 +116,7 @@ Farming420/
 │  └─ MATH_MODEL.md
 ├─ src/
 │  ├─ app.js
+│  ├─ backup.js
 │  ├─ config.js
 │  ├─ data.js
 │  ├─ enhancements.js
@@ -97,7 +124,18 @@ Farming420/
 │  ├─ foundation.js
 │  ├─ foundation.css
 │  ├─ hypixel-import.js
+│  ├─ migrations.js
 │  └─ styles.css
+├─ scripts/
+│  └─ check-sw-manifest.js
+├─ tasks/
+│  └─ todo.md
+├─ tests/
+│  ├─ backup.test.js
+│  ├─ csp.test.js
+│  ├─ data.test.js
+│  ├─ hypixel-import.test.js
+│  └─ migrations.test.js
 └─ .github/workflows/
    ├─ validate.yml
    └─ pages.yml
@@ -114,6 +152,24 @@ python3 -m http.server 4173
 Open `http://localhost:4173`.
 
 A local HTTP server is required for module loading, service-worker behavior and PWA testing.
+
+## Tests
+
+The test suite uses the built-in Node test runner and has no dependencies:
+
+```bash
+npm test
+```
+
+It covers the migration registry, the backup contract, the raw Hypixel JSON
+adapters, data-layer invariants (all 13 crops, the shared Eclipse Hoe, sourced
+entries, coming-soon content staying out of the live list) and the markup rules
+the shipped Content Security Policy imposes.
+
+Because `index.html` ships `script-src 'self'; style-src 'self'`, generated
+markup must not contain `style="..."` attributes or inline `on*` handlers — the
+browser drops both silently. Set widths through the CSSOM (`element.style.width`)
+and attach listeners in JavaScript.
 
 ## Calculation policy
 
@@ -136,7 +192,7 @@ Normal crop drops, RNG drops, pest expected value, downtime, contest rewards and
 
 ## Development order
 
-1. Finish English-only runtime, versioned persistence, Settings and PWA/update safety.
+1. ~~Finish English-only runtime, versioned persistence, Settings and PWA/update safety.~~ Done.
 2. Expand raw Hypixel adapters and build the production API proxy.
 3. Decode profile item NBT for farming tools, armor, equipment, enchantments, reforges, gemstones and counters.
 4. Add Bazaar and auction valuation services with timestamps and confidence.

@@ -1,4 +1,5 @@
 import { DATA_SCHEMA_VERSION, STORAGE_KEY } from './config.js';
+import { ensureProgressBucket, migrateState } from './migrations.js';
 
 const FARMING_LEVEL_ID = 'account-skill-farming-skill-level';
 const GARDEN_PLOTS_ID = 'garden-garden-plots-unlocked';
@@ -31,13 +32,14 @@ const CROP_KEYS = new Map([
 ]);
 
 function readState() {
-  let state = {};
+  let stored = {};
   try {
-    state = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
   } catch {
-    state = {};
+    stored = {};
   }
-  state.schemaVersion ||= DATA_SCHEMA_VERSION;
+  // Import always writes into the current schema shape, never into an old one.
+  const state = migrateState(stored).state;
   state.profile ||= {};
   state.profile.levels ||= {};
   state.profile.owned ||= {};
@@ -52,20 +54,11 @@ function writeState(state) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
-function cropBucket(profile, cropId) {
-  const bucket = profile.cropProgress[cropId] ||= {};
-  bucket.levels ||= {};
-  bucket.owned ||= {};
-  bucket.costs ||= {};
-  bucket.manualGain ||= {};
-  return bucket;
-}
-
 function normalizeCropKey(value) {
   return String(value || '').trim().toUpperCase().replaceAll(' ', '_');
 }
 
-function cropIdFromApiKey(value) {
+export function cropIdFromApiKey(value) {
   const key = normalizeCropKey(value);
   if (CROP_KEYS.has(key)) return CROP_KEYS.get(key);
   if (key.startsWith('INK_SACK') && key.endsWith('3')) return 'cocoa-beans';
@@ -84,56 +77,80 @@ function findGardenObject(payload) {
   return null;
 }
 
-export function importGardenPayload(payload) {
+/**
+ * Pure adapter: reads a raw Hypixel Garden payload and returns the values
+ * Farming420 understands. It performs no storage access, so it can be unit
+ * tested against recorded API payloads.
+ */
+export function extractGardenData(payload) {
   const garden = findGardenObject(payload);
   if (!garden) throw new Error('No Garden data was found in this JSON file.');
 
-  const state = readState();
-  const profile = state.profile;
-  const report = {
-    type: 'garden',
-    cropUpgradesImported: 0,
-    unknownCropKeys: [],
-    unlockedPlots: null,
-    gardenExperience: Number(garden.garden_experience || 0),
-    uniqueVisitors: Number(garden.commission_data?.unique_npcs_served || 0),
-  };
-
+  const cropUpgrades = {};
+  const unknownCropKeys = [];
   if (garden.crop_upgrade_levels && typeof garden.crop_upgrade_levels === 'object') {
     for (const [apiKey, rawLevel] of Object.entries(garden.crop_upgrade_levels)) {
       const cropId = cropIdFromApiKey(apiKey);
       if (!cropId) {
-        report.unknownCropKeys.push(apiKey);
+        unknownCropKeys.push(apiKey);
         continue;
       }
-      const level = clamp(rawLevel, 0, 9);
-      const bucket = cropBucket(profile, cropId);
-      bucket.levels[CROP_UPGRADE_ID] = level;
-      bucket.owned[CROP_UPGRADE_ID] = level > 0;
-      report.cropUpgradesImported += 1;
+      cropUpgrades[cropId] = clamp(rawLevel, 0, 9);
     }
   }
 
-  if (Array.isArray(garden.unlocked_plots_ids)) {
-    // The app's sourced plot-Fortune progression caps this field at 24.
-    const count = clamp(new Set(garden.unlocked_plots_ids.map(String)).size, 0, 24);
-    profile.levels[GARDEN_PLOTS_ID] = count;
-    profile.owned[GARDEN_PLOTS_ID] = count > 0;
-    report.unlockedPlots = count;
+  // The app's sourced plot-Fortune progression caps this field at 24.
+  const unlockedPlots = Array.isArray(garden.unlocked_plots_ids)
+    ? clamp(new Set(garden.unlocked_plots_ids.map(String)).size, 0, 24)
+    : null;
+
+  return {
+    cropUpgrades,
+    unknownCropKeys,
+    unlockedPlots,
+    gardenExperience: Number(garden.garden_experience || 0),
+    uniqueVisitors: Number(garden.commission_data?.unique_npcs_served || 0),
+    totalVisitorsCompleted: Number(garden.commission_data?.total_completed || 0),
+    resourcesCollected: garden.resources_collected || null,
+    composterData: garden.composter_data || null,
+  };
+}
+
+export function importGardenPayload(payload) {
+  const parsed = extractGardenData(payload);
+  const state = readState();
+  const profile = state.profile;
+
+  for (const [cropId, level] of Object.entries(parsed.cropUpgrades)) {
+    const bucket = ensureProgressBucket(profile.cropProgress, cropId);
+    bucket.levels[CROP_UPGRADE_ID] = level;
+    bucket.owned[CROP_UPGRADE_ID] = level > 0;
+  }
+
+  if (parsed.unlockedPlots !== null) {
+    profile.levels[GARDEN_PLOTS_ID] = parsed.unlockedPlots;
+    profile.owned[GARDEN_PLOTS_ID] = parsed.unlockedPlots > 0;
   }
 
   profile.importMeta.garden = {
     importedAt: new Date().toISOString(),
-    gardenExperience: report.gardenExperience,
-    uniqueVisitors: report.uniqueVisitors,
-    totalVisitorsCompleted: Number(garden.commission_data?.total_completed || 0),
-    resourcesCollected: garden.resources_collected || null,
-    composterData: garden.composter_data || null,
-    unknownCropKeys: report.unknownCropKeys,
+    gardenExperience: parsed.gardenExperience,
+    uniqueVisitors: parsed.uniqueVisitors,
+    totalVisitorsCompleted: parsed.totalVisitorsCompleted,
+    resourcesCollected: parsed.resourcesCollected,
+    composterData: parsed.composterData,
+    unknownCropKeys: parsed.unknownCropKeys,
   };
 
   writeState(state);
-  return report;
+  return {
+    type: 'garden',
+    cropUpgradesImported: Object.keys(parsed.cropUpgrades).length,
+    unknownCropKeys: parsed.unknownCropKeys,
+    unlockedPlots: parsed.unlockedPlots,
+    gardenExperience: parsed.gardenExperience,
+    uniqueVisitors: parsed.uniqueVisitors,
+  };
 }
 
 function profileListFromPayload(payload) {
@@ -187,7 +204,7 @@ function findFarmingSkillDefinition(payload) {
   return skills.FARMING || skills.farming || Object.values(skills).find(skill => String(skill?.name || '').toLowerCase() === 'farming') || null;
 }
 
-function farmingLevelFromResources(xp, resources) {
+export function farmingLevelFromResources(xp, resources) {
   const farming = findFarmingSkillDefinition(resources);
   if (!farming || !Array.isArray(farming.levels)) return null;
   let level = 0;
@@ -206,7 +223,12 @@ async function fetchSkillResources() {
   return response.json();
 }
 
-export async function importProfilePayload(payload, options = {}) {
+/**
+ * Pure adapter: resolves the profile and member a raw Hypixel profile payload
+ * refers to and returns the fields Farming420 reads. Level derivation needs the
+ * official skill resource table, so it stays in `importProfilePayload`.
+ */
+export function extractProfileData(payload, options = {}) {
   const profiles = profileListFromPayload(payload);
   const selectedProfile = pickProfile(profiles);
   if (!selectedProfile) {
@@ -219,21 +241,38 @@ export async function importProfilePayload(payload, options = {}) {
   }
 
   const farmingXp = getFarmingXp(selectedMember.member);
+  const warnings = [];
+  if (farmingXp === null) {
+    warnings.push('No Farming Skill XP field was found for the selected member. The Skills API setting may be disabled or the payload format may be unsupported.');
+  }
+
+  return {
+    profileId: selectedProfile.profile_id || null,
+    profileName: selectedProfile.cute_name || null,
+    playerUuid: normalizeUuid(selectedMember.key || options.playerUuid) || null,
+    farmingXp: farmingXp === null ? null : Number(farmingXp),
+    communityUpgrades: selectedProfile.community_upgrades || null,
+    warnings,
+  };
+}
+
+export async function importProfilePayload(payload, options = {}) {
+  const parsed = extractProfileData(payload, options);
   const state = readState();
   const profile = state.profile;
   const report = {
     type: 'profile',
-    profileId: selectedProfile.profile_id || null,
-    profileName: selectedProfile.cute_name || null,
-    playerUuid: selectedMember.key || options.playerUuid || null,
-    farmingXp: farmingXp === null ? null : Number(farmingXp),
+    profileId: parsed.profileId,
+    profileName: parsed.profileName,
+    playerUuid: parsed.playerUuid,
+    farmingXp: parsed.farmingXp,
     farmingLevel: null,
-    warnings: [],
+    warnings: [...parsed.warnings],
   };
 
   if (report.profileName) profile.skyblockProfileName = report.profileName;
   if (report.profileId) profile.skyblockProfileId = report.profileId;
-  if (report.playerUuid) profile.playerUuid = normalizeUuid(report.playerUuid);
+  if (report.playerUuid) profile.playerUuid = report.playerUuid;
 
   if (report.farmingXp !== null) {
     try {
@@ -248,8 +287,6 @@ export async function importProfilePayload(payload, options = {}) {
     } catch (error) {
       report.warnings.push(`Farming XP was found, but the official skill-level table could not be loaded: ${error.message}`);
     }
-  } else {
-    report.warnings.push('No Farming Skill XP field was found for the selected member. The Skills API setting may be disabled or the payload format may be unsupported.');
   }
 
   profile.importMeta.profile = {
@@ -259,7 +296,7 @@ export async function importProfilePayload(payload, options = {}) {
     playerUuid: profile.playerUuid || null,
     farmingXp: report.farmingXp,
     farmingLevel: report.farmingLevel,
-    communityUpgrades: selectedProfile.community_upgrades || null,
+    communityUpgrades: parsed.communityUpgrades,
   };
 
   writeState(state);
