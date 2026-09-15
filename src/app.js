@@ -2,6 +2,7 @@ import { CROPS, UPGRADES, HIDDEN_INTERACTIONS, COMING_SOON } from './data.js';
 import { DATA_SCHEMA_VERSION, STORAGE_KEY } from './config.js';
 import { ensureProgressBucket, migrateState, toolKeyForCropId } from './migrations.js';
 import { isAutoApplied } from './snapshot-apply.js';
+import { LOCATION_STATUS, isSyncFilled, locationFor, manualEntries, manualEntrySummary } from './help-locations.js';
 import {
   backupFilename,
   createBackupPayload,
@@ -21,6 +22,7 @@ const NAV = [
   ['shards', 'Shards'],
   ['buffs', 'Buffs'],
   ['pests', 'Pests'],
+  ['setup', 'What to enter'],
   ['planner', 'Upgrade Planner'],
   ['research', 'Mechanics'],
   ['coming', 'Coming Soon'],
@@ -313,7 +315,7 @@ function accountPage() {
   return `${pageHeader('Account', 'Global Account Progression', 'Progress that is not bound to one crop or one physical farming tool.')}
     <div class="input-strip">
       <label>Global Farming Fortune<input type="number" id="globalFortune" value="${Number(state.profile.globalFortune||0)}"></label>
-      <div class="hint">Used only for relative upgrade evaluation. Ownership remains a separate state.</div>
+      ${inputHint('input:globalFortune', 'Used only for relative upgrade evaluation. Ownership remains a separate state.')}
     </div>
     ${groups.map(([title,cats]) => `<div class="group"><div class="section-row"><div><h2>${title}</h2></div></div><div class="card-grid">${visibleUpgrades('account').filter(x=>cats.includes(x.category)).map(x=>card(x)).join('')}</div></div>`).join('')}`;
 }
@@ -345,6 +347,7 @@ function cropsPage() {
     <div class="crop-detail-panel">
       <div class="section-row"><div><div class="eyebrow">Active crop</div><h2>${esc(crop().name)}</h2><p>${esc(crop().tool)}</p></div>
       <label class="inline-input">Crop Fortune<input type="number" id="cropFortune" value="${Number(state.profile.cropFortune[state.selectedCrop]||0)}"></label></div>
+      ${inputHint('input:cropFortune', `Crop-specific Fortune for ${crop().name}, kept separate from your global total.`)}
       <div class="layer-tabs"><span>Crop progression</span><span>Tool</span><span>Account effects are inherited automatically</span></div>
       <div class="card-grid">${visibleUpgrades('crops').filter(appliesToCrop).map(x=>card(x)).join('')}</div>
       <div class="section-row"><div><h2>${esc(crop().tool)}</h2><p>Tool upgrades belong to the physical tool layer and are not mixed with account progression.</p></div><button class="ghost" data-page="tools">Open tool layer</button></div>
@@ -413,10 +416,80 @@ function drawer() {
       <label>Next cost (Coins)<input type="number" data-cost="${item.id}" value="${esc(cost)}" placeholder="optional"></label>
       <label>Manual marginal value<input type="number" step="0.01" data-manual="${item.id}" value="${esc(manual)}" placeholder="only for dynamic values"></label>
     </div>
+    ${whereToFindSection(item)}
     <div class="drawer-section"><h3>Rule</h3><p>${esc(item.notes || 'No additional note.')}</p></div>
     <div class="drawer-section"><h3>Scope</h3><div class="detail-grid"><div><span>Metric</span><strong>${esc(item.metric)}</strong></div><div><span>Mode</span><strong>${esc(item.modeScope)}</strong></div><div><span>Crop</span><strong>${esc(item.cropScope)}</strong></div><div><span>Hypercharge</span><strong>${item.hypercharge?'Yes':'No'}</strong></div></div></div>
     ${item.source?`<a class="source-btn" href="${esc(item.source)}" target="_blank" rel="noreferrer">Open source</a>`:''}
   </aside></div>`;
+}
+
+
+/**
+ * Tells the player where a value comes from: filled by a sync, found at a
+ * documented in-game location, or still needing a look at the cited source.
+ */
+/** The location hint rendered next to a directly-typed number input. */
+function inputHint(inputKey, fallback) {
+  const location = locationFor(inputKey);
+  if (!location.where) return `<div class="hint">${esc(fallback)}</div>`;
+  return `<div class="hint"><strong>Where to find it:</strong> ${esc(location.where)}
+    ${location.status === LOCATION_STATUS.UNVERIFIED ? '<span class="find-warn">(not yet confirmed against a current in-game capture)</span>' : ''}
+    ${location.source ? `<a href="${esc(location.source)}" target="_blank" rel="noreferrer">Source</a>` : ''}
+    <br>${esc(fallback)}</div>`;
+}
+
+function whereToFindSection(item) {
+  const location = locationFor(item.id);
+  if (location.status === LOCATION_STATUS.SYNCED) {
+    return `<div class="drawer-section"><h3>Where do I find this?</h3>
+      <p class="find-synced">${esc(location.where)}</p></div>`;
+  }
+  if (location.where) {
+    return `<div class="drawer-section"><h3>Where do I find this?</h3>
+      <p>${esc(location.where)}</p>
+      ${location.status === LOCATION_STATUS.UNVERIFIED ? `<p class="find-warn">Not yet confirmed against a current in-game capture.${location.note ? ` ${esc(location.note)}` : ''}</p>` : ''}
+      ${location.source ? `<a class="source-btn" href="${esc(location.source)}" target="_blank" rel="noreferrer">Open source</a>` : ''}</div>`;
+  }
+  return `<div class="drawer-section"><h3>Where do I find this?</h3>
+    <p class="find-warn">The in-game location for this value is not documented yet, so it is not guessed at here. The source below is the reference this entry is based on.</p>
+    ${location.note ? `<p>${esc(location.note)}</p>` : ''}
+    ${location.source ? `<a class="source-btn" href="${esc(location.source)}" target="_blank" rel="noreferrer">Open source</a>` : ''}</div>`;
+}
+
+function setupPage() {
+  const summary = manualEntrySummary();
+  const rows = manualEntries().filter(row => {
+    const term = state.search.trim().toLowerCase();
+    return !term || `${row.entry.name} ${row.entry.category} ${row.entry.notes}`.toLowerCase().includes(term);
+  });
+
+  return `${pageHeader('What to enter', 'Values the sync cannot fill', 'A profile sync fills everything the Hypixel API exposes. These are the ones you still have to enter yourself, most valuable first.')}
+    <div class="planner-context">
+      <div><span>Entries total</span><strong>${summary.total}</strong></div>
+      <div><span>Filled by sync</span><strong>${summary.synced}</strong></div>
+      <div><span>You enter</span><strong>${summary.manual}</strong></div>
+      <div><span>Already done</span><strong>${rows.filter(row => isOwned(row.entry)).length}/${rows.length}</strong></div>
+    </div>
+    <div class="find-list">
+      ${rows.map(row => {
+        const done = isOwned(row.entry);
+        const gain = Number(row.entry.stepGain || row.entry.rawMarginal || 0);
+        return `<article class="find-row ${done ? 'done' : ''}">
+          <div class="find-main">
+            <div class="eyebrow">${esc(row.entry.category)}${row.entry.cropScope !== 'Any' ? ` \u00b7 ${esc(row.entry.cropScope)}` : ''}</div>
+            <h3>${esc(row.entry.name)}</h3>
+            <p>${esc(row.entry.notes || 'No additional note.')}</p>
+            ${row.location.where ? `<p class="find-where">${esc(row.location.where)}</p>` : '<p class="find-warn">In-game location not documented yet \u2014 open the source to look it up.</p>'}
+          </div>
+          <div class="find-side">
+            ${badge(done ? 'entered' : 'open', done ? 'maxed' : 'missing')}
+            ${gain ? `<span class="find-gain">+${gain.toLocaleString('en-US')}</span>` : ''}
+            <button class="ghost small" data-open="${esc(row.entry.id)}">Open</button>
+            ${row.location.source ? `<a class="ghost small find-link" href="${esc(row.location.source)}" target="_blank" rel="noreferrer">Source</a>` : ''}
+          </div>
+        </article>`;
+      }).join('') || '<div class="empty">No matches.</div>'}
+    </div>`;
 }
 
 function render() {
@@ -432,6 +505,7 @@ function render() {
     case 'shards': content = genericSectionPage('shards','Attribute Shards','Shards','Track day/night, pest-conditional and general Farming Fortune shards separately.'); break;
     case 'buffs': content = genericSectionPage('buffs','Buffs','Temporary Buffs & Mixins','God Potion, mixins, cakes and seasonal effects are kept separate from permanent progression.'); break;
     case 'pests': content = genericSectionPage('pests','Pests','Pest Setup','Pest-specific stats, spawn mechanics and loot logic stay separate from normal crop farming.'); break;
+    case 'setup': content = setupPage(); break;
     case 'planner': content = plannerPage(); break;
     case 'research': content = researchPage(); break;
     case 'coming': content = comingPage(); break;
