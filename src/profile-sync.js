@@ -1,6 +1,7 @@
 import { DATA_SCHEMA_VERSION, STORAGE_KEY } from './config.js';
 import { importGardenPayload, importProfilePayload } from './hypixel-import.js';
 import { migrateState } from './migrations.js';
+import { extractProfileItems } from './profile-items.js';
 import {
   PROFILE_DATA_STATUS,
   PROFILE_SOURCE_META,
@@ -65,21 +66,61 @@ function applyDerivedFarmingLevel(snapshot, report) {
   return snapshot;
 }
 
+async function applyProfileItems(snapshot, payload, options = {}) {
+  try {
+    const itemReport = await extractProfileItems(payload, options);
+    snapshot.items = itemReport.items;
+    snapshot.provenance.items = {
+      status: itemReport.inventoryApiAvailable ? PROFILE_DATA_STATUS.AUTO : PROFILE_DATA_STATUS.HIDDEN,
+      sources: [PROFILE_SOURCE_META.profile],
+      note: itemReport.inventoryApiAvailable
+        ? null
+        : 'The selected member payload exposes no inventory/loadout object. Last known item data, if any, must not be interpreted as freshly verified.',
+    };
+    snapshot.sync.sources.items = {
+      fetchedAt: options.fetchedAt || null,
+      importType: 'raw-json-nbt',
+      encodedContainersFound: itemReport.encodedContainersFound,
+      containersDecoded: itemReport.containersDecoded,
+    };
+    snapshot.sync.warnings.push(...itemReport.warnings);
+    if (!itemReport.inventoryApiAvailable) {
+      snapshot.sync.warnings.push('Inventory API data is unavailable; item ownership remains hidden rather than empty.');
+    }
+    return itemReport;
+  } catch (error) {
+    snapshot.provenance.items = {
+      status: PROFILE_DATA_STATUS.UNKNOWN,
+      sources: [PROFILE_SOURCE_META.profile],
+      note: error.message,
+    };
+    snapshot.sync.warnings.push(`Item decoding was skipped: ${error.message}`);
+    return null;
+  }
+}
+
 export async function syncProfilePayload(payload, options = {}) {
   const report = await importProfilePayload(payload, options);
+  const fetchedAt = new Date().toISOString();
   const patch = applyDerivedFarmingLevel(
     normalizeProfilePayload(payload, {
       playerUuid: options.playerUuid,
-      fetchedAt: report.importedAt || new Date().toISOString(),
+      fetchedAt,
     }),
     report,
   );
+  const itemReport = await applyProfileItems(patch, payload, {
+    playerUuid: options.playerUuid,
+    fetchedAt,
+  });
 
   const state = attachNormalizedSnapshot(readStoredState(), patch);
   writeStoredState(state);
   return {
     ...report,
     normalizedModelVersion: state.profile.normalizedSnapshot.modelVersion,
+    normalizedItems: itemReport?.items.length ?? null,
+    itemContainersDecoded: itemReport?.containersDecoded ?? null,
   };
 }
 
