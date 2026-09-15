@@ -1,3 +1,4 @@
+# Bootstrap helper: expands the uploaded prototype into the repository.
 name: Bootstrap Farming420 app
 
 on:
