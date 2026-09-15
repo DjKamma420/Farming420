@@ -1,66 +1,149 @@
 # Farming420
 
-Web-App für **Hypixel SkyBlock Farming-Progression**. Die Oberfläche ist bewusst nicht als große Tabelle aufgebaut, sondern in Ebenen:
+Farming420 is a profile-aware **Hypixel SkyBlock farming progression and profit planner**.
 
-**Account → Crop → Tool → Item/Setup → Upgrade-Planer**
+The goal is not to show a giant maxing checklist. The app should understand the player's current account, crops, physical farming tools, owned setups, unlocks and market conditions, then show the most useful next actions toward a maximized and profitable farming profile.
 
-Die komplexe Fortune- und Effizienzlogik bleibt im Hintergrund. Auf der Startseite werden nur Fortschritt, aktueller Crop und der nächste sinnvolle Schritt gezeigt.
+## Product direction
 
-## Aktueller Stand
+The application is designed around these layers:
 
-- eigene Account-Ebene für Farming Skill, Garden, Anita, Account-Upgrades und globale Quellen
-- eigener Bereich für jeden klassischen Garden-Crop
-- separates Tool-Setup je Crop
-- getrennte Bereiche für Armor/Equipment, Pets, Garden Chips, Attribute Shards, Buffs und Pests
-- Status-Layer: `fehlt`, `vorhanden`, `max`, `prüfen`
-- Detail-Sidepanel pro Upgrade
-- lokale Profilspeicherung im Browser über `localStorage`
-- Profil-Import/-Export als JSON
-- Upgrade-Planer mit **marginalem Zugewinn** statt einfachem `+X Fortune`
-- Coming-Soon-Inhalte getrennt und ohne Einfluss auf aktuelle Empfehlungen
-- 74 Upgrade-Einträge aus dem bisherigen Research-Stand
-- 19 dokumentierte versteckte bzw. nichtlineare Mechaniken
-- vereinfachte Vier-Layer-Startseite
-- gruppierte Desktop-Navigation
-- mobile Bereichsauswahl
-- automatisches Deployment über GitHub Pages
+**Account → Crop → Physical Tool → Setup → Profit → Next Action**
 
-## Projektstruktur
+The main optimization target is long-term coin profit, while progression gates, unlock requirements, active grind time and passive/time-gated upgrades remain part of the recommendation path.
+
+Read these files before changing progression or calculation logic:
+
+- `AGENTS.md` — rules and source of truth for future development sessions
+- `docs/PRODUCT_SPEC.md` — complete product goal and feature specification
+- `docs/PROFILE_DATA_MATRIX.md` — what can be imported automatically from Hypixel and what still needs manual/external data
+- `docs/MATH_MODEL.md` — required calculation architecture and correctness rules
+
+## Current foundation
+
+- all 13 current Garden crops are represented
+- crop progress is stored separately per crop
+- physical tool progress is stored separately per tool
+- Sunflower and Moonflower correctly share one Eclipse Hoe state
+- farming tool levels, Mk. II/Mk. III and Overclocker 3000 progression are represented
+- account, crop, tool, gear, pets, Garden Chips, Attribute Shards, buffs and pests are separate layers
+- local profile storage in the browser
+- versioned data schema foundation
+- full JSON backup and restore in Settings
+- raw Hypixel Garden JSON import
+- raw Hypixel profile/profiles JSON import
+- Farming Skill XP detection and level derivation through Hypixel's current public skill resource table
+- Garden crop-upgrade and unlocked-plot import
+- installable/offline PWA foundation
+- coherent versioned service-worker cache so application updates do not mix old and new files
+- JavaScript validation through GitHub Actions
+
+## Hypixel API architecture
+
+A production Hypixel API key must **not** be embedded in a public GitHub Pages frontend.
+
+The target architecture is:
+
+```text
+Farming420 PWA / GitHub Pages
+            |
+            | player/profile request
+            v
+small server-side/serverless proxy
+            |
+            | private Hypixel API key
+            v
+Hypixel Public API
+```
+
+Until that proxy exists, the app supports importing raw Hypixel JSON responses. Public resource endpoints can still be used directly where appropriate.
+
+See `docs/PROFILE_DATA_MATRIX.md` for the exact automation plan.
+
+## Settings and data safety
+
+The persistence/update model is intentionally similar to the proven patterns in `DjKamma420/StundenplanNothing`:
+
+- user state is local-first
+- backups contain format and schema versions
+- newer/incompatible backups are not silently overwritten
+- restore validates the backup before replacing local state
+- the PWA cache is versioned as a coherent unit
+- a failed update should leave the previous coherent application version available
+
+Later development should add migration tests before increasing the data schema version.
+
+## Project structure
 
 ```text
 Farming420/
+├─ AGENTS.md
+├─ README.md
 ├─ index.html
 ├─ manifest.webmanifest
+├─ sw.js
 ├─ assets/
 │  └─ icon.svg
+├─ docs/
+│  ├─ PRODUCT_SPEC.md
+│  ├─ PROFILE_DATA_MATRIX.md
+│  └─ MATH_MODEL.md
 ├─ src/
-│  ├─ app.js            # Profilzustand, Seiten und Rechnerlogik
-│  ├─ data.js           # Crops, Upgrades, Mechaniken, Coming Soon
-│  ├─ styles.css        # Basis-UI
-│  ├─ enhancements.js   # vereinfachte Navigation / Layer-Ansicht
-│  └─ enhancements.css
+│  ├─ app.js
+│  ├─ config.js
+│  ├─ data.js
+│  ├─ enhancements.js
+│  ├─ enhancements.css
+│  ├─ foundation.js
+│  ├─ foundation.css
+│  ├─ hypixel-import.js
+│  └─ styles.css
 └─ .github/workflows/
+   ├─ validate.yml
    └─ pages.yml
 ```
 
-## Lokal starten
+## Run locally
 
-Keine Build-Abhängigkeiten notwendig.
+No build step is required.
 
 ```bash
 python3 -m http.server 4173
 ```
 
-Danach `http://localhost:4173` öffnen.
+Open `http://localhost:4173`.
 
-## Rechenprinzip
+A local HTTP server is required for module loading, service-worker behavior and PWA testing.
 
-Der Planer bewertet nicht einfach `Fortune / Preis`. Er arbeitet mit dem **marginalen Effekt auf dem aktuellen Profil**. Bereits vorhandene Level werden berücksichtigt; Crop Fortune wird nur beim passenden Crop berücksichtigt; mutually-exclusive Setups wie Pets sollen nicht additiv gestapelt werden; Coming-Soon-Inhalte erhalten kein Gewicht.
+## Calculation policy
 
-## Nächste Ausbaustufen
+The current planner is still an early marginal-Fortune prototype. It is **not yet the final profit recommendation engine**.
 
-1. Hypixel-Profilimport, um Besitz und Level soweit möglich automatisch zu erkennen.
-2. Bazaar-/Auction-Preise für echte Coins-pro-Prozent- und Payback-Rankings.
-3. Exaktere Setup-Simulation für Pets, God Pot, Mixins, Hypercharge und bedingte Shards.
-4. Direkte Crop-Seiten mit eigenem Tool, Gear, Buffs und Fortschrittsbaum.
-5. Datenvalidierung gegen aktuelle Patch Notes und Community-/Elite-Farming-Quellen.
+The final engine must calculate the player's before/after setup as pure, testable states and derive:
+
+- expected coins per hour
+- marginal coins per hour
+- acquisition cost
+- recoverable/resale value
+- recurring costs
+- active grind time
+- passive waiting time
+- payback time
+- prerequisite/unlock paths
+- data confidence and freshness
+
+Normal crop drops, RNG drops, pest expected value, downtime, contest rewards and market-sale routes must be modeled explicitly rather than approximated by a single Fortune score.
+
+## Development order
+
+1. Finish English-only runtime, versioned persistence, Settings and PWA/update safety.
+2. Expand raw Hypixel adapters and build the production API proxy.
+3. Decode profile item NBT for farming tools, armor, equipment, enchantments, reforges, gemstones and counters.
+4. Add Bazaar and auction valuation services with timestamps and confidence.
+5. Build and test the crop/profit calculation engine.
+6. Build prerequisite-aware action recommendations and payback views.
+7. Add advanced pest, contest, RNG-drop and setup-specific models.
+
+## Deployment
+
+The repository contains a GitHub Pages workflow, but Pages must first be enabled for the repository in GitHub settings. The deployment workflow is intentionally manual until that repository setting is enabled, avoiding repeated failing deployments.
