@@ -5,6 +5,7 @@ on:
     branches: ["main"]
     paths:
       - "scripts/patch_scoped_progress.py"
+      - ".github/workflows/apply-scoped-progress.yml"
   workflow_dispatch:
 
 permissions:
