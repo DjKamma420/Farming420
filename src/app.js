@@ -1,5 +1,13 @@
 import { CROPS, UPGRADES, HIDDEN_INTERACTIONS, COMING_SOON } from './data.js';
 import { DATA_SCHEMA_VERSION, STORAGE_KEY } from './config.js';
+import { ensureProgressBucket, migrateState, toolKeyForCropId } from './migrations.js';
+import {
+  backupFilename,
+  createBackupPayload,
+  downloadJson,
+  readJsonFile,
+  validateBackupPayload,
+} from './backup.js';
 
 const NAV = [
   ['dashboard', 'Dashboard'],
@@ -37,29 +45,47 @@ const defaultState = {
 };
 
 function loadState() {
+  let saved;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return structuredClone(defaultState);
-    const saved = JSON.parse(raw);
-    const loaded = {
-      ...structuredClone(defaultState),
-      ...saved,
-      profile: { ...structuredClone(defaultState.profile), ...(saved.profile || {}) }
-    };
-    loaded.schemaVersion = Number(saved.schemaVersion || DATA_SCHEMA_VERSION);
-    return loaded;
+    saved = JSON.parse(raw);
   } catch {
     return structuredClone(defaultState);
   }
+
+  const migration = migrateState(saved);
+  const loaded = {
+    ...structuredClone(defaultState),
+    ...migration.state,
+    profile: { ...structuredClone(defaultState.profile), ...(migration.state.profile || {}) }
+  };
+  loaded.schemaVersion = migration.schemaVersion;
+
+  // Data written by a newer app version is kept readable but never saved over.
+  readOnlyState = migration.isNewer;
+  if (readOnlyState) {
+    console.warn(`Farming420: stored data uses schema ${migration.schemaVersion}, this build understands ${DATA_SCHEMA_VERSION}. Local changes are not saved.`);
+  } else if (migration.applied.length) {
+    migrationApplied = true;
+  }
+  for (const warning of migration.warnings) console.warn(`Farming420 migration: ${warning}`);
+
+  return loaded;
 }
 
+let readOnlyState = false;
+let migrationApplied = false;
 let state = loadState();
 
 function saveState() {
-  if (Number(state.schemaVersion || DATA_SCHEMA_VERSION) > DATA_SCHEMA_VERSION) return;
+  if (readOnlyState) return;
   state.schemaVersion = DATA_SCHEMA_VERSION;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
+
+// Persist the migrated shape once, so the next load starts from the new schema.
+if (migrationApplied) saveState();
 
 function esc(s='') {
   return String(s).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[c]));
@@ -73,71 +99,17 @@ function isCropScopedItem(item) {
   return item.section === 'crops' || item.section === 'tools';
 }
 
-function toolKeyForCrop(cropId = state.selectedCrop) {
-  const info = CROPS.find(c => c.id === cropId) || crop();
-  return info.tool.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-}
-
-function ensureBucket(container, key) {
-  const bucket = container[key] ||= {};
-  bucket.levels ||= {};
-  bucket.owned ||= {};
-  bucket.costs ||= {};
-  bucket.manualGain ||= {};
-  return bucket;
-}
-
 function itemStore(item) {
   if (item.section === 'crops') {
     state.profile.cropProgress ||= {};
-    return ensureBucket(state.profile.cropProgress, state.selectedCrop);
+    return ensureProgressBucket(state.profile.cropProgress, state.selectedCrop);
   }
   if (item.section === 'tools') {
     state.profile.toolProgress ||= {};
-    return ensureBucket(state.profile.toolProgress, toolKeyForCrop());
+    return ensureProgressBucket(state.profile.toolProgress, toolKeyForCropId(state.selectedCrop));
   }
   return state.profile;
 }
-
-function migrateScopedProgress() {
-  const profile = state.profile;
-  profile.cropProgress ||= {};
-  profile.toolProgress ||= {};
-  const fields = ['levels', 'owned', 'costs', 'manualGain'];
-  let changed = false;
-
-  // Very early builds stored crop/tool entries at account scope. Preserve them on the selected setup.
-  for (const item of UPGRADES.filter(isCropScopedItem)) {
-    const destination = item.section === 'tools'
-      ? ensureBucket(profile.toolProgress, toolKeyForCrop())
-      : ensureBucket(profile.cropProgress, state.selectedCrop || 'melon');
-    for (const field of fields) {
-      if (profile[field]?.[item.id] === undefined) continue;
-      if (destination[field][item.id] === undefined) destination[field][item.id] = profile[field][item.id];
-      delete profile[field][item.id];
-      changed = true;
-    }
-  }
-
-  // v0.2 stored tool data inside each crop bucket. Move it to the physical tool bucket.
-  const toolItems = UPGRADES.filter(item => item.section === 'tools');
-  for (const [cropId, cropBucket] of Object.entries(profile.cropProgress)) {
-    const destination = ensureBucket(profile.toolProgress, toolKeyForCrop(cropId));
-    for (const field of fields) {
-      cropBucket[field] ||= {};
-      for (const item of toolItems) {
-        if (cropBucket[field][item.id] === undefined) continue;
-        if (destination[field][item.id] === undefined) destination[field][item.id] = cropBucket[field][item.id];
-        delete cropBucket[field][item.id];
-        changed = true;
-      }
-    }
-  }
-
-  if (changed) saveState();
-}
-
-migrateScopedProgress();
 
 function currentLevel(item) {
   const store = itemStore(item);
@@ -239,7 +211,7 @@ function card(item, compact=false) {
         ${max > 1 ? `<span>Level ${level}/${max}</span>` : `<span>${isOwned(item) ? 'Owned' : 'Not set'}</span>`}
         ${gain ? `<span>+${Number(gain).toLocaleString('en-US')} ${esc(item.metric === 'Crop Yield' ? 'Fortune/step' : item.metric)}</span>` : '<span>dynamic</span>'}
       </div>
-      <div class="progress"><i style="width:${Math.min(100,(level/max)*100)}%"></i></div>
+      <div class="progress"><i data-progress="${Math.min(100,(level/max)*100)}"></i></div>
       <div class="chips">
         ${isCropScopedItem(item) ? badge(crop().name, 'soft') : (cropLimited ? badge(item.cropScope, 'soft') : '')}
         ${item.hypercharge ? badge('Hypercharge', 'soft') : ''}
@@ -254,8 +226,8 @@ function shell(content) {
   <div class="app-shell">
     <aside class="sidebar">
       <div class="brand">
-        <div class="brand-mark">SF</div>
-        <div><strong>Farming Maxer</strong><span>SkyBlock 2026</span></div>
+        <div class="brand-mark">F4</div>
+        <div><strong>Farming420</strong><span>SkyBlock Farming Planner</span></div>
       </div>
       <nav>
         ${NAV.map(([id,label]) => `<button class="nav-link ${state.page===id?'active':''}" data-page="${id}">${esc(label)}</button>`).join('')}
@@ -263,13 +235,13 @@ function shell(content) {
       <div class="side-foot">
         <div class="mini-label">Profile</div>
         <input id="profileName" value="${esc(state.profile.name)}" />
-        <button class="ghost small" id="exportBtn">Export profile</button>
-        <label class="ghost small file-label">Import profile<input id="importInput" type="file" accept="application/json" hidden></label>
+        <button class="ghost small" id="exportBtn">Export backup</button>
+        <label class="ghost small file-label">Restore backup<input id="importInput" type="file" accept="application/json,.json" hidden></label>
       </div>
     </aside>
     <main class="main">
       <header class="topbar">
-        <div class="mobile-title">Farming Maxer</div>
+        <div class="mobile-title">Farming420</div>
         <div class="crop-switch">
           <span>Crop</span>
           <select id="cropSelect">
@@ -417,7 +389,7 @@ function drawer() {
   const store = itemStore(item);
   const cost = store.costs[item.id] ?? '';
   const manual = store.manualGain[item.id] ?? '';
-  return `<div class="drawer-backdrop" data-close-drawer><aside class="drawer" onclick="event.stopPropagation()">
+  return `<div class="drawer-backdrop" data-close-drawer><aside class="drawer">
     <div class="drawer-top"><div><div class="eyebrow">${esc(item.category)}</div><h2>${esc(item.name)}</h2></div><button class="close" data-close-drawer>×</button></div>
     <div class="drawer-badges">${badge(item.status,item.status==='VERIFY'?'verify':'soft')} ${isCropScopedItem(item)?badge(crop().name,'soft'):(item.cropScope!=='Any'?badge(item.cropScope,'soft'):'')} ${item.modeScope!=='Any'?badge(item.modeScope,'soft'):''}</div>
     <div class="drawer-section"><h3>Ownership & Level</h3>
@@ -456,9 +428,15 @@ function render() {
 }
 
 function bind() {
+  document.querySelectorAll('[data-progress]').forEach(el => { el.style.width = `${el.dataset.progress}%`; });
   document.querySelectorAll('[data-page]').forEach(el => el.addEventListener('click', () => { state.page=el.dataset.page; state.drawer=null; saveState(); render(); }));
   document.querySelectorAll('[data-open]').forEach(el => el.addEventListener('click', () => { state.drawer=el.dataset.open; saveState(); render(); }));
-  document.querySelectorAll('[data-close-drawer]').forEach(el => el.addEventListener('click', () => { state.drawer=null; saveState(); render(); }));
+  // The backdrop closes the drawer, but a click on the drawer itself must not:
+  // it bubbles up to the backdrop, so the target is checked explicitly.
+  document.querySelectorAll('[data-close-drawer]').forEach(el => el.addEventListener('click', event => {
+    if (el.classList.contains('drawer-backdrop') && event.target !== el) return;
+    state.drawer=null; saveState(); render();
+  }));
   document.querySelectorAll('[data-crop]').forEach(el => el.addEventListener('click', () => { state.selectedCrop=el.dataset.crop; saveState(); render(); }));
 
   const cropSel = document.getElementById('cropSelect');
@@ -500,16 +478,22 @@ function bind() {
     const v=e.target.value; if(v==='') delete store.manualGain[item.id]; else store.manualGain[item.id]=Number(v); saveState(); render();
   }));
 
+  // Export/import share the versioned, validated backup format used by Settings,
+  // so there is exactly one on-disk contract for user data.
   const exportBtn=document.getElementById('exportBtn');
   if(exportBtn) exportBtn.addEventListener('click',()=>{
-    const blob=new Blob([JSON.stringify(state.profile,null,2)],{type:'application/json'});
-    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='skyblock-farming-profile.json'; a.click(); URL.revokeObjectURL(a.href);
+    downloadJson(backupFilename(), createBackupPayload(state));
   });
   const importInput=document.getElementById('importInput');
   if(importInput) importInput.addEventListener('change', async e=>{
-    const file=e.target.files?.[0]; if(!file) return;
-    try { const profile=JSON.parse(await file.text()); state.profile={...structuredClone(defaultState.profile),...profile}; saveState(); render(); }
-    catch { alert('Invalid profile file.'); }
+    try {
+      const restored = validateBackupPayload(await readJsonFile(e.target.files?.[0]));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(restored.state));
+      location.reload();
+    } catch (error) {
+      alert(error.message);
+      e.target.value='';
+    }
   });
 }
 

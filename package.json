@@ -1,9 +1,11 @@
 {
-  "name": "skyblock-farming-maxer",
-  "version": "0.1.0",
+  "name": "farming420",
+  "version": "0.4.0",
   "private": true,
-  "description": "Layered Hypixel SkyBlock farming progression web app",
+  "type": "module",
+  "description": "Profile-aware Hypixel SkyBlock farming progression and profit planner",
   "scripts": {
-    "serve": "python3 -m http.server 4173"
+    "serve": "python3 -m http.server 4173",
+    "test": "node --test tests/*.test.js"
   }
 }
