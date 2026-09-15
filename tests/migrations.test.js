@@ -35,6 +35,7 @@ test('an empty state migrates to the current schema version', () => {
   const result = migrateState({});
   assert.equal(result.schemaVersion, DATA_SCHEMA_VERSION);
   assert.equal(result.isNewer, false);
+  assert.equal(result.state.profile.normalizedSnapshot, null);
 });
 
 test('v1 account-scoped crop and tool entries move onto the selected setup', () => {
@@ -53,12 +54,13 @@ test('v1 account-scoped crop and tool entries move onto the selected setup', () 
   assert.equal(profile.cropProgress.sunflower.owned[CROP_UPGRADE_ID], true);
   assert.equal(profile.toolProgress['eclipse-hoe'].levels[TOOL_LEVEL_ID], 4);
   assert.equal(profile.toolProgress['eclipse-hoe'].costs[TOOL_LEVEL_ID], 1000);
+  assert.equal(profile.normalizedSnapshot, null);
 
   // Account-scoped progress must stay where it is.
   assert.equal(profile.levels[FARMING_LEVEL_ID], 50);
   assert.equal(profile.levels[CROP_UPGRADE_ID], undefined);
   assert.equal(profile.levels[TOOL_LEVEL_ID], undefined);
-  assert.deepEqual(result.applied, [2]);
+  assert.deepEqual(result.applied, [2, 3]);
 });
 
 test('v1 tool entries stored inside a crop bucket move to the physical tool bucket', () => {
@@ -89,6 +91,34 @@ test('a value already present in the destination is never overwritten', () => {
     },
   });
   assert.equal(result.state.profile.toolProgress['melon-dicer'].levels[TOOL_LEVEL_ID], 9);
+});
+
+test('schema 2 gains a null normalized snapshot without changing existing profile data', () => {
+  const state = {
+    schemaVersion: 2,
+    selectedCrop: 'melon',
+    profile: {
+      name: 'Existing profile',
+      levels: { [FARMING_LEVEL_ID]: 52 },
+      cropProgress: {},
+      toolProgress: {},
+    },
+  };
+  const result = migrateState(state);
+  assert.deepEqual(result.applied, [3]);
+  assert.equal(result.state.profile.normalizedSnapshot, null);
+  assert.equal(result.state.profile.name, 'Existing profile');
+  assert.equal(result.state.profile.levels[FARMING_LEVEL_ID], 52);
+});
+
+test('schema 3 keeps an existing normalized snapshot untouched', () => {
+  const snapshot = { modelVersion: 1, identity: { profileName: 'Mango' } };
+  const result = migrateState({
+    schemaVersion: 3,
+    profile: { normalizedSnapshot: snapshot },
+  });
+  assert.deepEqual(result.applied, []);
+  assert.deepEqual(result.state.profile.normalizedSnapshot, snapshot);
 });
 
 test('migration is idempotent', () => {
@@ -130,8 +160,9 @@ test('an unknown crop bucket is kept and reported instead of dropped', () => {
 
 test('a state without a schema version is treated as the oldest schema', () => {
   const result = migrateState({ profile: { levels: { [CROP_UPGRADE_ID]: 4 } } });
-  assert.deepEqual(result.applied, [2]);
+  assert.deepEqual(result.applied, [2, 3]);
   assert.equal(result.state.profile.cropProgress.melon.levels[CROP_UPGRADE_ID], 4);
+  assert.equal(result.state.profile.normalizedSnapshot, null);
 });
 
 test('a non-object state does not throw', () => {
