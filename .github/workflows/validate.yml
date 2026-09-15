@@ -1,0 +1,30 @@
+name: Validate Farming420
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Validate JavaScript
+        run: |
+          node --check src/app.js
+          node --check src/data.js
+          node --check src/enhancements.js
+      - name: Check required app files
+        run: |
+          test -f index.html
+          test -f src/styles.css
+          test -f src/enhancements.css
+          test -f manifest.webmanifest
