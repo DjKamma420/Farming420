@@ -19,7 +19,7 @@ Read these files before changing progression or calculation logic:
 - `AGENTS.md` — rules and source of truth for future development sessions
 - `docs/PRODUCT_SPEC.md` — complete product goal and feature specification
 - `docs/PROFILE_DATA_MATRIX.md` — what can be imported automatically from Hypixel and what still needs manual/external data
-- `docs/PROFILE_MODEL.md` — normalized internal profile model and source provenance rules
+- `docs/PROFILE_MODEL.md` — normalized internal profile model, automatic item import and source provenance rules
 - `docs/MATH_MODEL.md` — required calculation architecture and correctness rules
 
 ## Current foundation
@@ -37,13 +37,19 @@ Read these files before changing progression or calculation logic:
 - raw Hypixel profile/profiles JSON import
 - Farming Skill XP detection and level derivation through Hypixel's current public skill resource table
 - Garden crop-upgrade and unlocked-plot import
+- current `pets_data.pets` import with hidden-data semantics instead of treating missing data as no pets
 - normalized profile snapshots with explicit provenance and unknown/hidden states
 - profile and Garden imports merge into one stable internal model instead of exposing raw API field names to future calculators
+- dependency-free Base64/gzip/NBT decoding of Hypixel inventory data
+- automatic generic item import for inventory, armor, equipment, Ender Chest, Personal Vault, backpacks, talisman bag and saved armor/equipment loadouts when the API exposes them
+- generic extraction of SkyBlock item IDs, UUIDs, reforges, all enchantment names/levels, gemstones, attributes, Farming for Dummies, recombobulation, Cultivating counters, Overclocker levels and item tiers
+- UUID de-duplication of physical items while preserving all observed locations
+- hidden inventory API data keeps last-known item data as stale instead of replacing it with an empty setup
 - a single validated backup contract (`src/backup.js`) shared by all backup/restore surfaces
 - Settings reachable at every viewport width, including the mobile layout where the sidebar is hidden
 - installable/offline PWA foundation
 - coherent versioned service-worker cache so application updates do not mix old and new files
-- a dependency-free test suite covering migrations, backups, Hypixel adapters, normalized profile data, data-layer invariants and CSP-safe markup
+- a dependency-free test suite covering migrations, backups, Hypixel adapters, NBT decoding, item/profile normalization, data-layer invariants and CSP-safe markup
 - JavaScript validation, service-worker cache completeness and tests through GitHub Actions
 - automatic GitHub Pages deployment from `main`
 
@@ -123,7 +129,10 @@ Farming420/
 │  ├─ foundation.js
 │  ├─ foundation.css
 │  ├─ hypixel-import.js
+│  ├─ item-normalizer.js
 │  ├─ migrations.js
+│  ├─ nbt.js
+│  ├─ profile-items.js
 │  ├─ profile-normalizer.js
 │  ├─ profile-sync.js
 │  └─ styles.css
@@ -136,7 +145,11 @@ Farming420/
 │  ├─ csp.test.js
 │  ├─ data.test.js
 │  ├─ hypixel-import.test.js
+│  ├─ item-normalizer.test.js
 │  ├─ migrations.test.js
+│  ├─ nbt-fixture.js
+│  ├─ nbt.test.js
+│  ├─ profile-items.test.js
 │  ├─ profile-normalizer.test.js
 │  └─ profile-sync.test.js
 └─ .github/workflows/
@@ -164,7 +177,7 @@ The test suite uses the built-in Node test runner and has no dependencies:
 npm test
 ```
 
-It covers the migration registry, backup contract, raw Hypixel JSON adapters, normalized profile model, data-layer invariants (all 13 crops, the shared Eclipse Hoe, sourced entries, coming-soon content staying out of the live list) and the markup rules the shipped Content Security Policy imposes.
+It covers the migration registry, backup contract, raw Hypixel JSON adapters, Base64/gzip/NBT inventory decoding, generic item normalization, profile item extraction, the normalized profile model, data-layer invariants and the markup rules the shipped Content Security Policy imposes.
 
 Because `index.html` ships `script-src 'self'; style-src 'self'`, generated markup must not contain `style="..."` attributes or inline `on*` handlers — the browser drops both silently. Set widths through the CSSOM (`element.style.width`) and attach listeners in JavaScript.
 
@@ -190,8 +203,8 @@ Normal crop drops, RNG drops, pest expected value, downtime, contest rewards and
 ## Development order
 
 1. ~~Finish English-only runtime, versioned persistence, Settings and PWA/update safety.~~ Done.
-2. **Expand raw Hypixel adapters and normalized profile coverage; build the production API proxy.** In progress.
-3. Decode profile item NBT for farming tools, armor, equipment, enchantments, reforges, gemstones and counters.
+2. **Expand raw Hypixel adapters and normalized profile coverage; build the production API proxy.** In progress; profile, Garden, pets and core item/NBT import are implemented.
+3. **Turn normalized items/pets into mutually exclusive farming setup candidates and verify every mechanic in `src/data.js`.** Next correctness block.
 4. Add Bazaar and auction valuation services with timestamps and confidence.
 5. Build and test the crop/profit calculation engine.
 6. Build prerequisite-aware action recommendations and payback views.
