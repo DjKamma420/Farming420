@@ -1,9 +1,20 @@
 {
-  "name": "SkyBlock Farming Maxer",
-  "short_name": "Farming Maxer",
+  "name": "Farming420 - SkyBlock Farming Planner",
+  "short_name": "Farming420",
+  "description": "Profile-aware Hypixel SkyBlock farming progression, setup and profit planning.",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
+  "orientation": "any",
   "background_color": "#07100c",
   "theme_color": "#07100c",
-  "icons": [{"src":"assets/icon.svg","sizes":"any","type":"image/svg+xml"}]
+  "lang": "en",
+  "categories": ["games", "utilities"],
+  "icons": [
+    {"src":"assets/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"}
+  ],
+  "shortcuts": [
+    {"name":"Dashboard","short_name":"Dashboard","url":"./"},
+    {"name":"Farming Planner","short_name":"Planner","url":"./"}
+  ]
 }
