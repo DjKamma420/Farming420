@@ -29,10 +29,12 @@ jobs:
           for file in index.html manifest.webmanifest sw.js package.json \
                       src/app.js src/config.js src/data.js src/migrations.js src/backup.js \
                       src/enhancements.js src/foundation.js src/hypixel-import.js \
+                      src/nbt.js src/item-normalizer.js src/profile-items.js \
+                      src/profile-normalizer.js src/profile-sync.js \
                       src/styles.css src/enhancements.css src/foundation.css \
                       assets/icon.svg \
                       AGENTS.md README.md \
-                      docs/PRODUCT_SPEC.md docs/PROFILE_DATA_MATRIX.md docs/MATH_MODEL.md; do
+                      docs/PRODUCT_SPEC.md docs/PROFILE_DATA_MATRIX.md docs/PROFILE_MODEL.md docs/MATH_MODEL.md; do
             test -f "$file" || { echo "missing required file: $file"; exit 1; }
           done
 
