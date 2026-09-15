@@ -1,45 +1,66 @@
-# SkyBlock Farming Maxer
+# Farming420
 
-Eine lokale Web-App für Hypixel SkyBlock Farming-Progression. Ziel: keine riesige Tabelle, sondern klare Ebenen für **Account → Crop → Tool → Item/Upgrade**.
+Web-App für **Hypixel SkyBlock Farming-Progression**. Die Oberfläche ist bewusst nicht als große Tabelle aufgebaut, sondern in Ebenen:
 
-## Was die App bereits kann
+**Account → Crop → Tool → Item/Setup → Upgrade-Planer**
 
-- Account-Fortschritt separat von Crop- und Tool-Fortschritt
+Die komplexe Fortune- und Effizienzlogik bleibt im Hintergrund. Auf der Startseite werden nur Fortschritt, aktueller Crop und der nächste sinnvolle Schritt gezeigt.
+
+## Aktueller Stand
+
+- eigene Account-Ebene für Farming Skill, Garden, Anita, Account-Upgrades und globale Quellen
 - eigener Bereich für jeden klassischen Garden-Crop
-- Tool-Layer mit Enchants, Reforge, Gemstone, Farming for Dummies usw.
+- separates Tool-Setup je Crop
 - getrennte Bereiche für Armor/Equipment, Pets, Garden Chips, Attribute Shards, Buffs und Pests
 - Status-Layer: `fehlt`, `vorhanden`, `max`, `prüfen`
-- Detail-Sidepanel für jedes Upgrade
-- lokale Speicherung im Browser (`localStorage`)
+- Detail-Sidepanel pro Upgrade
+- lokale Profilspeicherung im Browser über `localStorage`
 - Profil-Import/-Export als JSON
-- einfacher Upgrade-Planer mit marginalem Zugewinn statt reinem `+X Fortune`
-- Coming-Soon-Inhalte getrennt und mit Gewicht 0
+- Upgrade-Planer mit **marginalem Zugewinn** statt einfachem `+X Fortune`
+- Coming-Soon-Inhalte getrennt und ohne Einfluss auf aktuelle Empfehlungen
 - 74 Upgrade-Einträge aus dem bisherigen Research-Stand
-- 19 dokumentierte nichtlineare/versteckte Mechaniken
+- 19 dokumentierte versteckte bzw. nichtlineare Mechaniken
+- vereinfachte Vier-Layer-Startseite
+- gruppierte Desktop-Navigation
+- mobile Bereichsauswahl
+- automatisches Deployment über GitHub Pages
 
-## Starten
+## Projektstruktur
 
-Es gibt keine Build-Abhängigkeiten.
+```text
+Farming420/
+├─ index.html
+├─ manifest.webmanifest
+├─ assets/
+│  └─ icon.svg
+├─ src/
+│  ├─ app.js            # Profilzustand, Seiten und Rechnerlogik
+│  ├─ data.js           # Crops, Upgrades, Mechaniken, Coming Soon
+│  ├─ styles.css        # Basis-UI
+│  ├─ enhancements.js   # vereinfachte Navigation / Layer-Ansicht
+│  └─ enhancements.css
+└─ .github/workflows/
+   └─ pages.yml
+```
+
+## Lokal starten
+
+Keine Build-Abhängigkeiten notwendig.
 
 ```bash
 python3 -m http.server 4173
 ```
 
-Danach `http://localhost:4173` im Browser öffnen.
+Danach `http://localhost:4173` öffnen.
 
-Alternativ kann das Verzeichnis direkt auf GitHub Pages, Cloudflare Pages, Netlify oder einen anderen Static Host gelegt werden.
+## Rechenprinzip
 
-## Datenmodell
+Der Planer bewertet nicht einfach `Fortune / Preis`. Er arbeitet mit dem **marginalen Effekt auf dem aktuellen Profil**. Bereits vorhandene Level werden berücksichtigt; Crop Fortune wird nur beim passenden Crop berücksichtigt; mutually-exclusive Setups wie Pets sollen nicht additiv gestapelt werden; Coming-Soon-Inhalte erhalten kein Gewicht.
 
-`src/data.js` enthält aktuell:
+## Nächste Ausbaustufen
 
-- `CROPS`
-- `UPGRADES`
-- `HIDDEN_INTERACTIONS`
-- `COMING_SOON`
-
-Die UI- und Profil-Logik liegt in `src/app.js`.
-
-## Nächste technische Ausbaustufe
-
-Für eine vollautomatische Version sollte als nächstes ein Profil-Importer ergänzt werden, der Hypixel-SkyBlock-Profildaten einliest und Besitz/Level soweit möglich automatisch setzt. Danach können Bazaar/Auction-Preise für echte Coins-pro-Prozent-Rankings ergänzt werden. Dynamische Werte, die nicht zuverlässig aus einer API ableitbar sind, bleiben manuell überschreibbar.
+1. Hypixel-Profilimport, um Besitz und Level soweit möglich automatisch zu erkennen.
+2. Bazaar-/Auction-Preise für echte Coins-pro-Prozent- und Payback-Rankings.
+3. Exaktere Setup-Simulation für Pets, God Pot, Mixins, Hypercharge und bedingte Shards.
+4. Direkte Crop-Seiten mit eigenem Tool, Gear, Buffs und Fortschrittsbaum.
+5. Datenvalidierung gegen aktuelle Patch Notes und Community-/Elite-Farming-Quellen.
