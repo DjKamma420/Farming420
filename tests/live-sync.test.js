@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { listProfiles, selectProfile, syncByUsername } from '../src/live-sync.js';
+import { listProfiles, normalizeUuid, selectProfile, syncProfile } from '../src/live-sync.js';
 import { STORAGE_KEY } from '../src/config.js';
 import { installLocalStorage, uninstallLocalStorage } from './local-storage-stub.js';
 
@@ -61,13 +61,10 @@ function apiFetch(routes) {
   return impl;
 }
 
-const RESOLVERS = [{ id: 'test', label: 'test', origin: 'https://resolver.test', official: true, url: name => `https://resolver.test/${name}` }];
-
 function baseOptions(routes, extra = {}) {
   return {
-    username: 'Notch',
+    playerUuid: UUID,
     apiKey: KEY,
-    resolvers: RESOLVERS,
     fetchImpl: apiFetch(routes),
     ...extra,
   };
@@ -129,16 +126,14 @@ test('the profile list is reduced to what the picker needs', () => {
   ]);
 });
 
-test('a username sync fills profile and garden data in one call', async () => {
-  const report = await syncByUsername(baseOptions({
-    'resolver.test': { id: UUID, name: 'Notch' },
+test('a sync fills profile and garden data in one call', async () => {
+  const report = await syncProfile(baseOptions({
     '/v2/resources/skyblock/skills': SKILL_RESOURCES,
     '/v2/skyblock/profiles': profilesPayload(),
     '/v2/skyblock/garden': GARDEN_PAYLOAD,
   }));
 
   assert.equal(report.playerUuid, UUID);
-  assert.equal(report.playerName, 'Notch');
   assert.equal(report.profileId, 'profile-b');
   assert.equal(report.profileName, 'Banana');
   assert.equal(report.farmingXp, 200);
@@ -151,44 +146,50 @@ test('a username sync fills profile and garden data in one call', async () => {
 
   const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
   assert.equal(stored.profile.normalizedSnapshot.identity.playerUuid, UUID);
-  assert.equal(stored.profile.normalizedSnapshot.identity.playerName, 'Notch');
   assert.equal(stored.profile.normalizedSnapshot.garden.cropUpgrades.wheat, 5);
   assert.equal(stored.profile.normalizedSnapshot.skills.farming.level, 2);
 });
 
 test('the garden endpoint is called with the profile id, not the player uuid', async () => {
   const fetchImpl = apiFetch({
-    'resolver.test': { id: UUID, name: 'Notch' },
     '/v2/resources/skyblock/skills': SKILL_RESOURCES,
     '/v2/skyblock/profiles': profilesPayload(),
     '/v2/skyblock/garden': GARDEN_PAYLOAD,
   });
-  await syncByUsername({ username: 'Notch', apiKey: KEY, resolvers: RESOLVERS, fetchImpl });
+  await syncProfile({ playerUuid: UUID, apiKey: KEY, fetchImpl });
   const gardenCall = fetchImpl.calls.find(url => url.includes('/v2/skyblock/garden'));
   assert.ok(gardenCall.includes('profile=profile-b'));
   assert.ok(!gardenCall.includes(UUID));
 });
 
-test('a supplied UUID skips username resolution entirely', async () => {
-  const fetchImpl = apiFetch({
-    '/v2/resources/skyblock/skills': SKILL_RESOURCES,
-    '/v2/skyblock/profiles': profilesPayload(),
-    '/v2/skyblock/garden': GARDEN_PAYLOAD,
-  });
-  const report = await syncByUsername({
+test('a dashed UUID is accepted and normalized', async () => {
+  const report = await syncProfile({
     playerUuid: '069a79f4-44e9-4726-a5be-fca90e38aaf5',
     apiKey: KEY,
-    resolvers: RESOLVERS,
-    fetchImpl,
+    fetchImpl: apiFetch({
+      '/v2/resources/skyblock/skills': SKILL_RESOURCES,
+      '/v2/skyblock/profiles': profilesPayload(),
+      '/v2/skyblock/garden': GARDEN_PAYLOAD,
+    }),
   });
   assert.equal(report.playerUuid, UUID);
-  assert.equal(report.resolver, null);
-  assert.ok(!fetchImpl.calls.some(url => url.includes('resolver.test')));
+});
+
+test('UUIDs are validated before anything is requested', async () => {
+  assert.equal(normalizeUuid('069a79f4-44e9-4726-a5be-fca90e38aaf5'), UUID);
+  assert.equal(normalizeUuid('Notch'), null);
+  for (const bad of ['', 'Notch', undefined, 'abc']) {
+    const fetchImpl = apiFetch({});
+    await assert.rejects(
+      () => syncProfile({ playerUuid: bad, apiKey: KEY, fetchImpl }),
+      /Enter your Minecraft UUID/,
+    );
+    assert.equal(fetchImpl.calls.length, 0);
+  }
 });
 
 test('a failing Garden request keeps the profile data and reports the reason', async () => {
-  const report = await syncByUsername(baseOptions({
-    'resolver.test': { id: UUID, name: 'Notch' },
+  const report = await syncProfile(baseOptions({
     '/v2/resources/skyblock/skills': SKILL_RESOURCES,
     '/v2/skyblock/profiles': profilesPayload(),
     '/v2/skyblock/garden': new TypeError('Failed to fetch'),
@@ -199,8 +200,7 @@ test('a failing Garden request keeps the profile data and reports the reason', a
 });
 
 test('a missing skill table leaves the level underived instead of guessed', async () => {
-  const report = await syncByUsername(baseOptions({
-    'resolver.test': { id: UUID, name: 'Notch' },
+  const report = await syncProfile(baseOptions({
     '/v2/resources/skyblock/skills': new TypeError('offline'),
     '/v2/skyblock/profiles': profilesPayload(),
     '/v2/skyblock/garden': GARDEN_PAYLOAD,
@@ -219,8 +219,7 @@ test('a missing skill table leaves the level underived instead of guessed', asyn
 
 test('a failing profiles request aborts the sync', async () => {
   await assert.rejects(
-    () => syncByUsername(baseOptions({
-      'resolver.test': { id: UUID, name: 'Notch' },
+    () => syncProfile(baseOptions({
       '/v2/resources/skyblock/skills': SKILL_RESOURCES,
       '/v2/skyblock/profiles': new TypeError('Failed to fetch'),
     })),
@@ -228,26 +227,11 @@ test('a failing profiles request aborts the sync', async () => {
   );
 });
 
-test('a community-mirror resolution is flagged in the warnings', async () => {
-  const report = await syncByUsername(baseOptions({
-    'mirror.test': { id: UUID, name: 'Notch' },
-    '/v2/resources/skyblock/skills': SKILL_RESOURCES,
-    '/v2/skyblock/profiles': profilesPayload(),
-    '/v2/skyblock/garden': GARDEN_PAYLOAD,
-  }, {
-    resolvers: [{ id: 'mirror', origin: 'https://mirror.test', official: false, url: name => `https://mirror.test/${name}` }],
-  }));
-  assert.equal(report.resolverIsOfficial, false);
-  assert.ok(report.warnings.some(warning => /community mirror/.test(warning)));
-});
-
 test('syncing without any configured access explains what to do', async () => {
   await assert.rejects(
-    () => syncByUsername({
+    () => syncProfile({
       username: 'Notch',
-      resolvers: RESOLVERS,
       fetchImpl: apiFetch({
-        'resolver.test': { id: UUID, name: 'Notch' },
         '/v2/resources/skyblock/skills': SKILL_RESOURCES,
       }),
     }),
@@ -255,10 +239,10 @@ test('syncing without any configured access explains what to do', async () => {
   );
 });
 
-test('an unconfigured sync fails before any resolver request is spent', async () => {
-  const fetchImpl = apiFetch({ 'resolver.test': { id: UUID, name: 'Notch' } });
+test('an unconfigured sync fails before any request is spent', async () => {
+  const fetchImpl = apiFetch({});
   await assert.rejects(
-    () => syncByUsername({ username: 'Notch', resolvers: RESOLVERS, fetchImpl }),
+    () => syncProfile({ playerUuid: UUID, fetchImpl }),
     /No Hypixel access is configured/,
   );
   assert.equal(fetchImpl.calls.length, 0, 'no request may be made without configured access');

@@ -1,6 +1,7 @@
 import { CROPS, UPGRADES, HIDDEN_INTERACTIONS, COMING_SOON } from './data.js';
 import { DATA_SCHEMA_VERSION, STORAGE_KEY } from './config.js';
 import { ensureProgressBucket, migrateState, toolKeyForCropId } from './migrations.js';
+import { isAutoApplied } from './snapshot-apply.js';
 import {
   backupFilename,
   createBackupPayload,
@@ -97,6 +98,17 @@ function crop() {
 
 function isCropScopedItem(item) {
   return item.section === 'crops' || item.section === 'tools';
+}
+
+/** The autoApplied scope key an entry is recorded under, matching itemStore. */
+function autoScopeKey(item) {
+  if (item.section === 'crops') return `crop:${state.selectedCrop}`;
+  if (item.section === 'tools') return `tool:${toolKeyForCropId(state.selectedCrop)}`;
+  return 'account';
+}
+
+function isSynced(item) {
+  return isAutoApplied(state, autoScopeKey(item), item.id);
 }
 
 function itemStore(item) {
@@ -206,6 +218,7 @@ function card(item, compact=false) {
           <div class="item-title">${esc(item.name)}</div>
         </div>
         ${badge(item.status === 'VERIFY' ? 'verify' : (isMaxed(item) ? 'max' : isOwned(item) ? 'owned' : 'missing'), status)}
+        ${isSynced(item) ? badge('synced', 'synced') : ''}
       </div>
       <div class="card-meta">
         ${max > 1 ? `<span>Level ${level}/${max}</span>` : `<span>${isOwned(item) ? 'Owned' : 'Not set'}</span>`}
@@ -392,6 +405,7 @@ function drawer() {
   return `<div class="drawer-backdrop" data-close-drawer><aside class="drawer">
     <div class="drawer-top"><div><div class="eyebrow">${esc(item.category)}</div><h2>${esc(item.name)}</h2></div><button class="close" data-close-drawer>×</button></div>
     <div class="drawer-badges">${badge(item.status,item.status==='VERIFY'?'verify':'soft')} ${isCropScopedItem(item)?badge(crop().name,'soft'):(item.cropScope!=='Any'?badge(item.cropScope,'soft'):'')} ${item.modeScope!=='Any'?badge(item.modeScope,'soft'):''}</div>
+    ${isSynced(item) ? '<div class="drawer-synced">This value came from your last Hypixel sync. Editing it here overrides it until the next sync.</div>' : ''}
     <div class="drawer-section"><h3>Ownership & Level</h3>
       ${max>1 ? `<div class="stepper"><button data-step="-1" data-id="${item.id}">−</button><strong>${level}/${max}</strong><button data-step="1" data-id="${item.id}">+</button><button class="ghost small" data-max="${item.id}">Max</button></div>` : `<label class="switch-row"><span>Owned</span><input type="checkbox" data-owned="${item.id}" ${isOwned(item)?'checked':''}></label>`}
     </div>
@@ -498,3 +512,10 @@ function bind() {
 }
 
 render();
+
+// Settings writes synced values straight to storage; re-read and repaint so the
+// cards show them without a manual reload.
+window.addEventListener('farming420:state-changed', () => {
+  state = loadState();
+  render();
+});

@@ -1,14 +1,23 @@
 import { createHypixelClient } from './hypixel-client.js';
-import { resolveUsername, normalizeUuid } from './mojang.js';
 import { syncGardenPayload, syncProfilePayload } from './profile-sync.js';
 
+const UNDASHED_UUID = /^[0-9a-f]{32}$/;
+
+/** Accepts dashed or undashed input and returns the undashed lowercase form. */
+export function normalizeUuid(value) {
+  const undashed = String(value ?? '').replaceAll('-', '').trim().toLowerCase();
+  return UNDASHED_UUID.test(undashed) ? undashed : null;
+}
+
 /**
- * One-call live sync: a Minecraft username in, a filled profile out.
+ * One-call live sync: an API key and a UUID in, a filled profile out.
  *
- * The flow is deliberately the smallest number of requests that fills the most
- * fields:
+ * Identity is the player's UUID, entered once. Resolving a username in the
+ * browser is not possible without a third party -- Hypixel's `name` parameter
+ * is deprecated and unreliable, `api.mojang.com` sends no CORS headers, and the
+ * `/key` endpoint that used to return the key owner's UUID was disabled in
+ * August 2023 -- so the UUID is asked for directly instead.
  *
- *   username -> uuid                       (resolver chain, see src/mojang.js)
  *   /v2/skyblock/profiles?uuid=...         profiles, members, skills, pets,
  *                                          community upgrades, item NBT
  *   /v2/skyblock/garden?profile=...        crop upgrades, plots, visitors,
@@ -49,42 +58,26 @@ export function listProfiles(profilesPayload) {
 }
 
 /**
- * @param {{username?: string, playerUuid?: string, apiKey?: string, proxyUrl?: string,
- *          profileId?: string, fetchImpl?: typeof fetch, resolvers?: object[],
- *          baseUrl?: string, signal?: AbortSignal}} options
+ * @param {{playerUuid: string, playerName?: string, apiKey?: string, proxyUrl?: string,
+ *          profileId?: string, fetchImpl?: typeof fetch, baseUrl?: string,
+ *          signal?: AbortSignal}} options
  */
-export async function syncByUsername(options = {}) {
+export async function syncProfile(options = {}) {
   const startedAt = new Date().toISOString();
   const warnings = [];
   const client = createHypixelClient(options);
-  // Checked before anything else: resolving a username first would spend
-  // requests on a sync that cannot possibly reach Hypixel.
+  // Checked before anything else, so an unconfigured sync says what is missing
+  // instead of failing later inside a request.
   if (client.mode === 'none') {
     throw new Error('No Hypixel access is configured. Add your own API key, or a proxy URL, in Settings.');
   }
 
-  // 1. Identity. A UUID given directly wins: it needs no third-party resolver.
-  let uuid = normalizeUuid(options.playerUuid);
-  let playerName = null;
-  let resolver = null;
-  let resolverIsOfficial = null;
-
+  // 1. Identity.
+  const uuid = normalizeUuid(options.playerUuid);
   if (!uuid) {
-    const resolved = await resolveUsername(options.username, {
-      fetchImpl: options.fetchImpl,
-      resolvers: options.resolvers,
-      signal: options.signal,
-    });
-    uuid = resolved.uuid;
-    playerName = resolved.name;
-    resolver = resolved.resolver;
-    resolverIsOfficial = resolved.official;
-    if (!resolved.official) {
-      warnings.push(`The username was resolved by ${resolved.resolver}, a community mirror rather than Mojang. Verify the UUID if the profile looks wrong.`);
-    }
-  } else if (options.username) {
-    playerName = String(options.username).trim();
+    throw new Error('Enter your Minecraft UUID in Settings. It is the 32-character id of your account, with or without dashes.');
   }
+  const playerName = options.playerName ? String(options.playerName).trim() : null;
 
   // 2. The keyless level table, fetched once and reused by the normalizer.
   let skillResources = null;
@@ -119,14 +112,16 @@ export async function syncByUsername(options = {}) {
     }
   }
 
+  // Garden sync re-applies the merged snapshot, so its result is the cumulative
+  // one when it ran; otherwise the profile apply is the latest state.
+  const apply = gardenReport?.apply ?? profileReport.apply ?? { applied: [], skipped: [], unmapped: [] };
+
   return {
     startedAt,
     finishedAt: new Date().toISOString(),
     mode: client.mode,
     playerUuid: uuid,
     playerName,
-    resolver,
-    resolverIsOfficial,
     profileId,
     profileName: profileReport.profileName,
     availableProfiles: profiles,
@@ -136,7 +131,11 @@ export async function syncByUsername(options = {}) {
     cropUpgradesImported: gardenReport?.cropUpgradesImported ?? null,
     unlockedPlots: gardenReport?.unlockedPlots ?? null,
     gardenSynced: gardenReport !== null,
-    warnings: [...warnings, ...profileReport.warnings, ...(gardenReport?.unknownCropKeys?.length
+    appliedCount: apply.applied.length,
+    appliedEntries: apply.applied,
+    applySkipped: apply.skipped,
+    unmappedCount: apply.unmapped.length,
+    warnings: [...warnings, ...apply.skipped, ...profileReport.warnings, ...(gardenReport?.unknownCropKeys?.length
       ? [`Garden returned crop keys this version does not know: ${gardenReport.unknownCropKeys.join(', ')}.`]
       : [])],
   };

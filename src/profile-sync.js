@@ -2,6 +2,7 @@ import { DATA_SCHEMA_VERSION, STORAGE_KEY } from './config.js';
 import { importGardenPayload, importProfilePayload } from './hypixel-import.js';
 import { migrateState } from './migrations.js';
 import { extractProfileItems } from './profile-items.js';
+import { applySnapshotToProgress } from './snapshot-apply.js';
 import {
   PROFILE_DATA_STATUS,
   PROFILE_SOURCE_META,
@@ -51,6 +52,9 @@ export function attachNormalizedSnapshot(rawState, snapshotPatch) {
     currentSnapshot(next.profile),
     snapshotPatch,
   );
+  // The snapshot is the record of what the API said; this projects it onto the
+  // progression entries the app's cards actually read, so a sync is visible.
+  next.profile.lastApply = applySnapshotToProgress(next, next.profile.normalizedSnapshot);
   return next;
 }
 
@@ -124,6 +128,7 @@ export async function syncProfilePayload(payload, options = {}) {
     normalizedModelVersion: state.profile.normalizedSnapshot.modelVersion,
     normalizedItems: itemReport?.items.length ?? null,
     itemContainersDecoded: itemReport?.containersDecoded ?? null,
+    apply: state.profile.lastApply,
   };
 }
 
@@ -137,5 +142,6 @@ export function syncGardenPayload(payload, options = {}) {
   return {
     ...report,
     normalizedModelVersion: state.profile.normalizedSnapshot.modelVersion,
+    apply: state.profile.lastApply,
   };
 }
