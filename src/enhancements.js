@@ -12,6 +12,8 @@ const HUBS = [
   ['gear', 'Layer 4', 'Items & Setup', 'Armor, Equipment, Pets, Chips, Shards und Buffs.'],
 ];
 
+const CROP_LAYER_KEY = 'farming420-crop-layer';
+
 function clickPage(id) {
   document.querySelector(`.sidebar [data-page="${id}"]`)?.click();
 }
@@ -89,12 +91,101 @@ function simplifyDashboard(root) {
   hero.insertAdjacentElement('afterend', section);
 }
 
+function setCropWorkspaceLayer(panel, layer) {
+  const grids = [...panel.querySelectorAll(':scope > .card-grid')];
+  const rows = [...panel.querySelectorAll(':scope > .section-row')];
+  const cropGrid = grids[0];
+  const toolGrid = grids[1];
+  const toolRow = rows[1];
+
+  if (!cropGrid || !toolGrid || !toolRow) return;
+
+  cropGrid.hidden = layer !== 'crop';
+  toolGrid.hidden = layer !== 'tool';
+  toolRow.hidden = layer !== 'tool';
+
+  panel.querySelectorAll('.workspace-tab-addon').forEach(button => {
+    button.classList.toggle('active', button.dataset.layer === layer);
+    button.setAttribute('aria-selected', String(button.dataset.layer === layer));
+  });
+
+  localStorage.setItem(CROP_LAYER_KEY, layer);
+}
+
+function enhanceCropWorkspace(root) {
+  const heading = root.querySelector('.page-head h1');
+  if (!heading || heading.textContent.trim() !== 'Ein Crop = eine eigene Arbeitsfläche') return;
+
+  const picker = root.querySelector('.crop-grid');
+  const panel = root.querySelector('.crop-detail-panel');
+  if (!picker || !panel || panel.dataset.workspace === '1') return;
+
+  picker.classList.add('crop-picker-addon');
+  panel.classList.add('crop-workspace-addon');
+  panel.dataset.workspace = '1';
+
+  const oldTabs = panel.querySelector('.layer-tabs');
+  if (oldTabs) oldTabs.hidden = true;
+
+  const firstRow = panel.querySelector(':scope > .section-row');
+  if (!firstRow) return;
+
+  const tabs = document.createElement('div');
+  tabs.className = 'workspace-tabs-addon';
+  tabs.setAttribute('role', 'tablist');
+  tabs.innerHTML = `
+    <button class="workspace-tab-addon" data-layer="crop" role="tab">Crop</button>
+    <button class="workspace-tab-addon" data-layer="tool" role="tab">Tool</button>
+    <button class="workspace-tab-addon setup" data-layer="setup" role="tab">Items & Setup</button>
+  `;
+  firstRow.insertAdjacentElement('afterend', tabs);
+
+  tabs.querySelector('[data-layer="crop"]').addEventListener('click', () => setCropWorkspaceLayer(panel, 'crop'));
+  tabs.querySelector('[data-layer="tool"]').addEventListener('click', () => setCropWorkspaceLayer(panel, 'tool'));
+  tabs.querySelector('[data-layer="setup"]').addEventListener('click', () => clickPage('gear'));
+
+  const grids = [...panel.querySelectorAll(':scope > .card-grid')];
+  if (grids[0]) grids[0].classList.add('workspace-grid-addon', 'crop-layer-grid-addon');
+  if (grids[1]) grids[1].classList.add('workspace-grid-addon', 'tool-layer-grid-addon');
+
+  const savedLayer = localStorage.getItem(CROP_LAYER_KEY);
+  setCropWorkspaceLayer(panel, savedLayer === 'tool' ? 'tool' : 'crop');
+}
+
+function improveToolsPage(root) {
+  const active = root.querySelector('.sidebar .nav-link.active');
+  if (active?.dataset.page !== 'tools') return;
+  const content = root.querySelector('.content');
+  if (!content || content.querySelector('.tool-context-addon')) return;
+
+  const heading = content.querySelector('.page-head');
+  if (!heading) return;
+
+  const cropSelect = root.querySelector('#cropSelect');
+  const cropName = cropSelect?.selectedOptions?.[0]?.textContent?.trim() || 'Crop';
+  const toolBadge = content.querySelector('.filter-line .badge:last-child');
+  const toolName = toolBadge?.textContent?.trim() || 'Crop Tool';
+
+  const context = document.createElement('div');
+  context.className = 'tool-context-addon';
+  context.innerHTML = `
+    <div><span>Crop</span><strong>${cropName}</strong></div>
+    <div class="tool-context-arrow">→</div>
+    <div><span>Aktives Tool</span><strong>${toolName}</strong></div>
+    <button type="button">Crop-Arbeitsfläche</button>
+  `;
+  context.querySelector('button').addEventListener('click', () => clickPage('crops'));
+  heading.insertAdjacentElement('afterend', context);
+}
+
 function enhance() {
   const root = document.querySelector('#app');
   if (!root) return;
   groupSidebar(root);
   addMobileNavigation(root);
   simplifyDashboard(root);
+  enhanceCropWorkspace(root);
+  improveToolsPage(root);
 }
 
 let scheduled = false;
