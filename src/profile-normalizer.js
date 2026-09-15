@@ -294,14 +294,57 @@ function mergeValue(base, patch) {
   return result;
 }
 
+function hasProvenanceFor(provenanceMap, section) {
+  return Object.keys(provenanceMap || {}).some(key => key === section || key.startsWith(`${section}.`));
+}
+
 export function mergeProfileSnapshots(base, patch) {
-  const merged = mergeValue(base || createEmptyProfileSnapshot(), patch || {});
+  const merged = structuredClone(base || createEmptyProfileSnapshot());
+  const source = patch || {};
+  const patchProvenance = source.provenance || {};
+
+  if (hasProvenanceFor(patchProvenance, 'identity')) {
+    merged.identity = mergeValue(merged.identity, source.identity);
+  }
+  if (hasProvenanceFor(patchProvenance, 'skills')) {
+    merged.skills = mergeValue(merged.skills, source.skills);
+  }
+  if (hasProvenanceFor(patchProvenance, 'garden')) {
+    merged.garden = mergeValue(merged.garden, source.garden);
+  }
+  if (hasProvenanceFor(patchProvenance, 'accountUpgrades')) {
+    merged.accountUpgrades = structuredClone(source.accountUpgrades || []);
+  }
+  if (hasProvenanceFor(patchProvenance, 'pets')) {
+    merged.pets = structuredClone(source.pets || []);
+  }
+  if (hasProvenanceFor(patchProvenance, 'items')) {
+    merged.items = structuredClone(source.items || []);
+  }
+  if (hasProvenanceFor(patchProvenance, 'buffs')) {
+    merged.buffs = mergeValue(merged.buffs, source.buffs || {});
+  }
+
   merged.modelVersion = PROFILE_MODEL_VERSION;
-  const warningSet = new Set([
+  merged.sync ||= { sources: {}, warnings: [] };
+  merged.sync.sources = mergeValue(merged.sync.sources || {}, source.sync?.sources || {});
+  merged.sync.warnings = [...new Set([
     ...(Array.isArray(base?.sync?.warnings) ? base.sync.warnings : []),
-    ...(Array.isArray(patch?.sync?.warnings) ? patch.sync.warnings : []),
-  ]);
-  merged.sync ||= {};
-  merged.sync.warnings = [...warningSet];
+    ...(Array.isArray(source.sync?.warnings) ? source.sync.warnings : []),
+  ])];
+  merged.provenance = mergeValue(merged.provenance || {}, patchProvenance);
+
+  const unknown = [
+    ...(Array.isArray(base?.unknown) ? base.unknown : []),
+    ...(Array.isArray(source.unknown) ? source.unknown : []),
+  ];
+  const seenUnknown = new Set();
+  merged.unknown = unknown.filter(entry => {
+    const key = JSON.stringify(entry);
+    if (seenUnknown.has(key)) return false;
+    seenUnknown.add(key);
+    return true;
+  });
+
   return merged;
 }
