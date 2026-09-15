@@ -75,6 +75,19 @@ function migrateScopedProgress(state, warnings) {
 }
 
 /**
+ * Schema 2 -> 3
+ *
+ * The normalized profile snapshot becomes the stable boundary between raw API
+ * payloads and future calculation/recommendation engines. Existing users have
+ * no snapshot until they import or sync again, so the migration must preserve
+ * that distinction instead of manufacturing empty automatic data.
+ */
+function migrateNormalizedSnapshot(state) {
+  const profile = state.profile ||= {};
+  if (!Object.hasOwn(profile, 'normalizedSnapshot')) profile.normalizedSnapshot = null;
+}
+
+/**
  * Ordered migration registry. Each entry raises the stored schema to `to` and
  * must be idempotent, because a state can be re-migrated after a backup
  * restore. Never delete an entry: old backups still arrive at old versions.
@@ -84,6 +97,11 @@ const MIGRATIONS = [
     to: 2,
     description: 'Move crop and tool progress into their own scoped buckets.',
     run: migrateScopedProgress,
+  },
+  {
+    to: 3,
+    description: 'Add the normalized profile snapshot boundary.',
+    run: migrateNormalizedSnapshot,
   },
 ];
 
@@ -111,7 +129,7 @@ export function migrateState(rawState) {
   }
 
   for (const migration of MIGRATIONS) {
-    if (migration.to <= from) continue;
+    if (migration.to <= from || migration.to > DATA_SCHEMA_VERSION) continue;
     migration.run(state, warnings);
     applied.push(migration.to);
   }
