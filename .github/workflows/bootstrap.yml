@@ -23,7 +23,7 @@ jobs:
           rm -rf .bootstrap
           mkdir .bootstrap
           unzip -q skyblock-farming-maxer.zip -d .bootstrap
-          rsync -a --exclude='.git/' .bootstrap/skyblock-farming-maxer/ ./
+          rsync -a --exclude='.git/' --exclude='.github/workflows/' .bootstrap/skyblock-farming-maxer/ ./
           rm -rf .bootstrap skyblock-farming-maxer.zip
       - name: Commit unpacked app
         run: |
