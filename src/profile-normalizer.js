@@ -103,6 +103,12 @@ function normalizeCommunityUpgrades(raw) {
     }));
 }
 
+function rawPetsFromMember(member) {
+  if (Array.isArray(member?.pets)) return member.pets;
+  if (Array.isArray(member?.pets_data?.pets)) return member.pets_data.pets;
+  return null;
+}
+
 function normalizePets(rawPets) {
   if (!Array.isArray(rawPets)) return [];
   return rawPets
@@ -209,8 +215,9 @@ export function normalizeProfilePayload(payload, options = {}) {
     status: farmingStatus,
   };
 
+  const rawPets = rawPetsFromMember(member);
   snapshot.accountUpgrades = normalizeCommunityUpgrades(parsed.communityUpgrades);
-  snapshot.pets = normalizePets(member?.pets);
+  snapshot.pets = normalizePets(rawPets);
   snapshot.sync.sources.profile = {
     fetchedAt: options.fetchedAt || null,
     importType: 'raw-json',
@@ -229,10 +236,16 @@ export function normalizeProfilePayload(payload, options = {}) {
     ['profile', 'skills'],
   );
   snapshot.provenance.accountUpgrades = provenance(PROFILE_DATA_STATUS.AUTO, ['profile']);
-  snapshot.provenance.pets = provenance(PROFILE_DATA_STATUS.AUTO, ['profile']);
+  snapshot.provenance.pets = provenance(
+    rawPets === null ? PROFILE_DATA_STATUS.HIDDEN : PROFILE_DATA_STATUS.AUTO,
+    ['profile'],
+    rawPets === null ? 'The selected member payload contains no pet list; an empty array must not be interpreted as owning no pets.' : null,
+  );
 
   if (!member) {
-    snapshot.sync.warnings.push('The selected member could not be re-located after profile resolution; pet data remains empty.');
+    snapshot.sync.warnings.push('The selected member could not be re-located after profile resolution; pet data remains unknown.');
+  } else if (rawPets === null) {
+    snapshot.sync.warnings.push('No pet list was present for the selected member; pet ownership remains unknown.');
   }
 
   return snapshot;
@@ -298,6 +311,11 @@ function hasProvenanceFor(provenanceMap, section) {
   return Object.keys(provenanceMap || {}).some(key => key === section || key.startsWith(`${section}.`));
 }
 
+function mayReplaceCollection(provenanceEntry) {
+  return provenanceEntry?.status !== PROFILE_DATA_STATUS.HIDDEN
+    && provenanceEntry?.status !== PROFILE_DATA_STATUS.UNKNOWN;
+}
+
 export function mergeProfileSnapshots(base, patch) {
   const merged = structuredClone(base || createEmptyProfileSnapshot());
   const source = patch || {};
@@ -315,10 +333,10 @@ export function mergeProfileSnapshots(base, patch) {
   if (hasProvenanceFor(patchProvenance, 'accountUpgrades')) {
     merged.accountUpgrades = structuredClone(source.accountUpgrades || []);
   }
-  if (hasProvenanceFor(patchProvenance, 'pets')) {
+  if (hasProvenanceFor(patchProvenance, 'pets') && mayReplaceCollection(patchProvenance.pets)) {
     merged.pets = structuredClone(source.pets || []);
   }
-  if (hasProvenanceFor(patchProvenance, 'items')) {
+  if (hasProvenanceFor(patchProvenance, 'items') && mayReplaceCollection(patchProvenance.items)) {
     merged.items = structuredClone(source.items || []);
   }
   if (hasProvenanceFor(patchProvenance, 'buffs')) {
