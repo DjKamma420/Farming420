@@ -11,7 +11,7 @@ import {
   validateBackupPayload,
 } from './backup.js';
 import { migrateState } from './migrations.js';
-import { importGardenPayload, importProfilePayload } from './hypixel-import.js';
+import { syncGardenPayload, syncProfilePayload } from './profile-sync.js';
 
 let deferredInstallPrompt = null;
 let settingsDialog = null;
@@ -160,14 +160,14 @@ async function handleProfileImport(file) {
   const payload = await readJsonFile(file);
   const uuidInput = settingsDialog.querySelector('[data-player-uuid]');
   savePlayerUuid(uuidInput);
-  const report = await importProfilePayload(payload, { playerUuid: uuidInput.value });
+  const report = await syncProfilePayload(payload, { playerUuid: uuidInput.value });
   const details = report.farmingLevel === null ? 'Farming level could not be derived.' : `Farming level ${report.farmingLevel} imported.`;
   setStatus(`Profile import completed. ${details}${report.warnings.length ? ` ${report.warnings.join(' ')}` : ''}`, report.warnings.length ? 'warning' : 'success');
 }
 
 async function handleGardenImport(file) {
   const payload = await readJsonFile(file);
-  const report = importGardenPayload(payload);
+  const report = syncGardenPayload(payload);
   const warning = report.unknownCropKeys.length ? ` Unknown crop keys: ${report.unknownCropKeys.join(', ')}.` : '';
   setStatus(`Garden import completed: ${report.cropUpgradesImported} crop upgrades, ${report.unlockedPlots ?? 'unknown'} plots.${warning}`, warning ? 'warning' : 'success');
 }
