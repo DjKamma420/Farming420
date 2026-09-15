@@ -1,0 +1,307 @@
+import {
+  extractGardenData,
+  extractProfileData,
+  farmingLevelFromResources,
+} from './hypixel-import.js';
+
+export const PROFILE_MODEL_VERSION = 1;
+export const PROFILE_DATA_STATUS = Object.freeze({
+  AUTO: 'AUTO',
+  DERIVED: 'DERIVED',
+  AUTO_CANDIDATE: 'AUTO_CANDIDATE',
+  MANUAL: 'MANUAL',
+  EXTERNAL: 'EXTERNAL',
+  HIDDEN: 'HIDDEN',
+  UNKNOWN: 'UNKNOWN',
+});
+
+const VERIFIED_ON = '2026-09-15';
+
+export const PROFILE_SOURCE_META = Object.freeze({
+  profile: Object.freeze({
+    id: 'hypixel-profile',
+    url: 'https://api.hypixel.net/v2/skyblock/profile',
+    lastVerified: VERIFIED_ON,
+  }),
+  profiles: Object.freeze({
+    id: 'hypixel-profiles',
+    url: 'https://api.hypixel.net/v2/skyblock/profiles',
+    lastVerified: VERIFIED_ON,
+  }),
+  garden: Object.freeze({
+    id: 'hypixel-garden',
+    url: 'https://api.hypixel.net/v2/skyblock/garden',
+    lastVerified: VERIFIED_ON,
+  }),
+  skills: Object.freeze({
+    id: 'hypixel-skill-resources',
+    url: 'https://api.hypixel.net/v2/resources/skyblock/skills',
+    lastVerified: VERIFIED_ON,
+  }),
+});
+
+function normalizeUuid(value) {
+  const normalized = String(value || '').replaceAll('-', '').trim().toLowerCase();
+  return normalized || null;
+}
+
+function finiteNumberOrNull(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
+function stringOrNull(value) {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return trimmed || null;
+}
+
+function provenance(status, sourceIds, note = null) {
+  return {
+    status,
+    sources: sourceIds.map(id => PROFILE_SOURCE_META[id]).filter(Boolean),
+    note,
+  };
+}
+
+function profileList(payload) {
+  if (Array.isArray(payload?.profiles)) return payload.profiles;
+  if (payload?.profile && typeof payload.profile === 'object') return [payload.profile];
+  if (payload?.members && typeof payload.members === 'object') return [payload];
+  return [];
+}
+
+function locateResolvedProfile(payload, profileId) {
+  const profiles = profileList(payload);
+  if (!profiles.length) return null;
+  return profiles.find(profile => profile?.profile_id === profileId)
+    || (profiles.length === 1 ? profiles[0] : null);
+}
+
+function locateResolvedMember(profile, playerUuid) {
+  if (!profile?.members || typeof profile.members !== 'object') return null;
+  const target = normalizeUuid(playerUuid);
+  if (!target) return null;
+  for (const [key, member] of Object.entries(profile.members)) {
+    const candidates = [key, member?.uuid, member?.player_id, member?.profile?.player_id]
+      .map(normalizeUuid)
+      .filter(Boolean);
+    if (candidates.includes(target)) return member;
+  }
+  return null;
+}
+
+function normalizeCommunityUpgrades(raw) {
+  const states = Array.isArray(raw?.upgrade_states) ? raw.upgrade_states : [];
+  return states
+    .filter(state => state && typeof state === 'object' && stringOrNull(state.upgrade))
+    .map(state => ({
+      id: stringOrNull(state.upgrade),
+      tier: finiteNumberOrNull(state.tier),
+      startedAtMs: finiteNumberOrNull(state.started_ms),
+      claimedAtMs: finiteNumberOrNull(state.claimed_ms),
+    }));
+}
+
+function normalizePets(rawPets) {
+  if (!Array.isArray(rawPets)) return [];
+  return rawPets
+    .filter(pet => pet && typeof pet === 'object')
+    .map((pet, index) => ({
+      index,
+      uuid: stringOrNull(pet.uuid),
+      type: stringOrNull(pet.type),
+      rarity: stringOrNull(pet.tier ?? pet.rarity),
+      experience: finiteNumberOrNull(pet.exp ?? pet.experience),
+      active: typeof pet.active === 'boolean' ? pet.active : null,
+      heldItem: stringOrNull(pet.heldItem ?? pet.held_item),
+      candyUsed: finiteNumberOrNull(pet.candyUsed ?? pet.candy_used),
+      skin: stringOrNull(pet.skin),
+    }));
+}
+
+function gardenObject(payload) {
+  if (!payload || typeof payload !== 'object') return null;
+  if (payload.garden && typeof payload.garden === 'object') return payload.garden;
+  if (payload.garden_data && typeof payload.garden_data === 'object') return payload.garden_data;
+  if ('crop_upgrade_levels' in payload || 'garden_experience' in payload || 'unlocked_plots_ids' in payload) return payload;
+  return null;
+}
+
+export function createEmptyProfileSnapshot() {
+  return {
+    modelVersion: PROFILE_MODEL_VERSION,
+    identity: {
+      playerUuid: null,
+      playerName: null,
+      profileId: null,
+      profileName: null,
+      gameMode: null,
+      selected: null,
+    },
+    sync: {
+      sources: {},
+      warnings: [],
+    },
+    skills: {
+      farming: {
+        xp: null,
+        level: null,
+        cap: null,
+        status: PROFILE_DATA_STATUS.UNKNOWN,
+      },
+    },
+    garden: {
+      experience: null,
+      level: null,
+      unlockedPlotIds: [],
+      unlockedPlotCount: null,
+      cropUpgrades: {},
+      resourcesCollected: null,
+      visitors: {
+        visits: null,
+        completed: null,
+        totalCompleted: null,
+        uniqueNpcsServed: null,
+      },
+      composter: null,
+      activeCommissions: null,
+    },
+    accountUpgrades: [],
+    pets: [],
+    items: [],
+    buffs: {},
+    unknown: [],
+    provenance: {},
+  };
+}
+
+export function normalizeProfilePayload(payload, options = {}) {
+  const parsed = extractProfileData(payload, { playerUuid: options.playerUuid });
+  const profile = locateResolvedProfile(payload, parsed.profileId);
+  const member = locateResolvedMember(profile, parsed.playerUuid);
+  const snapshot = createEmptyProfileSnapshot();
+
+  snapshot.identity = {
+    ...snapshot.identity,
+    playerUuid: parsed.playerUuid,
+    profileId: parsed.profileId,
+    profileName: parsed.profileName,
+    gameMode: stringOrNull(profile?.game_mode),
+    selected: typeof profile?.selected === 'boolean' ? profile.selected : null,
+  };
+
+  let farmingLevel = null;
+  let farmingStatus = parsed.farmingXp === null
+    ? PROFILE_DATA_STATUS.HIDDEN
+    : PROFILE_DATA_STATUS.AUTO;
+
+  if (parsed.farmingXp !== null && options.skillResources) {
+    farmingLevel = farmingLevelFromResources(parsed.farmingXp, options.skillResources);
+    if (farmingLevel !== null) farmingStatus = PROFILE_DATA_STATUS.DERIVED;
+    else snapshot.sync.warnings.push('Farming XP is present, but the supplied skill resource table could not derive a level.');
+  }
+
+  snapshot.skills.farming = {
+    xp: parsed.farmingXp,
+    level: farmingLevel,
+    cap: null,
+    status: farmingStatus,
+  };
+
+  snapshot.accountUpgrades = normalizeCommunityUpgrades(parsed.communityUpgrades);
+  snapshot.pets = normalizePets(member?.pets);
+  snapshot.sync.sources.profile = {
+    fetchedAt: options.fetchedAt || null,
+    importType: 'raw-json',
+    profileId: parsed.profileId,
+  };
+  snapshot.sync.warnings.push(...parsed.warnings);
+
+  snapshot.provenance.identity = provenance(PROFILE_DATA_STATUS.AUTO, ['profile', 'profiles']);
+  snapshot.provenance['skills.farming.xp'] = provenance(
+    parsed.farmingXp === null ? PROFILE_DATA_STATUS.HIDDEN : PROFILE_DATA_STATUS.AUTO,
+    ['profile'],
+    parsed.farmingXp === null ? 'The Skills API setting may be disabled or the payload shape may be unsupported.' : null,
+  );
+  snapshot.provenance['skills.farming.level'] = provenance(
+    farmingLevel === null ? PROFILE_DATA_STATUS.UNKNOWN : PROFILE_DATA_STATUS.DERIVED,
+    ['profile', 'skills'],
+  );
+  snapshot.provenance.accountUpgrades = provenance(PROFILE_DATA_STATUS.AUTO, ['profile']);
+  snapshot.provenance.pets = provenance(PROFILE_DATA_STATUS.AUTO, ['profile']);
+
+  if (!member) {
+    snapshot.sync.warnings.push('The selected member could not be re-located after profile resolution; pet data remains empty.');
+  }
+
+  return snapshot;
+}
+
+export function normalizeGardenPayload(payload, options = {}) {
+  const parsed = extractGardenData(payload);
+  const rawGarden = gardenObject(payload) || {};
+  const snapshot = createEmptyProfileSnapshot();
+  const plotIds = Array.isArray(rawGarden.unlocked_plots_ids)
+    ? [...new Set(rawGarden.unlocked_plots_ids.map(String))]
+    : [];
+
+  snapshot.garden = {
+    ...snapshot.garden,
+    experience: parsed.gardenExperience,
+    unlockedPlotIds: plotIds,
+    unlockedPlotCount: parsed.unlockedPlots,
+    cropUpgrades: structuredClone(parsed.cropUpgrades),
+    resourcesCollected: parsed.resourcesCollected ? structuredClone(parsed.resourcesCollected) : null,
+    visitors: {
+      visits: finiteNumberOrNull(rawGarden.commission_data?.visits),
+      completed: rawGarden.commission_data?.completed ?? null,
+      totalCompleted: parsed.totalVisitorsCompleted,
+      uniqueNpcsServed: parsed.uniqueVisitors,
+    },
+    composter: parsed.composterData ? structuredClone(parsed.composterData) : null,
+    activeCommissions: rawGarden.active_commissions ? structuredClone(rawGarden.active_commissions) : null,
+  };
+
+  snapshot.sync.sources.garden = {
+    fetchedAt: options.fetchedAt || null,
+    importType: 'raw-json',
+  };
+  snapshot.provenance.garden = provenance(PROFILE_DATA_STATUS.AUTO, ['garden']);
+
+  for (const apiKey of parsed.unknownCropKeys) {
+    snapshot.unknown.push({
+      area: 'garden.cropUpgrades',
+      key: apiKey,
+      reason: 'Unknown crop key from the current payload; the adapter did not guess a mapping.',
+    });
+  }
+
+  return snapshot;
+}
+
+function isPlainObject(value) {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function mergeValue(base, patch) {
+  if (patch === undefined) return structuredClone(base);
+  if (!isPlainObject(patch)) return structuredClone(patch);
+  const result = isPlainObject(base) ? structuredClone(base) : {};
+  for (const [key, value] of Object.entries(patch)) {
+    result[key] = mergeValue(result[key], value);
+  }
+  return result;
+}
+
+export function mergeProfileSnapshots(base, patch) {
+  const merged = mergeValue(base || createEmptyProfileSnapshot(), patch || {});
+  merged.modelVersion = PROFILE_MODEL_VERSION;
+  const warningSet = new Set([
+    ...(Array.isArray(base?.sync?.warnings) ? base.sync.warnings : []),
+    ...(Array.isArray(patch?.sync?.warnings) ? patch.sync.warnings : []),
+  ]);
+  merged.sync ||= {};
+  merged.sync.warnings = [...warningSet];
+  return merged;
+}
