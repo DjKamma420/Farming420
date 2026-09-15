@@ -39,6 +39,7 @@ test('a fresh backup round-trips without losing user data', () => {
       name: 'Main',
       globalFortune: 812,
       cropFortune: { cactus: 240 },
+      normalizedSnapshot: { modelVersion: 1, identity: { profileName: 'Mango' } },
       cropProgress: { cactus: { levels: { [CROP_UPGRADE_ID]: 9 }, owned: {}, costs: {}, manualGain: {} } },
     },
   };
@@ -53,9 +54,10 @@ test('restoring an older backup migrates it to the current schema', () => {
   });
   const result = validateBackupPayload(legacy);
   assert.equal(result.sourceSchemaVersion, 1);
-  assert.deepEqual(result.applied, [2]);
+  assert.deepEqual(result.applied, [2, 3]);
   assert.equal(result.state.schemaVersion, DATA_SCHEMA_VERSION);
   assert.equal(result.state.profile.cropProgress.melon.levels[CROP_UPGRADE_ID], 6);
+  assert.equal(result.state.profile.normalizedSnapshot, null);
 });
 
 test('a backup from a newer data schema is refused', () => {
