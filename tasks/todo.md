@@ -1,112 +1,160 @@
-# Farming420 — Foundation gap closure
+# Farming420 — Foundation gap closure and current work
 
-`README.md` development order step 1 and `AGENTS.md` still list the persistence
-foundation as unfinished. This is the concrete gap list found in the repository
-and what is being done about it.
+This file records the concrete architecture/correctness gaps found during repository review and the work completed against them. It is intentionally kept in the repository so another development chat can resume from the actual code state instead of reconstructing context from conversation history.
 
-## Findings
+## Foundation gaps found and closed
 
-| # | Gap | Evidence |
-|---|-----|----------|
-| 1 | No tests exist anywhere in the repository | `AGENTS.md` rule 9 requires migrations **and tests**; `docs/PRODUCT_SPEC.md` "Definition of done" requires tested boundary cases; `README.md` requires migration tests before raising the schema version |
-| 2 | No migration layer | `DATA_SCHEMA_VERSION` is written but never used to migrate. `migrateScopedProgress()` lives inside `src/app.js`, runs unconditionally on every load and cannot be imported or tested |
-| 3 | Restoring an old backup does not migrate it | `src/foundation.js` writes the backup state verbatim, so pre-migration data stays in old shape |
-| 4 | The sidebar Export/Import bypasses the backup contract | `src/app.js` writes an unversioned profile-only file and imports it with no validation, contradicting "backups contain format and schema versions" and "restore validates the backup" |
-| 5 | Settings is unreachable on mobile | `src/styles.css` hides `.sidebar` below 780px and `src/foundation.js` only mounts the Settings entry inside the sidebar |
-| 6 | Hypixel adapters are untestable | `src/hypixel-import.js` mixes payload parsing with `localStorage` writes |
-| 7 | CI validates only 3 of 6 JS modules and runs no tests | `.github/workflows/validate.yml` |
-| 8 | Metadata drift | `package.json` is still named `skyblock-farming-maxer` at version `0.1.0` while `APP_VERSION` is `0.3.0`, has no `type: module` and no `test` script; the app shell still renders "Farming Maxer / SkyBlock 2026" |
+| # | Gap | Status |
+|---|-----|--------|
+| 1 | No tests existed | Closed — dependency-free Node test suite is in CI |
+| 2 | No versioned migration layer | Closed — ordered migrations in `src/migrations.js` |
+| 3 | Old backup restore did not migrate | Closed — validated backup restore migrates first |
+| 4 | Sidebar import/export bypassed backup contract | Closed — unified versioned backup contract |
+| 5 | Settings unreachable on mobile | Closed — Settings entry lives in the top bar |
+| 6 | Hypixel adapters mixed parsing and storage | Closed — pure extractors plus sync wrappers |
+| 7 | CI checked only part of the runtime | Closed — syntax, required files, SW cache completeness and tests |
+| 8 | Metadata/version drift | Closed — config/package/service worker versions aligned |
+| 9 | Raw API field names would leak into future calculators | Closed — normalized profile snapshot boundary |
+| 10 | Profile item data still required manual entry | Partially closed — generic NBT item import implemented; setup interpretation still pending |
 
-## Tasks
+## Persistence and update safety
 
-- [x] Add `src/migrations.js`: pure, versioned migration registry plus the shared
-      crop/tool-scope helpers, with schema v1 -> v2 carrying the existing
-      crop/tool re-scoping logic
-- [x] Add `src/backup.js`: pure `createBackupPayload` / `validateBackupPayload`,
-      migrating restored state before it is written
-- [x] Wire `src/app.js`, `src/foundation.js` and `src/hypixel-import.js` to the
-      shared migration and backup layers
-- [x] Split `src/hypixel-import.js` into pure extractors and storage wrappers
-- [x] Make Settings reachable on mobile
-- [x] Add a zero-dependency `node --test` suite for migrations, backup, Hypixel
-      adapters and data integrity
-- [x] Extend `.github/workflows/validate.yml` to check every module and run tests
-- [x] Align `package.json`, `APP_VERSION`, the service-worker cache version and
-      the app shell branding
-- [x] Update `README.md` to describe the state that now actually exists
+- [x] Schema 1 -> 2: move crop and physical-tool progress into their proper scoped buckets
+- [x] Schema 2 -> 3: add persistent `profile.normalizedSnapshot` without inventing imported data
+- [x] Idempotent migration tests
+- [x] Old backup migration tests
+- [x] Refuse newer-schema backups/state instead of overwriting them
+- [x] One versioned backup format for every UI backup/restore surface
+- [x] Coherent versioned service-worker cache
+- [x] Service-worker cache completeness check in CI
+- [x] GitHub Pages deployment from `main`
 
-## Review
+## Hypixel profile automation
 
-Recorded below.
+### Implemented
 
----
+- [x] raw `/v2/skyblock/profile` and `/v2/skyblock/profiles` parsing
+- [x] raw `/v2/skyblock/garden` parsing
+- [x] Farming XP import
+- [x] Farming level derivation from the official skill resource table
+- [x] profile identity/name/game mode/selected state
+- [x] Community Upgrade raw states
+- [x] Garden XP, crop upgrades, unlocked plots, visitor metadata, collected resources and composter data
+- [x] current `pets_data.pets` parsing plus compatibility with older direct pet arrays
+- [x] missing Skills/Pets/Inventory data represented as hidden/unknown, never fabricated zero ownership
+- [x] one persistent provenance-bearing normalized snapshot shared by Profile and Garden imports
 
-## Review
+### Item/NBT automation implemented
 
-### What changed
+Hypixel item blobs are Base64-encoded, gzip-compressed NBT. Farming420 now decodes that format directly without a production dependency.
 
-**New modules**
+- [x] dependency-free NBT parser
+- [x] Base64 + gzip decoding
+- [x] main inventory
+- [x] armor
+- [x] equipment
+- [x] Ender Chest
+- [x] Personal Vault
+- [x] backpacks
+- [x] talisman bag
+- [x] saved armor loadout sets
+- [x] saved equipment loadout sets
+- [x] UUID de-duplication while retaining all observed item locations
+- [x] generic SkyBlock item ID and UUID
+- [x] generic enchantment map — future enchant names are not discarded
+- [x] reforge (`modifier`)
+- [x] gemstones
+- [x] attributes
+- [x] Farming for Dummies count
+- [x] recombobulation state
+- [x] Cultivating counter
+- [x] Overclocker level
+- [x] item tier
+- [x] corrupt-container isolation: one bad container does not discard all other decoded items
 
-- `src/migrations.js` — ordered, idempotent migration registry plus the shared
-  `toolKeyForCropId` / `ensureProgressBucket` helpers. Schema v1 -> v2 carries
-  the crop/tool re-scoping logic that previously lived inline in `src/app.js`
-  and ran unconditionally on every page load. A destination value always wins
-  over a moved one, so no user value is ever overwritten.
-- `src/backup.js` — the single backup contract: `createBackupPayload`,
-  `validateBackupPayload` (which migrates what it validates), `backupFilename`
-  and the shared download/read helpers.
-- `scripts/check-sw-manifest.js` — fails CI when a file in `src/` or `assets/`
-  ships without being listed in the service worker's `APP_FILES`, which would
-  otherwise let an update mix old and new application files.
+The item decoder stores raw facts only. It deliberately does not calculate Fortune/profit from an enchant/reforge/gem; those mechanics belong in verified game data.
 
-**Behaviour fixes**
+## Current correctness gaps
 
-- Restoring an older backup now migrates it to the current schema instead of
-  writing the old shape back verbatim.
-- The sidebar Export/Import pair used an unversioned, unvalidated profile-only
-  file. Both now use the same validated backup envelope as Settings.
-- Settings moved from the sidebar to the top bar. Below 780px the sidebar is
-  `display:none`, which had made backup, restore, import, install and update
-  controls unreachable on the mobile-first layout the product targets.
-- Settings no longer stamps an unmigrated state with the current schema version
-  when the UUID field is saved.
-- Hypixel import writes into the migrated shape rather than whatever was stored.
+### 1. Verify the game-data layer
 
-**Two live bugs found while verifying in a real browser**
+**Highest priority.** `src/data.js` contains researched mechanics and source URLs, but the entries do not yet carry an honest per-entry `lastVerified` date. Do not mass-fill dates.
 
-`index.html` ships `script-src 'self'; style-src 'self'`, and the browser drops
-inline styles and inline handlers silently:
+Required process:
 
-1. `style="width:X%"` on every progress bar was dropped, so *every* card showed
-   a full progress bar regardless of the real level. Widths are now applied
-   through the CSSOM in `bind()`, which the policy does not block. Verified: an
-   item at level 30/60 renders 141px of 282px.
-2. `onclick="event.stopPropagation()"` on the drawer was dropped, so any click
-   inside the drawer bubbled to the backdrop and closed it — including clicks
-   into the cost and manual-value inputs. The backdrop handler now checks the
-   event target.
+1. group entries by source/mechanic
+2. open the current primary/strongest source
+3. verify the exact number/condition/scope against the current game version
+4. add `lastVerified` only after verification
+5. downgrade uncertain entries to `VERIFY` or remove planner weight rather than guessing
+6. add/update tests that require active planner mechanics to have `lastVerified`
 
-`tests/csp.test.js` guards both classes of markup, and `frame-ancestors` was
-removed from the `<meta>` CSP because a meta tag cannot apply it.
+### 2. Build farming setup candidates from normalized facts
 
-### Verification
+The profile snapshot can now see raw items and pets. It still needs a pure setup layer that understands mutually exclusive choices without double counting:
 
-- `npm test` — 53 tests, all passing (migrations, backup contract, Hypixel
-  adapters, data-layer invariants, CSP-safe markup).
-- Browser run against a served build: a seeded schema-1 state migrates on load
-  (crop level lands in the crop bucket, tool level in `eclipse-hoe`, account
-  scope emptied, profile name and Fortune preserved), Settings is visible and
-  opens at 1440px and 390px, navigation and the planner still render, export
-  produces `farming420-backup-<date>.json`, and the console is clean.
-- Backup restore paths in the browser: a foreign JSON file and a
-  newer-schema backup are both refused with explanatory messages and leave
-  local data intact; a schema-1 backup restores and is migrated to schema 2
-  with its crop level moved into the right bucket.
+- normal crop farming setup
+- pest farming/vacuum setup
+- Jacob Contest setup
+- budget/progression setup
+- endgame/max-profit setup
+- separate armor/equipment loadout sets
+- one active pet + one pet item per candidate
+- progression path such as Elephant/Mooshroom Cow/Hedgehog/Rose Dragon according to verified mechanics and use case
 
-### Deliberately not done
+Do **not** implement those choices until each mechanic/value used by the setup evaluator is sourced and current.
 
-`AGENTS.md` rule 2 requires a `lastVerified` date next to every non-trivial
-mechanic. No entry in `src/data.js` has one. Filling those in would mean
-inventing dates, which rule 1 forbids, so this needs a real verification pass
-against the sources each entry already cites. It is the largest remaining
-foundation gap and is not something a code change can close honestly.
+### 3. Live profile proxy
+
+Raw JSON import is safe but inconvenient. Production live sync needs a small server-side/serverless proxy so the Hypixel API key is never embedded in GitHub Pages.
+
+### 4. Market data and valuation
+
+Still required:
+
+- Bazaar sell routes and timestamps
+- NPC prices where appropriate
+- auction-derived values for non-Bazaar items
+- confidence/liquidity
+- current setup replacement/liquidation value
+- upgrade acquisition cost and recoverable resale value kept separate
+
+### 5. Profit engine
+
+Still required after mechanics verification:
+
+- real sustained BPS model rather than an unexplained hard-coded 19.5
+- crop base drops and crop-specific mechanics
+- Farming Fortune and Crop Fortune application order
+- RNG-drop expected value
+- pest spawn/drop expected value and pest downtime
+- recurring spray/consumable costs
+- contest rewards/value and progression effects
+- before/after setup comparison
+- coins/hour, marginal coins/hour, payback, active time and passive wait time
+
+## Browser/CSP notes
+
+`index.html` intentionally forbids inline scripts/styles. Runtime-generated markup must not rely on inline `style` or inline `on*` handlers.
+
+Two bugs already found by real-browser verification and now tested:
+
+- progress bar inline widths were blocked by CSP; widths now use CSSOM
+- drawer inline click handlers were blocked; backdrop handling is now event-target based
+
+## Current release state
+
+- App version: `0.7.0`
+- Local data schema: `3`
+- Pages URL: `https://djkamma420.github.io/Farming420/`
+- CI: syntax checks, required-file checks, service-worker completeness and full test suite
+
+## Next development sequence
+
+1. **Current-mechanics verification pass for `src/data.js` with real `lastVerified` values.**
+2. Build pure farming setup candidate generation from normalized items/pets.
+3. Add server-side live-profile proxy.
+4. Add market data/valuation.
+5. Implement the tested profit engine.
+6. Build prerequisite-aware next-action recommendations.
+7. Add advanced pest/contest/RNG strategies.
