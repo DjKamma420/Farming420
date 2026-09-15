@@ -1,0 +1,90 @@
+# Farming420 Agent Rules
+
+This file is the source of truth for future ChatGPT/Codex sessions working on this repository.
+
+## Language
+
+- The application UI must be English only.
+- Source code, comments, identifiers, documentation, tests, commit messages and user-facing error messages must be English only.
+- Do not add German fallback text.
+
+## Product goal
+
+Farming420 helps a Hypixel SkyBlock player move from their current farming profile to the most profitable sensible next state with as little manual data entry as possible.
+
+The app is not a static maxing checklist. It must model the player's actual profile, current unlocks, owned gear, crop/tool progress, mutually exclusive farming setups, temporary buffs, pests, market prices and time requirements.
+
+The primary optimization target is long-term coin profit. Progression gates, unlock requirements, account level benefits and time-gated upgrades are also valid recommendations when they improve or unlock later profit.
+
+## Correctness rules
+
+1. Never invent a SkyBlock mechanic, value, formula, drop chance, item price, API field or interaction.
+2. Every non-trivial mechanic must have a source and a `lastVerified` date in the research/data layer.
+3. Prefer official Hypixel patch notes, official Hypixel API documentation and official wiki data. Use Elite SkyBlock/community sources for farming-specific mechanics when official documentation is incomplete. Mark uncertain information explicitly.
+4. Coming-soon or Alpha-only content must never affect live recommendations or profit calculations.
+5. Never add mutually exclusive setups together. Examples include active pets, incompatible reforges, alternative armor configurations and conditional buff states.
+6. Calculate marginal value from the player's current setup. Do not rank upgrades by raw Farming Fortune alone.
+7. All money calculations must distinguish acquisition cost, resale value, consumable cost, recurring cost and opportunity cost.
+8. All time calculations must distinguish active play time, passive waiting/time gates and market/order waiting.
+9. Preserve user data across app updates. Data schema changes require migrations and tests.
+10. If a value cannot be derived reliably, keep it explicitly manual rather than silently estimating it.
+
+## Architecture direction
+
+- Frontend: installable offline-capable PWA, suitable for GitHub Pages.
+- Persistent data: local-first, versioned browser storage with JSON backup/restore.
+- Hypixel integration: use a small server-side/serverless proxy for production API access so a Hypixel API key is never embedded in client code.
+- Static fallback: support importing raw Hypixel JSON responses for development and privacy-first/manual workflows.
+- Market data: cache Bazaar and auction-derived prices with timestamps and source metadata.
+- Calculation engine: pure functions separated from UI so formulas can be unit tested.
+- Research/data: source-controlled data files, not hard-coded scattered constants.
+
+## Required major areas
+
+- Account progression
+- Garden progression
+- All current crops
+- Physical farming tools, including tools shared by multiple crops
+- Armor and equipment
+- Pets and pet items
+- Accessories and permanent consumables
+- Enchantments, reforges, gemstones and item upgrades
+- Garden Chips
+- Attribute Shards
+- Pests and pest-specific farming setups
+- Temporary buffs, God Potion/mixins/cookie-dependent effects
+- Jacob's Contests and relevant unlock/reward progression
+- Bazaar/Auction/NPC value inputs
+- Profit calculator including normal crop drops, RNG/rare drops and pest EV
+- Upgrade planner
+- Setup/net-worth estimate
+- Settings, backup/restore, app install/update status and data migration tools
+
+## UX direction
+
+Use `DjKamma420/StundenplanNothing` as a structural quality reference, not as a visual copy. Important patterns to carry over:
+
+- clear top-level navigation and compact settings hub
+- local-first storage with explicit backup and restore
+- schema/version-aware migrations
+- offline service worker with coherent cache versioning
+- update safety: never mix old and new application files
+- installable PWA behavior
+- mobile-first responsive design
+- error states that explain what failed without destroying saved data
+- validation workflows/tests for persistence and migration behavior
+
+Keep the Farming420 interface layered and concise. The user should see the next useful decision, not every underlying data point at once.
+
+## Development order
+
+1. Establish versioned persistence, settings, backup/restore, PWA/update safety and English-only UI.
+2. Build a documented profile-data adapter layer and raw JSON import.
+3. Add production Hypixel proxy integration.
+4. Normalize items, tools, pets, gear and progression states from API data.
+5. Build price service and source/timestamp handling.
+6. Build mathematically tested profit engine.
+7. Build recommendation engine with prerequisites and mutually exclusive setup logic.
+8. Add advanced pest, contest and RNG expected-value models.
+
+Read `docs/PRODUCT_SPEC.md`, `docs/PROFILE_DATA_MATRIX.md` and `docs/MATH_MODEL.md` before changing progression or calculation logic.
