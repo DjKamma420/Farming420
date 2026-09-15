@@ -2,6 +2,8 @@
 
 Farming420 is a profile-aware **Hypixel SkyBlock farming progression and profit planner**.
 
+Live app: **https://djkamma420.github.io/Farming420/**
+
 The goal is not to show a giant maxing checklist. The app should understand the player's current account, crops, physical farming tools, owned setups, unlocks and market conditions, then show the most useful next actions toward a maximized and profitable farming profile.
 
 ## Product direction
@@ -17,6 +19,7 @@ Read these files before changing progression or calculation logic:
 - `AGENTS.md` — rules and source of truth for future development sessions
 - `docs/PRODUCT_SPEC.md` — complete product goal and feature specification
 - `docs/PROFILE_DATA_MATRIX.md` — what can be imported automatically from Hypixel and what still needs manual/external data
+- `docs/PROFILE_MODEL.md` — normalized internal profile model and source provenance rules
 - `docs/MATH_MODEL.md` — required calculation architecture and correctness rules
 
 ## Current foundation
@@ -28,24 +31,21 @@ Read these files before changing progression or calculation logic:
 - farming tool levels, Mk. II/Mk. III and Overclocker 3000 progression are represented
 - account, crop, tool, gear, pets, Garden Chips, Attribute Shards, buffs and pests are separate layers
 - local profile storage in the browser
-- versioned data schema foundation
+- versioned data schema with ordered migrations
 - full JSON backup and restore in Settings
 - raw Hypixel Garden JSON import
 - raw Hypixel profile/profiles JSON import
 - Farming Skill XP detection and level derivation through Hypixel's current public skill resource table
 - Garden crop-upgrade and unlocked-plot import
-- an explicit, versioned migration registry (`src/migrations.js`) that upgrades
-  stored data on load and on backup restore
-- a single validated backup contract (`src/backup.js`) shared by the sidebar and
-  the Settings dialog
-- Settings reachable at every viewport width, including the mobile layout where
-  the sidebar is hidden
+- normalized profile snapshots with explicit provenance and unknown/hidden states
+- profile and Garden imports merge into one stable internal model instead of exposing raw API field names to future calculators
+- a single validated backup contract (`src/backup.js`) shared by all backup/restore surfaces
+- Settings reachable at every viewport width, including the mobile layout where the sidebar is hidden
 - installable/offline PWA foundation
 - coherent versioned service-worker cache so application updates do not mix old and new files
-- a dependency-free test suite covering migrations, backups, the Hypixel
-  adapters, the data layer and CSP-safe markup
-- JavaScript validation, service-worker cache completeness and tests through
-  GitHub Actions
+- a dependency-free test suite covering migrations, backups, Hypixel adapters, normalized profile data, data-layer invariants and CSP-safe markup
+- JavaScript validation, service-worker cache completeness and tests through GitHub Actions
+- automatic GitHub Pages deployment from `main`
 
 ## Hypixel API architecture
 
@@ -67,7 +67,7 @@ Hypixel Public API
 
 Until that proxy exists, the app supports importing raw Hypixel JSON responses. Public resource endpoints can still be used directly where appropriate.
 
-See `docs/PROFILE_DATA_MATRIX.md` for the exact automation plan.
+See `docs/PROFILE_DATA_MATRIX.md` for the exact automation plan and `docs/PROFILE_MODEL.md` for the internal normalized representation.
 
 ## Settings and data safety
 
@@ -82,22 +82,20 @@ The persistence/update model is intentionally similar to the proven patterns in 
 
 ### Data schema and migrations
 
-`DATA_SCHEMA_VERSION` in `src/config.js` is the version of the locally stored
-state. `src/migrations.js` holds an ordered registry of migrations; each entry
-raises the stored state to one specific version and must be idempotent, because
-the same migration also runs when an older backup is restored.
+`DATA_SCHEMA_VERSION` in `src/config.js` is the version of the locally stored state. `src/migrations.js` holds an ordered registry of migrations; each entry raises the stored state to one specific version and must be idempotent, because the same migration also runs when an older backup is restored.
+
+Current schema: **3**.
+
+- schema 1 → 2: move crop and physical-tool progress into their correct scoped buckets
+- schema 2 → 3: add the persistent normalized profile snapshot boundary without fabricating imported data
 
 Rules for changing the schema:
 
-1. add a migration entry instead of editing an existing one — old backups still
-   need to arrive at the old versions
+1. add a migration entry instead of editing an existing one — old backups still need to arrive at the old versions
 2. raise `DATA_SCHEMA_VERSION`
-3. add tests to `tests/migrations.test.js` covering the old shape, the migrated
-   shape and idempotence
+3. add tests to `tests/migrations.test.js` covering the old shape, the migrated shape and idempotence
 
-State written by a newer app version is never overwritten: it is loaded
-read-only and reported in the console, and a newer backup is refused with an
-explanatory message rather than partially imported.
+State written by a newer app version is never overwritten: it is loaded read-only and reported in the console, and a newer backup is refused with an explanatory message rather than partially imported.
 
 ## Project structure
 
@@ -113,6 +111,7 @@ Farming420/
 ├─ docs/
 │  ├─ PRODUCT_SPEC.md
 │  ├─ PROFILE_DATA_MATRIX.md
+│  ├─ PROFILE_MODEL.md
 │  └─ MATH_MODEL.md
 ├─ src/
 │  ├─ app.js
@@ -125,6 +124,8 @@ Farming420/
 │  ├─ foundation.css
 │  ├─ hypixel-import.js
 │  ├─ migrations.js
+│  ├─ profile-normalizer.js
+│  ├─ profile-sync.js
 │  └─ styles.css
 ├─ scripts/
 │  └─ check-sw-manifest.js
@@ -135,7 +136,9 @@ Farming420/
 │  ├─ csp.test.js
 │  ├─ data.test.js
 │  ├─ hypixel-import.test.js
-│  └─ migrations.test.js
+│  ├─ migrations.test.js
+│  ├─ profile-normalizer.test.js
+│  └─ profile-sync.test.js
 └─ .github/workflows/
    ├─ validate.yml
    └─ pages.yml
@@ -161,15 +164,9 @@ The test suite uses the built-in Node test runner and has no dependencies:
 npm test
 ```
 
-It covers the migration registry, the backup contract, the raw Hypixel JSON
-adapters, data-layer invariants (all 13 crops, the shared Eclipse Hoe, sourced
-entries, coming-soon content staying out of the live list) and the markup rules
-the shipped Content Security Policy imposes.
+It covers the migration registry, backup contract, raw Hypixel JSON adapters, normalized profile model, data-layer invariants (all 13 crops, the shared Eclipse Hoe, sourced entries, coming-soon content staying out of the live list) and the markup rules the shipped Content Security Policy imposes.
 
-Because `index.html` ships `script-src 'self'; style-src 'self'`, generated
-markup must not contain `style="..."` attributes or inline `on*` handlers — the
-browser drops both silently. Set widths through the CSSOM (`element.style.width`)
-and attach listeners in JavaScript.
+Because `index.html` ships `script-src 'self'; style-src 'self'`, generated markup must not contain `style="..."` attributes or inline `on*` handlers — the browser drops both silently. Set widths through the CSSOM (`element.style.width`) and attach listeners in JavaScript.
 
 ## Calculation policy
 
@@ -193,7 +190,7 @@ Normal crop drops, RNG drops, pest expected value, downtime, contest rewards and
 ## Development order
 
 1. ~~Finish English-only runtime, versioned persistence, Settings and PWA/update safety.~~ Done.
-2. Expand raw Hypixel adapters and build the production API proxy.
+2. **Expand raw Hypixel adapters and normalized profile coverage; build the production API proxy.** In progress.
 3. Decode profile item NBT for farming tools, armor, equipment, enchantments, reforges, gemstones and counters.
 4. Add Bazaar and auction valuation services with timestamps and confidence.
 5. Build and test the crop/profit calculation engine.
@@ -202,4 +199,6 @@ Normal crop drops, RNG drops, pest expected value, downtime, contest rewards and
 
 ## Deployment
 
-The repository contains a GitHub Pages workflow, but Pages must first be enabled for the repository in GitHub settings. The deployment workflow is intentionally manual until that repository setting is enabled, avoiding repeated failing deployments.
+GitHub Pages is enabled and deploys from `main`.
+
+Live app: **https://djkamma420.github.io/Farming420/**
