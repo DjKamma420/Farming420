@@ -109,7 +109,11 @@ function enhanceToolsPage(root) {
   if (!state) return;
   const crop = cropForState(state);
   const activeId = selectedReforge(state, crop.id);
+  const activeReforge = reforgeById(activeId);
   editor.dataset.workspaceEnhanced = '1';
+
+  const status = editor.querySelector('.item-rarity');
+  if (status) status.textContent = activeReforge ? `Reforge: ${activeReforge.name}` : 'No reforge selected';
 
   const content = root.querySelector('.content');
   const pageHead = content?.querySelector('.page-head');
