@@ -24,6 +24,13 @@ test('verified max enchantments receive the maxed/rainbow presentation state', (
   assert.equal(enchantPresentationClass('cultivating', 10), 'enchant-maxed');
 });
 
+test('crop-specific Turbo NBT enchantments use the shared Turbo-Crop maximum', () => {
+  assert.deepEqual(enchantPresentation('turbo_wheat', 7), {
+    id: 'turbo_crop', level: 7, maxLevel: 7, state: 'maxed',
+  });
+  assert.equal(enchantPresentation('turbo_melon', 6).state, 'active');
+});
+
 test('non-max verified enchantments remain active instead of rainbow', () => {
   assert.equal(enchantPresentation('Harvesting', 5).state, 'active');
 });
