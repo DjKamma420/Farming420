@@ -16,6 +16,15 @@ import {
   stageForLevel,
 } from './progression.js';
 import {
+  enchantRowsFor,
+  gemOptionValues,
+  itemSummary,
+  parseGem,
+  rarityClass,
+  withEnchantLevel,
+  withEnchantToggled,
+} from './item-editor.js';
+import {
   ITEM_SOURCE,
   SETUP_SLOTS,
   activeSetup,
@@ -27,8 +36,6 @@ import {
   setupSummary,
 } from './setups.js';
 import {
-  enchantmentOptions,
-  gemOptions,
   itemsForSlot,
   loadItemCatalog,
   readCachedCatalog,
@@ -577,23 +584,56 @@ function optionList(options, current) {
 function slotCard(slot) {
   const item = slotItem(slot.id);
   const open = state.setupSlot === slot.id;
-  const enchantCount = item ? Object.keys(item.enchantments || {}).length : 0;
-  const detail = item
-    ? [item.reforge ? `${esc(item.reforge)} reforge` : null,
-       enchantCount ? `${enchantCount} enchant${enchantCount === 1 ? '' : 's'}` : null,
-       item.recombobulated ? 'recombobulated' : null,
-       item.gems?.length ? `${item.gems.length} gem${item.gems.length === 1 ? '' : 's'}` : null]
-      .filter(Boolean).join(' · ')
-    : 'Empty';
 
-  return `<button class="slot-card ${item ? 'filled' : ''} ${open ? 'open' : ''}" data-slot="${esc(slot.id)}">
-      <div class="eyebrow">${esc(slot.label)}</div>
-      <strong>${esc(item?.displayName || 'Choose an item')}</strong>
-      <span>${detail}</span>
+  return `<button class="slot-card ${item ? 'filled' : ''} ${open ? 'open' : ''} ${esc(rarityClass(item?.rarity))}" data-slot="${esc(slot.id)}">
+      <span class="slot-portrait"><span class="item-portrait-fallback" aria-hidden="true">${esc(slot.label.slice(0, 2).toUpperCase())}</span></span>
+      <span class="slot-text">
+        <span class="eyebrow">${esc(slot.label)}</span>
+        <strong>${esc(item?.displayName || 'Choose an item')}</strong>
+        <span>${esc(itemSummary(slot.id, item))}</span>
+      </span>
       ${item?.source === ITEM_SOURCE.SYNC ? badge('synced', 'synced') : ''}
     </button>`;
 }
 
+function toRoman(value) {
+  const numerals = [[10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']];
+  let rest = Math.max(0, Math.floor(Number(value) || 0));
+  if (!rest) return '0';
+  let out = '';
+  for (const [size, numeral] of numerals) {
+    while (rest >= size) { out += numeral; rest -= size; }
+  }
+  return out;
+}
+
+function leverInput(attribute, slotId, key, checked, label) {
+  return `<label class="lever" title="${esc(label)}">
+      <input type="checkbox" ${attribute}="${esc(slotId)}" ${key ? `data-ench-key="${esc(key)}"` : ''} ${checked ? 'checked' : ''}>
+      <span class="lever-track" aria-hidden="true"></span>
+      <span class="sr-only">${esc(label)}</span>
+    </label>`;
+}
+
+function enchantLine(slotId, row) {
+  const levels = row.maxLevel
+    ? Array.from({ length: row.maxLevel }, (_, index) => index + 1)
+    : [...new Set([row.level, 1, 2, 3, 4, 5].filter(value => value > 0))].sort((a, b) => a - b);
+  return `<div class="enchant-line enchant-${esc(row.state)} ${row.active ? 'on' : 'off'}" data-ench-row="${esc(row.storageKey)}">
+      ${leverInput('data-ench-toggle', slotId, row.storageKey, row.active, `${row.label} on this item`)}
+      <span class="enchant-name">${esc(row.label)}${row.kind === 'ultimate' ? '<em class="enchant-tag">ultimate</em>' : ''}${row.known ? '' : '<em class="enchant-tag unknown">not verified</em>'}</span>
+      <select class="enchant-level" data-ench-select="${esc(slotId)}" data-ench-key="${esc(row.storageKey)}" data-ench-max="${row.maxLevel || 0}" ${row.active ? '' : 'disabled'}>
+        ${levels.map(level => `<option value="${level}" ${level === row.level ? 'selected' : ''}>${esc(toRoman(level))}</option>`).join('')}
+      </select>
+      <span class="enchant-max">${row.maxLevel ? `max ${esc(toRoman(row.maxLevel))}` : 'level unknown'}</span>
+    </div>`;
+}
+
+/**
+ * One item, shown as an item: its art and rarity, then the things that can
+ * actually be on it. The enchantment list is fixed per slot rather than typed,
+ * so the player recognises what they own instead of recalling an identifier.
+ */
 function slotEditor(slotId) {
   const slot = SETUP_SLOTS.find(entry => entry.id === slotId);
   if (!slot) return '';
@@ -601,59 +641,68 @@ function slotEditor(slotId) {
   const snap = snapshot();
   const catalogItems = itemsForSlot(itemCatalog, slotId);
   const reforges = optionList(reforgeOptions(snap), item.reforge);
-  const enchants = enchantmentOptions(snap);
-  const gems = gemOptions(snap);
+  const rows = enchantRowsFor(slotId, item);
+  const gems = item.gems || [];
+  const filled = Boolean(item.displayName);
 
-  return `<div class="slot-editor">
-    <div class="section-row"><div><div class="eyebrow">${esc(slot.group)}</div><h2>${esc(slot.label)}</h2></div>
-      <button class="ghost small" data-slot-clear="${esc(slotId)}">Clear slot</button></div>
-
-    <label class="settings-field"><span>Item</span>
-      ${catalogItems.length ? `<select data-slot-item="${esc(slotId)}">
-        <option value="">— none —</option>
-        ${catalogItems.map(entry => `<option value="${esc(entry.id)}" ${entry.id === item.skyblockId ? 'selected' : ''}>${esc(entry.name)}</option>`).join('')}
-      </select>` : ''}
-      <input type="text" data-slot-name="${esc(slotId)}" value="${esc(item.displayName)}" placeholder="${catalogItems.length ? 'Or type a name the list does not have' : 'Type the item name'}">
-      ${slotHasOfficialCategory(slotId) && !catalogItems.length ? `<span class="find-warn">${esc(catalogNotice || 'The official item list is not loaded, so type the name.')}</span>` : ''}
-    </label>
-
-    <label class="settings-field"><span>Reforge</span>
-      <input list="reforge-options" type="text" data-slot-reforge="${esc(slotId)}" value="${esc(item.reforge || '')}" placeholder="e.g. mossy">
-      <datalist id="reforge-options">${reforges.map(option => `<option value="${esc(option.value)}"></option>`).join('')}</datalist>
-    </label>
-
-    <div class="settings-field"><span>Enchantments</span>
-      <div class="enchant-rows">
-        ${Object.entries(item.enchantments || {}).map(([name, level]) => `<div class="enchant-row">
-          <input type="text" value="${esc(name)}" data-ench-name="${esc(slotId)}" data-ench-key="${esc(name)}">
-          <input type="number" min="0" value="${Number(level) || 0}" data-ench-level="${esc(slotId)}" data-ench-key="${esc(name)}">
-          <button class="ghost small" data-ench-remove="${esc(slotId)}" data-ench-key="${esc(name)}">×</button>
-        </div>`).join('')}
-        <div class="enchant-row">
-          <input list="enchant-options" type="text" data-ench-new="${esc(slotId)}" placeholder="Add enchantment">
-          <input type="number" min="0" value="1" data-ench-new-level="${esc(slotId)}">
-          <button class="ghost small" data-ench-add="${esc(slotId)}">Add</button>
-        </div>
-        <datalist id="enchant-options">${enchants.map(option => `<option value="${esc(option.value)}"></option>`).join('')}</datalist>
+  return `<div class="item-editor ${esc(rarityClass(item.rarity))}" data-item-editor="${esc(slotId)}">
+    <header class="item-editor-head">
+      <div class="item-portrait" data-item-art-slot="${esc(slotId)}">
+        <span class="item-portrait-fallback" aria-hidden="true">${esc(slot.label.slice(0, 2).toUpperCase())}</span>
       </div>
+      <div class="item-identity">
+        <div class="eyebrow">${esc(slot.group)} · ${esc(slot.label)}</div>
+        <strong class="item-title">${esc(item.displayName || 'Choose an item')}</strong>
+        <span class="item-rarity">${esc(item.rarity || 'rarity unknown')}${item.source === ITEM_SOURCE.SYNC ? ' · synced' : ''}</span>
+      </div>
+      <button class="ghost small" data-slot-clear="${esc(slotId)}" ${filled ? '' : 'disabled'}>Clear slot</button>
+    </header>
+
+    <div class="item-editor-grid">
+      <label class="settings-field"><span>Which ${esc(slot.label.toLowerCase())}</span>
+        ${catalogItems.length ? `<select data-slot-item="${esc(slotId)}">
+          <option value="">— none —</option>
+          ${catalogItems.map(entry => `<option value="${esc(entry.id)}" ${entry.id === item.skyblockId ? 'selected' : ''}>${esc(entry.name)}</option>`).join('')}
+        </select>` : ''}
+        <input type="text" data-slot-name="${esc(slotId)}" value="${esc(item.displayName)}" placeholder="${catalogItems.length ? 'Or type a name the list does not have' : 'Type the item name'}">
+        ${slotHasOfficialCategory(slotId) && !catalogItems.length ? `<span class="find-warn">${esc(catalogNotice || 'The official item list is not loaded, so type the name.')}</span>` : ''}
+      </label>
+
+      <label class="settings-field"><span>Reforge</span>
+        <input list="reforge-options" type="text" data-slot-reforge="${esc(slotId)}" value="${esc(item.reforge || '')}" placeholder="e.g. mossy">
+        <datalist id="reforge-options">${reforges.map(option => `<option value="${esc(option.value)}"></option>`).join('')}</datalist>
+      </label>
     </div>
 
-    <label class="switch-row settings-field"><span>Recombobulated</span>
-      <input type="checkbox" data-slot-recomb="${esc(slotId)}" ${item.recombobulated ? 'checked' : ''}></label>
+    <div class="item-editor-row">
+      ${leverInput('data-slot-recomb', slotId, '', Boolean(item.recombobulated), 'Recombobulated')}
+      <div><strong>Recombobulated</strong><span class="hint">Raises the item one rarity, which raises reforge and gemstone values with it.</span></div>
+    </div>
 
-    <div class="settings-field"><span>Gemstones</span>
-      <div class="enchant-rows">
-        ${(item.gems || []).map((gem, index) => `<div class="enchant-row">
-          <input type="text" value="${esc(gem)}" data-gem-value="${esc(slotId)}" data-gem-index="${index}">
-          <button class="ghost small" data-gem-remove="${esc(slotId)}" data-gem-index="${index}">×</button>
+    ${rows.length ? `<section class="item-editor-section">
+      <div class="section-row"><div><h3>Enchantments</h3><p>Everything that can sit on this ${esc(slot.label.toLowerCase())}. Flip the ones you have, then pick the level.</p></div></div>
+      <div class="enchant-grid">${rows.map(row => enchantLine(slotId, row)).join('')}</div>
+    </section>` : `<p class="hint">A ${esc(slot.label.toLowerCase())} takes no farming enchantments.</p>`}
+
+    <section class="item-editor-section">
+      <div class="section-row"><div><h3>Gemstones</h3><p>One line per socket.</p></div></div>
+      <div class="gem-grid">
+        ${gems.map((gem, index) => `<div class="gem-line">
+          <select data-gem-value="${esc(slotId)}" data-gem-index="${index}">
+            ${gemOptionValues().map(value => `<option value="${esc(value)}" ${value === String(gem).toUpperCase() ? 'selected' : ''}>${esc(value)}</option>`).join('')}
+            ${parseGem(gem) ? '' : `<option value="${esc(gem)}" selected>${esc(gem)}</option>`}
+          </select>
+          <button class="ghost small" data-gem-remove="${esc(slotId)}" data-gem-index="${index}">Remove</button>
         </div>`).join('')}
-        <div class="enchant-row">
-          <input list="gem-options" type="text" data-gem-new="${esc(slotId)}" placeholder="e.g. PERFECT PERIDOT">
+        <div class="gem-line">
+          <select data-gem-new="${esc(slotId)}">
+            <option value="">— add a gemstone —</option>
+            ${gemOptionValues().map(value => `<option value="${esc(value)}">${esc(value)}</option>`).join('')}
+          </select>
           <button class="ghost small" data-gem-add="${esc(slotId)}">Add</button>
         </div>
-        <datalist id="gem-options">${gems.map(option => `<option value="${esc(option.value)}"></option>`).join('')}</datalist>
       </div>
-    </div>
+    </section>
   </div>`;
 }
 
@@ -738,7 +787,15 @@ function bindSetups() {
   });
   document.querySelector(`[data-slot-item="${slotId}"]`)?.addEventListener('change', event => {
     const chosen = itemsForSlot(itemCatalog, slotId).find(entry => entry.id === event.target.value);
-    patch({ skyblockId: chosen?.id ?? null, displayName: chosen?.name ?? currentItem().displayName });
+    patch({
+      skyblockId: chosen?.id ?? null,
+      displayName: chosen?.name ?? currentItem().displayName,
+      // Hypixel's own item resource carries the base tier, so picking an item
+      // from the list colours it correctly without anyone typing a rarity. A
+      // recombobulator raises the shown rarity, which the editor states
+      // separately rather than folding into this base value.
+      rarity: chosen?.tier ?? currentItem().rarity,
+    });
     rerender();
   });
   document.querySelector(`[data-slot-name="${slotId}"]`)?.addEventListener('change', event => {
@@ -751,21 +808,17 @@ function bindSetups() {
     patch({ recombobulated: event.target.checked }); rerender();
   });
 
-  document.querySelector(`[data-ench-add="${slotId}"]`)?.addEventListener('click', () => {
-    const name = document.querySelector(`[data-ench-new="${slotId}"]`)?.value?.trim().toLowerCase();
-    if (!name) return;
-    const level = Number(document.querySelector(`[data-ench-new-level="${slotId}"]`)?.value || 1);
-    patch({ enchantments: { ...currentItem().enchantments, [name]: Math.max(0, level) } });
-    rerender();
-  });
-  document.querySelectorAll(`[data-ench-level="${slotId}"]`).forEach(el => el.addEventListener('change', event => {
-    patch({ enchantments: { ...currentItem().enchantments, [el.dataset.enchKey]: Math.max(0, Number(event.target.value) || 0) } });
+  // The lever says whether the item carries the enchantment at all; the select
+  // beside it says at which level. Turning one on starts it at I rather than at
+  // its maximum, so the planner never credits Fortune nobody claimed.
+  document.querySelectorAll(`[data-ench-toggle="${slotId}"]`).forEach(el => el.addEventListener('change', event => {
+    patch({ enchantments: withEnchantToggled(currentItem(), el.dataset.enchKey, event.target.checked) });
     rerender();
   }));
-  document.querySelectorAll(`[data-ench-remove="${slotId}"]`).forEach(el => el.addEventListener('click', () => {
-    const next = { ...currentItem().enchantments };
-    delete next[el.dataset.enchKey];
-    patch({ enchantments: next }); rerender();
+  document.querySelectorAll(`[data-ench-select="${slotId}"]`).forEach(el => el.addEventListener('change', event => {
+    const max = Number(el.dataset.enchMax) || null;
+    patch({ enchantments: withEnchantLevel(currentItem(), el.dataset.enchKey, event.target.value, max) });
+    rerender();
   }));
 
   document.querySelector(`[data-gem-add="${slotId}"]`)?.addEventListener('click', () => {
