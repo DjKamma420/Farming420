@@ -46,3 +46,13 @@ test('a second scan cannot start on top of a running one, and the same file can 
   assert.match(toolUi, /_toolScanBusy/);
   assert.match(toolUi, /input\.value = ''/);
 });
+
+test('the tool target falls back to evidence the tooltip repeats when the name is unreadable', () => {
+  // A photographed title line truncated to "Melon |" while every enchantment
+  // survived. Giving up there would throw away a complete, correct scan.
+  assert.match(toolUi, /export function toolTarget/);
+  assert.match(toolUi, /CROP_TURBO_IDS/);
+  assert.match(toolUi, /groupByTool\(\[cropId\], 'turbo'\)/);
+  // Whatever it falls back to has to be said out loud before anything is applied.
+  assert.match(toolUi, /Check the tool target above before applying/);
+});

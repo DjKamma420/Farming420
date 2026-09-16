@@ -934,3 +934,80 @@ cached, which is the intended offline behaviour.
 
 Merging the pull request the workflow opens. That is what puts Hypixel's
 textures into the repository.
+
+## Reading a photograph of a tooltip (0.20.0)
+
+### What was actually wrong
+
+The user sent the failing input: a phone photograph of a monitor, 2160x3840.
+Reproduced locally with native Tesseract against that exact file:
+
+| | before | after |
+| --- | --- | --- |
+| image handed to Tesseract | 8.29 MP | 1.44 MP |
+| native Tesseract time | 12.3 s | 0.55 s |
+| expected strings recognised | 0 of 11 | 11 of 11 |
+
+Native Tesseract is several times faster than the WebAssembly build the browser
+runs, so twelve seconds here is minutes there. That is the hang.
+
+Two separate causes, both measured rather than reasoned about:
+
+1. **The image was never reduced.** `ocrCanvasScale` clamped to a minimum of 1,
+   so the 1600px normalisation could only ever magnify. An eight-megapixel photo
+   went to Tesseract whole.
+2. **The binarisation destroyed the text.** A fixed `value > 95 -> white` cut was
+   written for a clean screenshot. On a photograph the blue tooltip panel is
+   itself brighter than that, so the panel and the text both went white and the
+   OCR returned noise.
+
+### What changed
+
+- **Crop to the tooltip first.** A Minecraft tooltip is a strongly blue panel and
+  nothing else on a farming HUD is; photographed it measures about
+  (53, 106, 174) against a warm grey surround. `findTooltipRegion` finds it in
+  7 ms in the browser and returns null when nothing stands out, in which case the
+  whole image is scanned as before.
+- **Fit to a long side of 1600**, in both directions.
+- **Luminance, then a histogram stretch, then invert**, instead of a fixed
+  threshold. Inverting matters on its own: Tesseract is trained on dark text on
+  light paper, and a tooltip is the opposite.
+- **Page segmentation SINGLE_COLUMN** rather than SINGLE_BLOCK. A tooltip is one
+  column of text at varying sizes, and it read every enchantment line where
+  SINGLE_BLOCK lost some.
+
+### Parsing what the camera actually produces
+
+The remaining errors were in the text, not the image. This font under a camera
+reads V as U, M as H, and I as l or T. Since the app knows every enchantment and
+reforge it cares about, matching inside that closed vocabulary is safe:
+
+- `romanLevel` maps the confusions and then takes the longest valid numeral, so
+  `Il...` is II, `UI` is VI, and `Delicate UW` is V.
+- `closestVocabularyMatch` is a bounded edit distance against the closed set, so
+  `Turbo-Helon` resolves and `Efficiency` still matches nothing.
+- Enchantment lines are split by trying the longest name first, so `Crop Fever
+  Il...` is not read as an enchantment called "Crop".
+- The rarity footer is matched as a standalone word anywhere in the line, since
+  the game frames it with decoration and a photograph adds more.
+
+### The one thing the scan could not read
+
+OCR truncated the title to `Melon |`, so the tool could not be identified from
+the name. `toolTarget` now falls back to evidence the tooltip repeats: another
+line naming the tool, then the Turbo enchantment, which names exactly one crop.
+For this photo that resolves to `melon-dicer`, correctly. The fallback is never
+silent: the result panel says which evidence was used and a warning asks the
+player to check it before applying.
+
+The scanner still does not repair the name itself. It reports `Melon |` as read.
+
+### Verification
+
+- 366 tests pass; 10 are new.
+- The real OCR output is checked in as `tests/ocr-fixture.js` and asserted
+  against: reforge `bountiful`, rarity `LEGENDARY`, and all six farming
+  enchantments at their true levels.
+- The scale test was proved to fail against the old rule.
+- Run in a real browser against the user's actual photograph: 8.29 MP to
+  1.44 MP, detection in 7 ms, clean console.
