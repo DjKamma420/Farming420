@@ -38,8 +38,10 @@ function blossom(slot, overrides = {}) {
   };
 }
 
-function snapshot() {
-  return createEmptyProfileSnapshot();
+function snapshot(uniqueVisitors = null) {
+  const value = createEmptyProfileSnapshot();
+  value.garden.visitors.uniqueNpcsServed = uniqueVisitors;
+  return value;
 }
 
 test('Blossom base Fortune is auto-derived per equipped piece', () => {
@@ -91,4 +93,41 @@ test('removing Rooted clears only the previous auto-derived dynamic gain', () =>
   applySnapshotToProgress(state, snapshot());
   assert.equal(state.profile.levels['equipment-reforge-rooted-on-full-equipment'], undefined);
   assert.equal(state.profile.manualGain['equipment-reforge-rooted-on-full-equipment'], undefined);
+});
+
+test('Green Thumb uses summed equipment levels and synced unique visitors', () => {
+  const state = stateWithEquipment([
+    blossom(0, { enchantments: { green_thumb: 5 } }),
+    blossom(1, { enchantments: { green_thumb: 4 } }),
+    blossom(2, { enchantments: { green_thumb: 3 } }),
+    blossom(3, { enchantments: { green_thumb: 2 } }),
+  ]);
+  applySnapshotToProgress(state, snapshot(140));
+  assert.equal(state.profile.levels['equipment-enchant-green-thumb-v-on-equipment'], 14);
+  assert.equal(state.profile.manualGain['equipment-enchant-green-thumb-v-on-equipment'], 7);
+  assert.ok(isAutoApplied(state, 'account', 'equipment-enchant-green-thumb-v-on-equipment'));
+});
+
+test('Green Thumb is detected without guessing its marginal value when visitor count is unknown', () => {
+  const state = stateWithEquipment([
+    blossom(0, { enchantments: { green_thumb: 5 } }),
+    blossom(1, { enchantments: {} }),
+  ]);
+  const result = applySnapshotToProgress(state, snapshot(null));
+  assert.equal(state.profile.levels['equipment-enchant-green-thumb-v-on-equipment'], 5);
+  assert.equal(state.profile.manualGain['equipment-enchant-green-thumb-v-on-equipment'], undefined);
+  assert.ok(result.skipped.some(note => /unique Garden visitor count is unavailable/i.test(note)));
+});
+
+test('removing Green Thumb clears stale auto-derived marginal value', () => {
+  const state = stateWithEquipment([0, 1, 2, 3].map(i => blossom(i)));
+  applySnapshotToProgress(state, snapshot(100));
+  assert.equal(state.profile.manualGain['equipment-enchant-green-thumb-v-on-equipment'], 5);
+
+  for (const slot of ['equipment1', 'equipment2', 'equipment3', 'equipment4']) {
+    state.profile.setups.list[0].slots[slot].enchantments = {};
+  }
+  applySnapshotToProgress(state, snapshot(100));
+  assert.equal(state.profile.levels['equipment-enchant-green-thumb-v-on-equipment'], undefined);
+  assert.equal(state.profile.manualGain['equipment-enchant-green-thumb-v-on-equipment'], undefined);
 });
