@@ -1,4 +1,4 @@
-const VERSION = 'farming420-0.15.0';
+const VERSION = 'farming420-0.16.0';
 const APP_FILES = [
   './',
   './index.html',
@@ -9,6 +9,7 @@ const APP_FILES = [
   './src/styles.css',
   './src/enhancements.js',
   './src/enhancements.css',
+  './src/enchant-presentation.js',
   './src/config.js',
   './src/progression.js',
   './src/setups.js',
