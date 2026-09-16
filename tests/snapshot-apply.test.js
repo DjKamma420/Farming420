@@ -171,8 +171,7 @@ test('loadout containers count as armor and equipment', () => {
     })),
   }));
   assert.equal(state.profile.levels['equipment-reforge-rooted-on-full-equipment'], 1);
-  // The Green Thumb entry is a yes/no upgrade (max 1), so the level clamps.
-  assert.equal(state.profile.levels['equipment-enchant-green-thumb-v-on-equipment'], 1);
+  assert.equal(state.profile.levels['equipment-enchant-green-thumb-v-on-equipment'], 20);
 });
 
 test('applied values are stamped as auto so the UI can mark them', () => {
@@ -199,8 +198,6 @@ test('a zero or absent value never marks an entry as owned', () => {
 test('entries the sync cannot fill are reported rather than silently zeroed', () => {
   const state = emptyState();
   const result = applySnapshotToProgress(state, snapshotWith({ items: [] }));
-  // Mk. II/III need an item-id table this repo has not verified, so they must
-  // stay in the unmapped list instead of being guessed at.
   assert.ok(result.unmapped.includes('tool-mk-ii'));
   assert.ok(result.unmapped.includes('accessory-fermento-artifact'));
   assert.ok(!result.unmapped.includes('tool-farming-for-dummies'));
@@ -268,8 +265,6 @@ test('the setup wins over the gear a sync detected', () => {
     helmet: setupPiece(), chestplate: setupPiece(), leggings: setupPiece(), boots: setupPiece(),
   });
   applySnapshotToProgress(state, snapshotWith({ items: [synced, synced, synced, synced] }));
-  // The setup says mossy; the stale synced pieces say blessed. The setup is
-  // what the player states they wear.
   assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], 1);
 });
 
@@ -297,7 +292,6 @@ test('removing a reforge from the setup clears the card again', () => {
   applySnapshotToProgress(state, snapshotWith());
   assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], 1);
 
-  // The player reforges one piece to something else.
   state.profile.setups.list[0].slots.boots.reforge = 'blessed';
   applySnapshotToProgress(state, snapshotWith());
   assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], undefined, 'a value nothing supports must go away');
@@ -352,9 +346,6 @@ test('a state without setups still evaluates the detected gear', () => {
 // --- the in-game tool rename -----------------------------------------------
 
 test("a tool is recognised under its current in-game name", () => {
-  // Hypixel renamed the specialised tools (Hoe -> Sickle/Shovel/Cutter).
-  // src/data.js carried the pre-rename Fandom names, which silently broke
-  // detection for seven of thirteen crops.
   const cases = [
     ["Euclid's Wheat Sickle", 'wheat'],
     ['Gauss Carrot Shovel', 'carrot'],
@@ -391,7 +382,6 @@ test('the shared tool matches both crops under either name', () => {
 });
 
 test('a stack of the crop itself is not mistaken for the tool', () => {
-  // This is why a tool noun is required as well as the crop-distinctive part.
   for (const displayName of ['Wild Rose', 'Melon Slice', 'Cactus', 'Cocoa Beans', 'Pumpkin', 'Enchanted Melon']) {
     assert.deepEqual(cropsForToolItem(toolItem({ displayName })), [], displayName);
   }
@@ -402,7 +392,6 @@ test('every crop declares a tool match, a source and a verification date', () =>
     assert.ok(crop.toolMatch, `${crop.id} has no toolMatch`);
     assert.match(String(crop.toolSource || ''), /^https?:\/\//, `${crop.id} has no tool source`);
     assert.match(String(crop.toolVerified || ''), /^\d{4}-\d{2}-\d{2}$/, `${crop.id} has no verification date`);
-    // The distinctive part must actually be part of the current name.
     assert.ok(
       crop.tool.toLowerCase().replace(/[^a-z0-9]+/g, ' ').includes(crop.toolMatch),
       `${crop.id}: "${crop.toolMatch}" is not part of "${crop.tool}"`,

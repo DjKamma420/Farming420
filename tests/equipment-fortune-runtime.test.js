@@ -4,6 +4,9 @@ import test from 'node:test';
 import {
   blossomBaseFortune,
   blossomPieceCount,
+  greenThumbFortune,
+  greenThumbMarginalPerLevel,
+  greenThumbTotalLevel,
   isBlossomPiece,
   minimumGreenThumbLevel,
   rootedFortuneForPiece,
@@ -46,6 +49,23 @@ test('Rooted fortune is derived from each item rarity', () => {
     piece({ rarity: 'MYTHIC' }),
     piece({ rarity: 'LEGENDARY' }),
   ]), 72);
+});
+
+test('Green Thumb sums actual levels across equipped pieces', () => {
+  const pieces = [
+    piece({ enchantments: { green_thumb: 5 } }),
+    piece({ enchantments: { green_thumb: 4 } }),
+    piece({ enchantments: { green_thumb: 2 } }),
+    piece({ enchantments: {} }),
+  ];
+  assert.equal(greenThumbTotalLevel(pieces), 11);
+  assert.equal(greenThumbFortune(pieces, 140), 77);
+  assert.equal(greenThumbMarginalPerLevel(140), 7);
+});
+
+test('Green Thumb refuses an unknown visitor count instead of guessing', () => {
+  assert.equal(greenThumbFortune([piece()], null), null);
+  assert.equal(greenThumbMarginalPerLevel(undefined), null);
 });
 
 test('Green Thumb detection records the minimum level across a complete enchanted set', () => {

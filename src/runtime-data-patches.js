@@ -36,3 +36,15 @@ if (rooted) Object.assign(rooted, {
   lastVerified: '2026-09-16',
   notes: 'Rooted Farming Fortune scales with each equipment piece rarity: +6/+9/+12/+15/+18/+21 from Common through Mythic. Farming420 derives the current full-set value from the detected rarities instead of assuming +72.',
 });
+
+const greenThumb = UPGRADES.find(entry => entry.id === 'equipment-enchant-green-thumb-v-on-equipment');
+if (greenThumb) Object.assign(greenThumb, {
+  name: 'Green Thumb on equipment',
+  status: 'ACTIVE',
+  max: 20,
+  stepGain: 0,
+  rawMarginal: 0,
+  source: 'https://hypixel-skyblock.fandom.com/wiki/Enchantments/Equipment',
+  lastVerified: '2026-09-16',
+  notes: 'Each +1 Green Thumb level on one equipped piece grants +0.05 Farming Fortune per unique Garden visitor served. Farming420 tracks the sum of the four equipment enchant levels (max 20) and derives the next-level marginal gain from the synced unique-visitor count.',
+});

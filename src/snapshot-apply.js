@@ -3,7 +3,12 @@ import { CROPS, UPGRADES } from './data.js';
 import { ensureProgressBucket, toolKeyForCropId } from './migrations.js';
 import { activeSetup } from './setups.js';
 import { exclusiveGroupForEntry } from './exclusivity.js';
-import { blossomPieceCount, rootedFortuneForPieces } from './equipment-fortune.js';
+import {
+  blossomPieceCount,
+  greenThumbMarginalPerLevel,
+  greenThumbTotalLevel,
+  rootedFortuneForPieces,
+} from './equipment-fortune.js';
 
 const AUTO_SOURCE = 'hypixel-sync';
 
@@ -36,6 +41,7 @@ const ARMOR_SLOTS = 4;
 const EQUIPMENT_SLOTS = 4;
 const BLOSSOM_BASE_ID = 'equipment-blossom-set-base-stats';
 const ROOTED_ID = EQUIPMENT_REFORGES.rooted;
+const GREEN_THUMB_ID = EQUIPMENT_ENCHANTS.green_thumb;
 const upgradeById = new Map(UPGRADES.map(item => [item.id, item]));
 
 function maxFor(itemId) {
@@ -199,13 +205,25 @@ function applySetWide(pieces, expectedSlots, reforgeMap, enchantMap, gemItemId, 
   if (gemItemId && pieces.every(piece => hasPerfectGem(piece.gems))) applyValue(store, scope, gemItemId, 1, applied);
 }
 
-function applyEquipmentDerived(pieces, state, autoApplied, applied, skipped) {
+function applyEquipmentDerived(pieces, state, snapshot, autoApplied, applied, skipped) {
   if (!pieces.length) return;
   const scope = autoApplied.account ||= {};
   const store = state.profile;
 
   const blossomCount = blossomPieceCount(pieces);
   if (blossomCount > 0) applyValue(store, scope, BLOSSOM_BASE_ID, blossomCount, applied);
+
+  const greenThumbLevel = greenThumbTotalLevel(pieces);
+  if (greenThumbLevel > 0) {
+    const uniqueVisitors = snapshot?.garden?.visitors?.uniqueNpcsServed;
+    const marginal = greenThumbMarginalPerLevel(uniqueVisitors);
+    if (marginal === null) {
+      applyValue(store, scope, GREEN_THUMB_ID, greenThumbLevel, applied);
+      skipped.push('Green Thumb was detected on equipment, but the unique Garden visitor count is unavailable, so its marginal Farming Fortune was not guessed.');
+    } else {
+      applyDynamicValue(store, scope, GREEN_THUMB_ID, greenThumbLevel, marginal, applied);
+    }
+  }
 
   const rootedPieces = pieces.filter(piece => String(piece?.reforge || '').toLowerCase() === 'rooted');
   if (rootedPieces.length !== EQUIPMENT_SLOTS) return;
@@ -262,10 +280,10 @@ export function applySnapshotToProgress(state, snapshot) {
   const equipmentSource = gearPiecesFor(state, snapshot, SETUP_EQUIPMENT_SLOTS, isEquipmentContainer);
   applySetWide(
     equipmentSource.pieces, EQUIPMENT_SLOTS,
-    {}, EQUIPMENT_ENCHANTS, null,
+    {}, {}, null,
     state, autoApplied, applied, skipped, 'equipment', equipmentSource.source,
   );
-  applyEquipmentDerived(equipmentSource.pieces, state, autoApplied, applied, skipped);
+  applyEquipmentDerived(equipmentSource.pieces, state, snapshot, autoApplied, applied, skipped);
 
   if (items.length && !applied.some(entry => entry.id.startsWith('tool-'))) {
     unmatchedTools.push('No decoded item matched a known farming tool name, so no tool progress was filled in.');
