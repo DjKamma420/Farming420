@@ -1525,9 +1525,9 @@ export const HIDDEN_INTERACTIONS = [
   {
     "id": "normal-crop-drops",
     "name": "Normal crop drops",
-    "effect": "Average drops = Base × (1 + (Global FF + Crop Fortune) / 100)",
+    "effect": "Average drops = Base \u00d7 (1 + (Global FF + Crop Fortune) / 100)",
     "why": "An additive +X FF has diminishing relative value as existing Fortune rises.",
-    "handling": "Upgrades → Relative gain = marginal FF / (100 + current effective Fortune).",
+    "handling": "Upgrades \u2192 Relative gain = marginal FF / (100 + current effective Fortune).",
     "status": "ACTIVE",
     "source": "https://wiki.eliteskyblock.com/Farming_Fortune"
   },
@@ -1542,7 +1542,7 @@ export const HIDDEN_INTERACTIONS = [
   },
   {
     "id": "cropeetle-shard-crop-bug",
-    "name": "Cropeetle Shard — Crop Bug",
+    "name": "Cropeetle Shard \u2014 Crop Bug",
     "effect": "+2% per level, up to +20% odds for Cropie / Squash / Fermento-type armor rare drops.",
     "why": "This is a multiplicative/special rare-drop modifier, not ordinary additive FF.",
     "handling": "Documented separately; do not convert +20% into +20 FF. For a dedicated rare-armor-drop comparison, use the actual drop-rate multiplier.",
@@ -1551,7 +1551,7 @@ export const HIDDEN_INTERACTIONS = [
   },
   {
     "id": "rose-dragon-rare-drop-perk",
-    "name": "Rose Dragon — rare-drop perk",
+    "name": "Rose Dragon \u2014 rare-drop perk",
     "effect": "Max-level pet has a separate rare-crop/drop modifier in addition to its Farming Fortune and Copper perks.",
     "why": "Community pages/lore representations changed around the Overbloom rollout; stacking it as plain FF would be wrong.",
     "handling": "Pet_Calculator ranks its FF contribution only. Treat rare-drop/Copper value as an additional benefit; verify current in-game tooltip for the exact rare-drop wording.",
@@ -1587,7 +1587,7 @@ export const HIDDEN_INTERACTIONS = [
   },
   {
     "id": "ladybug-shard-pretty-clothes",
-    "name": "Ladybug Shard — Pretty Clothes",
+    "name": "Ladybug Shard \u2014 Pretty Clothes",
     "effect": "+1% Copper from Garden Visitors per level, up to +10%.",
     "why": "Affects Copper rewards, not crop yield.",
     "handling": "Use as a separate visitor-economy multiplier; do not add to Farming Fortune.",
@@ -1596,7 +1596,7 @@ export const HIDDEN_INTERACTIONS = [
   },
   {
     "id": "invisibug-shard-fancy-visit",
-    "name": "Invisibug Shard — Fancy Visit",
+    "name": "Invisibug Shard \u2014 Fancy Visit",
     "effect": "+1% chance per level for RARE+ Garden Visitors, up to +10%.",
     "why": "Changes visitor rarity distribution rather than cooldown.",
     "handling": "Do not combine with Quickdraw as if both were the same visitor-speed stat.",
@@ -1608,7 +1608,7 @@ export const HIDDEN_INTERACTIONS = [
     "name": "Hypercharge Chip",
     "effect": "Boosts only explicitly eligible temporary Farming-Fortune buffs; not every temporary-looking effect.",
     "why": "Its marginal value depends on which eligible buffs are active at that moment.",
-    "handling": "Buffs sheet totals eligible base FF; Upgrades row for Hypercharge uses Active eligible FF × next chip increment.",
+    "handling": "Buffs sheet totals eligible base FF; Upgrades row for Hypercharge uses Active eligible FF \u00d7 next chip increment.",
     "status": "ACTIVE",
     "source": "https://hypixel.net/threads/april-21-fossil-essence-shop-farming-toolkit-harvest-feast-changes.6083245/"
   },
@@ -1635,13 +1635,13 @@ export const HIDDEN_INTERACTIONS = [
     "name": "Orchid Mantis",
     "effect": "Swift Sickles grants up to +1 FF per 3 Speed; Intelligent Specimen up to +20% Farming Tool Exp.",
     "why": "One pet affects both FF and Tool XP through different mechanics.",
-    "handling": "Pet_Calculator handles Speed→FF; Upgrades contains Tool XP separately.",
+    "handling": "Pet_Calculator handles Speed\u2192FF; Upgrades contains Tool XP separately.",
     "status": "ACTIVE",
     "source": "https://hypixel.net/threads/hypixel-skyblock-0-26-1-new-player-improvements-harvest-feast-changes-healing-revamp-and-more.6127383/"
   },
   {
     "id": "rooted-thorny-equipment",
-    "name": "Rooted ↔ Thorny equipment",
+    "name": "Rooted \u2194 Thorny equipment",
     "effect": "Both occupy the equipment reforge slot. Thorny supplies FF + Overbloom; Rooted is a competing reforge.",
     "why": "Their headline totals cannot be stacked.",
     "handling": "Enter the actual net swap delta in Manual marginal override rather than the full new reforge total.",
@@ -1650,7 +1650,7 @@ export const HIDDEN_INTERACTIONS = [
   },
   {
     "id": "blessed-bountiful-tool-reforge",
-    "name": "Blessed ↔ Bountiful tool reforge",
+    "name": "Blessed \u2194 Bountiful tool reforge",
     "effect": "Mutually exclusive tool reforges; Bountiful can have coin-value benefits despite lower FF.",
     "why": "Highest FF is not necessarily highest coins/hour.",
     "handling": "Use net FF swap delta for crop-yield ranking. Coin-profit optimization needs crop price and Bountiful coin proc economics outside this sheet.",
@@ -1692,6 +1692,156 @@ export const HIDDEN_INTERACTIONS = [
     "handling": "Excluded from upgrade ranking; Harvesting is used instead.",
     "status": "REMOVED",
     "source": "https://hypixel.net/threads/march-31-harvest-feast-event.6080784/"
+  },
+  {
+    "id": "zorro-cape-claim-timing",
+    "name": "Zorro's Cape is checked when contest rewards are claimed",
+    "effect": "Zorro's Cape gives a 20% chance for an extra Jacob's Contest Medal, and that roll happens at the moment the reward is CLAIMED, not while the contest runs.",
+    "why": "It means the Cape never has to be worn during the contest itself, so it costs nothing in farming stats. Equipping it only to claim is strictly better than not owning it, and the planner must not treat it as competing with the contest setup.",
+    "handling": "Model as a claim-time multiplier on medal rewards, independent of the contest loadout. Never subtract contest Fortune for wearing it.",
+    "status": "ACTIVE",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Tutorial:Farming_Guide",
+    "lastVerified": "2026-09-16"
+  },
+  {
+    "id": "garden-time-freeze-one-shard",
+    "name": "Freezing Garden time removes the need for both day and night shards",
+    "effect": "Solar Power (Firefly Shard) gives Farming Fortune during the day and Lunar Power (Lunar Moth Shard) at night. Once both a Day Saver and a Night Saver have been given to the Garden, the Desk's Island Time setting freezes the Garden in one period.",
+    "why": "A frozen Garden makes one of the two shards permanently useless, so buying and levelling both is wasted coins for ordinary farming. Only Moonflower farming actually needs Lunar Power.",
+    "handling": "Treat Solar Power and Lunar Power as mutually exclusive once time is frozen, and never add both. Recommend whichever shard is cheaper unless the target crop is Moonflower.",
+    "status": "ACTIVE",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Tutorial:Farming_Guide",
+    "lastVerified": "2026-09-16"
+  },
+  {
+    "id": "bonus-pest-chance-integer-remainder",
+    "name": "Bonus Pest Chance is a guaranteed count plus a remainder",
+    "effect": "Each full 100 Bonus Pest Chance guarantees one additional Pest per spawn; the leftover amount is the percent chance of one more. 304 Bonus Pest Chance is four guaranteed Pests and a 4% chance of a fifth.",
+    "why": "The value is a step function, not linear. Going from 299 to 300 adds a whole guaranteed Pest, while 300 to 399 adds almost nothing. Ranking this stat by raw points would be badly wrong.",
+    "handling": "Evaluate Bonus Pest Chance in steps of 100 and show the distance to the next whole step. Never interpolate it linearly.",
+    "status": "ACTIVE",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Tutorial:Farming_Guide",
+    "lastVerified": "2026-09-16"
+  },
+  {
+    "id": "pest-fortune-penalty",
+    "name": "Pests cut Farming Fortune, and 300+ Bonus Pest Chance softens it",
+    "effect": "With 4 or more Pests on the Garden, Farming Fortune and every crop-specific Fortune is reduced, first by 5% and then in multiples of 15%, to a maximum 75% loss at the 8-Pest cap. Each full 100 Bonus Pest Chance allows one more Pest before the reduction begins, so at 300-399 Bonus Pest Chance eight active Pests cost only 15% Fortune.",
+    "why": "This is a large negative term with no analogue anywhere else in the model. It also inverts a strategy: with enough Bonus Pest Chance, letting Pests build up becomes viable for low-attention farming instead of ruinous.",
+    "handling": "Model expected Pest count and apply the reduction to the Fortune total BEFORE computing yield. Profit for a pest-tolerant setup must use the reduced Fortune, not the sheet value.",
+    "status": "ACTIVE",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Pests",
+    "lastVerified": "2026-09-16"
+  },
+  {
+    "id": "mantid-kill-credit-piece",
+    "name": "One Mantid piece in the kill set keeps its stacks building",
+    "effect": "Mantid's temporary stacks are earned from Pest kills. A late-game rotation swaps Mossy Helianthus for full Mantid Helianthus shortly before the Pest cooldown is ready, and the kill set keeps one Mantid armour piece so kill credit for those stacks continues.",
+    "why": "The stacks are tied to kills, not to wearing the full set at the time of the kill, so a single retained piece preserves progress across a swap. Treating Mantid as all-or-nothing loses this.",
+    "handling": "Model Mantid as a stacking buff with its own accrual condition, and allow a partial set in the kill loadout purely for credit.",
+    "status": "ACTIVE",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Tutorial:Farming_Guide",
+    "lastVerified": "2026-09-16"
+  },
+  {
+    "id": "contest-medals-gate-turbo-crop",
+    "name": "Contest medals gate Turbo-Crop levels per crop",
+    "effect": "A Bronze result in a crop lets Turbo-Crop IV work for that crop, and Silver lets Turbo-Crop V work. Turbo-Crop itself reaches VII, with VI from a Turbo Gourd and VII from an Enchanted Turbo Gourd.",
+    "why": "The enchantment level a player owns is not the level that applies. Without the medal for that specific crop the higher levels do nothing, so a book purchase can be entirely wasted.",
+    "handling": "Gate the effective Turbo-Crop level on the per-crop medal, and prompt for the medal before recommending IV or V.",
+    "status": "ACTIVE",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Tutorial:Farming_Guide",
+    "lastVerified": "2026-09-16"
+  },
+  {
+    "id": "gold-medals-raise-farming-cap",
+    "name": "Each unique Gold crop raises the Farming level cap by one",
+    "effect": "Every unique crop in which a Gold contest result is achieved lets Anita raise the Farming level cap by one, up to 10 upgrades and Farming 60.",
+    "why": "Farming levels above 50 are not a grind, they are a contest unlock, and each one is worth +4 Farming Fortune. The prerequisite is breadth across crops, not depth in one.",
+    "handling": "Treat the cap as a prerequisite chain on unique Gold crops and count the remaining Fortune it unlocks, not just the XP.",
+    "status": "ACTIVE",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Tutorial:Farming_Guide",
+    "lastVerified": "2026-09-16"
+  },
+  {
+    "id": "tool-tier-gate-levels",
+    "name": "Mk. II and Mk. III unlock at tool level 15 and 30",
+    "effect": "A Specialized Farming Tool gains XP from harvesting its matching mature crop. The Mk. II craft becomes available at tool level 15 and Mk. III at level 30; each raises the tool's rarity and lets it keep levelling. Overclocker 3000 is what carries levels 40 to 50.",
+    "why": "Rarity is not cosmetic: it scales reforges and gemstone values, so the tier upgrade changes the value of everything already on the tool. The gates are also hard stops, so a level target above them is unreachable without the craft.",
+    "handling": "Model tier as a prerequisite at levels 15 and 30 and as a multiplier on reforge and gemstone contributions, not as a flat Fortune bonus.",
+    "status": "ACTIVE",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Tutorial:Farming_Guide",
+    "lastVerified": "2026-09-16"
+  },
+  {
+    "id": "sprayonator-tiers",
+    "name": "Sprayonator tiers multiply the spray, not just its duration",
+    "effect": "The regular Sprayonator uses one material and lasts 30 minutes. The Juicy Sprayonator can use three materials for twice the base effect and lasts 45 minutes. The Salty Sprayonator can use five materials for triple the base effect and lasts 60 minutes. With Bonus Pest Chance material that is +25, +50 and +75 respectively.",
+    "why": "The upgrade changes both magnitude and material cost, so its value depends on material price and on how much of the duration is actually farmed. Treating it as a longer buff alone understates it.",
+    "handling": "Model the spray as effect x duration against recurring material cost, and count unused duration as waste.",
+    "status": "ACTIVE",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Tutorial:Farming_Guide",
+    "lastVerified": "2026-09-16"
+  },
+  {
+    "id": "brown-bandana-bestiary-scaling",
+    "name": "Brown Bandana scales with Pest Bestiary, excluding two mobs",
+    "effect": "The Brown Bandana grants +0.2 Bonus Pest Chance per eligible Pest Bestiary tier, up to 45. Timestalk Clone and Zombuddy tiers do not count toward it.",
+    "why": "Its value is not fixed but tied to bestiary progress, and two of the mobs that do raise bestiary Fortune do not raise this. Reading it off the bestiary total would overstate it.",
+    "handling": "Compute from eligible bestiary tiers only, and exclude Timestalk Clone and Zombuddy.",
+    "status": "ACTIVE",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Tutorial:Farming_Guide",
+    "lastVerified": "2026-09-16"
+  },
+  {
+    "id": "sunset-day-night-tradeoff",
+    "name": "Sunset V trades daytime Overbloom against Visitor speed at night",
+    "effect": "Sunset V gives 5 Overbloom during the day, but shortens the Visitor cooldown by 5% while breaking crops at night.",
+    "why": "The two halves of the same enchantment pull toward opposite Island Time settings, so the right choice depends on whether Overbloom or Visitor throughput is worth more to that player.",
+    "handling": "Never add both halves. Evaluate per frozen-time setting and compare against the Visitor value the player actually realises.",
+    "status": "ACTIVE",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Tutorial:Farming_Guide",
+    "lastVerified": "2026-09-16"
+  },
+  {
+    "id": "greenhouse-rebalances",
+    "name": "Greenhouse mutation values are rebalanced repeatedly",
+    "effect": "The Greenhouse has been rebalanced several times, including a mutation multiplier change in August 2026.",
+    "why": "It is a direct warning for this app: a cached or hard-coded Greenhouse profit figure goes stale quickly and silently, which is exactly the failure the correctness rules exist to prevent.",
+    "handling": "Never hard-code Greenhouse mutation values. Keep them dated, and treat any figure older than the last rebalance as unverified.",
+    "status": "VERIFY",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Tutorial:Farming_Guide",
+    "lastVerified": "2026-09-16"
+  },
+  {
+    "id": "mushroom-farming-xp",
+    "name": "Mushroom gives the most Farming XP per block",
+    "effect": "Mushroom unlocks at Garden IX and gives 6 base Farming XP per block, which makes it the crop of choice when the goal is Farming levels rather than coins.",
+    "why": "The best crop for XP is not the best crop for profit, so a single ranking would give the wrong answer to one of the two goals.",
+    "handling": "Rank crops separately for XP per hour and coins per hour, and say which goal a recommendation serves.",
+    "status": "ACTIVE",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Tutorial:Farming_Guide",
+    "lastVerified": "2026-09-16"
+  },
+  {
+    "id": "beth-quest-gates-crop-analyzer",
+    "name": "Beth's quest spans several Garden visits and gates the Crop Analyzer",
+    "effect": "Beth in the Desert Settlement must be served as a Visitor, and her quest takes several Garden visits. Its later part is required for the Crop Analyzer, which is not unlocked with the Greenhouse itself.",
+    "why": "It is a wall-clock prerequisite, not a cost. Starting it late blocks Greenhouse progression while waiting for Visitor arrivals, which no amount of coins shortens.",
+    "handling": "Model as a passive time-gated prerequisite and recommend starting it long before the Greenhouse is the active goal.",
+    "status": "ACTIVE",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Tutorial:Farming_Guide",
+    "lastVerified": "2026-09-16"
+  },
+  {
+    "id": "sundial-frees-boot-slot",
+    "name": "A Sundial moves Speed control off the boots",
+    "effect": "After reaching Sunflower VII, crafting a Sundial and giving it to Sam unlocks per-crop Speed settings at the Desk.",
+    "why": "It frees the boot slot: without it, hitting the right farming Speed means wearing Rancher's Boots instead of the Farming Fortune boots, which is a direct Fortune loss.",
+    "handling": "Once the Sundial is owned, stop treating Rancher's Boots as part of any farming setup and keep the Fortune boots equipped.",
+    "status": "ACTIVE",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Tutorial:Farming_Guide",
+    "lastVerified": "2026-09-16"
   }
 ];
 

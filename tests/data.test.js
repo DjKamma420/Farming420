@@ -90,3 +90,18 @@ test('no entry cites the closed official Hypixel wiki', () => {
     assert.ok(!String(crop.toolSource || '').includes('wiki.hypixel.net'), `${crop.id} cites the closed official wiki`);
   }
 });
+
+test('a verified mechanic carries a real source and a real date', () => {
+  const verified = HIDDEN_INTERACTIONS.filter(entry => entry.lastVerified);
+  assert.ok(verified.length > 0, 'the verification pass recorded nothing');
+  for (const entry of verified) {
+    assert.match(entry.lastVerified, /^\d{4}-\d{2}-\d{2}$/, `${entry.id} has a malformed date`);
+    assert.match(String(entry.source || ''), /^https?:\/\//, `${entry.id} has no source`);
+    assert.ok(entry.effect?.trim() && entry.why?.trim() && entry.handling?.trim(), `${entry.id} is incomplete`);
+  }
+});
+
+test('hidden interaction ids are unique', () => {
+  const ids = HIDDEN_INTERACTIONS.map(entry => entry.id);
+  assert.equal(new Set(ids).size, ids.length);
+});
