@@ -24,3 +24,21 @@ already valid.
 **Cheaper still:** `node --check <file>` immediately after writing any JS
 through a heredoc catches this in one second, before a full test run. Do that
 as part of the same command, not as a separate step after a failure.
+
+## Always fetch before branching from origin/main
+
+**Mistake, made twice in one session:** running
+`git checkout -B <branch> origin/main` without a preceding `git fetch`. The
+local `origin/main` ref is only as fresh as the last fetch, and merging a PR
+through the GitHub API does **not** update it. Both times the branch was cut
+from a commit behind real main, which showed up as a test count that had
+silently gone backwards (222 -> 220).
+
+**Rule for myself:** `git fetch origin` and `git checkout -B <branch>
+origin/main` belong in the *same* command, always. A dropping test count after
+branching is the tell.
+
+**And:** `git stash -u` + `git stash pop` across that rebase silently lost the
+version bumps in files that had no other change. Prefer committing on the wrong
+branch and cherry-picking, or re-apply and verify the version numbers by
+grepping them afterwards, which is what caught it.

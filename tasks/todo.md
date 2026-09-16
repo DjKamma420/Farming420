@@ -670,3 +670,50 @@ The **date of the tool rename** is not pinned. It is the single most valuable
 missing entry, because it is the change that proved this file was needed.
 
 222 tests. App version 0.13.1.
+
+---
+
+# The Farming 0-60 guide
+
+Brief: a complete guide from Farming 0 to a maxed setup, every intermediate step
+shown, alternative pets that are equal or slightly worse offered as choices, and
+enchantments at their different levels.
+
+## What was built
+
+`src/progression.js` - the sourced model: five stages covering 0-60 with no gap,
+the eight-set armour chain, eight enchantment ladders, pet options for four
+activity phases, and the three-phase loadout from budget to hypermax.
+
+A **Guide 0-60** page that reads the player's synced Farming level and opens at
+the stage they are in, marks reached armour sets, names the next one, and lets
+them pick among the pet alternatives, which persist.
+
+## Two things it deliberately does not do
+
+- **No computed ranking.** Scoring the options needs the profit engine, which
+  does not exist, and inventing numbers to fill it would break rule 1. Options
+  carry a sourced qualitative tier and the reason instead.
+- **No coins-per-hour claim.** The single quantitative comparison (Mooshroom Cow
+  beats a Legendary Elephant above ~1,429 Strength, worth roughly 700k/hour) is
+  quoted from the source with its breakpoint, not derived here.
+
+The armour Fortune figures are flagged `disputed` from Tater upward, because the
+two wiki pages disagree; a test pins that flag so it cannot quietly be dropped.
+
+## Bug found while testing
+
+`Number(null)` is `0`, so an unsynced player would have been told they were in
+stage 1 at level 0 -- a confident answer built from nothing. `stageForLevel`,
+`armorProgress` and `nextArmorSet` now reject null, undefined and empty string
+explicitly and return null, while a genuine level 0 still resolves. Tests pin
+both halves.
+
+## Also recorded in lessons.md
+
+I cut a branch from a stale local `origin/main` twice in this session, which
+showed up as the test count silently going backwards. The fetch and the branch
+belong in the same command. A stash across that rebase also silently dropped
+version bumps in files with no other change.
+
+238 tests. App version 0.14.0.
