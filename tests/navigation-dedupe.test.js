@@ -27,16 +27,15 @@ test('stored legacy duplicate page is rewritten without changing profile data', 
 });
 
 test('duplicate sidebar destinations are removed while non-nav links are repointed', () => {
-  const navGear = { removed: false, remove() { this.removed = true; } };
-  const navPets = { removed: false, remove() { this.removed = true; } };
-  const gearLink = { dataset: { page: 'gear' } };
-  const petsLink = { dataset: { page: 'pets' } };
+  const nav = {};
+  const navGear = { removed: false, closest: selector => selector === 'nav' ? nav : null, remove() { this.removed = true; } };
+  const navPets = { removed: false, closest: selector => selector === 'nav' ? nav : null, remove() { this.removed = true; } };
+  const gearLink = { dataset: { page: 'gear' }, closest: () => null };
+  const petsLink = { dataset: { page: 'pets' }, closest: () => null };
   const root = {
     querySelectorAll(selector) {
-      if (selector === 'nav [data-page="gear"]') return [navGear];
-      if (selector === 'nav [data-page="pets"]') return [navPets];
-      if (selector === '[data-page="gear"]:not(nav [data-page="gear"])') return [gearLink];
-      if (selector === '[data-page="pets"]:not(nav [data-page="pets"])') return [petsLink];
+      if (selector === '[data-page="gear"]') return [navGear, gearLink];
+      if (selector === '[data-page="pets"]') return [navPets, petsLink];
       return [];
     },
   };
