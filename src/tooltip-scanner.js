@@ -1,7 +1,24 @@
 const TESSERACT_ESM = 'https://cdn.jsdelivr.net/npm/tesseract.js@7/+esm';
 const TESSERACT_WORKER = 'https://cdn.jsdelivr.net/npm/tesseract.js@7/dist/worker.min.js';
-const TESSERACT_CORE = 'https://cdn.jsdelivr.net/npm/tesseract.js-core@7/tesseract-core-simd-lstm.wasm.js';
+// A directory, not a file. Tesseract.js picks between the SIMD and non-SIMD
+// builds inside the worker; naming one build removes that choice, and a browser
+// without SIMD then loads a core it cannot run. Upstream calls pinning a single
+// core file "strongly discouraged" for exactly this reason.
+const TESSERACT_CORE_DIR = 'https://cdn.jsdelivr.net/npm/tesseract.js-core@7/';
 const TESSDATA = 'https://tessdata.projectnaptha.com/4.0.0';
+
+// Every network step here reaches a third-party CDN, so each one can stall
+// rather than fail: a blocked host, a captive portal or an offline device
+// leaves the request hanging. Without these bounds the panel sits on
+// "initializing" forever, which is indistinguishable from a frozen app.
+export const OCR_STARTUP_TIMEOUT_MS = 45000;
+export const OCR_RECOGNIZE_TIMEOUT_MS = 120000;
+
+// OCR wants readable glyphs, not raw megapixels. Small tooltip crops are scaled
+// up toward this width; a full-screen screenshot is already past it and is left
+// alone instead of being blown up further.
+export const OCR_TARGET_WIDTH = 1600;
+export const OCR_MAX_PIXELS = 12000000;
 
 const ENCHANT_ALIASES = Object.freeze({
   cultivating: 'cultivating',
@@ -152,9 +169,22 @@ export function mergeScanIntoItem(item, scan, { catalog = [] } = {}) {
   return next;
 }
 
+/**
+ * Upscale a small tooltip crop, leave a full screenshot at its own size, and
+ * never exceed a pixel budget the device has to hold in one ImageData array.
+ */
+export function ocrCanvasScale(width, height) {
+  const w = Math.max(1, Number(width) || 1);
+  const h = Math.max(1, Number(height) || 1);
+  let scale = Math.min(4, Math.max(1, OCR_TARGET_WIDTH / w));
+  const budget = Math.sqrt(OCR_MAX_PIXELS / (w * h));
+  if (budget < scale) scale = Math.max(0.1, budget);
+  return scale;
+}
+
 async function imageToCanvas(file) {
   const bitmap = await createImageBitmap(file);
-  const scale = Math.max(2, Math.min(4, 1600 / Math.max(bitmap.width, 1)));
+  const scale = ocrCanvasScale(bitmap.width, bitmap.height);
   const canvas = document.createElement('canvas');
   canvas.width = Math.round(bitmap.width * scale);
   canvas.height = Math.round(bitmap.height * scale);
@@ -188,6 +218,15 @@ function tesseractApi(module) {
   return api;
 }
 
+/** Turns a stalled third-party request into a message the panel can show. */
+export function withOcrTimeout(promise, ms, message) {
+  let timer;
+  return Promise.race([
+    promise,
+    new Promise((resolve, reject) => { timer = setTimeout(() => reject(new Error(message)), ms); }),
+  ]).finally(() => clearTimeout(timer));
+}
+
 export async function recognizeSkyBlockTooltip(file, { onProgress } = {}) {
   if (!(file instanceof Blob)) throw new Error('Choose a screenshot first.');
   onProgress?.({ status: 'preparing', progress: 0.05 });
@@ -196,29 +235,59 @@ export async function recognizeSkyBlockTooltip(file, { onProgress } = {}) {
 
   let loaded;
   try {
-    loaded = await import(TESSERACT_ESM);
+    loaded = await withOcrTimeout(
+      import(TESSERACT_ESM),
+      OCR_STARTUP_TIMEOUT_MS,
+      'The OCR engine did not load. It is fetched from a public CDN, so check your connection or any blocker and try again.',
+    );
   } catch (error) {
     throw new Error(`Could not load the local OCR engine: ${error?.message || error}`);
   }
   const Tesseract = tesseractApi(loaded);
 
-  const worker = await Tesseract.createWorker('eng', 1, {
-    workerPath: TESSERACT_WORKER,
-    corePath: TESSERACT_CORE,
-    langPath: TESSDATA,
-    logger(message) {
-      if (Number.isFinite(message.progress)) onProgress?.({ status: message.status || 'recognizing', progress: message.progress });
-    },
-  });
+  // A worker that dies while loading its core or language data never answers.
+  // Tesseract.js reports that through errorHandler rather than by rejecting the
+  // createWorker promise, so without this the promise is simply never settled.
+  let reportWorkerError;
+  const workerFailed = new Promise((_, reject) => { reportWorkerError = reject; });
+  workerFailed.catch(() => {});
+
+  let worker;
+  try {
+    worker = await withOcrTimeout(
+      Promise.race([
+        Tesseract.createWorker('eng', 1, {
+          workerPath: TESSERACT_WORKER,
+          corePath: TESSERACT_CORE_DIR,
+          langPath: TESSDATA,
+          logger(message) {
+            if (Number.isFinite(message.progress)) onProgress?.({ status: message.status || 'recognizing', progress: message.progress });
+          },
+          errorHandler(error) {
+            reportWorkerError(new Error(`The OCR engine failed to start: ${error?.message || error}`));
+          },
+        }),
+        workerFailed,
+      ]),
+      OCR_STARTUP_TIMEOUT_MS,
+      'The OCR engine did not finish starting up. Its runtime and language data come from public CDNs, so check your connection or any blocker and try again.',
+    );
+  } catch (error) {
+    throw new Error(error?.message || String(error));
+  }
 
   try {
     await worker.setParameters({
       tessedit_pageseg_mode: Tesseract.PSM?.SINGLE_BLOCK ?? '6',
       preserve_interword_spaces: '1',
     });
-    const result = await worker.recognize(canvas);
+    const result = await withOcrTimeout(
+      Promise.race([worker.recognize(canvas), workerFailed]),
+      OCR_RECOGNIZE_TIMEOUT_MS,
+      'Reading the screenshot took too long and was stopped. Try a tighter crop that shows only the item tooltip.',
+    );
     return String(result?.data?.text || '').trim();
   } finally {
-    await worker.terminate();
+    await worker.terminate().catch(() => {});
   }
 }

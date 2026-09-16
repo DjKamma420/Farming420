@@ -25,3 +25,24 @@ test('crop context is deferred to the planner while tools use a physical-tool se
   assert.match(ux, /Physical tool/);
   assert.match(ux, /cropSwitch\.hidden = true/);
 });
+
+test('OCR startup cannot hang: worker errors are reported and every remote step is bounded', () => {
+  // Tesseract.js surfaces a worker that died while loading its core or language
+  // data through errorHandler; createWorker itself simply never settles. Without
+  // both an errorHandler and a timeout the panel sits on "initializing" forever,
+  // which is what a blocked CDN looks like to the user.
+  assert.match(scanner, /errorHandler\(error\)/);
+  assert.match(scanner, /OCR_STARTUP_TIMEOUT_MS/);
+  assert.match(scanner, /OCR_RECOGNIZE_TIMEOUT_MS/);
+  assert.match(scanner, /withOcrTimeout\(/);
+});
+
+test('the OCR core path stays a directory so the worker can pick a build it can run', () => {
+  assert.match(scanner, /TESSERACT_CORE_DIR = 'https:\/\/cdn\.jsdelivr\.net\/npm\/tesseract\.js-core@7\/'/);
+  assert.doesNotMatch(scanner, /tesseract-core-simd-lstm\.wasm\.js/);
+});
+
+test('a second scan cannot start on top of a running one, and the same file can be retried', () => {
+  assert.match(toolUi, /_toolScanBusy/);
+  assert.match(toolUi, /input\.value = ''/);
+});

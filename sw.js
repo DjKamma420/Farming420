@@ -1,4 +1,4 @@
-const VERSION = 'farming420-0.17.2';
+const VERSION = 'farming420-0.17.3';
 const APP_FILES = [
   './',
   './index.html',
