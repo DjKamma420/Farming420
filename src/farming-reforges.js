@@ -57,10 +57,10 @@ export function reforgeById(id) {
 }
 
 export function cropReforgeRecommendations(cropId) {
-  const crop = String(cropId || '').trim().toLowerCase();
+  String(cropId || '').trim().toLowerCase();
   return Object.freeze({
     money: 'bountiful',
-    collection: crop === 'melon' ? 'overpriced' : 'blessed',
+    collection: 'blessed',
     xp: 'blessed',
     rareCrops: 'overpriced',
     feastSeasoning: 'deep-fried',
