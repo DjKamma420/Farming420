@@ -24,6 +24,7 @@ ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "assets" / "hypixel-pack"
 MANIFEST = OUTPUT / "manifest.json"
 NAMESPACE = "assets/hypixel_skyblock/"
+LICENSE_NAME = "LICENSE"
 COPY_PREFIXES = (
     f"{NAMESPACE}items/item/",
     f"{NAMESPACE}models/item/",
@@ -111,13 +112,17 @@ def safe_member(name: str) -> PurePosixPath | None:
 
 
 def wanted(name: str) -> bool:
-    return any(name.startswith(prefix) for prefix in COPY_PREFIXES)
+    return name == LICENSE_NAME or any(name.startswith(prefix) for prefix in COPY_PREFIXES)
 
 
 def local_pack_path(name: str) -> PurePosixPath | None:
     """Map an archive path under assets/hypixel_skyblock to our local root."""
     member = safe_member(name)
-    if member is None or not name.startswith(NAMESPACE):
+    if member is None:
+        return None
+    if name == LICENSE_NAME:
+        return PurePosixPath(LICENSE_NAME)
+    if not name.startswith(NAMESPACE):
         return None
     relative = name[len(NAMESPACE):]
     path = PurePosixPath(relative)
@@ -200,6 +205,7 @@ def build_manifest(archive: zipfile.ZipFile, pack: dict) -> dict:
     return {
         "schemaVersion": 1,
         "generatedBy": "scripts/sync-hypixel-pack.py",
+        "license": LICENSE_NAME if LICENSE_NAME in names else None,
         "pack": pack,
         "items": dict(sorted(items.items())),
     }
@@ -234,6 +240,9 @@ def main() -> int:
         with zipfile.ZipFile(zip_path) as archive:
             manifest = build_manifest(archive, pack)
             extract_selected(archive, stage)
+
+        if manifest["license"] is None:
+            raise RuntimeError("Official resource pack did not contain the expected LICENSE file")
 
         stage.mkdir(parents=True, exist_ok=True)
         (stage / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", "utf-8")
