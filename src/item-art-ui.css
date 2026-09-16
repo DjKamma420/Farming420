@@ -1,29 +1,77 @@
-.slot-card.has-official-item-art {
+.slot-card.has-official-item-art,
+.slot-card.has-item-art-fallback {
   position: relative;
   min-height: 112px;
   padding-left: 82px;
   overflow: hidden;
 }
 
-.official-item-art {
+.official-item-art,
+.item-art-fallback {
   position: absolute;
   left: 14px;
   top: 50%;
   width: 54px;
   height: 54px;
   transform: translateY(-50%);
-  object-fit: contain;
-  image-rendering: pixelated;
-  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, .32));
   pointer-events: none;
 }
 
+.official-item-art {
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, .32));
+}
+
+.item-art-fallback {
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(120, 153, 128, .42);
+  border-radius: 4px;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.04) 25%, transparent 25%) 0 0/8px 8px,
+    linear-gradient(315deg, rgba(255,255,255,.035) 25%, transparent 25%) 0 0/8px 8px,
+    #101812;
+  color: #a9b9ad;
+  font: 900 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .04em;
+  image-rendering: pixelated;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.28), 0 8px 18px rgba(0,0,0,.2);
+}
+
+.card-portrait.has-item-art-fallback,
+[data-pack-asset].has-item-art-fallback {
+  position: relative;
+}
+
+[data-pack-asset].has-item-art-fallback > .item-art-fallback,
+[data-pack-asset].has-official-item-art > .official-item-art {
+  width: 40px;
+  height: 40px;
+  left: 0;
+}
+
+.item-card[data-derived-only="1"]::after {
+  content: "FROM SETUP";
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  padding: 4px 6px;
+  border: 1px solid rgba(118, 146, 125, .28);
+  background: rgba(8, 14, 10, .72);
+  color: #85998b;
+  font: 800 9px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .05em;
+}
+
 @media (max-width: 720px) {
-  .slot-card.has-official-item-art {
+  .slot-card.has-official-item-art,
+  .slot-card.has-item-art-fallback {
     padding-left: 72px;
   }
 
-  .official-item-art {
+  .official-item-art,
+  .item-art-fallback {
     left: 12px;
     width: 46px;
     height: 46px;
