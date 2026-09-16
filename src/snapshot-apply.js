@@ -1,3 +1,4 @@
+import './runtime-data-patches.js';
 import { CROPS, UPGRADES } from './data.js';
 import { ensureProgressBucket, toolKeyForCropId } from './migrations.js';
 import { activeSetup } from './setups.js';
