@@ -42,11 +42,22 @@ This file is for future coding agents continuing the project.
   - There is intentionally no fixed universal `1 Overbloom = X FF` conversion.
   - FF-equivalent Overbloom depends on current FF, current Overbloom, normal crop coins/hour, and RARE-CROP coins/hour.
   - Includes marginal coins/hour, Coins per Effective Fortune and payback-hours helpers.
+- `src/revenue-ranking.js`
+  - Converts modeled upgrade gains into Farming Fortune / Overbloom deltas without merging unrelated metrics.
+  - Evaluates marginal coins/hour, FF-equivalent, Coins/FF-equivalent and payback.
+  - Known-cost upgrades rank by shortest payback; unknown-cost rows remain visible but follow costed rows.
+- `src/revenue-planner.js` + `.css`
+  - Replaces the visible legacy planner list with the revenue-aware ranking while retaining the old list only as a hidden compatibility surface.
+  - Adds per-crop inputs for normal crop Coins/hour, RARE-CROP Coins/hour and current Overbloom.
+  - Stores economics under `profile.plannerEconomics[cropId]`.
+  - Dashboard next-upgrade card switches to shortest-payback recommendation when a profit baseline and a priced candidate exist.
+  - Missing costs are shown as missing, not treated as free.
 - `research/effective-gain-model-2026-09-16.md`
   - Documents the formulas, source assumptions and planner implications for future agents.
 - Tests:
   - `tests/farming-reforges.test.js`
   - `tests/effective-gain.test.js`
+  - `tests/revenue-ranking.test.js`
 
 ## Effective-gain formula
 
@@ -58,13 +69,13 @@ Use this only for coin-efficiency comparison. Collection, XP, Feast milestone, S
 
 ## Next implementation priorities
 
-1. Remove duplicated/legacy editor surfaces now that direct card controls work, instead of stacking new UI on old UI.
-2. Add setup inputs/estimates for normal crop coins/hour, RARE-CROP coins/hour and current Overbloom, then replace the prototype Fortune-only planner sort with `effective-gain.js` marginal coins/hour/payback logic.
-3. Add goal-aware planner modes: normal profit, total profit, contest/collection, Farming XP, Feast RARE CROPS, Seasoning, Sowdust and pest farming.
-4. Continue the complete live-version farming audit, focusing on sources still marked VERIFY rather than re-researching mechanics already confirmed in runtime patches.
-5. Expand texture-pack-backed item art coverage and make missing-art fallbacks visually consistent.
-6. Add browser-level/UI regression coverage for direct controls and exclusive-state transitions.
+1. Remove the hidden legacy planner implementation from `src/app.js` once browser-level coverage exists; the visible Planner is now revenue-aware but the old markup remains as a compatibility surface.
+2. Add goal-aware planner modes: normal profit, total profit, contest/collection, Farming XP, Feast RARE CROPS, Seasoning, Sowdust and pest farming.
+3. Continue the complete live-version farming audit, focusing on sources still marked VERIFY rather than re-researching mechanics already confirmed in runtime patches.
+4. Expand texture-pack-backed item art coverage and make missing-art fallbacks visually consistent.
+5. Add browser-level/UI regression coverage for direct controls, revenue inputs, drawer opening and exclusive-state transitions.
+6. Add automatic or assisted cost acquisition where data quality is sufficient; until then, unknown prices must remain explicit rather than guessed.
 
 ## Verification note
 
-The repository has not exposed a connector-visible GitHub Actions run for these latest commits. Node tests have been added to the repository, but CI confirmation is still pending.
+The repository has not exposed a connector-visible GitHub Actions run for these latest commits. A local clone/test attempt from the execution container also could not run because that environment could not resolve `github.com`; therefore no passing test result is claimed. The test files are committed and await an environment with repository/network access or CI.
