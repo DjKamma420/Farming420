@@ -57,7 +57,10 @@ def resolve_pack(payload: dict) -> dict:
             pack_format = int(version.get("packFormat"))
         except (TypeError, ValueError):
             continue
-        versions.append({"packFormat": pack_format, "hash": version.get("hash"), "url": url})
+        hash_value = version.get("hash")
+        if hash_value is not None and not isinstance(hash_value, str):
+            continue
+        versions.append({"packFormat": pack_format, "hash": hash_value, "url": url})
 
     if not versions:
         raise RuntimeError("Hypixel returned no usable SkyBlock pack version")
@@ -81,6 +84,9 @@ def existing_hash() -> str | None:
 
 
 def download(url: str, target: Path) -> None:
+    parsed = urllib.parse.urlparse(url)
+    if parsed.scheme != "https" or parsed.hostname != PACK_HOST:
+        raise RuntimeError("Refusing to download a non-Hypixel resource pack URL")
     request = urllib.request.Request(url, headers={"User-Agent": "Farming420-pack-sync/1"})
     with urllib.request.urlopen(request, timeout=120) as response, target.open("wb") as handle:
         shutil.copyfileobj(response, handle)
@@ -108,6 +114,18 @@ def wanted(name: str) -> bool:
     return any(name.startswith(prefix) for prefix in COPY_PREFIXES)
 
 
+def local_pack_path(name: str) -> PurePosixPath | None:
+    """Map an archive path under assets/hypixel_skyblock to our local root."""
+    member = safe_member(name)
+    if member is None or not name.startswith(NAMESPACE):
+        return None
+    relative = name[len(NAMESPACE):]
+    path = PurePosixPath(relative)
+    if path.is_absolute() or not path.parts or ".." in path.parts:
+        return None
+    return path
+
+
 def collect_namespaced_strings(value, out: set[str]) -> None:
     if isinstance(value, dict):
         for nested in value.values():
@@ -126,7 +144,8 @@ def read_json_from_zip(archive: zipfile.ZipFile, path: str) -> dict | None:
         return None
 
 
-def texture_from_definition(archive: zipfile.ZipFile, definition: dict) -> str | None:
+def texture_from_definition(archive: zipfile.ZipFile, definition: dict, names: set[str] | None = None) -> str | None:
+    archive_names = names if names is not None else set(archive.namelist())
     refs: set[str] = set()
     collect_namespaced_strings(definition, refs)
     checked: set[str] = set()
@@ -144,7 +163,7 @@ def texture_from_definition(archive: zipfile.ZipFile, definition: dict) -> str |
             candidates.append(f"{NAMESPACE}textures/{ref}.png")
             candidates.append(f"{NAMESPACE}textures/item/{ref}.png")
         for candidate in candidates:
-            if candidate in archive.namelist():
+            if candidate in archive_names:
                 return candidate[len(NAMESPACE):]
 
         model_candidates = [
@@ -152,6 +171,8 @@ def texture_from_definition(archive: zipfile.ZipFile, definition: dict) -> str |
             f"{NAMESPACE}models/item/{ref}.json",
         ]
         for model_path in model_candidates:
+            if model_path not in archive_names:
+                continue
             model = read_json_from_zip(archive, model_path)
             if model:
                 collect_namespaced_strings(model, refs)
@@ -161,14 +182,17 @@ def texture_from_definition(archive: zipfile.ZipFile, definition: dict) -> str |
 def build_manifest(archive: zipfile.ZipFile, pack: dict) -> dict:
     items = {}
     prefix = f"{NAMESPACE}items/item/"
-    for name in archive.namelist():
+    names = set(archive.namelist())
+    for name in sorted(names):
         if not name.startswith(prefix) or not name.endswith(".json"):
+            continue
+        if safe_member(name) is None:
             continue
         definition = read_json_from_zip(archive, name)
         if definition is None:
             continue
         relative = name[len(prefix):-5]
-        texture = texture_from_definition(archive, definition)
+        texture = texture_from_definition(archive, definition, names)
         items[relative] = {
             "definition": f"items/item/{relative}.json",
             "texture": texture,
@@ -183,12 +207,11 @@ def build_manifest(archive: zipfile.ZipFile, pack: dict) -> dict:
 
 def extract_selected(archive: zipfile.ZipFile, target: Path) -> None:
     for name in archive.namelist():
-        if not wanted(name):
+        if not wanted(name) or name.endswith("/"):
             continue
-        member = safe_member(name)
-        if member is None or name.endswith("/"):
+        relative = local_pack_path(name)
+        if relative is None:
             continue
-        relative = PurePosixPath(*member.parts[1:])  # strip top-level assets/
         destination = target / Path(*relative.parts)
         destination.parent.mkdir(parents=True, exist_ok=True)
         with archive.open(name) as source, destination.open("wb") as output:
