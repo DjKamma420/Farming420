@@ -15,10 +15,15 @@ import {
   nextArmorSet,
   stageForLevel,
 } from './progression.js';
+import { EXCLUSIVE_ENTRY_GROUPS } from './exclusivity.js';
 import {
+  TOOL_PANEL,
+  assertToolPanelEntries,
   enchantRowsFor,
   gemOptionValues,
   itemSummary,
+  levelControlFor,
+  toolPanelEntryIds,
   parseGem,
   rarityClass,
   withEnchantLevel,
@@ -396,10 +401,108 @@ function cropsPage() {
     </div>`;
 }
 
+// --- The physical tool, shown as one item -----------------------------------
+// The cards below the panel stay the analysis surface: they carry the Fortune
+// maths, the sources and the exclusivity rules. The panel is only a better way
+// to say what is on the tool, and it writes to exactly the same stored values.
+assertToolPanelEntries(UPGRADES.map(entry => entry.id));
+
+const TOOL_PANEL_ENTRIES = new Map(UPGRADES.map(entry => [entry.id, entry]));
+
+function setEntryLevel(item, level) {
+  const store = itemStore(item);
+  const max = Number(item.max || 1);
+  const value = Math.max(0, Math.min(max, Math.floor(Number(level) || 0)));
+  if (value <= 0) {
+    delete store.levels[item.id];
+    delete store.owned[item.id];
+    return;
+  }
+  store.levels[item.id] = value;
+  store.owned[item.id] = true;
+}
+
+/** Clears the other members of a group the game only lets you hold one of. */
+function clearExclusivePeers(item) {
+  for (const group of EXCLUSIVE_ENTRY_GROUPS) {
+    if (!group.members.includes(item.id)) continue;
+    for (const memberId of group.members) {
+      if (memberId === item.id) continue;
+      const peer = TOOL_PANEL_ENTRIES.get(memberId);
+      if (peer) setEntryLevel(peer, 0);
+    }
+  }
+}
+
+function toolEntryLine(item) {
+  const max = Number(item.max || 1);
+  const level = currentLevel(item);
+  const on = isOwned(item);
+  const control = levelControlFor(max);
+  const state = isMaxed(item) ? 'maxed' : on ? 'active' : 'missing';
+  const gain = Number(item.stepGain || 0);
+
+  const levelControl = control === 'lever'
+    ? ''
+    : control === 'select'
+      ? `<select class="enchant-level" data-tool-level="${esc(item.id)}" ${on ? '' : 'disabled'}>
+          ${Array.from({ length: max }, (_, index) => index + 1).map(value =>
+            `<option value="${value}" ${value === level ? 'selected' : ''}>${esc(toRoman(value))}</option>`).join('')}
+        </select>`
+      : `<input class="enchant-level" type="number" min="1" max="${max}" value="${level || 1}" data-tool-level="${esc(item.id)}" ${on ? '' : 'disabled'}>`;
+
+  return `<div class="enchant-line enchant-${esc(state)} ${on ? 'on' : 'off'}" data-tool-row="${esc(item.id)}">
+      ${leverInput('data-tool-toggle', item.id, '', on, `${item.name} on this tool`)}
+      <span class="enchant-name">${esc(item.name)}</span>
+      ${levelControl || '<span></span>'}
+      <span class="enchant-max">${max > 1 ? `max ${control === 'number' ? max : esc(toRoman(max))}` : gain ? `+${gain} FF` : 'owned or not'}</span>
+    </div>`;
+}
+
+function toolItemPanel() {
+  const tool = crop().tool;
+  const filled = toolPanelEntryIds().filter(id => isOwned(TOOL_PANEL_ENTRIES.get(id))).length;
+
+  return `<div class="item-editor rarity-unknown" data-tool-editor="1">
+    <header class="item-editor-head">
+      <div class="item-portrait"><span class="item-portrait-fallback" aria-hidden="true">${esc(tool.slice(0, 2).toUpperCase())}</span></div>
+      <div class="item-identity">
+        <div class="eyebrow">Tool · ${esc(crop().name)}</div>
+        <strong class="item-title">${esc(tool)}</strong>
+        <span class="item-rarity">${filled}/${toolPanelEntryIds().length} parts set</span>
+      </div>
+    </header>
+    ${TOOL_PANEL.map(group => `<section class="item-editor-section">
+      <div class="section-row"><div><h3>${esc(group.title)}</h3><p>${esc(group.note)}</p></div></div>
+      <div class="enchant-grid">${group.entries.map(id => toolEntryLine(TOOL_PANEL_ENTRIES.get(id))).join('')}</div>
+    </section>`).join('')}
+  </div>`;
+}
+
+function bindToolPanel() {
+  const rerender = () => { saveState(); render(); };
+  document.querySelectorAll('[data-tool-toggle]').forEach(el => el.addEventListener('change', event => {
+    const item = TOOL_PANEL_ENTRIES.get(el.dataset.toolToggle);
+    if (!item) return;
+    if (event.target.checked) clearExclusivePeers(item);
+    // Turning a part on starts it at its first level, never at its maximum.
+    setEntryLevel(item, event.target.checked ? Math.max(1, currentLevel(item)) : 0);
+    rerender();
+  }));
+  document.querySelectorAll('[data-tool-level]').forEach(el => el.addEventListener('change', event => {
+    const item = TOOL_PANEL_ENTRIES.get(el.dataset.toolLevel);
+    if (!item) return;
+    setEntryLevel(item, event.target.value);
+    rerender();
+  }));
+}
+
 function genericSectionPage(section, kicker, title, text) {
   const items = visibleUpgrades(section);
   return `${pageHeader(kicker,title,text)}
     <div class="filter-line">${badge(`${items.length} entries`,'soft')} ${section==='tools'?badge(crop().tool,'soft'):''}</div>
+    ${section === 'tools' && !state.search.trim() ? toolItemPanel() : ''}
+    ${section === 'tools' ? '<div class="section-row"><div><h2>Every scored tool entry</h2><p>The same values, with the Fortune each one contributes and the source behind it.</p></div></div>' : ''}
     <div class="card-grid">${items.map(x=>card(x)).join('') || '<div class="empty">No matches.</div>'}</div>`;
 }
 
@@ -988,6 +1091,7 @@ function render() {
     bindSetups();
     ensureItemCatalog();
   }
+  if (state.page === 'tools') bindToolPanel();
   if (state.page === 'guide') bindGuide();
 }
 

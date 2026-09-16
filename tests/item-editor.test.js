@@ -17,7 +17,12 @@ import {
   slotKind,
   withEnchantLevel,
   withEnchantToggled,
+  assertToolPanelEntries,
+  levelControlFor,
+  toolPanelEntryIds,
 } from '../src/item-editor.js';
+import { EXCLUSIVE_ENTRY_GROUPS } from '../src/exclusivity.js';
+import { UPGRADES } from '../src/data.js';
 import { VERIFIED_FARMING_ENCHANT_META } from '../src/enchant-presentation.js';
 import { SETUP_SLOTS } from '../src/setups.js';
 
@@ -127,4 +132,52 @@ test('the collapsed card summarises the item without claiming an empty slot is f
     }),
     'mossy reforge · 1 enchant (1 maxed) · recombobulated · 1 gem',
   );
+});
+
+test('the tool panel points only at entries that really exist', () => {
+  // The panel is a second view of stored progression, never a second copy. A
+  // renamed entry id would silently produce a lever that writes nowhere.
+  assert.equal(assertToolPanelEntries(UPGRADES.map(entry => entry.id)), true);
+  assert.throws(() => assertToolPanelEntries(['something-else']), /unknown entries/);
+});
+
+test('every crop-tool entry is reachable from the panel', () => {
+  // Anything scored for the physical tool has to be settable there, or the
+  // player can only reach it by opening the card behind it.
+  const inPanel = new Set(toolPanelEntryIds());
+  const missing = UPGRADES
+    .filter(entry => entry.section === 'tools' && !entry.category.startsWith('Vacuum'))
+    .filter(entry => !inPanel.has(entry.id))
+    .map(entry => entry.id);
+  assert.deepEqual(missing, [], 'a scored tool entry has no control in the tool panel');
+});
+
+test('the vacuum is not folded into the crop tool', () => {
+  // Beady is a vacuum reforge. Putting it on the crop-tool panel would imply a
+  // tool can carry it, and would collide with the tool reforge exclusivity.
+  assert.ok(!toolPanelEntryIds().includes('vacuum-reforge-beady-pest-only-farming-fortune'));
+});
+
+test('both members of the tool reforge exclusivity are on the panel', () => {
+  // The panel clears the peer when one is picked. If only one member were shown
+  // the other could stay set with no way to see or clear it.
+  const group = EXCLUSIVE_ENTRY_GROUPS.find(entry => entry.id === 'farming-tool-reforge');
+  const inPanel = new Set(toolPanelEntryIds());
+  for (const member of group.members) {
+    assert.ok(inPanel.has(member), `exclusive reforge "${member}" is not on the panel`);
+  }
+});
+
+test('a level control is chosen by how many levels there are to show', () => {
+  // Fifty roman numerals in a dropdown is not a control anyone can use.
+  assert.equal(levelControlFor(1), 'lever');
+  assert.equal(levelControlFor(4), 'select');
+  assert.equal(levelControlFor(10), 'select');
+  assert.equal(levelControlFor(11), 'number');
+  assert.equal(levelControlFor(50), 'number');
+});
+
+test('the panel lists no entry twice', () => {
+  const ids = toolPanelEntryIds();
+  assert.equal(new Set(ids).size, ids.length);
 });
