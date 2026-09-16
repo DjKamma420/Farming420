@@ -4,6 +4,8 @@ import { toolKeyForCropId } from './migrations.js';
 import { TOOL_TIER_CHAIN, highestChainTier } from './progression-chains.js';
 import { farmingToolPackKey } from './farming-tool-art.js';
 
+let applyQueued = false;
+
 function readState() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
 }
@@ -25,13 +27,19 @@ function artKey(raw, cropId) {
 }
 
 function ensureArtHost(host, key, label) {
-  if (!host) return;
+  if (!host) return false;
+  const current = host.getAttribute('data-pack-asset');
   if (!key) {
-    host.removeAttribute('data-pack-asset');
-    return;
+    if (current !== null) {
+      host.removeAttribute('data-pack-asset');
+      return true;
+    }
+    return false;
   }
-  host.dataset.packAsset = key;
-  host.setAttribute('aria-label', label || 'Farming tool texture');
+  if (current !== key) host.setAttribute('data-pack-asset', key);
+  const nextLabel = label || 'Farming tool texture';
+  if (host.getAttribute('aria-label') !== nextLabel) host.setAttribute('aria-label', nextLabel);
+  return current !== key;
 }
 
 function enhanceWorkspaceEditor(raw) {
@@ -64,13 +72,33 @@ export function applyFarmingToolArt() {
   enhanceDirectPicker(raw);
 }
 
+function queueApply() {
+  if (applyQueued) return;
+  applyQueued = true;
+  queueMicrotask(() => {
+    applyQueued = false;
+    applyFarmingToolArt();
+  });
+}
+
+function mutationNeedsApply(mutations) {
+  return mutations.some(mutation => [...mutation.addedNodes].some(node => {
+    if (!(node instanceof Element)) return false;
+    if (node.classList.contains('workspace-tool-art')) return false;
+    return node.matches?.('#workspaceToolSelect, [data-tool-editor="1"], [data-workspace-tool-value]')
+      || node.querySelector?.('#workspaceToolSelect, [data-tool-editor="1"], [data-workspace-tool-value]');
+  }));
+}
+
 function boot() {
   applyFarmingToolArt();
   const app = document.getElementById('app');
   if (app && typeof MutationObserver !== 'undefined') {
-    new MutationObserver(() => queueMicrotask(applyFarmingToolArt)).observe(app, { childList: true, subtree: true });
+    new MutationObserver(mutations => {
+      if (mutationNeedsApply(mutations)) queueApply();
+    }).observe(app, { childList: true, subtree: true });
   }
-  window.addEventListener('farming420:state-changed', applyFarmingToolArt);
+  window.addEventListener('farming420:state-changed', queueApply);
 }
 
 if (typeof document !== 'undefined') {
