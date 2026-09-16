@@ -54,3 +54,23 @@ script (where the escaping is explicit and visible), or rewrite the sentence so
 it needs no apostrophe. Always run `node --check` on the file in the same
 command that writes it, so the failure surfaces immediately instead of inside a
 test-runner summary that only says "test failed".
+
+## An observer that watches for its own insertions (3rd occurrence)
+
+`item-art-ui.js` runs on a MutationObserver and inserts nodes. Its guard asked
+"does this card already contain a pack texture?" — so when the inserted node was
+a head instead, the guard never matched, the insertion triggered the observer,
+and the loop pegged the browser. The page rendered, then froze. Identical in
+shape to the `catalogRequested` loop and the `ensureItemCatalog` one before it.
+
+Rule: an observer-driven writer must guard on a mark it sets on the **container**
+and sets unconditionally, never on the presence of one particular kind of child.
+The guard has to be true after any successful pass, including passes that insert
+something new.
+
+Second rule from the same change: when selecting insertion points, never select
+both an element and its own descendant. `'.slot-card[data-slot], .slot-portrait'`
+matched a card and the portrait inside it, so each slot got two pictures. Select
+the innermost container only, and resolve the id by walking up.
+
+Both were found by running the real page in a browser, not by reading the diff.

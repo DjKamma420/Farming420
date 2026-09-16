@@ -1,4 +1,4 @@
-const VERSION = 'farming420-0.20.0';
+const VERSION = 'farming420-0.21.0';
 const APP_FILES = [
   './',
   './index.html',
@@ -26,6 +26,7 @@ const APP_FILES = [
   './src/item-art-ui.js',
   './src/item-art-ui.css',
   './src/item-editor.js',
+  './src/skull-art.js',
   './src/item-editor.css',
   './src/item-catalog.js',
   './src/armor-fortune.js',

@@ -57,6 +57,7 @@ export function createEmptyItem() {
     enchantments: {},
     gems: [],
     recombobulated: false,
+    skullTexture: null,
     source: ITEM_SOURCE.MANUAL,
     itemUuid: null,
   };
@@ -143,6 +144,7 @@ export function itemRecordFromDecoded(decoded) {
     enchantments: { ...(decoded.enchantments || {}) },
     gems: gemListFrom(decoded.gems),
     recombobulated: Number(decoded.recombobulated || 0) >= 1,
+    skullTexture: decoded.skullTexture ?? null,
     source: ITEM_SOURCE.SYNC,
     itemUuid: decoded.itemUuid ?? null,
   };
