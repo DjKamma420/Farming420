@@ -15,13 +15,13 @@ test('all 13 current Garden crops are present with unique ids', () => {
   }
 });
 
-test('Sunflower and Moonflower share the Eclipse Hoe and no other tool is shared', () => {
+test('Sunflower and Moonflower share the Eclipse Sickle and no other tool is shared', () => {
   const byTool = new Map();
   for (const entry of CROPS) {
     byTool.set(toolKeyForCropId(entry.id), [...(byTool.get(toolKeyForCropId(entry.id)) || []), entry.id]);
   }
   const shared = [...byTool.entries()].filter(([, crops]) => crops.length > 1);
-  assert.deepEqual(shared, [['eclipse-hoe', ['sunflower', 'moonflower']]]);
+  assert.deepEqual(shared, [['eclipse-sickle', ['sunflower', 'moonflower']]]);
 });
 
 test('upgrade ids are unique', () => {
@@ -74,5 +74,19 @@ test('documented hidden interactions stay sourced and explained', () => {
     assert.ok(entry.why?.trim(), `${entry.id} does not say why it is modeled separately`);
     assert.ok(entry.handling?.trim(), `${entry.id} does not describe the app logic`);
     assert.match(String(entry.source || ''), /^https?:\/\//, `${entry.id} has no source URL`);
+  }
+});
+
+test('no entry cites the closed official Hypixel wiki', () => {
+  // The official wiki was shut down in July 2026 and its pages are gone, so
+  // every wiki.hypixel.net link is dead. See AGENTS.md, source hierarchy.
+  const offenders = UPGRADES.filter(entry => /(^|\/\/)(www\.)?wiki\.hypixel\.net/.test(String(entry.source || '')));
+  assert.deepEqual(offenders.map(entry => entry.id), [], 'these cite the closed official wiki');
+
+  for (const entry of [...HIDDEN_INTERACTIONS, ...COMING_SOON]) {
+    assert.ok(!String(entry.source || '').includes('wiki.hypixel.net'), `${entry.id} cites the closed official wiki`);
+  }
+  for (const crop of CROPS) {
+    assert.ok(!String(crop.toolSource || '').includes('wiki.hypixel.net'), `${crop.id} cites the closed official wiki`);
   }
 });

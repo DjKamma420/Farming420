@@ -8,14 +8,14 @@ const CROP_UPGRADE_ID = 'crop-progression-crop-upgrade-selected-crop';
 const TOOL_LEVEL_ID = 'tool-mk-ii';
 const FARMING_LEVEL_ID = 'account-skill-farming-skill-level';
 
-test('toolKeyForCropId gives Sunflower and Moonflower the same Eclipse Hoe bucket', () => {
+test('toolKeyForCropId gives Sunflower and Moonflower the same Eclipse Sickle bucket', () => {
   assert.equal(toolKeyForCropId('sunflower'), toolKeyForCropId('moonflower'));
-  assert.equal(toolKeyForCropId('sunflower'), 'eclipse-hoe');
+  assert.equal(toolKeyForCropId('sunflower'), 'eclipse-sickle');
 });
 
 test('toolKeyForCropId keeps unrelated crops on separate tools', () => {
   assert.notEqual(toolKeyForCropId('melon'), toolKeyForCropId('pumpkin'));
-  assert.equal(toolKeyForCropId('wheat'), 'euclid-s-wheat-hoe');
+  assert.equal(toolKeyForCropId('wheat'), 'euclid-s-wheat-sickle');
 });
 
 test('toolKeyForCropId falls back to the default crop for unknown ids', () => {
@@ -52,15 +52,15 @@ test('v1 account-scoped crop and tool entries move onto the selected setup', () 
   const profile = result.state.profile;
   assert.equal(profile.cropProgress.sunflower.levels[CROP_UPGRADE_ID], 7);
   assert.equal(profile.cropProgress.sunflower.owned[CROP_UPGRADE_ID], true);
-  assert.equal(profile.toolProgress['eclipse-hoe'].levels[TOOL_LEVEL_ID], 4);
-  assert.equal(profile.toolProgress['eclipse-hoe'].costs[TOOL_LEVEL_ID], 1000);
+  assert.equal(profile.toolProgress['eclipse-sickle'].levels[TOOL_LEVEL_ID], 4);
+  assert.equal(profile.toolProgress['eclipse-sickle'].costs[TOOL_LEVEL_ID], 1000);
   assert.equal(profile.normalizedSnapshot, null);
 
   // Account-scoped progress must stay where it is.
   assert.equal(profile.levels[FARMING_LEVEL_ID], 50);
   assert.equal(profile.levels[CROP_UPGRADE_ID], undefined);
   assert.equal(profile.levels[TOOL_LEVEL_ID], undefined);
-  assert.deepEqual(result.applied, [2, 3, 4]);
+  assert.deepEqual(result.applied, [2, 3, 4, 5]);
 });
 
 test('v1 tool entries stored inside a crop bucket move to the physical tool bucket', () => {
@@ -75,7 +75,7 @@ test('v1 tool entries stored inside a crop bucket move to the physical tool buck
   });
 
   const profile = result.state.profile;
-  assert.equal(profile.toolProgress['eclipse-hoe'].levels[TOOL_LEVEL_ID], 6);
+  assert.equal(profile.toolProgress['eclipse-sickle'].levels[TOOL_LEVEL_ID], 6);
   assert.equal(profile.cropProgress.moonflower.levels[TOOL_LEVEL_ID], undefined);
   // Crop-scoped progress in the same bucket is untouched.
   assert.equal(profile.cropProgress.moonflower.levels[CROP_UPGRADE_ID], 2);
@@ -105,7 +105,7 @@ test('schema 2 gains a null normalized snapshot without changing existing profil
     },
   };
   const result = migrateState(state);
-  assert.deepEqual(result.applied, [3, 4]);
+  assert.deepEqual(result.applied, [3, 4, 5]);
   assert.equal(result.state.profile.normalizedSnapshot, null);
   assert.equal(result.state.profile.name, 'Existing profile');
   assert.equal(result.state.profile.levels[FARMING_LEVEL_ID], 52);
@@ -117,7 +117,7 @@ test('schema 3 keeps an existing normalized snapshot untouched', () => {
     schemaVersion: 3,
     profile: { normalizedSnapshot: snapshot },
   });
-  assert.deepEqual(result.applied, [4]);
+  assert.deepEqual(result.applied, [4, 5]);
   assert.deepEqual(result.state.profile.normalizedSnapshot, snapshot, 'the snapshot survives the setup migration');
 });
 
@@ -130,7 +130,7 @@ test('schema 4 adds setups without touching existing progression', () => {
       normalizedSnapshot: null,
     },
   });
-  assert.deepEqual(result.applied, [4]);
+  assert.deepEqual(result.applied, [4, 5]);
   assert.equal(result.state.profile.name, 'Existing profile');
   assert.equal(result.state.profile.levels[FARMING_LEVEL_ID], 52);
   assert.equal(result.state.profile.setups.list.length, 3);
@@ -194,7 +194,7 @@ test('an unknown crop bucket is kept and reported instead of dropped', () => {
 
 test('a state without a schema version is treated as the oldest schema', () => {
   const result = migrateState({ profile: { levels: { [CROP_UPGRADE_ID]: 4 } } });
-  assert.deepEqual(result.applied, [2, 3, 4]);
+  assert.deepEqual(result.applied, [2, 3, 4, 5]);
   assert.equal(result.state.profile.cropProgress.melon.levels[CROP_UPGRADE_ID], 4);
   assert.equal(result.state.profile.normalizedSnapshot, null);
 });
@@ -203,4 +203,55 @@ test('a non-object state does not throw', () => {
   for (const input of [null, undefined, 'text', 7]) {
     assert.equal(migrateState(input).schemaVersion, DATA_SCHEMA_VERSION);
   }
+});
+
+test('schema 5 moves tool progress to the renamed tools without losing it', () => {
+  const result = migrateState({
+    schemaVersion: 4,
+    profile: {
+      toolProgress: {
+        'euclid-s-wheat-hoe': { levels: { [TOOL_LEVEL_ID]: 7 }, owned: { [TOOL_LEVEL_ID]: true }, costs: {}, manualGain: {} },
+        'eclipse-hoe': { levels: { 'tool-farming-for-dummies': 5 }, owned: {}, costs: {}, manualGain: {} },
+        'melon-dicer': { levels: { [TOOL_LEVEL_ID]: 3 }, owned: {}, costs: {}, manualGain: {} },
+      },
+    },
+  });
+
+  const progress = result.state.profile.toolProgress;
+  assert.equal(progress['euclid-s-wheat-sickle'].levels[TOOL_LEVEL_ID], 7);
+  assert.equal(progress['euclid-s-wheat-sickle'].owned[TOOL_LEVEL_ID], true);
+  assert.equal(progress['eclipse-sickle'].levels['tool-farming-for-dummies'], 5);
+  assert.equal(progress['melon-dicer'].levels[TOOL_LEVEL_ID], 3, 'an unrenamed tool is left alone');
+  assert.equal(progress['euclid-s-wheat-hoe'], undefined, 'the old key is removed');
+  assert.equal(progress['eclipse-hoe'], undefined);
+  assert.ok(result.warnings.some(note => /euclid-s-wheat-hoe/.test(note)), 'the move is reported');
+});
+
+test('a value already under the new tool key is never overwritten by the old one', () => {
+  const result = migrateState({
+    schemaVersion: 4,
+    profile: {
+      toolProgress: {
+        'eclipse-hoe': { levels: { [TOOL_LEVEL_ID]: 1 }, owned: {}, costs: {}, manualGain: {} },
+        'eclipse-sickle': { levels: { [TOOL_LEVEL_ID]: 9 }, owned: {}, costs: {}, manualGain: {} },
+      },
+    },
+  });
+  assert.equal(result.state.profile.toolProgress['eclipse-sickle'].levels[TOOL_LEVEL_ID], 9);
+});
+
+test('the tool rename migration is idempotent', () => {
+  const legacy = {
+    schemaVersion: 4,
+    profile: { toolProgress: { 'gauss-carrot-hoe': { levels: { [TOOL_LEVEL_ID]: 4 }, owned: {}, costs: {}, manualGain: {} } } },
+  };
+  const once = migrateState(legacy).state;
+  const twice = migrateState(structuredClone(once)).state;
+  assert.deepEqual(twice.profile.toolProgress, once.profile.toolProgress);
+  assert.equal(once.profile.toolProgress['gauss-carrot-shovel'].levels[TOOL_LEVEL_ID], 4);
+});
+
+test('a state with no tool progress survives the rename migration', () => {
+  assert.doesNotThrow(() => migrateState({ schemaVersion: 4, profile: {} }));
+  assert.doesNotThrow(() => migrateState({ schemaVersion: 4 }));
 });

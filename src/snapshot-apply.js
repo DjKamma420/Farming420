@@ -79,16 +79,33 @@ function comparableName(value) {
 }
 
 /**
+ * The tool nouns Hypixel has used for specialised farming tools.
+ *
+ * Verified 2026-09-16 against the community wiki's Farming Tools page. The
+ * list exists so a tool is recognised by its crop-distinctive part plus *any*
+ * of these, which survives a rename: the tools were renamed once already
+ * (Hoe -> Sickle/Shovel/Cutter) and matching the full name silently broke
+ * detection for seven of thirteen crops until it was noticed.
+ */
+const TOOL_NOUNS = Object.freeze(['sickle', 'shovel', 'cutter', 'dicer', 'knife', 'chopper', 'hoe', 'axe']);
+
+/**
  * Which crops a decoded item is the farming tool for.
  *
- * Matched against the tool names in `src/data.js` rather than an item-id table,
- * so no identifier is invented here. Sunflower and Moonflower share the Eclipse
- * Hoe, so one item can legitimately match two crops.
+ * Matched against `toolMatch` in `src/data.js` -- the part of the name that
+ * identifies the crop -- rather than an item-id table, so no identifier is
+ * invented here. Requiring a tool noun as well keeps a stack of the crop itself
+ * ("Wild Rose", "Melon Slice") from being mistaken for the tool.
+ *
+ * Sunflower and Moonflower share one tool, so an item can match two crops.
  */
 export function cropsForToolItem(item) {
   const name = comparableName(item?.displayName);
   if (!name) return [];
-  return CROPS.filter(crop => name.includes(comparableName(crop.tool))).map(crop => crop.id);
+  if (!TOOL_NOUNS.some(noun => name.split(' ').includes(noun))) return [];
+  return CROPS
+    .filter(crop => name.includes(comparableName(crop.toolMatch || crop.tool)))
+    .map(crop => crop.id);
 }
 
 /**

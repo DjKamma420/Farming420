@@ -85,7 +85,7 @@ export function farmingInventoryNbt() {
     named(3, 'item_tier', int32(3)),
   ]);
   const display = compound([
-    named(8, 'Name', stringPayload('§6Euclid\'s Wheat Hoe')),
+    named(8, 'Name', stringPayload('§6Euclid\'s Wheat Sickle')),
   ]);
   const item = compound([
     named(1, 'Count', byte(1)),

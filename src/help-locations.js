@@ -38,18 +38,18 @@ const CURATED = Object.freeze({
   // Not an upgrade entry but the two numbers the app asks for directly on the
   // Account and Crops pages, which is where most people get stuck first.
   'input:globalFortune': {
-    where: 'Your total Farming Fortune is shown with your other stats in the SkyBlock Menu, which also breaks down how each stat is calculated.',
+    where: 'Farming Fortune is shown with your other stats in the SkyBlock Menu. Note that it has no effect at all on your Private Island \u2014 it only applies in The Garden and other farming areas.',
     status: LOCATION_STATUS.UNVERIFIED,
-    source: 'https://wiki.hypixel.net/Stats',
-    lastVerified: '2026-09-15',
-    note: 'Taken from the official wiki’s Stats page. The exact menu path has not been confirmed against a current in-game capture.',
+    source: 'https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune',
+    lastVerified: '2026-09-16',
+    note: 'The stat and the Private Island exception come from the community wiki. The exact menu path has not been confirmed against a current in-game capture.',
   },
   'input:cropFortune': {
-    where: 'Per-crop Fortune is part of the same stat breakdown as your total Farming Fortune in the SkyBlock Menu.',
+    where: 'Crop Fortune is the per-crop stat, kept separate from your total Farming Fortune, and appears in the same stat breakdown. The Crop Upgrades that raise it are bought at the Desk in The Garden for Copper, +5 Crop Fortune each up to +45.',
     status: LOCATION_STATUS.UNVERIFIED,
-    source: 'https://wiki.hypixel.net/Stats',
-    lastVerified: '2026-09-15',
-    note: 'Taken from the official wiki’s Stats page. The exact menu path has not been confirmed against a current in-game capture.',
+    source: 'https://hypixelskyblock.minecraft.wiki/w/Crop_Fortune',
+    lastVerified: '2026-09-16',
+    note: 'The Desk location and the +5 per upgrade come from the community wiki. The exact menu path for reading the stat has not been confirmed against a current in-game capture.',
   },
 });
 

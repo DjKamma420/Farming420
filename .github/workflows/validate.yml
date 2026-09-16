@@ -37,7 +37,8 @@ jobs:
                       src/styles.css src/enhancements.css src/foundation.css \
                       assets/icon.svg \
                       AGENTS.md README.md \
-                      docs/PRODUCT_SPEC.md docs/PROFILE_DATA_MATRIX.md docs/PROFILE_MODEL.md docs/MATH_MODEL.md docs/FINDING_VALUES.md; do
+                      docs/PRODUCT_SPEC.md docs/PROFILE_DATA_MATRIX.md docs/PROFILE_MODEL.md docs/MATH_MODEL.md docs/FINDING_VALUES.md \
+                      docs/VERIFIED_MECHANICS.md; do
             test -f "$file" || { echo "missing required file: $file"; exit 1; }
           done
 
