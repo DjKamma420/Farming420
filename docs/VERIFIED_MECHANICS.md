@@ -114,6 +114,116 @@ rather than guessed:
 | Pesterminator I | Drops from a Beetle; VI from A Beginner's Guide to Pesthunting |
 | Green Thumb I | SkyMart |
 
+## Strategies and non-obvious interactions
+
+Fifteen entries were added to `HIDDEN_INTERACTIONS` in `src/data.js` from this
+pass, each with its source and date, and they render on the app's Mechanics
+page. The ones that change how a planner must calculate:
+
+- **Zorro's Cape rolls at claim time.** Its 20% extra-medal chance is checked
+  when contest rewards are claimed, not during the contest, so it costs nothing
+  in farming stats and never competes with the contest loadout.
+- **Bonus Pest Chance is a step function.** Each full 100 guarantees one more
+  Pest; the remainder is the percent chance of one more. 299 -> 300 adds a whole
+  Pest, 300 -> 399 adds almost nothing. Ranking it linearly would be badly wrong.
+- **300+ Bonus Pest Chance inverts the pest penalty.** Eight active Pests
+  normally cost 75% Fortune; at 300-399 they cost 15%. That makes letting Pests
+  build up viable for low-attention farming instead of ruinous.
+- **Contest medals gate Turbo-Crop per crop.** Bronze makes IV work for that
+  crop, Silver makes V work. Owning the book is not the same as it applying, so
+  a purchase can be entirely wasted.
+- **Gold medals raise the Farming cap.** Each unique crop with a Gold result
+  lets Anita raise the cap by one, up to 10 and Farming 60 — so the last ten
+  levels, worth +4 Fortune each, are a contest unlock, not a grind.
+- **Mk. II at tool level 15, Mk. III at 30**, with Overclocker 3000 carrying
+  levels 40-50. Rarity scales reforges and gemstones, so the tier upgrade
+  changes the value of everything already on the tool.
+- **Freezing Garden time makes one of the two day/night shards useless.** With a
+  Day Saver and a Night Saver given to the Garden, the Desk can freeze the time,
+  so only Moonflower farming genuinely needs Lunar Power.
+- **A Sundial frees the boot slot.** Per-crop Speed at the Desk removes the
+  reason to wear Rancher's Boots instead of the Fortune boots.
+- **One Mantid piece kept in the kill set preserves stack credit**, because the
+  stacks come from Pest kills rather than from wearing the full set at the time.
+- **Sunset V pulls both ways**: +5 Overbloom by day, but -5% Visitor cooldown
+  while breaking crops at night. The two halves want opposite time settings.
+- **Brown Bandana scales with eligible Pest Bestiary tiers** (+0.2 each, max 45),
+  and Timestalk Clone and Zombuddy do not count.
+- **Mushroom is the Farming XP crop** at 6 base XP per block, which is a
+  different answer from the coins-per-hour crop.
+- **Beth's quest is a wall-clock gate** spanning several Garden visits, and its
+  later part unlocks the Crop Analyzer. Coins cannot shorten it.
+- **Greenhouse values are rebalanced repeatedly**, including a mutation
+  multiplier change in August 2026. A hard-coded Greenhouse figure goes stale
+  silently.
+
+## The 304 Bonus Pest Chance baseline
+
+A fully permanent baseline, before any spray, pet or swap:
+
+| Source | Bonus Pest Chance |
+| --- | --- |
+| 5x Wriggling Larva | +10 |
+| Level 20 Vermin Vaporizer Chip | +100 |
+| Pesthunter Relic | +80 |
+| Full Helianthus Armor | +80 |
+| Pesterminator VI on all four pieces | +24 |
+| Level 10 Keeled Slug Shard | +10 |
+| **Total** | **304** |
+
+Temporary and swap sources on top: Sprayonator +25 / Juicy +50 / Salty +75,
+Level 100 Legendary Slug Pet +40, Level 100 Mosquito Pet +50, Brown Bandana up
+to +45, Douce Pluie de Stinky Cheese Potion +20, Doug's Feast Crasher +2-6.
+
+## Farming attributes and their shards
+
+The app models three shards; there are at least twelve farming attributes. Each
+still needs its own Fortune value before it can be ranked, so they are listed
+rather than added as scored entries.
+
+| Attribute | Shard | Use |
+| --- | --- | --- |
+| Solar Power | Firefly | Farming Fortune during the day |
+| Lunar Power | Lunar Moth | Farming Fortune at night; required for Moonflower |
+| Pest Fortune | Cricket | Farming Fortune while killing Pests |
+| Pest Luck | Field Mouse | Overbloom on Pests |
+| Bonus Pest Chance | Keeled Slug | Bonus Pest Chance |
+| Infiltration | Earthworm | Farming Fortune while the current Plot has a Pest |
+| Sprayonator Serendipity | Rat | More Sprayonator materials |
+| Pest Cooldown | Moth | Shorter Pest spawn cooldown |
+| Enchanted Farmer | Mosquito | Chance of an Enchanted Crop while farming |
+| Visitor Bait | Mudworm | Visitors arrive faster |
+| Fancy Visit | Invisibug | Chance of a RARE or better Visitor |
+| Garden Wisdom | Dragonfly | Farming Wisdom on the Garden |
+
+## Open discrepancy: armour Farming Fortune
+
+Two pages on the same wiki disagree, so neither is taken:
+
+| Set | Farming Guide ("base full-set") | Farming Fortune page |
+| --- | --- | --- |
+| Tater | +70 | +100 |
+| Cropie | +90 | +135 |
+| Squash | +110 | +170 |
+| Fermento | +130 | +205 |
+| Helianthus | +150 | +225 |
+
+Farmhand (+20), Haymaker (+40) and Sprout (+60) agree. This repo stores no
+number for armour Fortune, so nothing is currently wrong — but the figure must
+be resolved before the profit engine uses one.
+
+## Armour progression chain
+
+Verified, and both pages agree on the level gates: Farmhand 3, Haymaker 10,
+Sprout 15, Tater 20, Cropie 30, Squash 35, Fermento 40, Helianthus 50.
+
+## Reforge progression
+
+Bustling is the cheap early armour reforge, later replaced by Mossy. Blooming is
+a good early Equipment reforge. Bountiful is the default tool reforge; Blessed
+gives more Farming Wisdom and some Fortune and is mainly for an XP-focused
+setup. Squeaky is used on the Pest-spawning Equipment set.
+
 ## How to extend this
 
 The research path that worked: this environment's egress proxy blocks every

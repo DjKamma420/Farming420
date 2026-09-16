@@ -559,3 +559,61 @@ must not claim a coins/hour figure until they are modelled:
    picking one.
 
 218 tests. Data schema 5, app version 0.12.0.
+
+---
+
+# Farming strategies and loopholes, researched
+
+Brief: know every farming loophole and strategy. Second research pass, using the
+same server-side extraction route.
+
+## Where it landed
+
+`HIDDEN_INTERACTIONS` in `src/data.js` already existed for "hidden and nonlinear
+effects", so the findings went there rather than into prose: **15 new entries,
+34 total**, each with `effect`, `why`, `handling`, a source and a
+`lastVerified` date. They render on the app's Mechanics page, so the app itself
+now carries them.
+
+`docs/VERIFIED_MECHANICS.md` grew to 231 lines with the strategy summary, the
+304 Bonus Pest Chance baseline table, the twelve farming attributes and their
+shards, the armour chain, and the reforge progression.
+
+## The findings that change how the planner must calculate
+
+- **Bonus Pest Chance is a step function.** Each full 100 guarantees one more
+  Pest; the remainder is a percent chance. 299 -> 300 adds a whole Pest,
+  300 -> 399 adds almost nothing. Ranking it linearly would be badly wrong.
+- **300+ Bonus Pest Chance inverts the pest penalty.** Eight Pests normally cost
+  75% Fortune; at 300-399 they cost 15%, which makes letting Pests accumulate a
+  viable low-attention strategy rather than a disaster.
+- **Zorro's Cape rolls at claim time**, so it costs nothing in farming stats and
+  never competes with the contest loadout.
+- **Contest medals gate Turbo-Crop per crop** (Bronze -> IV, Silver -> V), so
+  owning the book is not the same as it applying.
+- **Gold medals raise the Farming cap** -- the last ten levels, +4 Fortune each,
+  are a contest unlock rather than a grind.
+- **Mk. II at tool level 15, Mk. III at 30**, and rarity scales reforges and
+  gemstones, so a tier upgrade changes the value of everything already on it.
+- **Freezing Garden time makes one day/night shard useless** -- only Moonflower
+  needs Lunar Power.
+- **A Sundial frees the boot slot** from Rancher's Boots.
+- **One Mantid piece in the kill set keeps stack credit.**
+- **Sunset V pulls both ways** across day and night.
+
+## Open discrepancy, not resolved
+
+Armour Farming Fortune differs between two pages of the same wiki: the guide
+gives Tater +70 / Cropie +90 / Squash +110 / Fermento +130 / Helianthus +150 as
+"base full-set", the Farming Fortune page gives +100 / +135 / +170 / +205 /
++225. Farmhand, Haymaker and Sprout agree. This repo stores no armour Fortune
+number, so nothing is wrong today, but it must be resolved before the profit
+engine uses one. Recorded rather than guessed.
+
+## Still missing values
+
+The twelve farming attributes are documented but not scored -- each needs its
+own Fortune value before it can be ranked, and the app currently models three
+shards. Listing them without values would add twelve dead planner cards.
+
+220 tests. App version 0.13.0.
