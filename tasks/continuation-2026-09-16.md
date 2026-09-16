@@ -20,6 +20,7 @@ This file is for future coding agents continuing the project.
 - Do not stop the audit at 0.26.1. The live game has since received 0.27 and 0.27.1 changes.
 - Relevant current farming corrections already represented in the data include Cropshot Chip +3/+4/+5 FF per chip level by rarity, Harvesting up to +75 total, Pesthunter Phillip +5 FF per pest capped at +200, Orchid Mantis, Thorny/Overbloom and the current God-Potion/Mixin handling.
 - Keep official Hypixel patch notes as the preferred source when a later patch supersedes older wiki/community values.
+- On 2026-09-16, the remaining Garden/Pest Bestiary permanent Farming Fortune total was deliberately kept VERIFY because current references still disagree (notably 66 vs 96). Do not guess this value without a newer authoritative source.
 
 ## Implemented in this continuation
 
@@ -65,6 +66,12 @@ This file is for future coding agents continuing the project.
   - Stores the selected mode under `profile.plannerMode`.
   - Non-profit modes hide the revenue panel and show only active, non-maxed upgrades relevant to that goal and crop.
   - Rows show marginal value, current level and mode context without pretending they have a payback value.
+- `src/runtime-data-patches.js` VERIFY audit
+  - Filled Rosewater Flask is now ACTIVE: +1 permanent Farming Fortune per consumed Filled Flask, up to 5.
+  - Mutation Analysis is now ACTIVE as a +30 total permanent Farming Fortune source; individual analyzer reward breakpoints are not yet modeled.
+  - The old generic `Exportable item (selected crop)` record is moved to `legacy` because Carrolyn does not support every crop.
+  - Seven explicit Carrolyn +12 Crop Fortune entries were added for Wheat/Fine Flour, Carrot/Exportable Carrots, Pumpkin/Expired Pumpkin, Mushroom/Half-Eaten Mushroom, Cocoa Beans/Supreme Chocolate Bar, Nether Wart/Warty and Wild Rose/Prickly Kiss.
+  - Garden/Pest Bestiary remains VERIFY due conflicting current totals rather than inventing a value.
 - `research/effective-gain-model-2026-09-16.md`
   - Documents the formulas, source assumptions and planner implications for future agents.
 - Tests:
@@ -72,6 +79,7 @@ This file is for future coding agents continuing the project.
   - `tests/effective-gain.test.js`
   - `tests/revenue-ranking.test.js`
   - `tests/planner-modes.test.js`
+  - `tests/verified-permanent-sources.test.js`
 
 ## Effective-gain formula
 
@@ -83,7 +91,7 @@ Use this only for coin-efficiency comparison. Collection, XP, Feast milestone, S
 
 ## Next implementation priorities
 
-1. Continue the complete live-version farming audit, focusing on sources still marked VERIFY rather than re-researching mechanics already confirmed in runtime patches.
+1. Continue the live-version VERIFY audit for unresolved entries other than the now-documented Garden/Pest Bestiary conflict; prioritize exact current mechanics over theoretical-max lists.
 2. Expand texture-pack-backed item art coverage and make missing-art fallbacks visually consistent.
 3. Add browser-level/UI regression coverage for direct controls, revenue inputs, planner goal switching, drawer opening and exclusive-state transitions.
 4. Add automatic or assisted cost acquisition where data quality is sufficient; until then, unknown prices must remain explicit rather than guessed.
@@ -93,4 +101,4 @@ Use this only for coin-efficiency comparison. Collection, XP, Feast milestone, S
 
 ## Verification note
 
-The repository has not exposed a connector-visible GitHub Actions run for these latest commits. A local clone/test attempt from the execution container also could not run because that environment could not resolve `github.com`; therefore no passing test result is claimed. The test files are committed and await an environment with repository/network access or CI.
+The repository has not exposed a connector-visible GitHub Actions run for the latest commits in this continuation. Local clone/test attempts from the execution container previously could not resolve `github.com`; therefore no passing test result is claimed unless a later agent obtains an actual CI/local result.
