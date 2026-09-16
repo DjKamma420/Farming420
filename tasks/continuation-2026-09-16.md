@@ -37,6 +37,10 @@ This file is for future coding agents continuing the project.
   - Large chains use compact decrement/current/increment controls.
   - Reads state fresh on each action instead of using a stale captured level.
   - Clears mutually exclusive peers when a new exclusive state is selected.
+- `src/editor-dedupe.js`
+  - Removes the second Tool-upgrade card grid from the Crops workspace; Tool state is edited only in Tools.
+  - Removes duplicate Ownership & Level controls from the detail drawer because progression state is already edited directly on cards/workspaces.
+  - Keeps the drawer for cost/planner evaluation, source location, rules and scope.
 - `src/effective-gain.js`
   - Adds pure revenue-aware math for Farming Fortune versus Overbloom.
   - There is intentionally no fixed universal `1 Overbloom = X FF` conversion.
@@ -75,6 +79,7 @@ Use this only for coin-efficiency comparison. Collection, XP, Feast milestone, S
 4. Expand texture-pack-backed item art coverage and make missing-art fallbacks visually consistent.
 5. Add browser-level/UI regression coverage for direct controls, revenue inputs, drawer opening and exclusive-state transitions.
 6. Add automatic or assisted cost acquisition where data quality is sufficient; until then, unknown prices must remain explicit rather than guessed.
+7. Continue collapsing one-state/multiple-editor leftovers in Gear/Setups where the same property is still represented twice.
 
 ## Verification note
 
