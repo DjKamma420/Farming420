@@ -24,15 +24,18 @@ test('verified gear values still match the runtime data', () => {
     assert.ok(upgrade, `verified gear upgrade is missing from runtime data: ${fact.id}`);
     assert.equal(upgrade.status, 'ACTIVE', `${fact.id} is no longer active`);
     assert.equal(upgrade.stepGain, fact.stepGain, `${fact.id} drifted from the verified Fortune value`);
+    if (fact.max !== undefined) assert.equal(upgrade.max, fact.max, `${fact.id} drifted from the verified max`);
     assert.ok(fact.source.startsWith('https://hypixelskyblock.minecraft.wiki/'));
     assert.equal(fact.lastVerified, GEAR_FORTUNE_VERIFIED);
   }
 });
 
-test('Blossom base Fortune is modeled separately from the Florist visitor bonus', () => {
+test('Blossom base Fortune is modeled per piece and separately from Florist', () => {
   const base = byId.get('equipment-blossom-set-base-stats');
   const florist = byId.get('equipment-blossom-set-visitor-bonus');
-  assert.equal(base.stepGain, 28);
+  assert.equal(base.max, 4);
+  assert.equal(base.stepGain, 7);
+  assert.equal(base.max * base.stepGain, 28);
   assert.equal(florist.stepGain, 90);
   assert.notEqual(base.id, florist.id);
   assert.match(base.notes, /separate from the Florist visitor bonus/i);
