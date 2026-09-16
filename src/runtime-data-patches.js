@@ -38,6 +38,9 @@ else UPGRADES.push(BLOSSOM_BASE_ENTRY);
 patchEntry('equipment-reforge-rooted-on-full-equipment', {
   name: 'Rooted on equipped equipment',
   status: 'ACTIVE',
+  max: 4,
+  stepGain: 0,
+  rawMarginal: 0,
   source: 'https://hypixelskyblock.minecraft.wiki/w/Burrowing_Spores',
   lastVerified: '2026-09-16',
   notes: 'Rooted is item-local. Farming Fortune scales with each equipped equipment piece rarity: +6/+9/+12/+15/+18/+21 from Common through Mythic. Farming420 sums the actual equipped pieces.',
