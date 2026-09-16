@@ -1,9 +1,20 @@
 export const GEMSTONE_SLOTS_VERIFIED = '2026-09-16';
 export const TOOL_GEMSTONE_SOURCE = 'https://hypixel.net/threads/farming-tools-upgrade-milestones.6032473/';
+export const PERIDOT_VALUES_SOURCE = 'https://hypixel.net/threads/list-of-item-in-skyblock-major-update.6123513/';
 
 export const GEMSTONE_QUALITIES = Object.freeze(['ROUGH', 'FLAWED', 'FINE', 'FLAWLESS', 'PERFECT']);
 export const TOOL_GEMSTONE_TYPES = Object.freeze(['PERIDOT']);
 export const TOOL_GEMSTONE_SLOT_COUNT = 4;
+export const GEMSTONE_RARITIES = Object.freeze(['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY', 'MYTHIC']);
+
+/** Current Peridot Farming Fortune per gemstone, ordered Common through Mythic. */
+export const PERIDOT_FORTUNE = Object.freeze({
+  ROUGH: Object.freeze([0.5, 1, 1.5, 2, 2.5, 3]),
+  FLAWED: Object.freeze([1, 1.5, 2, 2.5, 3, 4]),
+  FINE: Object.freeze([1.5, 2, 3, 4, 5, 6]),
+  FLAWLESS: Object.freeze([2, 3, 4, 5, 6, 8]),
+  PERFECT: Object.freeze([3, 4, 5, 6, 8, 10]),
+});
 
 export function emptyGemstoneSlot(index) {
   return {
@@ -44,6 +55,24 @@ export function normalizeToolGem(value) {
 
 export function gemstoneQuality(value) {
   return normalizeToolGem(value)?.split(' ')[0] || null;
+}
+
+export function peridotFortune(value, rarity) {
+  const quality = gemstoneQuality(value);
+  const rarityIndex = GEMSTONE_RARITIES.indexOf(String(rarity || '').trim().toUpperCase());
+  if (!quality || rarityIndex < 0) return null;
+  return PERIDOT_FORTUNE[quality]?.[rarityIndex] ?? null;
+}
+
+export function toolGemstoneFortune(slots, rarity) {
+  let total = 0;
+  for (const slot of normalizeToolGemstoneSlots(slots)) {
+    if (!slot.unlocked || !slot.gem) continue;
+    const value = peridotFortune(slot.gem, rarity);
+    if (value == null) return null;
+    total += value;
+  }
+  return total;
 }
 
 export function withGemstoneSlotUnlocked(slots, index, unlocked) {
