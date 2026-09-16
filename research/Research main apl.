@@ -1,0 +1,255 @@
+# Farming420 Master-Wissensbasis: Plan und Erstentwurf
+
+## Executive Summary
+
+**Vorgeschlagene neue Zielversion: `v0.17.0`**  
+**Aktueller Repo-Stand: `v0.16.9`**; diese Research-/Dokumentationsversion ist **noch nicht erstellt oder gemergt**. Die Version `0.16.9` steht aktuell in `package.json`. fileciteturn4file0L1-L10
+
+**Exakter Dateiname:** `SKYBLOCK_FARMING_MASTER.md`  
+**Exakter Repo-Pfad:** `docs/SKYBLOCK_FARMING_MASTER.md`
+
+Der Zweck dieser Datei ist nicht, nur eine Farming-Guide-Seite zu werden. Sie soll eine **offline nutzbare Wissensbasis für eine eigenständige KI** sein, die ohne Internet auch sehr spezielle Endgame-Fragen beantworten kann: „Welches Upgrade bringt in meinem aktuellen Melon-Setup den höchsten marginalen Coin/h-Gewinn?“, „Zählt dieser Bonus pro Armor-Piece oder nur als Set-Bonus?“, „Kann ich Blessed und Bountiful kombinieren?“, „Wann lohnt sich ein Pet-Switch?“, „Wie wird dieser Tooltip aus API-NBT bzw. Screenshot rekonstruiert?“, „Welche Annahme ist verifiziert und welche nur Community-Beobachtung?“
+
+Der vorhandene Repo-Aufbau eignet sich dafür bereits: `docs/` enthält unter anderem `FARMING_HISTORY.md`, `MATH_MODEL.md`, `PROFILE_DATA_MATRIX.md` und `VERIFIED_MECHANICS.md`. fileciteturn2file0L1-L13 Das Master-Dokument soll diese Informationen **nicht blind duplizieren**, sondern sie zu einer einzigen, durchsuchbaren AI-Wissensdatei zusammenführen und mit Quellen-, Gültigkeits- und Unsicherheitsmetadaten versehen.
+
+Eine wichtige Änderung gegenüber älteren Farming-Recherchen ist die Quellenlage: Hypixel hat die **offizielle Hypixel Wiki im Juli 2026 geschlossen** und angekündigt, dass deren Seiten nicht mehr browsbar sein werden. Deshalb darf `wiki.hypixel.net` für aktuelle Mechaniken nicht länger als lebende Referenz behandelt werden. citeturn16view0 Für aktuelle Werte wird die Reihenfolge daher:
+
+**offizielle Hypixel Patch Notes / Hypixel API → aktuelle Community-Wiki → reproduzierbare Ingame-/API-Beobachtung → hochwertige Top-Player-/Elite-Quellen → normale Forum-/Community-Beobachtung.**
+
+Die aktuelle Community-Wiki besitzt weiterhin eigene Seiten unter anderem für Farming Fortune, Farming Tools, Enchantments, Reforges, Gemstones, Pets, Attributes, Bazaar, Auction House und Minions. citeturn16view6turn16view7turn18view0turn18view1turn18view2turn18view3turn18view4turn18view5turn18view6turn18view7
+
+Die Wissensbasis verwendet für jede nichttriviale Behauptung mindestens:
+
+| Feld | Bedeutung |
+|---|---|
+| `Status` | `VERIFIED`, `UNVERIFIED`, `CONFLICT` oder `STALE` |
+| `lastVerified` | Datum der letzten fachlichen Prüfung |
+| `effectiveSince` | Patch/Datum, seit dem die Mechanik gilt, sofern bekannt |
+| `source` | Primär- und Sekundärquellen |
+| `scope` | global, Garden, bestimmter Crop, Item, Piece, Set, Pet-Phase usw. |
+| `formula` | Formel oder `unspecified` |
+| `conditions` | Voraussetzungen für die Aktivierung |
+| `stacking` | additiv, multiplikativ, exklusiv, capped, threshold-basiert usw. |
+| `incompatibilities` | ausdrücklich inkompatible Zustände |
+| `example` | überprüfbares Rechenbeispiel |
+| `parserAliases` | API-/NBT-/Lore-/OCR-Namen und historische Namen |
+
+**Fehlt eine belastbare Quelle, wird nicht geraten.** Die Aussage wird `UNVERIFIED`; fehlt ein numerischer Wert, steht dort ausdrücklich **`unspecified`**. Genau diese Grundhaltung ist bereits in den Repository-Regeln verankert: Mechaniken dürfen nicht erfunden werden, nichttriviale Mechaniken benötigen Quelle und Verifikationsdatum, mutually exclusive Setups dürfen nicht zusammengerechnet werden und nicht zuverlässig ableitbare Werte sollen manuell bleiben. fileciteturn3file0L1-L10
+
+Besonders wichtig ist die von dir festgelegte **Piece-first-Regel für Armor und Equipment**:
+
+> Ein physisches Item ist zuerst ein einzelnes Item. Base Stats, Rarity, Reforge, Enchants, Gemstones, Counter und sonstige Item-Upgrades werden pro Piece modelliert. Mehrere Pieces bilden nur dann gemeinsam einen Set-/Piece-Bonus, wenn die dokumentierte Mechanik exakt diese Kombination oder Piece-Anzahl verlangt.
+
+Das heißt konkret: Ein Helmet mit einem Reforge ist **ein reforged Helmet**, kein „1/4 reforged Set“. Vier Pieces mit demselben Reforge erzeugen vier einzelne Reforge-Beiträge, sofern der Reforge pro Piece wirkt. Ein echter Full-Set-Bonus wird dagegen ausschließlich aktiv, wenn alle hierfür dokumentierten Bedingungen erfüllt sind. Tiered Piece Bonuses wie „2/3/4 Teile“ werden an ihren exakten Schwellen aktiviert und niemals als lineare Näherung gerechnet.
+
+```mermaid
+flowchart LR
+    ITEM[Physisches Armor-/Equipment-Piece]
+    ITEM --> BASE[Base Stats]
+    ITEM --> RARITY[Rarity]
+    ITEM --> REFORGE[Reforge dieses Pieces]
+    ITEM --> ENCHANTS[Enchants dieses Pieces]
+    ITEM --> GEMS[Gemstones dieses Pieces]
+    ITEM --> UPGRADES[Weitere Item-Upgrades]
+
+    BASE --> PIECE[Piece-Beitrag]
+    RARITY --> PIECE
+    REFORGE --> PIECE
+    ENCHANTS --> PIECE
+    GEMS --> PIECE
+    UPGRADES --> PIECE
+
+    PIECE --> SETCHECK{Dokumentierte\nSet-/Piece-Bedingung erfüllt?}
+    SETCHECK -->|Nein| TOTAL[Gesamtstats ohne Set-Bonus]
+    SETCHECK -->|Ja| SETBONUS[Set-/Piece-Bonus]
+    SETBONUS --> TOTAL
+```
+
+Damit wird eine der gefährlichsten Fehlerklassen im Planner strukturell verhindert: **per-Piece-Effekte und Set-Effekte werden nie ineinander vermischt.**
+
+## Quellen-, Verifikations- und Modellierungsstandard
+
+### Quellenhierarchie
+
+Die Wissensbasis trennt bewusst **Spielmechanik** von **Meta**. „Dieses Item gibt unter Bedingung X +Y“ ist eine Mechanik. „Dieses Item ist aktuell BiS für Wheat-Coin/h“ ist eine Meta-Aussage und kann von Preisen, neuen Patches, Farm-Layouts, Pet-Switches und Marktliquidität abhängen.
+
+Die Priorität lautet:
+
+| Priorität | Quelle | Verwendung |
+|---|---|---|
+| A | Offizielle Hypixel Patch Notes / Staff Posts | Änderungen, Release-Verhalten, Bugfixes, neue Mechaniken |
+| A | Offizielle Hypixel Public API | API-Felder, Item-Ressourcen, Market-Datenformate, Resource-Pack-Metadaten |
+| B | Aktuelle Hypixel SkyBlock Community Wiki | Itemwerte, Formeln, History, Querverknüpfungen |
+| B | Reproduzierbare Live-/API-/NBT-Tests | Verhalten, das öffentlich nicht vollständig dokumentiert ist |
+| C | Hochwertige Farming-/Top-Player-Ressourcen | Meta, Farm-Rates, praxisnahe Optimierung |
+| D | Forum, Discord, Reddit, Videos | Beobachtungen und Hypothesen; ohne Bestätigung `UNVERIFIED` |
+
+Das ist seit Juli 2026 notwendig, weil Hypixel seine offizielle Wiki eingestellt hat. citeturn16view0 Die **aktuelle Community-Wiki ist daher Arbeitsreferenz, nicht Primärquelle im gleichen Sinn wie ein Hypixel-Staff-Patchpost**.
+
+Das Master-Dokument darf Konflikte nicht „auflösen“, indem es einfach den bequemeren Wert nimmt. Falls beispielsweise Patch Note und Wiki voneinander abweichen, wird zunächst die zeitliche Reihenfolge geprüft. Ist nicht klar, ob ein späterer stiller Patch das Verhalten geändert hat, erhält der Eintrag `CONFLICT` beziehungsweise `UNVERIFIED`, bis ein aktueller Live-Test oder eine neuere Quelle vorliegt.
+
+### Item-, Piece- und Set-Semantik
+
+Für Armor, Equipment und andere mehrteilige Builds gilt folgende Normalform:
+
+\[
+\text{ItemContribution}_i
+=
+\text{BaseStats}_i
++
+\text{Reforge}_i
++
+\text{Enchants}_i
++
+\text{Gemstones}_i
++
+\text{ExplicitItemUpgrades}_i
+\]
+
+Danach:
+
+\[
+\text{BuildStats}
+=
+\sum_i \text{ItemContribution}_i
++
+\sum_j \text{ActivatedSetOrPieceBonus}_j
+\]
+
+Ein `ActivatedSetOrPieceBonus` existiert nur, wenn eine Quelle die Aktivierungsregel belegt.
+
+Beispiele für Modellierungsregeln:
+
+| Situation | Korrekte Behandlung |
+|---|---|
+| Ein Armor-Piece vorhanden | Nur dieses Piece und seine eigenen Modifikatoren zählen |
+| Zwei von vier Teilen | Beide Pieces zählen einzeln; kein Full-Set-Bonus |
+| Vier Pieces | Noch immer vier einzelne Items; zusätzlich nur dokumentierte 4-Piece-/Full-Set-Boni |
+| Reforge auf einem Piece | Nur dieser Reforge-Beitrag |
+| Enchant auf drei Pieces | Drei getrennte Enchant-Instanzen |
+| Gemstone auf Boots | Nur Gemstone der Boots |
+| Bonus verlangt „while wearing full set“ | Erst bei vollständiger dokumentierter Set-Bedingung |
+| Bonus skaliert mit Anzahl Pieces | Exakte dokumentierte 1/2/3/4-Piece-Logik |
+| Quelle sagt nicht, ob per Piece oder Set | `UNVERIFIED`, kein Rechenwert |
+
+Diese Regel wird später als **CI-Invariante** getestet, damit ein zukünftiger Datenimport nicht wieder „ein Teil vorhanden → ganzes Set vorhanden“ daraus macht.
+
+### Zeitabhängigkeit
+
+Jeder Wert muss relativ zur Patch-Historie gelesen werden. Ein Wert kann 2025 korrekt verifiziert worden sein und trotzdem 2026 falsch sein.
+
+Gerade Farming hat sich zuletzt stark verändert: Garden wurde ursprünglich mit 0.18 eingeführt; 0.24 brachte Ende 2025 Greenhouse, drei neue Crops und einen Farming-Tool-Revamp; 0.24.1 änderte unter anderem Pet-Item-Swapping; 0.24.4 führte Harvest Feast ein. citeturn16view1turn16view2turn16view4turn16view3 Der aktuelle allgemeine Live-Patch-Stand ist am 16. September 2026 mindestens 0.27.1 vom 1. September 2026. citeturn17search0
+
+```mermaid
+timeline
+    title Wichtige Farming-/Verifikationsmarker
+    2023-02-14 : SkyBlock 0.18
+               : The Garden
+    2025-12-15 : SkyBlock 0.24
+               : Greenhouse
+               : Farming-Tool-Revamp
+               : drei neue Crops
+    2026-01-27 : SkyBlock 0.24.1
+               : Swappable Pet Items
+               : Garden-Änderungen
+    2026-04-28 : SkyBlock 0.24.4
+               : Harvest Feast
+    2026-07-21 : Offizielle Hypixel Wiki wird eingestellt
+    2026-09-01 : SkyBlock 0.27.1
+               : aktueller Patch-Baseline-Marker
+```
+
+Quellen für diese Timeline sind die entsprechenden offiziellen Hypixel-Posts. citeturn16view0turn16view1turn16view2turn16view3turn16view4turn17search0
+
+### Parser- und OCR-Wahrheit
+
+Tooltip-Erkennung bekommt eine eigene Evidenzschicht. **OCR-Text ist niemals automatisch Spielwahrheit.**
+
+Die Pipeline wird so dokumentiert:
+
+```mermaid
+flowchart LR
+    IMG[Screenshot] --> CROP[Tooltip erkennen / zuschneiden]
+    CROP --> PRE[Bildvorverarbeitung]
+    PRE --> OCR[OCR]
+    OCR --> NORMALIZE[Unicode + Whitespace + Zeilen normalisieren]
+    NORMALIZE --> LORE[Lore-Struktur erkennen]
+    LORE --> ALIAS[Item-/Enchant-/Reforge-Aliase auflösen]
+    ALIAS --> SOURCE[gegen Wissensbasis validieren]
+    SOURCE --> CONF{Confidence}
+    CONF -->|hoch| APPLY[Strukturierte Itemdaten]
+    CONF -->|mittel| REVIEW[Benutzer prüfen lassen]
+    CONF -->|niedrig| UNKNOWN[UNVERIFIED / nicht anwenden]
+```
+
+Zu testende OCR-Fehlerklassen sind unter anderem `I/l/1`, römische Zahlen, abgeschnittene Tooltip-Zeilen, Lore-Wrapping, Komma/Punkt-Verwechslungen, Minecraft-Farbcodes, Stat-Symbole, Resource-Pack-Glyphen, historische Itemnamen und umbenannte Tools.
+
+Für API-Parsing wird zusätzlich die offizielle Hypixel-API-Dokumentation als Primärquelle verwendet; dort werden SkyBlock-Inventardaten als komprimierte/base64-kodierte NBT-Daten beschrieben. citeturn16view5 Das Master-Dokument muss deshalb immer zwischen **Display Lore**, **NBT/ExtraAttributes**, **Resource API**, **OCR-Erkennung** und daraus abgeleiteten semantischen Daten unterscheiden.
+
+## Forschungs- und Erstellungsplan
+
+Die Recherche erfolgt nicht „Seite für Seite“, sondern **Mechanik für Mechanik**, damit widersprüchliche Quellen auffallen.
+
+| Phase | Ergebnis |
+|---|---|
+| Quellenaudit | Alle vorhandenen Repo-Fakten aus `VERIFIED_MECHANICS.md`, `MATH_MODEL.md`, `FARMING_HISTORY.md`, Datenfiles und Tests inventarisieren; jede bestehende Zahl bekommt eine Quellenprüfung. |
+| Farming-Kern | Crops, Fortune-Arten, Drops, Tool Levels, Counter, Dummies, Enchants, Reforges, Gemstones, Armor, Equipment, Pets, Visitors, Pests, Overbloom, Garden/Greenhouse, Contests und Events vollständig erfassen. |
+| SkyBlock-Interaktionen | Bazaar, AH, NPC-Selling, Collections, Minions, Islands, Events, Accessories, Attributes, Combat/Pest-Interaktionen, Pets/Autopet, Profile-/API-Daten und relevante Progression verknüpfen. |
+| Meta- und Optimierungsmodell | Best-in-Slot je Crop und Ziel, Coin/h, XP/h, Pest-Setups, Pet-Switches, Progression, marginale Upgrade-Werte, Amortisation und Risiko modellieren. |
+| Parser-/UI-Korpus | Tooltip-Normalformen, NBT, OCR, Alias-/Rename-Regeln, Confidence-System und Resource-Pack-Zuordnung dokumentieren. |
+| Verifikation | Konflikte gegen Patch-Historie prüfen; Zahlen ohne aktuelle autoritative Basis auf `UNVERIFIED`/`unspecified` setzen. |
+| Automatisierung | Master-Datei generieren, CI-Regeln, Source-Freshness-Checks und Parser-/Formeltests hinzufügen. |
+
+Die Farming-Recherche beginnt bewusst bei **offiziellen Patch Notes**. Zum Beispiel dokumentiert der ursprüngliche Garden-Post nicht nur die Einführung von Garden, sondern unter anderem Garden Farming Fortune und weitere Farming-Änderungen. citeturn16view1 Der 0.24-Post ist besonders wichtig, weil er einen Farming-Tool-Revamp und neue Crops enthält; ältere Guides dürfen daher nicht ohne Revalidierung auf das heutige Spiel übertragen werden. citeturn16view2
+
+Für „Meta“ gilt dagegen: keine Community-Aussage wird automatisch zur Mechanik. Eine Top-Player-Quelle kann sehr wertvoll für **praktische Rates, Routing und Build-Vergleich** sein, aber ein versteckter Multiplikator wird erst `VERIFIED`, wenn er anderweitig belegt oder reproduzierbar gemessen ist.
+
+Deutsche Quellen bekommen Vorrang, **wenn sie fachlich gleichwertig, aktuell und nachvollziehbar sind**. Offizielle Hypixel-Patchposts und die aktuelle Community-Wiki sind gegenwärtig überwiegend englisch; deshalb wird die Sprache im Quellenregister gespeichert und der Sachverhalt im Master-Dokument deutsch paraphrasiert. citeturn16view1turn16view2turn18view0 Deutsche Community-Guides werden im vollständigen Research-Pass separat nach Autor, Aktualität, Testmethodik und Top-Player-Relevanz kuratiert; bis dahin werden keine konkreten deutschen Guides erfunden oder ungeprüft empfohlen.
+
+## Inhaltsverzeichnis des Master-Dokuments
+
+Das endgültige Markdown bleibt **eine Datei**, erhält aber stark strukturierte Überschriften und stabile Anker, damit sowohl Mensch als auch Offline-KI gezielt darin suchen können.
+
+| Hauptbereich | Inhalt |
+|---|---|
+| **Executive Summary** | Zweck, Patch-Baseline, Quellenstandard, wichtigste Modellierungsregeln |
+| **Quellen und Verifikation** | Statussystem, Source Ranking, Konflikte, Staleness, Testmethodik |
+| **SkyBlock-Grundsysteme** | Profile, Inseln, Skills, Collections, Events, Bazaar, AH, NPC, Minions, Accessories |
+| **Farming-Kernmechanik** | Crops, Garden, Greenhouse, Drops, Farming/Crop Fortune, Overbloom, Wisdom/XP, Bestiary, Pests |
+| **Items und Builds** | Tools, Tool Levels, Counter, Dummies, Enchants, Reforges, Gems, Armor, Equipment, Pets, Pet Items, Attributes |
+| **Visitors und Events** | Visitors, Offers, Copper, Contests, Mayors, Harvest Feast, zeitabhängige Mechaniken |
+| **Interaktionen und Formeln** | Stacking, caps, thresholds, gegenseitige Ausschlüsse, Area-/Day-/Night-/Combat-Bedingungen |
+| **Ökonomie und Optimierung** | Bazaar/AH/NPC, Coin/h, EV, Liquidität, Kostenarten, ROI, Payback, Risiko |
+| **Progression und Meta** | Early/Mid/Late/Endgame, crop-spezifische BiS-Setups, XP-, Pest- und Profit-Setups, Switching |
+| **API, Tooltips, OCR und UI** | API-Felder, NBT, Lore, Parser, Resource Pack, OCR-Regeln, Confidence |
+| **Patch-Timeline und Changelog** | Farming-relevante Changes chronologisch |
+| **Quellenindex und offene Fragen** | Themen→Quellen-Mapping, `UNVERIFIED`, `CONFLICT`, fehlende Messungen |
+
+Innerhalb von **Items und Builds** wird beispielsweise nicht nur eine Liste der Enchants stehen. Jeder Farming-Enchant erhält: erlaubte Itemtypen, Levelbereich, effektives Max-Level, Besonderheiten bei seltenen/höheren Büchern, Formel je Level, Applicability, Inkompatibilitäten, Acquisition Path, API-ID/Alias und Tooltip-Muster. Die aktuelle Enchantments-Seite führt Farming-relevante Enchants wie Cultivating, Dedication, Green Thumb, Harvesting, Pesterminator und Turbo-Crop explizit auf und ist daher ein wichtiger Ausgangspunkt für diese Matrix. citeturn18view0
+
+Dasselbe gilt für Reforges und Gemstones: keine pauschale „Set“-Speicherung, sondern tatsächliche Item-Instanzen mit Rarity und Applicability. Die Community-Wiki besitzt aktuelle dedizierte Referenzseiten für beide Systeme. citeturn18view1turn18view2
+
+## Priorisierte Quellenmatrix
+
+Die folgende Matrix ist der **Startbestand**, nicht bereits die Behauptung, dass damit jedes Detail verifiziert wäre. Jede konkrete Zahl im Master muss anschließend auf der relevanten Unterseite oder im Patchpost einzeln geprüft werden.
+
+| Hauptthema | Priorisierte Quelle(n) | Typ / Sprache | Verwendung |
+|---|---|---|---|
+| Wiki-Status ab 2026 | `https://hypixel.net/threads/end-of-the-official-hypixel-wiki-july-2026.6112020/` | **Hypixel Staff, EN** | Belegt die Schließung der offiziellen Wiki. citeturn16view0 |
+| Aktueller Patch-Baseline | `https://hypixel.net/threads/hypixel-skyblock-0-27-1-chocolate-factory-improvements-qol-changes-and-more.6147732/` | **Hypixel Team, EN** | Aktueller Patchstand vom 1. September 2026. citeturn17search0 |
+| Garden-Grundsystem | `https://hypixel.net/threads/skyblock-patch-0-18-the-garden.5273460/` | **Hypixel Team, EN** | Garden-Einführung und ursprüngliche Regeln. citeturn16view1 |
+| Greenhouse / neue Crops / Tool-Revamp | `https://hypixel.net/threads/hypixel-skyblock-0-24-the-greenhouse.6027542/` | **Hypixel Team, EN** | 0.24 als wichtiger Farming-Breakpoint. citeturn16view2 |
+| Pet-Item-Swapping / Garden Changes | `https://hypixel.net/threads/hypixel-skyblock-0-24-1-swappable-pet-items-garden-changes-bug-fixes.6052615/` | **Hypixel Team, EN** | Pet-Switch-/Pet-Item-Kosten und 0.24.1-Änderungen. citeturn16view4 |
+| Harvest Feast | `https://hypixel.net/threads/hypixel-skyblock-0-24-4-harvest-feast-event-fossil-essence-shop-and-more.6089392/` | **Hypixel Team, EN** | Farming-Event, saisonale Mechaniken und neue Items. citeturn16view3 |
+| Weitere 2026-QoL / Reforge-System | `https://hypixel.net/threads/march-23rd-jerry-island-qol-new-abiphone-contacts-reforge-anvil-removal-and-more.6075332/` | **Hypixel Team, EN** | Reforge-Anvil-/QoL-Änderungen. citeturn13search2 |
+| Farming allgemein | `https://hypixelskyblock.minecraft.wiki/w/Farming` | Community Wiki, EN | Struktur, Querverweise, aktuelle Terminologie |
+| Farming Fortune | `https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune` | Community Wiki, EN | Fortune-Quellen und Formeln; Konflikte separat markieren. citeturn16view7 |
+| Farming Tools | `https://hypixelskyblock.minecraft.wiki/w/Farming_Tools` | Community Wiki, EN | Aktuelle Tools, Tool-Level-Mechanik, Crop-Zuordnung. citeturn16view6 |
+| Enchantments | `https://hypixelskyblock.minecraft.wiki/w/Enchantments` | Community Wiki, EN | Level, Applicability und Inkompatibilitäten. citeturn18view0 |
+| Reforges | `https://hypixelskyblock.minecraft.wiki/w/Reforging` | Community Wiki, EN | Reforge-System und Rarity-Skalierung. citeturn18view1 |
+| Gemstones | `https://hypixelskyblock.minecraft.wiki/w/Gemstone` | Community Wiki, EN | Slots, Qualitäten und Stat-Zuordnung. citeturn18view2 |
+| Pets / Autopet-Ausgangspunkt | `https://hypixelskyblock.minecraft.wiki/w/Pets` | Community Wiki, EN | Pets, Level/Rarity, Pet-Menü und verwandte Systeme. citeturn18view3 |
+| Attributes / Shards | `https://hypixelskyblock.minecraft.wiki/w/Attributes` | Community Wiki, EN | Attribute, Level und Farming-relevante Shards. citeturn18view4 |
+| Bazaar | `https://hypixelskyblock.minecraft.wiki/w/Bazaar` | Community Wiki, EN | Handelsmechanik, ergänzend zur Live-API. citeturn18view5 |
+| Auction House | `https://hypixelskyblock.minecraft.wiki/w/Auction_House` | Community Wiki, EN | AH-Mechanik, Gebühren/Verhalten nach Einzelprüfung. citeturn18view6 |
+| Minions | `https://hypixelskyblock.minecraft.wiki/w/Minions` | Community Wiki, EN | Farming-Minions u
