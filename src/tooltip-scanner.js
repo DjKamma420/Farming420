@@ -1,4 +1,4 @@
-const TESSERACT_ESM = 'https://cdn.jsdelivr.net/npm/tesseract.js@7/dist/tesseract.esm.min.js';
+const TESSERACT_ESM = 'https://cdn.jsdelivr.net/npm/tesseract.js@7/+esm';
 const TESSERACT_WORKER = 'https://cdn.jsdelivr.net/npm/tesseract.js@7/dist/worker.min.js';
 const TESSERACT_CORE = 'https://cdn.jsdelivr.net/npm/tesseract.js-core@7/tesseract-core-simd-lstm.wasm.js';
 const TESSDATA = 'https://tessdata.projectnaptha.com/4.0.0';
@@ -144,6 +144,7 @@ export function mergeScanIntoItem(item, scan, { catalog = [] } = {}) {
     const exact = catalog.find(entry => cleanLine(entry.name).toLowerCase() === scan.displayName.toLowerCase());
     if (exact) next.skyblockId = exact.id;
   }
+  if (scan.rarity) next.rarity = scan.rarity;
   if (scan.reforge) next.reforge = scan.reforge;
   if (Object.keys(scan.enchantments || {}).length) next.enchantments = { ...(next.enchantments || {}), ...scan.enchantments };
   if (scan.gems?.length) next.gems = [...new Set([...(next.gems || []), ...scan.gems])];
@@ -180,18 +181,26 @@ async function imageToCanvas(file) {
   return canvas;
 }
 
+function tesseractApi(module) {
+  const candidates = [module, module?.default, globalThis.Tesseract].filter(Boolean);
+  const api = candidates.find(candidate => typeof candidate.createWorker === 'function');
+  if (!api) throw new Error('OCR engine loaded, but its browser API was not available. Reload the app and try again.');
+  return api;
+}
+
 export async function recognizeSkyBlockTooltip(file, { onProgress } = {}) {
   if (!(file instanceof Blob)) throw new Error('Choose a screenshot first.');
   onProgress?.({ status: 'preparing', progress: 0.05 });
   const canvas = await imageToCanvas(file);
   onProgress?.({ status: 'loading OCR', progress: 0.1 });
 
-  let Tesseract;
+  let loaded;
   try {
-    Tesseract = await import(TESSERACT_ESM);
+    loaded = await import(TESSERACT_ESM);
   } catch (error) {
     throw new Error(`Could not load the local OCR engine: ${error?.message || error}`);
   }
+  const Tesseract = tesseractApi(loaded);
 
   const worker = await Tesseract.createWorker('eng', 1, {
     workerPath: TESSERACT_WORKER,
