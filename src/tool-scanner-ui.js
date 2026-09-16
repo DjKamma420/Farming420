@@ -1,16 +1,14 @@
 import { STORAGE_KEY } from './config.js';
 import { migrateState, ensureProgressBucket, toolKeyForCropId } from './migrations.js';
 import { parseSkyBlockTooltip, recognizeSkyBlockTooltip } from './tooltip-scanner.js';
-import { applyToolScanToProgress } from './tool-scan-apply.js';
+import { applyToolScanToProgress, CROP_TURBO_IDS } from './tool-scan-apply.js';
+import { cropsForToolItem } from './snapshot-apply.js';
+import { CROPS } from './data.js';
 
 const TOOL_REFORGES = Object.freeze(['blessed', 'bountiful']);
 
 function activeToolPage() {
   return document.querySelector('.sidebar .nav-link.active')?.dataset.page === 'tools';
-}
-
-function selectedCropId() {
-  return document.querySelector('#cropSelect')?.value || 'melon';
 }
 
 function loadStoredState() {
@@ -21,18 +19,52 @@ function loadStoredState() {
   return migration.state;
 }
 
+function cropLabel(cropId) {
+  return CROPS.find(crop => crop.id === cropId)?.name || cropId;
+}
+
+function toolTarget(scan) {
+  const cropIds = cropsForToolItem({ displayName: scan?.displayName || '' });
+  if (!cropIds.length) return null;
+  const byKey = new Map();
+  for (const cropId of cropIds) {
+    const key = toolKeyForCropId(cropId);
+    const list = byKey.get(key) || [];
+    list.push(cropId);
+    byKey.set(key, list);
+  }
+  return [...byKey.entries()].map(([key, ids]) => ({ key, cropIds: ids }));
+}
+
+function cropIdForTurbo(scan, cropIds) {
+  return cropIds.find(cropId => {
+    const turboId = CROP_TURBO_IDS[cropId];
+    return turboId && Number(scan?.enchantments?.[turboId] || 0) > 0;
+  }) || cropIds[0];
+}
+
 function saveToolScan(scan) {
+  const targets = toolTarget(scan);
+  if (!targets?.length) throw new Error('The scanned item was not recognized as a known Farming420 crop tool.');
+
   const state = loadStoredState();
-  const cropId = selectedCropId();
   state.profile ||= {};
   state.profile.toolProgress ||= {};
-  const key = toolKeyForCropId(cropId);
-  const bucket = ensureProgressBucket(state.profile.toolProgress, key);
-  const result = applyToolScanToProgress(bucket, scan, cropId);
-  state.profile.toolProgress[key] = result.bucket;
+  const applied = [];
+  const warnings = [];
+
+  for (const target of targets) {
+    const cropId = cropIdForTurbo(scan, target.cropIds);
+    const bucket = ensureProgressBucket(state.profile.toolProgress, target.key);
+    const result = applyToolScanToProgress(bucket, scan, cropId);
+    state.profile.toolProgress[target.key] = result.bucket;
+    applied.push(...result.applied);
+    warnings.push(...result.warnings);
+  }
+
   state.schemaVersion = migrateState(state).schemaVersion;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  return result;
+  return { applied, warnings, targets };
 }
 
 function resultRows(scan) {
@@ -40,8 +72,14 @@ function resultRows(scan) {
     .map(([id, level]) => `${id.replaceAll('_', ' ')} ${level}`)
     .join(', ') || 'None recognized';
   const gems = (scan.gems || []).join(', ') || 'None recognized';
+  const targets = toolTarget(scan);
+  const targetText = targets?.length
+    ? targets.flatMap(target => target.cropIds.map(cropLabel)).join(', ')
+    : 'Not recognized';
   return [
     ['Item', scan.displayName || 'Not recognized'],
+    ['Tool target', targetText],
+    ['Rarity', scan.rarity || 'Not recognized'],
     ['Reforge', scan.reforge || 'Not recognized'],
     ['Enchantments', enchants],
     ['Farming for Dummies', scan.farmingForDummies ?? 'Not recognized'],
@@ -54,11 +92,13 @@ function renderScan(panel, rawText) {
   textarea.value = rawText;
   const scan = parseSkyBlockTooltip(rawText, { reforgeCandidates: TOOL_REFORGES });
   panel._toolScan = scan;
+  const targets = toolTarget(scan);
   const result = panel.querySelector('[data-tool-scan-result]');
   result.innerHTML = resultRows(scan);
-  const warnings = panel.querySelector('[data-tool-scan-warnings]');
-  warnings.innerHTML = scan.warnings.map(message => `<li>${message}</li>`).join('');
-  panel.querySelector('[data-tool-scan-apply]').disabled = !scan.displayName;
+  const warnings = [...scan.warnings];
+  if (!targets?.length && scan.displayName) warnings.push('This item name does not match a known farming tool, so nothing will be applied.');
+  panel.querySelector('[data-tool-scan-warnings]').innerHTML = warnings.map(message => `<li>${message}</li>`).join('');
+  panel.querySelector('[data-tool-scan-apply]').disabled = !scan.displayName || !targets?.length;
 }
 
 async function scanFile(panel, file) {
@@ -86,21 +126,21 @@ async function scanFile(panel, file) {
 
 function buildPanel() {
   const panel = document.createElement('section');
-  panel.className = 'scanner-panel-addon tool-scanner-addon';
+  panel.className = 'scanner-panel-addon tool-scanner-addon compact-scanner-addon';
   panel.tabIndex = 0;
   panel.innerHTML = `
     <div class="scanner-head-addon">
-      <div><div class="eyebrow">Screenshot scanner</div><h3>Scan this crop tool</h3></div>
+      <div><div class="eyebrow">Screenshot scanner</div><h3>Scan farming tool</h3></div>
       <span class="badge soft">local OCR</span>
     </div>
-    <p class="scanner-copy-addon">Choose, drop or paste a SkyBlock tool tooltip screenshot. Review the parsed values before applying them to the selected crop tool.</p>
+    <p class="scanner-copy-addon">Choose, drop or paste the tooltip. Farming420 detects the physical tool automatically; no crop selection is required.</p>
     <div class="scanner-actions-addon">
       <label class="ghost small scanner-file-addon">Choose screenshot<input data-tool-scan-file type="file" accept="image/*" hidden></label>
       <button class="ghost small" type="button" data-tool-scan-parse>Parse pasted text</button>
     </div>
     <progress class="scanner-progress-addon" data-tool-scan-progress max="1" value="0" hidden></progress>
-    <div class="hint" data-tool-scan-status>Tip: copy a screenshot to the clipboard, focus this panel and press Ctrl+V.</div>
-    <details class="scanner-text-addon"><summary>Recognized tooltip text</summary><textarea data-tool-scan-text rows="8" placeholder="OCR text appears here. You can also paste tooltip text manually."></textarea></details>
+    <div class="hint" data-tool-scan-status>Paste a screenshot here, or choose one from your device.</div>
+    <details class="scanner-text-addon"><summary>Recognized tooltip text</summary><textarea data-tool-scan-text rows="6" placeholder="OCR text appears here. You can also paste tooltip text manually."></textarea></details>
     <div class="scanner-result-addon" data-tool-scan-result></div>
     <ul class="scanner-warnings-addon" data-tool-scan-warnings></ul>
     <button class="primary-btn scanner-apply-addon" type="button" data-tool-scan-apply disabled>Apply recognized tool values</button>
@@ -126,7 +166,7 @@ function buildPanel() {
       const result = saveToolScan(scan);
       const status = panel.querySelector('[data-tool-scan-status]');
       const count = result.applied.length;
-      status.textContent = `${count} recognized tool value${count === 1 ? '' : 's'} applied. Reloading…`;
+      status.textContent = `${count} recognized tool value${count === 1 ? '' : 's'} applied to the detected tool. Reloading…`;
       if (result.warnings.length) status.textContent += ` ${result.warnings.join(' ')}`;
       window.location.reload();
     } catch (error) {
