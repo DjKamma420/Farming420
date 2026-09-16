@@ -118,6 +118,12 @@ jobs:
           git checkout -b "$BRANCH"
           git add assets/hypixel-pack
           git commit -F /tmp/commit-message.txt
+
+          # The branch name is the pack hash, so a re-run for the same pack meets
+          # the branch the previous run left behind. A shallow CI checkout knows
+          # nothing about it, and --force-with-lease refuses a ref it has never
+          # seen ("stale info"); fetching it first gives the lease its base.
+          git fetch origin "$BRANCH" || true
           git push --force-with-lease origin "$BRANCH"
 
           # A re-run for the same pack hash updates the branch instead of
