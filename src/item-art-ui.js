@@ -37,10 +37,36 @@ function readState(storage = globalThis.localStorage) {
 
 function removeRenderedArt(container) {
   if (!container?.querySelectorAll) return;
-  container.querySelectorAll(':scope > .official-item-art, :scope > .skull-art').forEach(node => node.remove());
-  container.classList.remove('has-official-item-art');
+  container.querySelectorAll(':scope > .official-item-art, :scope > .skull-art, :scope > .item-art-fallback').forEach(node => node.remove());
+  container.classList.remove('has-official-item-art', 'has-item-art-fallback');
   delete container.dataset.renderedPackAsset;
   delete container.dataset.renderedItemArt;
+}
+
+function fallbackText(value = '') {
+  const words = String(value).replace(/[_-]+/g, ' ').trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return '?';
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return `${words[0][0] || ''}${words[1][0] || ''}`.toUpperCase();
+}
+
+function fallbackNode(label, identity = '') {
+  const node = document.createElement('span');
+  node.className = 'item-art-fallback';
+  node.textContent = fallbackText(label || identity);
+  node.setAttribute('role', 'img');
+  node.setAttribute('aria-label', `${label || 'SkyBlock item'} texture unavailable`);
+  return node;
+}
+
+function showFallback(container, label, identity) {
+  if (!container) return null;
+  removeRenderedArt(container);
+  const node = fallbackNode(label, identity);
+  container.prepend(node);
+  container.classList.add('has-item-art-fallback');
+  if (identity) container.dataset.renderedItemArt = `fallback:${identity}`;
+  return node;
 }
 
 function skullNode(textureId, item) {
@@ -64,13 +90,12 @@ function skullNode(textureId, item) {
   probe.addEventListener('load', () => {
     node.classList.add(probe.naturalHeight >= probe.naturalWidth ? 'skull-square' : 'skull-legacy');
   }, { once: true });
-  probe.addEventListener('error', () => node.remove(), { once: true });
   probe.src = url;
 
   return node;
 }
 
-function imageNode(asset, item) {
+function imageNode(asset, item, onError = null) {
   const img = document.createElement('img');
   img.className = 'official-item-art';
   img.src = asset.textureUrl;
@@ -78,7 +103,10 @@ function imageNode(asset, item) {
   img.loading = 'lazy';
   img.decoding = 'async';
   img.dataset.officialPack = asset.packHash || 'unknown';
-  img.addEventListener('error', () => img.remove(), { once: true });
+  img.addEventListener('error', () => {
+    img.remove();
+    if (typeof onError === 'function') onError();
+  }, { once: true });
   return img;
 }
 
@@ -89,11 +117,22 @@ export function renderSetupItemArt({ root = document, rawState = readState(), ma
   root.querySelectorAll('[data-pack-asset]').forEach(card => {
     const requestedKey = String(card.dataset.packAsset || '');
     if (!requestedKey) return;
-    if (card.classList.contains('has-official-item-art') && card.dataset.renderedPackAsset === requestedKey) return;
-    if (card.classList.contains('has-official-item-art')) removeRenderedArt(card);
+    if ((card.classList.contains('has-official-item-art') || card.classList.contains('has-item-art-fallback')) && card.dataset.renderedPackAsset === requestedKey) return;
+    removeRenderedArt(card);
     const asset = itemAssetForSkyblockId(manifestValue, requestedKey);
-    if (!asset) return;
-    card.append(imageNode(asset, { displayName: card.closest('.item-card')?.querySelector('.item-title')?.textContent }));
+    const label = card.closest('.item-card')?.querySelector('.item-title')?.textContent || requestedKey;
+    if (!asset) {
+      card.prepend(fallbackNode(label, requestedKey));
+      card.classList.add('has-item-art-fallback');
+      card.dataset.renderedPackAsset = requestedKey;
+      return;
+    }
+    const img = imageNode(asset, { displayName: label }, () => {
+      card.prepend(fallbackNode(label, requestedKey));
+      card.classList.remove('has-official-item-art');
+      card.classList.add('has-item-art-fallback');
+    });
+    card.append(img);
     card.classList.add('has-official-item-art');
     card.dataset.renderedPackAsset = requestedKey;
     rendered += 1;
@@ -104,24 +143,34 @@ export function renderSetupItemArt({ root = document, rawState = readState(), ma
     if (!slotId) return;
     const item = itemForSetupSlot(rawState, slotId);
     if (!item) {
-      if (card.classList.contains('has-official-item-art')) removeRenderedArt(card);
+      removeRenderedArt(card);
       return;
     }
 
     const identity = item.skullTexture
       ? `skull:${item.skullTexture}`
-      : item.skyblockId ? `item:${item.skyblockId}` : '';
-    if (!identity) return;
-    if (card.classList.contains('has-official-item-art') && card.dataset.renderedItemArt === identity) return;
-    if (card.classList.contains('has-official-item-art')) removeRenderedArt(card);
+      : item.skyblockId ? `item:${item.skyblockId}` : `name:${item.displayName || slotId}`;
+    if ((card.classList.contains('has-official-item-art') || card.classList.contains('has-item-art-fallback')) && card.dataset.renderedItemArt === identity) return;
+    removeRenderedArt(card);
 
     const asset = item.skyblockId ? itemAssetForSkyblockId(manifestValue, item.skyblockId) : null;
-    const node = skullNode(item.skullTexture, item) || (asset ? imageNode(asset, item) : null);
-    if (!node) return;
-    card.prepend(node);
-    card.classList.add('has-official-item-art');
-    card.dataset.renderedItemArt = identity;
-    rendered += 1;
+    const skull = skullNode(item.skullTexture, item);
+    if (skull) {
+      card.prepend(skull);
+      card.classList.add('has-official-item-art');
+      card.dataset.renderedItemArt = identity;
+      rendered += 1;
+      return;
+    }
+    if (asset) {
+      const img = imageNode(asset, item, () => showFallback(card, item.displayName || slotId, identity));
+      card.prepend(img);
+      card.classList.add('has-official-item-art');
+      card.dataset.renderedItemArt = identity;
+      rendered += 1;
+      return;
+    }
+    showFallback(card, item.displayName || slotId, identity);
   });
   return rendered;
 }
