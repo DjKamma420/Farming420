@@ -32,16 +32,22 @@ This file is for future coding agents continuing the project.
 - `src/workspace-direct-picker.js` + `.css`
   - Replaces the visible Tools dropdown with direct tool choice buttons while preserving the existing select as the underlying state/control bridge.
 - `src/direct-controls.js` + `.css`
-  - Direct controls now apply consistently to upgrade cards across Account/Crops/Items-style sections.
+  - Direct controls apply to non-derived progression cards.
   - Binary entries use direct ON/OFF controls.
   - Small level chains expose every state from 0 through max.
   - Large chains use compact decrement/current/increment controls.
   - Reads state fresh on each action instead of using a stale captured level.
   - Clears mutually exclusive peers when a new exclusive state is selected.
+  - `gear` is now treated as setup-derived and therefore does not get duplicate direct-edit controls.
 - `src/editor-dedupe.js`
   - Removes the second Tool-upgrade card grid from the Crops workspace; Tool state is edited only in Tools.
   - Removes duplicate Ownership & Level controls from the detail drawer because progression state is already edited directly on cards/workspaces.
   - Keeps the drawer for cost/planner evaluation, source location, rules and scope.
+- `src/item-art-ui.js` + `.css`
+  - Existing Hypixel pack textures remain the preferred item art source.
+  - Missing manifest entries, missing SkyBlock IDs or image load failures now render a consistent pixel-style text fallback instead of leaving an empty visual hole.
+  - Setup slot art uses skull textures first, then pack assets, then the fallback.
+  - Gear analysis cards derived from Setups show a `FROM SETUP` marker and no duplicate direct editor.
 - `src/effective-gain.js`
   - Adds pure revenue-aware math for Farming Fortune versus Overbloom.
   - There is intentionally no fixed universal `1 Overbloom = X FF` conversion.
@@ -92,10 +98,10 @@ Use this only for coin-efficiency comparison. Collection, XP, Feast milestone, S
 ## Next implementation priorities
 
 1. Continue the live-version VERIFY audit for unresolved entries other than the now-documented Garden/Pest Bestiary conflict; prioritize exact current mechanics over theoretical-max lists.
-2. Expand texture-pack-backed item art coverage and make missing-art fallbacks visually consistent.
-3. Add browser-level/UI regression coverage for direct controls, revenue inputs, planner goal switching, drawer opening and exclusive-state transitions.
+2. Expand actual pack-backed coverage by attaching verified SkyBlock IDs/packAsset keys to more upgrade entries, now that missing assets have a safe fallback.
+3. Add browser-level/UI regression coverage for direct controls, revenue inputs, planner goal switching, drawer opening, art fallback and exclusive-state transitions.
 4. Add automatic or assisted cost acquisition where data quality is sufficient; until then, unknown prices must remain explicit rather than guessed.
-5. Continue collapsing one-state/multiple-editor leftovers in Gear/Setups where the same property is still represented twice.
+5. Continue collapsing one-state/multiple-editor leftovers outside Gear; Gear state is now authoritative in Setups and analysis-only elsewhere.
 6. Remove the hidden legacy planner implementation from `src/app.js` once browser-level coverage exists; the visible Planner is now revenue-aware and goal-aware but old markup remains as a compatibility surface.
 7. Improve non-profit goal ranking beyond text relevance where verified formulas exist (for example explicit XP/hour, Seasoning/hour, Sowdust/hour or pest-output models). Do not create fake universal conversions.
 
