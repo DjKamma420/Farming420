@@ -2,6 +2,7 @@ import { CROPS, UPGRADES } from './data.js';
 import { ensureProgressBucket, toolKeyForCropId } from './migrations.js';
 import { activeSetup } from './setups.js';
 import { exclusiveGroupForEntry } from './exclusivity.js';
+import { blossomPieceCount, rootedFortuneForPieces } from './equipment-fortune.js';
 
 const AUTO_SOURCE = 'hypixel-sync';
 
@@ -32,6 +33,8 @@ const EQUIPMENT_ENCHANTS = Object.freeze({ green_thumb: 'equipment-enchant-green
 
 const ARMOR_SLOTS = 4;
 const EQUIPMENT_SLOTS = 4;
+const BLOSSOM_BASE_ID = 'equipment-blossom-set-base-stats';
+const ROOTED_ID = EQUIPMENT_REFORGES.rooted;
 const upgradeById = new Map(UPGRADES.map(item => [item.id, item]));
 
 function maxFor(itemId) {
@@ -105,16 +108,18 @@ export function gearPiecesFor(state, snapshot, slotIds, containerPredicate) {
 const SET_WIDE_ENTRY_IDS = Object.freeze([
   ...Object.values(ARMOR_REFORGES), ...Object.values(ARMOR_ENCHANTS),
   ...Object.values(EQUIPMENT_REFORGES), ...Object.values(EQUIPMENT_ENCHANTS),
-  'armor-gem-perfect-peridot-on-full-armor',
+  'armor-gem-perfect-peridot-on-full-armor', BLOSSOM_BASE_ID,
 ]);
 
 function clearAutoAppliedFromStore(store, scope, entryIds) {
   if (!scope) return;
   for (const entryId of entryIds) {
-    if (!scope[entryId]) continue;
+    const marker = scope[entryId];
+    if (!marker) continue;
     delete scope[entryId];
     delete store.levels?.[entryId];
     delete store.owned?.[entryId];
+    if (marker.manualGain !== undefined) delete store.manualGain?.[entryId];
   }
 }
 
@@ -140,15 +145,22 @@ function applyValue(store, autoScope, itemId, rawLevel, applied) {
   applied.push({ id: itemId, level });
 }
 
+function applyDynamicValue(store, autoScope, itemId, rawLevel, manualGain, applied) {
+  applyValue(store, autoScope, itemId, rawLevel, applied);
+  if (!autoScope[itemId]) return;
+  const gain = Number(manualGain);
+  if (!Number.isFinite(gain) || gain <= 0) return;
+  store.manualGain ||= {};
+  store.manualGain[itemId] = gain;
+  autoScope[itemId].manualGain = gain;
+}
+
 function applyToolItem(state, cropIds, item, autoApplied, applied) {
   for (const cropId of cropIds) {
     const toolKey = toolKeyForCropId(cropId);
     const store = ensureProgressBucket(state.profile.toolProgress, toolKey);
     const scope = autoApplied[`tool:${toolKey}`] ||= {};
 
-    // A physical farming tool can have only one farming-tool reforge. Recompute
-    // the auto-derived alternatives before applying the modifier visible now.
-    // Manual entries are not present in this auto scope, so they survive.
     clearAutoAppliedFromStore(store, scope, FARMING_TOOL_REFORGE_ENTRY_IDS);
 
     for (const [field, itemId] of Object.entries(TOOL_COUNTERS)) {
@@ -162,12 +174,8 @@ function applyToolItem(state, cropIds, item, autoApplied, applied) {
     const reforgeId = TOOL_REFORGES[String(item.reforge || '').toLowerCase()];
     if (reforgeId) applyValue(store, scope, reforgeId, 1, applied);
 
-    if (item.recombobulated >= 1) {
-      applyValue(store, scope, 'tool-recombobulator-effect-on-tool-stats', 1, applied);
-    }
-    if (hasPerfectGem(item.gems)) {
-      applyValue(store, scope, 'tool-gem-perfect-peridot-on-farming-tool', 1, applied);
-    }
+    if (item.recombobulated >= 1) applyValue(store, scope, 'tool-recombobulator-effect-on-tool-stats', 1, applied);
+    if (hasPerfectGem(item.gems)) applyValue(store, scope, 'tool-gem-perfect-peridot-on-farming-tool', 1, applied);
   }
 }
 
@@ -190,12 +198,32 @@ function applySetWide(pieces, expectedSlots, reforgeMap, enchantMap, gemItemId, 
   if (gemItemId && pieces.every(piece => hasPerfectGem(piece.gems))) applyValue(store, scope, gemItemId, 1, applied);
 }
 
+function applyEquipmentDerived(pieces, state, autoApplied, applied, skipped) {
+  if (!pieces.length) return;
+  const scope = autoApplied.account ||= {};
+  const store = state.profile;
+
+  const blossomCount = blossomPieceCount(pieces);
+  if (blossomCount > 0) applyValue(store, scope, BLOSSOM_BASE_ID, blossomCount, applied);
+
+  const rootedPieces = pieces.filter(piece => String(piece?.reforge || '').toLowerCase() === 'rooted');
+  if (rootedPieces.length !== EQUIPMENT_SLOTS) return;
+  const missingRarity = rootedPieces.some(piece => !String(piece?.rarity || '').trim());
+  if (missingRarity) {
+    skipped.push('Rooted is present on all four equipment pieces, but at least one rarity is unknown, so Farming420 did not assume a Rooted Fortune value.');
+    return;
+  }
+  const rootedGain = rootedFortuneForPieces(rootedPieces);
+  if (rootedGain > 0) applyDynamicValue(store, scope, ROOTED_ID, 1, rootedGain, applied);
+}
+
 export function applySnapshotToProgress(state, snapshot) {
   const applied = [];
   const skipped = [];
   state.profile ||= {};
   state.profile.levels ||= {};
   state.profile.owned ||= {};
+  state.profile.manualGain ||= {};
   state.profile.cropProgress ||= {};
   state.profile.toolProgress ||= {};
   const autoApplied = state.profile.autoApplied ||= {};
@@ -232,9 +260,10 @@ export function applySnapshotToProgress(state, snapshot) {
   const equipmentSource = gearPiecesFor(state, snapshot, SETUP_EQUIPMENT_SLOTS, isEquipmentContainer);
   applySetWide(
     equipmentSource.pieces, EQUIPMENT_SLOTS,
-    EQUIPMENT_REFORGES, EQUIPMENT_ENCHANTS, null,
+    {}, EQUIPMENT_ENCHANTS, null,
     state, autoApplied, applied, skipped, 'equipment', equipmentSource.source,
   );
+  applyEquipmentDerived(equipmentSource.pieces, state, autoApplied, applied, skipped);
 
   if (items.length && !applied.some(entry => entry.id.startsWith('tool-'))) {
     unmatchedTools.push('No decoded item matched a known farming tool name, so no tool progress was filled in.');
@@ -251,6 +280,7 @@ export const MAPPABLE_ENTRY_IDS = Object.freeze(new Set([
   ...Object.values(TOOL_COUNTERS), ...Object.values(TOOL_ENCHANTS), ...Object.values(TOOL_REFORGES),
   ...Object.values(ARMOR_REFORGES), ...Object.values(ARMOR_ENCHANTS), ...Object.values(EQUIPMENT_REFORGES),
   ...Object.values(EQUIPMENT_ENCHANTS),
+  BLOSSOM_BASE_ID,
   'tool-enchant-turbo-crop', 'tool-recombobulator-effect-on-tool-stats',
   'tool-gem-perfect-peridot-on-farming-tool', 'armor-gem-perfect-peridot-on-full-armor',
   'account-skill-farming-skill-level', 'garden-garden-plots-unlocked',
