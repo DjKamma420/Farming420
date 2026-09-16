@@ -1,10 +1,11 @@
-const VERSION = 'farming420-0.22.0';
+const VERSION = 'farming420-0.22.1';
 const APP_FILES = [
   './',
   './index.html',
   './manifest.webmanifest',
   './assets/icon.svg',
   './src/app.js',
+  './src/navigation-dedupe.js',
   './src/data.js',
   './src/runtime-data-patches.js',
   './src/styles.css',
