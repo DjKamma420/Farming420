@@ -27,8 +27,16 @@ function normalizedEnchantId(value) {
   return String(value || '').trim().toLowerCase().replace(/[\s-]+/g, '_');
 }
 
+function canonicalEnchantId(value) {
+  const id = normalizedEnchantId(value);
+  // NBT stores Turbo enchants crop-specifically (turbo_wheat, turbo_melon,
+  // etc.). They share the sourced Turbo-Crop maximum and presentation rule.
+  if (id.startsWith('turbo_')) return 'turbo_crop';
+  return id;
+}
+
 export function enchantPresentation(enchantId, rawLevel) {
-  const id = normalizedEnchantId(enchantId);
+  const id = canonicalEnchantId(enchantId);
   const level = Math.max(0, Number(rawLevel) || 0);
   const maxLevel = VERIFIED_FARMING_ENCHANT_MAX[id] ?? null;
   if (maxLevel === null) return { id, level, maxLevel: null, state: 'unverified' };
