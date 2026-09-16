@@ -384,3 +384,75 @@ goes stale silently while a dated text path shows its own age.
 - Browser: the checklist renders 57 rows with 57 source links, a synced entry’s
   drawer says it needs no lookup, an undocumented entry says so rather than
   showing a path, and the page has no overflow at 390px.
+
+---
+
+# Item-centric setups
+
+Feedback: the gear layer is a flat list of stat entries ("Mossy on full armor")
+and is unusable. It should be item-centric: pick the helmet you have, then its
+reforge, its enchantments, whether it is recombobulated, and its gemstones.
+
+This is the **Setups** page `docs/PRODUCT_SPEC.md` already specifies and that has
+never been built.
+
+## Decisions taken with the user
+
+- **Slot model:** named setups side by side (Normal Farming / Pest Farming /
+  Jacob Contest), each with its own slots. "Helmet 1" is the helmet of setup 1.
+  Matches the spec's requirement that setups are mutually exclusive alternatives
+  rather than additive.
+- **Option sources:** the item picker is filled live from the official keyless
+  `/v2/resources/skyblock/items` resource; reforges, enchantments and gems come
+  from what the player's own sync found on their items plus what `src/data.js`
+  already names. Free text stays available everywhere, so a missing catalogue
+  row never blocks anyone. No list is invented.
+
+## Tasks
+
+- [x] `src/setups.js` — pure model: slot definitions, setup creation, item
+      records, prefill from a synced snapshot
+- [x] Schema 3 -> 4 migration adding `profile.setups`, with tests
+- [x] `src/item-catalog.js` — fetch, reduce and cache the official item
+      resource; tolerant parsing that degrades to free text if the shape differs
+- [x] Option sources for reforge / enchantment / gem, each tagged with where it
+      came from
+- [x] A **Setups** page: setup tabs, slot grid, per-item editor
+- [x] "Fill from sync" to pre-fill slots from detected items
+- [x] Tests and a real-browser pass
+
+## Deliberately out of scope for this change
+
+- Evaluating which setup earns more. That needs the profit engine, which does
+  not exist yet, and would mean inventing values.
+- The farming tool. It is already crop-scoped and filled automatically by the
+  sync, which is better than a manual slot; duplicating it into setups would
+  create two competing sources for the same value.
+
+## Review
+
+Built as planned. 197 tests (35 new), app version 0.11.0, data schema 4.
+
+### Bug found while verifying
+
+A **CPU-pegging infinite render loop**. `ensureItemCatalog` returned early only
+once items had loaded, and re-rendered afterwards; the Setups page calls it from
+`render`. So an item resource that came back empty or failed triggered a render,
+which called the loader, which rendered again, forever. Playwright surfaced it as
+"element was detached from the DOM, retrying" on every click.
+
+Fixed by guarding on *a load was requested* rather than on *a load succeeded*,
+with the flag set before the await, and by repainting only when the result
+actually has something new. `tests/app-guards.test.js` pins all three
+properties; reintroducing the bug fails two of them, which was verified.
+
+### Verified in a browser
+
+- three setup tabs, ten slots, setups independent of one another
+- the helmet picker lists only helmets from the official resource
+- choosing item, reforge, enchantment with level, recombobulated and a gemstone
+  stores exactly the expected record and shows a readable slot summary
+- **Fill from sync** filled 6 slots from worn armour, equipment and the active
+  pet, kept the hand-entered boots, and ignored the spare helmet in the
+  enderchest
+- schema migrated 3 -> 4, no console errors, no overflow at 390px

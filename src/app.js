@@ -4,6 +4,26 @@ import { ensureProgressBucket, migrateState, toolKeyForCropId } from './migratio
 import { isAutoApplied } from './snapshot-apply.js';
 import { LOCATION_STATUS, isSyncFilled, locationFor, manualEntries, manualEntrySummary } from './help-locations.js';
 import {
+  ITEM_SOURCE,
+  SETUP_SLOTS,
+  activeSetup,
+  createEmptyItem,
+  createSetup,
+  nextSetupId,
+  normalizeSetups,
+  prefillSetupFromSnapshot,
+  setupSummary,
+} from './setups.js';
+import {
+  enchantmentOptions,
+  gemOptions,
+  itemsForSlot,
+  loadItemCatalog,
+  readCachedCatalog,
+  reforgeOptions,
+  slotHasOfficialCategory,
+} from './item-catalog.js';
+import {
   backupFilename,
   createBackupPayload,
   downloadJson,
@@ -16,6 +36,7 @@ const NAV = [
   ['account', 'Account'],
   ['crops', 'Crops'],
   ['tools', 'Tools'],
+  ['setups', 'Setups'],
   ['gear', 'Gear'],
   ['pets', 'Pets'],
   ['chips', 'Garden Chips'],
@@ -492,6 +513,268 @@ function setupPage() {
     </div>`;
 }
 
+// --- Setups -----------------------------------------------------------------
+// Item-centric gear editing: pick the piece, then its reforge, enchantments,
+// recombobulator state and gemstones. Setups sit beside each other because they
+// are alternatives a player cannot wear at once.
+
+let itemCatalog = readCachedCatalog()?.items || [];
+let catalogNotice = null;
+// Tracks that a load was attempted at all. Keying the guard on the result
+// instead would re-enter on every render whenever the resource came back empty
+// or failed, because the re-render triggers the next attempt: an endless loop.
+let catalogRequested = itemCatalog.length > 0;
+
+function setups() {
+  state.profile.setups = normalizeSetups(state.profile.setups);
+  return state.profile.setups;
+}
+
+function snapshot() {
+  return state.profile.normalizedSnapshot || null;
+}
+
+function slotItem(slotId) {
+  return activeSetup(setups()).slots[slotId] || null;
+}
+
+function writeSlot(slotId, item) {
+  const all = setups();
+  const current = all.list.find(entry => entry.id === all.activeId);
+  current.slots[slotId] = item;
+  saveState();
+}
+
+function optionList(options, current) {
+  const values = options.map(option => option.value);
+  if (current && !values.includes(current)) options = [{ value: current, source: 'manual' }, ...options];
+  return options;
+}
+
+function slotCard(slot) {
+  const item = slotItem(slot.id);
+  const open = state.setupSlot === slot.id;
+  const enchantCount = item ? Object.keys(item.enchantments || {}).length : 0;
+  const detail = item
+    ? [item.reforge ? `${esc(item.reforge)} reforge` : null,
+       enchantCount ? `${enchantCount} enchant${enchantCount === 1 ? '' : 's'}` : null,
+       item.recombobulated ? 'recombobulated' : null,
+       item.gems?.length ? `${item.gems.length} gem${item.gems.length === 1 ? '' : 's'}` : null]
+      .filter(Boolean).join(' · ')
+    : 'Empty';
+
+  return `<button class="slot-card ${item ? 'filled' : ''} ${open ? 'open' : ''}" data-slot="${esc(slot.id)}">
+      <div class="eyebrow">${esc(slot.label)}</div>
+      <strong>${esc(item?.displayName || 'Choose an item')}</strong>
+      <span>${detail}</span>
+      ${item?.source === ITEM_SOURCE.SYNC ? badge('synced', 'synced') : ''}
+    </button>`;
+}
+
+function slotEditor(slotId) {
+  const slot = SETUP_SLOTS.find(entry => entry.id === slotId);
+  if (!slot) return '';
+  const item = slotItem(slotId) || createEmptyItem();
+  const snap = snapshot();
+  const catalogItems = itemsForSlot(itemCatalog, slotId);
+  const reforges = optionList(reforgeOptions(snap), item.reforge);
+  const enchants = enchantmentOptions(snap);
+  const gems = gemOptions(snap);
+
+  return `<div class="slot-editor">
+    <div class="section-row"><div><div class="eyebrow">${esc(slot.group)}</div><h2>${esc(slot.label)}</h2></div>
+      <button class="ghost small" data-slot-clear="${esc(slotId)}">Clear slot</button></div>
+
+    <label class="settings-field"><span>Item</span>
+      ${catalogItems.length ? `<select data-slot-item="${esc(slotId)}">
+        <option value="">— none —</option>
+        ${catalogItems.map(entry => `<option value="${esc(entry.id)}" ${entry.id === item.skyblockId ? 'selected' : ''}>${esc(entry.name)}</option>`).join('')}
+      </select>` : ''}
+      <input type="text" data-slot-name="${esc(slotId)}" value="${esc(item.displayName)}" placeholder="${catalogItems.length ? 'Or type a name the list does not have' : 'Type the item name'}">
+      ${slotHasOfficialCategory(slotId) && !catalogItems.length ? `<span class="find-warn">${esc(catalogNotice || 'The official item list is not loaded, so type the name.')}</span>` : ''}
+    </label>
+
+    <label class="settings-field"><span>Reforge</span>
+      <input list="reforge-options" type="text" data-slot-reforge="${esc(slotId)}" value="${esc(item.reforge || '')}" placeholder="e.g. mossy">
+      <datalist id="reforge-options">${reforges.map(option => `<option value="${esc(option.value)}"></option>`).join('')}</datalist>
+    </label>
+
+    <div class="settings-field"><span>Enchantments</span>
+      <div class="enchant-rows">
+        ${Object.entries(item.enchantments || {}).map(([name, level]) => `<div class="enchant-row">
+          <input type="text" value="${esc(name)}" data-ench-name="${esc(slotId)}" data-ench-key="${esc(name)}">
+          <input type="number" min="0" value="${Number(level) || 0}" data-ench-level="${esc(slotId)}" data-ench-key="${esc(name)}">
+          <button class="ghost small" data-ench-remove="${esc(slotId)}" data-ench-key="${esc(name)}">×</button>
+        </div>`).join('')}
+        <div class="enchant-row">
+          <input list="enchant-options" type="text" data-ench-new="${esc(slotId)}" placeholder="Add enchantment">
+          <input type="number" min="0" value="1" data-ench-new-level="${esc(slotId)}">
+          <button class="ghost small" data-ench-add="${esc(slotId)}">Add</button>
+        </div>
+        <datalist id="enchant-options">${enchants.map(option => `<option value="${esc(option.value)}"></option>`).join('')}</datalist>
+      </div>
+    </div>
+
+    <label class="switch-row settings-field"><span>Recombobulated</span>
+      <input type="checkbox" data-slot-recomb="${esc(slotId)}" ${item.recombobulated ? 'checked' : ''}></label>
+
+    <div class="settings-field"><span>Gemstones</span>
+      <div class="enchant-rows">
+        ${(item.gems || []).map((gem, index) => `<div class="enchant-row">
+          <input type="text" value="${esc(gem)}" data-gem-value="${esc(slotId)}" data-gem-index="${index}">
+          <button class="ghost small" data-gem-remove="${esc(slotId)}" data-gem-index="${index}">×</button>
+        </div>`).join('')}
+        <div class="enchant-row">
+          <input list="gem-options" type="text" data-gem-new="${esc(slotId)}" placeholder="e.g. PERFECT PERIDOT">
+          <button class="ghost small" data-gem-add="${esc(slotId)}">Add</button>
+        </div>
+        <datalist id="gem-options">${gems.map(option => `<option value="${esc(option.value)}"></option>`).join('')}</datalist>
+      </div>
+    </div>
+  </div>`;
+}
+
+function setupsPage() {
+  const all = setups();
+  const current = activeSetup(all);
+  const summary = setupSummary(current);
+  const hasSnapshot = Boolean(snapshot()?.items?.length);
+
+  return `${pageHeader('Setups', 'Your gear, item by item', 'A setup is one complete configuration you can actually wear. Setups sit beside each other because they are alternatives, never added together.')}
+    <div class="setup-tabs">
+      ${all.list.map(setup => `<button class="setup-tab ${setup.id === all.activeId ? 'active' : ''}" data-setup="${esc(setup.id)}">${esc(setup.name)}</button>`).join('')}
+      <button class="setup-tab add" data-setup-add="1">+ New setup</button>
+    </div>
+
+    <div class="setup-bar">
+      <label class="inline-input">Setup name<input type="text" id="setupName" value="${esc(current.name)}"></label>
+      <div class="setup-actions">
+        <button class="ghost small" data-setup-prefill="1" ${hasSnapshot ? '' : 'disabled'}>Fill from sync</button>
+        <button class="ghost small" data-setup-remove="1" ${all.list.length > 1 ? '' : 'disabled'}>Delete setup</button>
+      </div>
+      <div class="hint">${summary.filled}/${summary.total} slots filled${summary.fromSync ? `, ${summary.fromSync} from your last sync` : ''}.${hasSnapshot ? '' : ' Sync your profile in Settings to fill these automatically.'}</div>
+    </div>
+
+    ${['Armor', 'Equipment', 'Pet'].map(group => `
+      <div class="section-row"><div><h2>${group}</h2></div></div>
+      <div class="slot-grid">${SETUP_SLOTS.filter(slot => slot.group === group).map(slotCard).join('')}</div>
+    `).join('')}
+
+    ${state.setupSlot ? slotEditor(state.setupSlot) : ''}`;
+}
+
+function bindSetups() {
+  const all = setups();
+  const rerender = () => { saveState(); render(); };
+
+  document.querySelectorAll('[data-setup]').forEach(el => el.addEventListener('click', () => {
+    all.activeId = el.dataset.setup; state.setupSlot = null; rerender();
+  }));
+  document.querySelector('[data-setup-add]')?.addEventListener('click', () => {
+    const id = nextSetupId(all);
+    all.list.push(createSetup(id, `Setup ${all.list.length + 1}`));
+    all.activeId = id; state.setupSlot = null; rerender();
+  });
+  document.querySelector('[data-setup-remove]')?.addEventListener('click', () => {
+    if (all.list.length <= 1) return;
+    if (!confirm('Delete this setup and everything in it?')) return;
+    all.list = all.list.filter(setup => setup.id !== all.activeId);
+    all.activeId = all.list[0].id; state.setupSlot = null; rerender();
+  });
+  const nameInput = document.getElementById('setupName');
+  if (nameInput) nameInput.addEventListener('change', event => {
+    const current = all.list.find(setup => setup.id === all.activeId);
+    current.name = String(event.target.value || '').trim() || current.id;
+    rerender();
+  });
+  document.querySelector('[data-setup-prefill]')?.addEventListener('click', () => {
+    const current = all.list.find(setup => setup.id === all.activeId);
+    const result = prefillSetupFromSnapshot(current, snapshot());
+    Object.assign(current, result.setup);
+    if (!result.filled.length) {
+      alert('Your last sync contained no worn armor, equipment or active pet, so nothing could be filled in. Items sitting in storage are not assumed to be worn.');
+    }
+    rerender();
+  });
+
+  document.querySelectorAll('[data-slot]').forEach(el => el.addEventListener('click', () => {
+    state.setupSlot = state.setupSlot === el.dataset.slot ? null : el.dataset.slot;
+    rerender();
+  }));
+
+  // --- slot editor ---
+  const slotId = state.setupSlot;
+  if (!slotId) return;
+  const currentItem = () => slotItem(slotId) || createEmptyItem();
+  // Any hand edit makes the slot the player's own, so a later sync prefill
+  // leaves it alone instead of overwriting their work.
+  const patch = changes => writeSlot(slotId, { ...currentItem(), ...changes, source: ITEM_SOURCE.MANUAL });
+
+  document.querySelector(`[data-slot-clear="${slotId}"]`)?.addEventListener('click', () => {
+    writeSlot(slotId, null); rerender();
+  });
+  document.querySelector(`[data-slot-item="${slotId}"]`)?.addEventListener('change', event => {
+    const chosen = itemsForSlot(itemCatalog, slotId).find(entry => entry.id === event.target.value);
+    patch({ skyblockId: chosen?.id ?? null, displayName: chosen?.name ?? currentItem().displayName });
+    rerender();
+  });
+  document.querySelector(`[data-slot-name="${slotId}"]`)?.addEventListener('change', event => {
+    patch({ displayName: String(event.target.value || '').trim() }); rerender();
+  });
+  document.querySelector(`[data-slot-reforge="${slotId}"]`)?.addEventListener('change', event => {
+    patch({ reforge: String(event.target.value || '').trim().toLowerCase() || null }); rerender();
+  });
+  document.querySelector(`[data-slot-recomb="${slotId}"]`)?.addEventListener('change', event => {
+    patch({ recombobulated: event.target.checked }); rerender();
+  });
+
+  document.querySelector(`[data-ench-add="${slotId}"]`)?.addEventListener('click', () => {
+    const name = document.querySelector(`[data-ench-new="${slotId}"]`)?.value?.trim().toLowerCase();
+    if (!name) return;
+    const level = Number(document.querySelector(`[data-ench-new-level="${slotId}"]`)?.value || 1);
+    patch({ enchantments: { ...currentItem().enchantments, [name]: Math.max(0, level) } });
+    rerender();
+  });
+  document.querySelectorAll(`[data-ench-level="${slotId}"]`).forEach(el => el.addEventListener('change', event => {
+    patch({ enchantments: { ...currentItem().enchantments, [el.dataset.enchKey]: Math.max(0, Number(event.target.value) || 0) } });
+    rerender();
+  }));
+  document.querySelectorAll(`[data-ench-remove="${slotId}"]`).forEach(el => el.addEventListener('click', () => {
+    const next = { ...currentItem().enchantments };
+    delete next[el.dataset.enchKey];
+    patch({ enchantments: next }); rerender();
+  }));
+
+  document.querySelector(`[data-gem-add="${slotId}"]`)?.addEventListener('click', () => {
+    const value = document.querySelector(`[data-gem-new="${slotId}"]`)?.value?.trim().toUpperCase();
+    if (!value) return;
+    patch({ gems: [...currentItem().gems, value] }); rerender();
+  });
+  document.querySelectorAll(`[data-gem-value="${slotId}"]`).forEach(el => el.addEventListener('change', event => {
+    const gems = [...currentItem().gems];
+    gems[Number(el.dataset.gemIndex)] = String(event.target.value || '').trim().toUpperCase();
+    patch({ gems: gems.filter(Boolean) }); rerender();
+  }));
+  document.querySelectorAll(`[data-gem-remove="${slotId}"]`).forEach(el => el.addEventListener('click', () => {
+    const gems = currentItem().gems.filter((_, index) => index !== Number(el.dataset.gemIndex));
+    patch({ gems }); rerender();
+  }));
+}
+
+/**
+ * The official item list is fetched once per session when the Setups page is
+ * first opened, so the app does not pay for it on every start.
+ */
+async function ensureItemCatalog() {
+  if (catalogRequested) return;
+  catalogRequested = true;
+  const result = await loadItemCatalog();
+  itemCatalog = result.items;
+  catalogNotice = result.error;
+  // Only repaint when there is something new to show.
+  if (state.page === 'setups' && (result.items.length || result.error)) render();
+}
+
 function render() {
   let content = '';
   switch(state.page) {
@@ -506,6 +789,7 @@ function render() {
     case 'buffs': content = genericSectionPage('buffs','Buffs','Temporary Buffs & Mixins','God Potion, mixins, cakes and seasonal effects are kept separate from permanent progression.'); break;
     case 'pests': content = genericSectionPage('pests','Pests','Pest Setup','Pest-specific stats, spawn mechanics and loot logic stay separate from normal crop farming.'); break;
     case 'setup': content = setupPage(); break;
+    case 'setups': content = setupsPage(); break;
     case 'planner': content = plannerPage(); break;
     case 'research': content = researchPage(); break;
     case 'coming': content = comingPage(); break;
@@ -513,6 +797,10 @@ function render() {
   }
   document.getElementById('app').innerHTML = shell(content);
   bind();
+  if (state.page === 'setups') {
+    bindSetups();
+    ensureItemCatalog();
+  }
 }
 
 function bind() {

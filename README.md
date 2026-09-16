@@ -39,6 +39,8 @@ Read these files before changing progression or calculation logic:
 - Garden crop-upgrade and unlocked-plot import
 - live sync from your own API key, run automatically once it is entered
 - synced values written straight onto the cards and marked as `synced`
+- item-centric **Setups**: pick the piece, its reforge, enchantments,
+  recombobulator state and gemstones, per wearable configuration
 - an optional server-side proxy so the key can stay off the client
 - current `pets_data.pets` import with hidden-data semantics instead of treating missing data as no pets
 - normalized profile snapshots with explicit provenance and unknown/hidden states
@@ -82,6 +84,32 @@ reliably: Hypixel's `name` parameter is deprecated and not guaranteed correct,
 `api.mojang.com` sends no CORS headers, and the `/key` endpoint that used to
 return the key owner's UUID was disabled in August 2023. A UUID field needs no
 third-party service and cannot silently resolve to the wrong account.
+
+## Setups
+
+**Setups** in the sidebar is the gear editor. A setup is one complete
+configuration you can actually wear, and setups sit beside each other -- Normal
+Farming, Pest Farming, Jacob Contest by default, renameable and extendable --
+because they are alternatives, never added together.
+
+Each setup has slots for armour, equipment and the pet. Open a slot and you pick
+the item, then its reforge, its enchantments and their levels, whether it is
+recombobulated, and its gemstones. **Fill from sync** pre-fills the slots from
+the gear your last profile sync found you wearing; a slot you filled in yourself
+is never overwritten by it.
+
+The item picker is filled from the official keyless
+`/v2/resources/skyblock/items` resource, so no item list is hard-coded or
+invented; reforge, enchantment and gem suggestions come from your own synced
+items plus what `src/data.js` already names. Free text is accepted everywhere, so
+a missing suggestion never blocks you.
+
+Items sitting in storage are not assumed to be worn: only the armour, equipment
+and active-pet data from your profile is used to pre-fill.
+
+The farming tool is deliberately not a setup slot. It is already crop-scoped and
+filled automatically by the sync, and a second manual copy would give the same
+value two competing sources.
 
 ### Where do I find a value?
 

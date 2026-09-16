@@ -1,4 +1,5 @@
 import { CROPS, UPGRADES } from './data.js';
+import { createDefaultSetups, normalizeSetups } from './setups.js';
 import { DATA_SCHEMA_VERSION } from './config.js';
 
 const PROGRESS_FIELDS = ['levels', 'owned', 'costs', 'manualGain'];
@@ -92,6 +93,18 @@ function migrateNormalizedSnapshot(state) {
  * must be idempotent, because a state can be re-migrated after a backup
  * restore. Never delete an entry: old backups still arrive at old versions.
  */
+/**
+ * Schema 3 -> 4
+ *
+ * Adds the item-centric setup model. Existing progression entries are left
+ * exactly as they are: setups are a new, parallel view of gear, not a
+ * replacement, so nothing the player already entered is moved or dropped.
+ */
+function migrateSetups(state) {
+  const profile = state.profile ||= {};
+  profile.setups = profile.setups ? normalizeSetups(profile.setups) : createDefaultSetups();
+}
+
 const MIGRATIONS = [
   {
     to: 2,
@@ -102,6 +115,11 @@ const MIGRATIONS = [
     to: 3,
     description: 'Add the normalized profile snapshot boundary.',
     run: migrateNormalizedSnapshot,
+  },
+  {
+    to: 4,
+    description: 'Add item-centric farming setups.',
+    run: migrateSetups,
   },
 ];
 
