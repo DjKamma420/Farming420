@@ -3,21 +3,29 @@ import test from 'node:test';
 import { readFileSync } from 'node:fs';
 
 /**
- * `index.html` ships a strict Content Security Policy. Under `style-src 'self'`
- * and `script-src 'self'` the browser silently drops `style="..."` attributes
- * and inline `on*` handlers in generated markup, which previously made every
- * progress bar render full and closed the drawer on any click inside it. These
- * checks keep such markup from coming back unnoticed.
+ * `index.html` ships a strict Content Security Policy. Inline styles/scripts are
+ * forbidden even though the screenshot scanner allows two explicit hosts for
+ * its on-demand OCR runtime and language data.
  */
 const read = name => readFileSync(new URL(`../src/${name}`, import.meta.url), 'utf8');
-const RUNTIME_MODULES = ['app.js', 'enhancements.js', 'foundation.js'];
+const RUNTIME_MODULES = ['app.js', 'enhancements.js', 'foundation.js', 'tooltip-scanner.js'];
 const indexHtml = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 
 test('the shipped CSP still forbids inline styles and scripts', () => {
   const csp = indexHtml.match(/Content-Security-Policy"\s+content="([^"]+)"/)?.[1];
   assert.ok(csp, 'index.html has no Content-Security-Policy meta tag');
-  assert.match(csp, /script-src 'self'(;|$)/);
-  assert.match(csp, /style-src 'self'(;|$)/);
+  assert.match(csp, /script-src\s+'self'/);
+  assert.match(csp, /style-src\s+'self'(;|$)/);
+  assert.ok(!csp.includes("'unsafe-inline'"));
+  assert.ok(!csp.includes("'unsafe-eval'"));
+});
+
+test('OCR network access is restricted to the explicit runtime and trained-data hosts', () => {
+  const csp = indexHtml.match(/Content-Security-Policy"\s+content="([^"]+)"/)?.[1] ?? '';
+  assert.match(csp, /script-src[^;]*https:\/\/cdn\.jsdelivr\.net/);
+  assert.match(csp, /connect-src[^;]*https:\/\/cdn\.jsdelivr\.net/);
+  assert.match(csp, /connect-src[^;]*https:\/\/tessdata\.projectnaptha\.com/);
+  assert.match(csp, /worker-src[^;]*blob:/);
 });
 
 test('the CSP meta tag carries no directive that a meta tag cannot apply', () => {
