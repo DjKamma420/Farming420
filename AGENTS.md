@@ -76,6 +76,27 @@ Use `DjKamma420/StundenplanNothing` as a structural quality reference, not as a 
 
 Keep the Farming420 interface layered and concise. The user should see the next useful decision, not every underlying data point at once.
 
+## Merge policy
+
+The repository owner has given a standing instruction: **merge a pull request as
+soon as it is green, without asking again.**
+
+"Green" means all of the following, checked rather than assumed:
+
+1. every required check on the PR's current head has concluded `success`
+2. `mergeable_state` is `clean` — no conflict against the base branch
+3. the PR is not a draft
+4. no review thread is waiting on an answer, and no reviewer has requested
+   changes that are still open
+
+If any of those does not hold, fix it and re-check. Do not merge past a red
+check, and do not merge a PR whose head has moved since the checks ran: wait for
+the new run.
+
+This instruction covers merging only. It does not authorise force-pushing over
+someone else's branch, rewriting published history, or skipping the correctness
+rules above to get a check green.
+
 ## Development order
 
 1. Establish versioned persistence, settings, backup/restore, PWA/update safety and English-only UI.
