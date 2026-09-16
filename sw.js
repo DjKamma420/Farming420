@@ -1,4 +1,4 @@
-const VERSION = 'farming420-0.16.3';
+const VERSION = 'farming420-0.16.4';
 const APP_FILES = [
   './',
   './index.html',
@@ -6,6 +6,7 @@ const APP_FILES = [
   './assets/icon.svg',
   './src/app.js',
   './src/data.js',
+  './src/runtime-data-patches.js',
   './src/styles.css',
   './src/enhancements.js',
   './src/enhancements.css',
