@@ -717,3 +717,56 @@ belong in the same command. A stash across that rebase also silently dropped
 version bumps in files with no other change.
 
 238 tests. App version 0.14.0.
+
+## Farming attribute Fortune values (0.15.0)
+
+### Plan
+
+- [x] Source a per-level value for each of the twelve documented farming attributes
+- [x] Score the ones that have a published value; refuse to score the ones that do not
+- [x] Give each attribute its own metric so the twelve can never be summed into Farming Fortune
+- [x] Pin the whole set with tests and prove the tests fail when the data regresses
+- [x] Rewrite the attribute section of `docs/VERIFIED_MECHANICS.md` against the live source
+
+### What changed
+
+`docs/VERIFIED_MECHANICS.md` listed twelve farming attributes with no values,
+explicitly because none had been sourced. All twelve now carry a sourced
+per-level value read from the wiki's Attributes list on 2026-09-16, and the
+eight that were missing entirely are now shard entries in `src/data.js`
+(`shards` grew from 4 to 12 entries; `UPGRADES` from 77 to 85).
+
+Attributes cap at Level X, so every published range is a level 1 to level 10
+span and the per-level step is one tenth of it. That is the whole derivation —
+nothing is extrapolated beyond it.
+
+### The two traps this closes
+
+1. **Only four of the twelve give Farming Fortune.** Solar Power (+5/level),
+   Lunar Power (+5), Pest Fortune (+5) and Infiltration (+3) do; the other eight
+   give Overbloom, pest spawn rate, visitor behaviour, materials or Wisdom. All
+   twelve level identically and sit in the same Hunting Box, which is exactly why
+   they read as one Fortune pool. Each entry now carries its own `metric`, so the
+   planner structurally cannot add them together, and a test asserts that exactly
+   four shard entries use `Crop Yield`.
+2. **Three of those four are conditional** — day, night, and "a Pest is in the
+   plot you are standing on". Only Ultimate DNA (Galaxy Fish) is unconditional,
+   and the wiki shows it also covers Mining and Foraging Fortune, which the old
+   note did not say.
+
+### What is deliberately *not* scored
+
+Pest Cooldown (Moth Shard) prints a flat "0.5s" on both the attribute list and
+the shard page, with no level range, while all eleven others print one. Assuming
+0.5s per level would invent a 5s reduction no source states, so it is a `VERIFY`
+entry with `stepGain: 0` — it appears in the list and renders as "dynamic",
+contributing nothing derived. A test asserts that no `VERIFY` shard can score.
+
+### Verification
+
+- 241 tests pass (was 238).
+- The three new tests were each proved to fail against a deliberately regressed
+  `src/data.js` (attribute name removed, unverified entry given a step gain).
+- Real-browser sweep: the Shards page renders 12 entries with the correct
+  per-step labels and metrics, Moth renders as `verify` / `dynamic`, the planner
+  ranks without errors, and the console is clean.

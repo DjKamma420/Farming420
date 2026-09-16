@@ -137,3 +137,63 @@ test('the change history is referenced from the data layer docs', () => {
   assert.match(history, /Outdated pages/, 'the source caveat must stay recorded');
   assert.match(history, /CC BY-NC-SA/, 'the licence must stay recorded');
 });
+
+test('every documented farming attribute is modelled as its own shard entry', () => {
+  // All twelve attributes are levelled the same way and listed in the same wiki
+  // table, so an attribute that is researched but never entered here is invisible
+  // to the planner. Each one gets a row; none of them may be silently dropped.
+  const expected = new Map([
+    ['Solar Power', 'Crop Yield'],
+    ['Lunar Power', 'Crop Yield'],
+    ['Pest Fortune', 'Crop Yield'],
+    ['Infiltration', 'Crop Yield'],
+    ['Pest Luck', 'Rare Crops'],
+    ['Bonus Pest Chance', 'Pest Spawn'],
+    ['Sprayonator Serendipity', 'Sprayonator Materials'],
+    ['Pest Cooldown', 'Pest Spawn'],
+    ['Enchanted Farmer', 'Enchanted Crops'],
+    ['Visitor Bait', 'Visitor Speed'],
+    ['Fancy Visit', 'Visitor Rarity'],
+    ['Garden Wisdom', 'Farming XP'],
+  ]);
+  // Solar and Lunar Power share one entry: freezing Garden time makes the second
+  // one permanently dead, so they are mutually exclusive rather than additive.
+  const byAttribute = new Map();
+  for (const item of UPGRADES.filter(entry => entry.section === 'shards')) {
+    assert.ok(item.attribute?.trim(), `${item.id} does not name its attribute`);
+    for (const name of item.attribute.split(', ')) byAttribute.set(name, item);
+  }
+  for (const [attribute, metric] of expected) {
+    const hit = byAttribute.get(attribute);
+    assert.ok(hit, `farming attribute "${attribute}" has no shard entry`);
+    assert.equal(hit.metric, metric, `${attribute} carries the wrong metric`);
+  }
+});
+
+test('a farming attribute without a sourced per-level value never scores', () => {
+  // Attributes level to 10. An attribute whose per-level scaling the wiki does not
+  // publish must not be given one, so it may not carry a non-zero step gain.
+  for (const item of UPGRADES.filter(entry => entry.section === 'shards')) {
+    if (item.status === 'VERIFY') {
+      assert.equal(item.stepGain, 0, `${item.id} is unverified but still scores`);
+      assert.equal(item.rawMarginal, 0, `${item.id} is unverified but still has a marginal value`);
+    } else {
+      assert.ok(item.stepGain > 0, `${item.id} is ACTIVE but contributes nothing`);
+    }
+  }
+});
+
+test('only the four Fortune attributes use the Crop Yield metric', () => {
+  // The trap this pins: twelve identically-levelled attributes read as one
+  // Fortune pool. Summing them would roughly triple a player's real Fortune.
+  const yieldShards = UPGRADES
+    .filter(item => item.section === 'shards' && item.metric === 'Crop Yield')
+    .map(item => item.id)
+    .sort();
+  assert.deepEqual(yieldShards, [
+    'attribute-shard-cricket-pest-fortune',
+    'attribute-shard-earthworm-shard-formerly-termite',
+    'attribute-shard-firefly-or-lunar-moth-shard',
+    'attribute-shard-galaxy-fish-shard',
+  ]);
+});

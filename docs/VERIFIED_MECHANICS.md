@@ -183,24 +183,65 @@ to +45, Douce Pluie de Stinky Cheese Potion +20, Doug's Feast Crasher +2-6.
 
 ## Farming attributes and their shards
 
-The app models three shards; there are at least twelve farming attributes. Each
-still needs its own Fortune value before it can be ranked, so they are listed
-rather than added as scored entries.
+Verified against the wiki's Attributes list on 2026-09-16. Attributes start at
+Level I and cap at Level X, so every published range below is the level 1 to
+level 10 span and the per-level step is one tenth of it.
 
-| Attribute | Shard | Use |
-| --- | --- | --- |
-| Solar Power | Firefly | Farming Fortune during the day |
-| Lunar Power | Lunar Moth | Farming Fortune at night; required for Moonflower |
-| Pest Fortune | Cricket | Farming Fortune while killing Pests |
-| Pest Luck | Field Mouse | Overbloom on Pests |
-| Bonus Pest Chance | Keeled Slug | Bonus Pest Chance |
-| Infiltration | Earthworm | Farming Fortune while the current Plot has a Pest |
-| Sprayonator Serendipity | Rat | More Sprayonator materials |
-| Pest Cooldown | Moth | Shorter Pest spawn cooldown |
-| Enchanted Farmer | Mosquito | Chance of an Enchanted Crop while farming |
-| Visitor Bait | Mudworm | Visitors arrive faster |
-| Fancy Visit | Invisibug | Chance of a RARE or better Visitor |
-| Garden Wisdom | Dragonfly | Farming Wisdom on the Garden |
+| Attribute | Shard (id) | Published effect | Per level | Metric in this repo |
+| --- | --- | --- | --- | --- |
+| Solar Power | Firefly (E31) | +5-50 Farming Fortune during the day | +5 FF | Crop Yield |
+| Lunar Power | Lunar Moth (E13) | +5-50 Farming Fortune during the night | +5 FF | Crop Yield |
+| Pest Fortune | Cricket (U19) | +5-50 Farming Fortune on Pests | +5 FF | Crop Yield |
+| Infiltration | Earthworm (U40) | +3-30 Farming Fortune while the current Garden Plot has a Pest | +3 FF | Crop Yield |
+| Pest Luck | Field Mouse (U10) | +0.5-5 Overbloom on Pests | +0.5 | Rare Crops |
+| Bonus Pest Chance | Keeled Slug (U94) | +1-10 Bonus Pest Chance | +1 | Pest Spawn |
+| Sprayonator Serendipity | Rat (U91) | +1%-10% chance for a Pest to drop an extra Sprayonator Material | +1% | Sprayonator Materials |
+| Pest Cooldown | Moth (U100) | Reduces the Pest spawn cooldown by 0.5s | **not published** | Pest Spawn (VERIFY) |
+| Enchanted Farmer | Mosquito (U103) | +0.001%-0.01% chance to find an Enchanted Crop while farming | +0.001% | Enchanted Crops |
+| Visitor Bait | Mudworm (C25) | Garden Visitors arrive +1%-10% faster | +1% | Visitor Speed |
+| Fancy Visit | Invisibug (R10) | RARE and above Garden Visitors have a +1%-10% higher chance to arrive | +1% | Visitor Rarity |
+| Garden Wisdom | Dragonfly (E37) | +0.5-5 Farming Wisdom | +0.5 | Farming XP |
+
+A thirteenth shard matters to farming without being a farming attribute:
+Ultimate DNA (Galaxy Fish, L41) grants +1-10 Mining, Farming **and** Foraging
+Fortune. Only its Farming share is scored here.
+
+Two things this table is meant to stop:
+
+1. **Only four of the twelve give Farming Fortune** — Solar Power, Lunar Power,
+   Pest Fortune and Infiltration. The other eight grant Overbloom, pest spawn
+   rate, visitor behaviour, materials or Wisdom. All twelve level identically and
+   appear in the same Hunting Box, which is exactly why they read as one Fortune
+   pool. Summing them would invent several hundred Fortune that does not exist.
+2. **Three of those four are conditional** — day, night, and "a Pest is in the
+   plot you are standing on". Only Ultimate DNA is unconditional. Solar and Lunar
+   Power are additionally mutually exclusive in practice, because freezing Garden
+   time permanently disables one of them.
+
+**Pest Cooldown is the one gap.** The wiki prints a flat 0.5s on both the
+attribute list and the Moth Shard page, with no level range, while all eleven
+others print one. Attributes level to 10, so a flat figure is either genuinely
+unscaling or undocumented. It is stored as a `VERIFY` entry with a zero step
+gain rather than being assumed to be 0.5s per level.
+
+### Shards needed to max an attribute
+
+Level 10 is the cap; the cost depends only on the shard's rarity.
+
+| Rarity | Shards to level 10 (cumulative) |
+| --- | --- |
+| COMMON | 96 |
+| UNCOMMON | 64 |
+| RARE | 48 |
+| EPIC | 32 |
+| LEGENDARY | 24 |
+
+So Visitor Bait (COMMON) is the most expensive farming attribute to max at 96
+shards, and Solar Power and Garden Wisdom (EPIC) among the cheapest at 32.
+
+Source: <https://hypixelskyblock.minecraft.wiki/w/Attributes>, plus
+<https://hypixelskyblock.minecraft.wiki/w/Moth_Shard> for the Pest Cooldown gap.
+Both read 2026-09-16.
 
 ## Open discrepancy: armour Farming Fortune
 
