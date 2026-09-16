@@ -1,4 +1,4 @@
-const VERSION = 'farming420-0.22.1';
+const VERSION = 'farming420-0.22.2';
 const APP_FILES = [
   './',
   './index.html',
@@ -8,6 +8,7 @@ const APP_FILES = [
   './src/navigation-dedupe.js',
   './src/data.js',
   './src/runtime-data-patches.js',
+  './src/farming-reforge-patches.js',
   './src/styles.css',
   './src/enhancements.js',
   './src/enhancements.css',
@@ -17,6 +18,11 @@ const APP_FILES = [
   './src/tool-scanner-ui.js',
   './src/ux-simplify.js',
   './src/ux-simplify.css',
+  './src/skyblock-redesign-bridge.js',
+  './src/skyblock-redesign.js',
+  './src/skyblock-redesign.css',
+  './src/direct-controls.js',
+  './src/direct-controls.css',
   './src/config.js',
   './src/progression.js',
   './src/setups.js',
