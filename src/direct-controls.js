@@ -4,6 +4,7 @@ import { toolKeyForCropId } from './migrations.js';
 import { EXCLUSIVE_ENTRY_GROUPS } from './exclusivity.js';
 
 const SMALL_CHAIN_MAX = 10;
+const DERIVED_ONLY_SECTIONS = new Set(['gear']);
 
 function load() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
@@ -88,7 +89,10 @@ function stepperControl(current, max) {
 function enhance(card) {
   if (card.dataset.directReady === '1') return;
   const item = UPGRADES.find(entry => entry.id === card.dataset.open);
-  if (!item) return;
+  if (!item || DERIVED_ONLY_SECTIONS.has(item.section)) {
+    if (item) card.dataset.derivedOnly = '1';
+    return;
+  }
 
   const raw = load();
   const current = level(raw, item);
