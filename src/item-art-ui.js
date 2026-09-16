@@ -5,6 +5,7 @@ import { skullTextureUrl } from './skull-art.js';
 let manifest = null;
 let manifestRequested = false;
 let applying = false;
+let applyQueued = false;
 
 export function activeSetupFromStoredState(rawState) {
   const setups = rawState?.profile?.setups;
@@ -143,7 +144,7 @@ export function renderSetupItemArt({ root = document, rawState = readState(), ma
     if (!slotId) return;
     const item = itemForSetupSlot(rawState, slotId);
     if (!item) {
-      removeRenderedArt(card);
+      if (card.querySelector(':scope > .official-item-art, :scope > .skull-art, :scope > .item-art-fallback')) removeRenderedArt(card);
       return;
     }
 
@@ -193,18 +194,42 @@ async function apply() {
   }
 }
 
+function queueApply() {
+  if (applyQueued) return;
+  applyQueued = true;
+  queueMicrotask(async () => {
+    applyQueued = false;
+    await apply();
+  });
+}
+
+function mutationNeedsApply(mutations) {
+  return mutations.some(mutation => {
+    if (mutation.type === 'attributes') return true;
+    return [...mutation.addedNodes].some(node => {
+      if (!(node instanceof Element)) return false;
+      if (node.matches?.('.official-item-art, .skull-art, .item-art-fallback')) return false;
+      return node.matches?.('[data-pack-asset], .slot-portrait, [data-item-art-slot]')
+        || node.querySelector?.('[data-pack-asset], .slot-portrait, [data-item-art-slot]');
+    });
+  });
+}
+
 function boot() {
-  apply();
+  queueApply();
   if (typeof MutationObserver === 'function') {
-    const observer = new MutationObserver(() => apply());
-    observer.observe(document.documentElement, {
+    const root = document.getElementById('app') || document.body;
+    const observer = new MutationObserver(mutations => {
+      if (mutationNeedsApply(mutations)) queueApply();
+    });
+    observer.observe(root, {
       childList: true,
       subtree: true,
       attributes: true,
       attributeFilter: ['data-pack-asset'],
     });
   }
-  window.addEventListener('farming420:state-changed', apply);
+  window.addEventListener('farming420:state-changed', queueApply);
 }
 
 if (typeof document !== 'undefined' && typeof window !== 'undefined') {
