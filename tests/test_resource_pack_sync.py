@@ -15,6 +15,7 @@ spec.loader.exec_module(pack_sync)
 class ResourcePackSyncTests(unittest.TestCase):
     def make_zip(self, path):
         with zipfile.ZipFile(path, 'w') as archive:
+            archive.writestr('LICENSE', 'fixture license')
             archive.writestr(
                 'assets/hypixel_skyblock/items/item/test_item.json',
                 json.dumps({'model': {'model': 'hypixel_skyblock:item/test_model'}}),
@@ -68,9 +69,11 @@ class ResourcePackSyncTests(unittest.TestCase):
             item = manifest['items']['test_item']
             self.assertEqual(item['definition'], 'items/item/test_item.json')
             self.assertEqual(item['texture'], 'textures/item/test_texture.png')
+            self.assertEqual(manifest['license'], 'LICENSE')
             self.assertTrue((output / item['definition']).is_file())
             self.assertTrue((output / item['texture']).is_file())
             self.assertTrue((output / 'models/item/test_model.json').is_file())
+            self.assertEqual((output / 'LICENSE').read_text('utf-8'), 'fixture license')
             self.assertFalse((root / 'outside.txt').exists())
             self.assertFalse((output / 'minecraft/textures/item/ignored.png').exists())
 
@@ -88,6 +91,7 @@ class ResourcePackSyncTests(unittest.TestCase):
             str(pack_sync.local_pack_path('assets/hypixel_skyblock/textures/item/a.png')),
             'textures/item/a.png',
         )
+        self.assertEqual(str(pack_sync.local_pack_path('LICENSE')), 'LICENSE')
         self.assertIsNone(pack_sync.local_pack_path('assets/hypixel_skyblock/../outside.txt'))
         self.assertIsNone(pack_sync.local_pack_path('assets/minecraft/a.png'))
 
