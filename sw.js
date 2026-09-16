@@ -1,4 +1,4 @@
-const VERSION = 'farming420-0.16.5';
+const VERSION = 'farming420-0.16.6';
 const APP_FILES = [
   './',
   './index.html',
@@ -14,6 +14,8 @@ const APP_FILES = [
   './src/tooltip-scanner.js',
   './src/tool-scan-apply.js',
   './src/tool-scanner-ui.js',
+  './src/ux-simplify.js',
+  './src/ux-simplify.css',
   './src/config.js',
   './src/progression.js',
   './src/setups.js',
