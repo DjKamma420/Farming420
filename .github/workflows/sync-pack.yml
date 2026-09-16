@@ -39,7 +39,7 @@ jobs:
           test -s assets/hypixel-pack/manifest.json
           test -s assets/hypixel-pack/LICENSE
           python3 - <<'PY'
-          import json, os
+          import json, os, re
           from pathlib import Path
 
           root = Path("assets/hypixel-pack")
@@ -56,11 +56,21 @@ jobs:
                      if not (root / record["texture"]).is_file()]
           assert not missing, f"{len(missing)} manifest entries have no texture file: {missing[:5]}"
 
+          # Every picture the app names has to exist in this manifest. Without
+          # this, a renamed or re-filed item silently drops back to a placeholder
+          # and nobody finds out until they look at the page.
+          data = Path("src/data.js").read_text()
+          named = set(re.findall(r'"packAsset":\s*"([^"]+)"', data))
+          absent = sorted(name for name in named if name not in items)
+          assert not absent, f"src/data.js names pictures this pack does not have: {absent}"
+
           files = [path for path in root.rglob("*") if path.is_file()]
           total = sum(path.stat().st_size for path in files)
           summary = (
               f"- pack `{manifest['pack']['hash']}`\n"
               f"- {len(items)} items, {len(files)} files, {total / 1_048_576:.2f} MB\n"
+              f"- {len(named)} pictures named by src/data.js, all present\n"
+              f"- {len(manifest.get('ambiguous', {}))} ids dropped as ambiguous\n"
           )
           print(summary)
           with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as handle:

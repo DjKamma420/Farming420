@@ -657,6 +657,7 @@ export const UPGRADES = [
   },
   {
     "id": "garden-chip-cropshot-chip",
+    "packAsset": "cropshot_chip",
     "category": "Garden Chip",
     "section": "chips",
     "name": "Cropshot Chip",
@@ -675,6 +676,7 @@ export const UPGRADES = [
   },
   {
     "id": "garden-chip-hypercharge-chip-next-level",
+    "packAsset": "hypercharge_chip",
     "category": "Garden Chip",
     "section": "chips",
     "name": "Hypercharge Chip next level",
@@ -1095,6 +1097,7 @@ export const UPGRADES = [
   },
   {
     "id": "garden-chip-rarefinder-chip",
+    "packAsset": "rarefinder_chip",
     "category": "Garden Chip",
     "section": "chips",
     "name": "Rarefinder Chip",
@@ -1311,6 +1314,7 @@ export const UPGRADES = [
   },
   {
     "id": "garden-chip-overdrive-chip",
+    "packAsset": "overdrive_chip",
     "category": "Garden Chip",
     "section": "chips",
     "name": "Overdrive Chip",
@@ -1329,6 +1333,7 @@ export const UPGRADES = [
   },
   {
     "id": "garden-chip-quickdraw-chip",
+    "packAsset": "quickdraw_chip",
     "category": "Garden Chip",
     "section": "chips",
     "name": "Quickdraw Chip",
@@ -1347,6 +1352,7 @@ export const UPGRADES = [
   },
   {
     "id": "garden-chip-synthesis-chip",
+    "packAsset": "synthesis_chip",
     "category": "Garden Chip",
     "section": "chips",
     "name": "Synthesis Chip",
@@ -1365,6 +1371,7 @@ export const UPGRADES = [
   },
   {
     "id": "garden-chip-evergreen-chip",
+    "packAsset": "evergreen_chip",
     "category": "Garden Chip",
     "section": "chips",
     "name": "Evergreen Chip",
@@ -1383,6 +1390,7 @@ export const UPGRADES = [
   },
   {
     "id": "garden-chip-vermin-vaporizer-chip",
+    "packAsset": "vermin_vaporizer_chip",
     "category": "Garden Chip",
     "section": "chips",
     "name": "Vermin Vaporizer Chip",
@@ -1401,6 +1409,7 @@ export const UPGRADES = [
   },
   {
     "id": "garden-chip-mechamind-chip",
+    "packAsset": "mechamind_chip",
     "category": "Garden Chip",
     "section": "chips",
     "name": "Mechamind Chip",
@@ -1419,6 +1428,7 @@ export const UPGRADES = [
   },
   {
     "id": "garden-chip-sowledge-chip",
+    "packAsset": "sowledge_chip",
     "category": "Garden Chip",
     "section": "chips",
     "name": "Sowledge Chip",

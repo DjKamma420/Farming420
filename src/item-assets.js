@@ -37,7 +37,10 @@ export function itemAssetForSkyblockId(manifestValue, skyblockId, baseUrl = ITEM
   return {
     key,
     textureUrl: `${baseUrl}${texture}`,
-    definition: typeof record.definition === 'string' ? record.definition : null,
+    // Where in the pack this picture came from. Provenance only: the pack's item
+    // definitions are read during the sync and deliberately not shipped, so this
+    // is a name, never a path to fetch.
+    source: typeof record.source === 'string' ? record.source : null,
     packHash: typeof manifest.pack.hash === 'string' ? manifest.pack.hash : null,
   };
 }

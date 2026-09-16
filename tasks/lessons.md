@@ -74,3 +74,15 @@ matched a card and the portrait inside it, so each slot got two pictures. Select
 the innermost container only, and resolve the id by walking up.
 
 Both were found by running the real page in a browser, not by reading the diff.
+
+## Local green that CI could not reproduce
+
+`npm test` ran only the Node tests. CI also ran `python3 -m unittest
+tests/test_resource_pack_sync.py`, so a change to the sync script passed locally
+and failed on the pull request. I had even seen the file in the test listing and
+still did not run it.
+
+Rule: the command the repo documents as "run the tests" must run everything CI
+runs. `npm test` now chains `test:node` and `test:python`, so local green and CI
+green mean the same thing. Before changing a script or a config file, check which
+workflow steps touch it rather than assuming one test runner covers the repo.

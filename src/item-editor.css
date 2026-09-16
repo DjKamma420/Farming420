@@ -371,3 +371,33 @@
 @media (prefers-reduced-motion: reduce) {
   .skull-layer { transition: none; }
 }
+
+/* --- pack art on a progression card -------------------------------------
+ *
+ * A Garden chip is an entry in the upgrade list, not something worn in a slot,
+ * so it carries its own small portrait in the card header.
+ */
+
+.card-head { align-items: flex-start; }
+
+.card-portrait {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  margin-right: 10px;
+  border-radius: 9px;
+  background: #0a1610;
+  border: 1px solid var(--line);
+}
+
+.card-portrait .official-item-art {
+  position: static;
+  transform: none;
+  left: auto;
+  top: auto;
+  width: 80%;
+  height: 80%;
+}

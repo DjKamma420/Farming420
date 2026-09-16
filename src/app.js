@@ -261,6 +261,7 @@ function card(item, compact=false) {
     <button class="item-card ${status} ${compact ? 'compact' : ''}" data-open="${esc(item.id)}">
       <div class="card-layer"></div>
       <div class="card-head">
+        ${item.packAsset ? `<span class="card-portrait" data-pack-asset="${esc(item.packAsset)}"></span>` : ''}
         <div>
           <div class="eyebrow">${esc(item.category)}</div>
           <div class="item-title">${esc(item.name)}</div>

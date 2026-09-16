@@ -96,6 +96,18 @@ export function renderSetupItemArt({ root = document, rawState = readState(), ma
   let rendered = 0;
   // Both surfaces that show one slot's item: the collapsed card in the grid and
   // the portrait at the top of the open editor.
+  // Progression cards name their picture directly, because a chip is an entry in
+  // the upgrade list rather than something worn in a setup slot; without this
+  // the art layer never reached the Garden Chips page at all.
+  root.querySelectorAll('[data-pack-asset]').forEach(card => {
+    if (card.classList.contains('has-official-item-art')) return;
+    const asset = itemAssetForSkyblockId(manifestValue, card.dataset.packAsset);
+    if (!asset) return;
+    card.append(imageNode(asset, { displayName: card.closest('.item-card')?.querySelector('.item-title')?.textContent }));
+    card.classList.add('has-official-item-art');
+    rendered += 1;
+  });
+
   // Only the innermost art container, never both it and its card. A slot card
   // contains its own portrait, so matching the card as well put one head in the
   // card and a second in the portrait inside it.
