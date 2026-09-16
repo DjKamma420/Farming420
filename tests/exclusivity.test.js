@@ -9,14 +9,14 @@ import {
 } from '../src/exclusivity.js';
 import { createSetup, createEmptyItem } from '../src/setups.js';
 
-test('farming tool reforges are a max-one active group', () => {
+test('farming tool reforges are a max-one active group on the same tool', () => {
   const group = EXCLUSIVE_ENTRY_GROUPS.find(entry => entry.id === 'farming-tool-reforge');
   assert.ok(group);
+  assert.equal(group.itemClass, 'farming-tool');
   assert.equal(group.maxActive, 1);
   assert.deepEqual(group.members, [
     'tool-reforge-blessed-reforge',
     'tool-reforge-bountiful-reforge',
-    'vacuum-reforge-beady-pest-only-farming-fortune',
   ]);
 });
 
@@ -27,10 +27,18 @@ test('Blessed and Bountiful cannot be active on the same farming tool', () => {
   ]);
   assert.equal(violations.length, 1);
   assert.equal(violations[0].groupId, 'farming-tool-reforge');
+  assert.equal(violations[0].itemClass, 'farming-tool');
   assert.equal(violations[0].maxActive, 1);
 });
 
-test('one selected reforge does not violate the group', () => {
+test('a vacuum reforge is not falsely exclusive with a separate farming tool reforge', () => {
+  assert.deepEqual(exclusiveSelectionViolations([
+    'tool-reforge-bountiful-reforge',
+    'vacuum-reforge-beady-pest-only-farming-fortune',
+  ]), []);
+});
+
+test('one selected farming-tool reforge does not violate the group', () => {
   assert.deepEqual(exclusiveSelectionViolations(['tool-reforge-bountiful-reforge']), []);
   assert.equal(exclusiveGroupForEntry('tool-reforge-bountiful-reforge')?.id, 'farming-tool-reforge');
 });
