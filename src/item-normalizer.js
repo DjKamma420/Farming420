@@ -27,6 +27,24 @@ function plainObject(value) {
     : {};
 }
 
+const RARITIES = Object.freeze(['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY', 'MYTHIC', 'DIVINE', 'SPECIAL', 'VERY SPECIAL']);
+
+function stripFormatting(value) {
+  return String(value ?? '').replace(/§[0-9a-fk-or]/gi, '').trim();
+}
+
+/** Reads the displayed SkyBlock rarity from the lore footer without guessing. */
+export function rarityFromLore(lore) {
+  if (!Array.isArray(lore)) return null;
+  for (let index = lore.length - 1; index >= 0; index -= 1) {
+    const line = stripFormatting(lore[index]).toUpperCase();
+    if (!line) continue;
+    const match = RARITIES.find(rarity => line === rarity || line.startsWith(`${rarity} `));
+    if (match) return match;
+  }
+  return null;
+}
+
 /**
  * Converts a decoded Minecraft item into Farming420's source-neutral item
  * shape. This function only copies raw item facts; it does not calculate game
@@ -54,6 +72,7 @@ export function normalizeDecodedItem(item, context = {}) {
     vanillaId: numberOrNull(item.id),
     damage: numberOrNull(item.Damage),
     displayName: stringOrNull(display.Name),
+    rarity: rarityFromLore(display.Lore),
     reforge: stringOrNull(extra.modifier),
     enchantments: numberMap(extra.enchantments),
     gems: plainObject(extra.gems),
