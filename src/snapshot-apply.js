@@ -1,5 +1,6 @@
 import { CROPS, UPGRADES } from './data.js';
 import { ensureProgressBucket, toolKeyForCropId } from './migrations.js';
+import { activeSetup } from './setups.js';
 
 /**
  * Writes values from a normalized profile snapshot into the progression store
@@ -90,10 +91,22 @@ export function cropsForToolItem(item) {
   return CROPS.filter(crop => name.includes(comparableName(crop.tool))).map(crop => crop.id);
 }
 
-/** True when the decoded `gems` object holds a perfect gem of this type. */
+/**
+ * True when an item carries a perfect gem of this type.
+ *
+ * Two shapes reach this: the decoded NBT object (`{PERIDOT_0: 'PERFECT'}`) and
+ * the setup editor's list (`['PERFECT PERIDOT']`). Both are read here so the
+ * gear rules do not care which source filled the slot.
+ */
 export function hasPerfectGem(gems, gemType = 'PERIDOT') {
-  if (!gems || typeof gems !== 'object') return false;
   const wanted = gemType.toUpperCase();
+  if (Array.isArray(gems)) {
+    return gems.some(entry => {
+      const text = String(entry || '').toUpperCase();
+      return text.includes('PERFECT') && text.includes(wanted);
+    });
+  }
+  if (!gems || typeof gems !== 'object') return false;
   for (const [slot, value] of Object.entries(gems)) {
     if (!slot.toUpperCase().includes(wanted)) continue;
     const quality = typeof value === 'string' ? value : value?.quality;
@@ -123,6 +136,60 @@ function itemsInContainers(items, predicate) {
 
 const isArmorContainer = container => container === 'armor' || container.startsWith('loadout.armor.');
 const isEquipmentContainer = container => container === 'equipment' || container.startsWith('loadout.equipment.');
+
+const SETUP_ARMOR_SLOTS = Object.freeze(['helmet', 'chestplate', 'leggings', 'boots']);
+const SETUP_EQUIPMENT_SLOTS = Object.freeze(['equipment1', 'equipment2', 'equipment3', 'equipment4']);
+
+/**
+ * Where the gear rules read their pieces from.
+ *
+ * The active setup wins when it holds any piece of that class: it is what the
+ * player says they wear, and it is editable. Only when a class is untouched
+ * does the worn gear from the last sync stand in, so a player who has not
+ * opened the Setups page still gets their detected gear evaluated.
+ *
+ * Deciding per class matters: a filled armour setup must not silence the
+ * detected equipment.
+ */
+export function gearPiecesFor(state, snapshot, slotIds, containerPredicate) {
+  const setup = state?.profile?.setups ? activeSetup(state.profile.setups) : null;
+  const fromSetup = slotIds.map(id => setup?.slots?.[id]).filter(Boolean);
+  if (fromSetup.length) return { pieces: fromSetup, source: 'setup' };
+
+  const items = Array.isArray(snapshot?.items) ? snapshot.items : [];
+  return { pieces: itemsInContainers(items, containerPredicate), source: 'sync' };
+}
+
+/**
+ * Every entry the set-wide gear rules can produce.
+ *
+ * These are recomputed from scratch on each run, so removing a reforge from a
+ * setup clears the card again instead of leaving a value nothing supports.
+ * Applying alone was enough while the only source was a sync, which never
+ * retracts; an editable setup can.
+ */
+const SET_WIDE_ENTRY_IDS = Object.freeze([
+  ...Object.values(ARMOR_REFORGES), ...Object.values(ARMOR_ENCHANTS),
+  ...Object.values(EQUIPMENT_REFORGES), ...Object.values(EQUIPMENT_ENCHANTS),
+  'armor-gem-perfect-peridot-on-full-armor',
+]);
+
+/**
+ * Drops the previous auto-derived value of an entry.
+ *
+ * Only entries this layer stamped as auto are cleared: a value the player typed
+ * in themselves is never in `autoApplied`, so their work is untouched.
+ */
+function clearAutoApplied(state, autoApplied, entryIds) {
+  const scope = autoApplied.account;
+  if (!scope) return;
+  for (const entryId of entryIds) {
+    if (!scope[entryId]) continue;
+    delete scope[entryId];
+    delete state.profile.levels?.[entryId];
+    delete state.profile.owned?.[entryId];
+  }
+}
 
 /** Records one applied value and stamps it as auto so the UI can mark it. */
 function applyValue(store, autoScope, itemId, rawLevel, applied) {
@@ -165,13 +232,16 @@ function applyToolItem(state, cropIds, item, autoApplied, applied) {
  * "on full armor" / "on full equipment" entries require every slot to carry the
  * effect, so an incomplete set is reported rather than counted.
  */
-function applySetWide(pieces, expectedSlots, reforgeMap, enchantMap, gemItemId, state, autoApplied, applied, skipped, label) {
+function applySetWide(pieces, expectedSlots, reforgeMap, enchantMap, gemItemId, state, autoApplied, applied, skipped, label, source = 'sync') {
   if (!pieces.length) return;
   const scope = autoApplied.account ||= {};
   const store = state.profile;
 
   if (pieces.length < expectedSlots) {
-    skipped.push(`Only ${pieces.length} of ${expectedSlots} ${label} pieces were visible, so set-wide ${label} bonuses were not applied.`);
+    const where = source === 'setup'
+      ? `filled in your active setup`
+      : 'visible in your profile';
+    skipped.push(`Only ${pieces.length} of ${expectedSlots} ${label} pieces are ${where}, so set-wide ${label} bonuses were not applied.`);
     return;
   }
 
@@ -229,15 +299,18 @@ export function applySnapshotToProgress(state, snapshot) {
     if (cropIds.length) applyToolItem(state, cropIds, item, autoApplied, applied);
   }
 
+  clearAutoApplied(state, autoApplied, SET_WIDE_ENTRY_IDS);
+  const armorSource = gearPiecesFor(state, snapshot, SETUP_ARMOR_SLOTS, isArmorContainer);
   applySetWide(
-    itemsInContainers(items, isArmorContainer), ARMOR_SLOTS,
+    armorSource.pieces, ARMOR_SLOTS,
     ARMOR_REFORGES, ARMOR_ENCHANTS, 'armor-gem-perfect-peridot-on-full-armor',
-    state, autoApplied, applied, skipped, 'armor',
+    state, autoApplied, applied, skipped, 'armor', armorSource.source,
   );
+  const equipmentSource = gearPiecesFor(state, snapshot, SETUP_EQUIPMENT_SLOTS, isEquipmentContainer);
   applySetWide(
-    itemsInContainers(items, isEquipmentContainer), EQUIPMENT_SLOTS,
+    equipmentSource.pieces, EQUIPMENT_SLOTS,
     EQUIPMENT_REFORGES, EQUIPMENT_ENCHANTS, null,
-    state, autoApplied, applied, skipped, 'equipment',
+    state, autoApplied, applied, skipped, 'equipment', equipmentSource.source,
   );
 
   if (items.length && !applied.some(entry => entry.id.startsWith('tool-'))) {

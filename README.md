@@ -107,6 +107,15 @@ a missing suggestion never blocks you.
 Items sitting in storage are not assumed to be worn: only the armour, equipment
 and active-pet data from your profile is used to pre-fill.
 
+**Your active setup drives the gear cards.** The set-wide bonuses -- Mossy on
+full armour, Pesterminator on full armour, Rooted on full equipment and so on --
+are worked out from the setup you have open, and they update the moment you
+change it. Take one piece out of the set and the card clears again, because a
+derived value should never outlive what supports it. A class you have not
+touched falls back to the gear your last sync detected, so the cards still work
+before you ever open this page. Values you typed in by hand are never
+recomputed away.
+
 The farming tool is deliberately not a setup slot. It is already crop-scoped and
 filled automatically by the sync, and a second manual copy would give the same
 value two competing sources.
