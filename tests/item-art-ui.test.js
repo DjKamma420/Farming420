@@ -12,7 +12,7 @@ const manifest = {
   pack: { id: 'SkyBlock', hash: 'pack-hash' },
   items: {
     melon_dicer_3: {
-      definition: 'items/item/melon_dicer_3.json',
+      source: 'island_relevant/garden/melon_dicer_3',
       texture: 'textures/item/melon_dicer_3.png',
     },
   },
@@ -46,7 +46,7 @@ test('setup art resolves from real skyblockId and never display-name guesses', (
   assert.deepEqual(setupItemAsset(manifest, state, 'helmet'), {
     key: 'melon_dicer_3',
     textureUrl: './assets/hypixel-pack/textures/item/melon_dicer_3.png',
-    definition: 'items/item/melon_dicer_3.json',
+    source: 'island_relevant/garden/melon_dicer_3',
     packHash: 'pack-hash',
   });
   assert.equal(setupItemAsset(manifest, state, 'chestplate'), null);

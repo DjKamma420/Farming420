@@ -25,11 +25,12 @@ OUTPUT = ROOT / "assets" / "hypixel-pack"
 MANIFEST = OUTPUT / "manifest.json"
 NAMESPACE = "assets/hypixel_skyblock/"
 LICENSE_NAME = "LICENSE"
-COPY_PREFIXES = (
-    f"{NAMESPACE}items/item/",
-    f"{NAMESPACE}models/item/",
-    f"{NAMESPACE}textures/item/",
-)
+# Only the textures are written to disk. The item definitions and models are
+# still read out of the archive to resolve which texture belongs to which item,
+# but nothing reads them afterwards, and copying them tripled the size of the
+# tree for no benefit: 5.0 MB of definitions and 5.7 MB of models against
+# 5.8 MB of the pictures themselves.
+COPY_PREFIXES = (f"{NAMESPACE}textures/item/",)
 
 
 def fetch_json(url: str) -> dict:
@@ -185,9 +186,22 @@ def texture_from_definition(archive: zipfile.ZipFile, definition: dict, names: s
 
 
 def build_manifest(archive: zipfile.ZipFile, pack: dict) -> dict:
-    items = {}
+    """Map each item to its texture, keyed by the id the app looks items up with.
+
+    The pack files definitions in folders ("jacob/melon_dicer"), but the
+    basename is the SkyBlock id and that is what the app has: it asks for
+    MELON_DICER, lower-cases it, and looks the key up. Keying by the folder path
+    meant every single lookup missed.
+
+    Two definitions can share a basename. Rather than pick one and show a picture
+    that might belong to the other item, the key is dropped and recorded, so the
+    loss is visible in the manifest instead of silent on the page.
+    """
+    by_key: dict[str, dict[str, str]] = {}
+    collisions: dict[str, list[str]] = {}
     prefix = f"{NAMESPACE}items/item/"
     names = set(archive.namelist())
+
     for name in sorted(names):
         if not name.startswith(prefix) or not name.endswith(".json"):
             continue
@@ -198,16 +212,29 @@ def build_manifest(archive: zipfile.ZipFile, pack: dict) -> dict:
             continue
         relative = name[len(prefix):-5]
         texture = texture_from_definition(archive, definition, names)
-        items[relative] = {
-            "definition": f"items/item/{relative}.json",
-            "texture": texture,
-        }
+        if not texture:
+            continue
+        key = PurePosixPath(relative).name.lower()
+        if key in collisions:
+            collisions[key].append(relative)
+            continue
+        existing = by_key.get(key)
+        if existing is not None:
+            if existing["texture"] == texture:
+                continue
+            collisions[key] = [existing["source"], relative]
+            del by_key[key]
+            continue
+        by_key[key] = {"texture": texture, "source": relative}
+
     return {
         "schemaVersion": 1,
         "generatedBy": "scripts/sync-hypixel-pack.py",
         "license": LICENSE_NAME if LICENSE_NAME in names else None,
         "pack": pack,
-        "items": dict(sorted(items.items())),
+        "items": {key: {"texture": value["texture"], "source": value["source"]}
+                  for key, value in sorted(by_key.items())},
+        "ambiguous": {key: sorted(paths) for key, paths in sorted(collisions.items())},
     }
 
 

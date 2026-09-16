@@ -1073,3 +1073,58 @@ Both reproduced in a browser, neither visible in the diff:
 Mojang's texture host is blocked from this sandbox, so the verification above
 used a local server standing in for it. What is unverified is only that the real
 host responds as expected.
+
+## Garden chip pictures from the official pack (0.22.0)
+
+### Two separate faults, both needed fixing
+
+#41 established that the pack is 17 MB and holds none of the farming gear. What
+it does hold is the Garden items, the ten chips among them — and the app scores
+exactly those ten. They still showed nothing, for two reasons:
+
+1. **Every lookup missed.** The pack files its definitions in folders, so the
+   manifest was keyed `jacob/melon_dicer`. The app has `MELON_DICER`, lower-cases
+   it, and looks up `melon_dicer`. Not one key ever matched.
+2. **The art layer never reached them.** It rendered into setup slots and the
+   item editor portrait. A chip is an entry in the upgrade list, not something
+   worn in a slot, so the Garden Chips page was never touched.
+
+Fixing only the first would have shipped megabytes that still showed nothing,
+which is the mistake #41 was closed to avoid.
+
+### What changed
+
+- The manifest is keyed by the definition's basename, which is the SkyBlock id.
+  Replayed over the real pack: 1082 keys, and all ten chips resolve.
+- Five ids collide, all opal gems. Rather than pick one and risk showing the
+  wrong item's picture, the id is dropped and listed under `ambiguous`, so the
+  loss is visible in the manifest instead of silent on the page.
+- Only `textures/` is written to disk. The definitions and models are still read
+  out of the archive to resolve which texture belongs to which item, but nothing
+  reads them afterwards, and they were two thirds of the tree: 5.0 MB of
+  definitions and 5.7 MB of models against 5.8 MB of pictures. **17 MB to
+  about 6 MB.**
+- `itemAssetForSkyblockId` no longer hands out a `definition` path, because that
+  file is no longer shipped. It returns `source` instead, named as provenance.
+- The ten chip entries carry `packAsset`, and progression cards render it.
+
+### Why `packAsset` and not `skyblockId`
+
+The basename is almost certainly the SkyBlock id — `melon_dicer_2` lines up with
+`MELON_DICER_2`. But Hypixel's item resource is unreachable from this sandbox, so
+that stays an inference. `packAsset` says exactly what the value is: the key this
+entry's picture is filed under. No claim is made that it is also the item id.
+
+The sync workflow now fails if `src/data.js` names a picture the freshly built
+pack does not contain, so the inference is checked against the real pack on every
+run rather than trusted.
+
+### Verification
+
+- 382 tests pass; 7 are new, and two were proved to fail against a removed
+  `packAsset` and the reverted folder-path keying.
+- The new keying was replayed over the real 1092-entry manifest from the earlier
+  sync: 1082 keys, 5 ambiguous, all ten chips present.
+- Rendered in a browser against a stand-in pack at the real path: all ten cards
+  show their picture, the images actually load, and a second observer pass adds
+  nothing — the container guard holds.

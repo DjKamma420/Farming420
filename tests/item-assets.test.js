@@ -14,7 +14,7 @@ const manifest = {
   pack: { id: 'SkyBlock', hash: 'abc' },
   items: {
     melon_dicer_3: {
-      definition: 'items/item/melon_dicer_3.json',
+      source: 'island_relevant/garden/melon_dicer_3',
       texture: 'textures/item/melon_dicer_3.png',
     },
   },
@@ -31,7 +31,7 @@ test('a manifest hit resolves to a local official-pack texture', () => {
   assert.deepEqual(itemAssetForSkyblockId(manifest, 'MELON_DICER_3'), {
     key: 'melon_dicer_3',
     textureUrl: './assets/hypixel-pack/textures/item/melon_dicer_3.png',
-    definition: 'items/item/melon_dicer_3.json',
+    source: 'island_relevant/garden/melon_dicer_3',
     packHash: 'abc',
   });
 });
