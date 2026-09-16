@@ -68,18 +68,12 @@ const CROP_IDS = Object.freeze([
   'wild-rose',
 ]);
 
-/**
- * Recommendations are stored per crop even when several currently share the
- * same result. This is deliberate: Feast rotations, live Bazaar prices and
- * crop-specific mechanics can change independently without returning to one
- * global recommendation table.
- *
- * `normalCoins` means normal crop output. `feastRareCropCoins` is conditional:
- * it only applies while that crop is in a Harvest/Grand Feast season (or when
- * the player otherwise values its Overbloom-scaled RARE CROP drops).
- */
-export const CROP_REFORGE_RECOMMENDATIONS = Object.freeze(Object.fromEntries(
-  CROP_IDS.map(cropId => [cropId, Object.freeze({
+function recommendationRecord(cropId) {
+  return Object.freeze({
+    // `money` stays as a compatibility alias for older UI code. New UI should
+    // use the two explicit coin contexts below rather than treating all coins as
+    // one situation.
+    money: 'bountiful',
     normalCoins: 'bountiful',
     feastRareCropCoins: 'overpriced',
     collection: 'blessed',
@@ -91,7 +85,21 @@ export const CROP_REFORGE_RECOMMENDATIONS = Object.freeze(Object.fromEntries(
       ? HARVEST_FEAST_RARE_CROP_SOURCE
       : FARMING_REFORGE_SOURCE,
     lastVerified: FARMING_REFORGES_VERIFIED,
-  })]),
+  });
+}
+
+/**
+ * Recommendations are stored per crop even when several currently share the
+ * same result. This is deliberate: Feast rotations, live Bazaar prices and
+ * crop-specific mechanics can change independently without returning to one
+ * global recommendation table.
+ *
+ * `normalCoins` means normal crop output. `feastRareCropCoins` is conditional:
+ * it only applies while that crop is in a Harvest/Grand Feast season (or when
+ * the player otherwise values its Overbloom-scaled RARE CROP drops).
+ */
+export const CROP_REFORGE_RECOMMENDATIONS = Object.freeze(Object.fromEntries(
+  CROP_IDS.map(cropId => [cropId, recommendationRecord(cropId)]),
 ));
 
 export function reforgeById(id) {
@@ -101,19 +109,7 @@ export function reforgeById(id) {
 
 export function cropReforgeRecommendations(cropId) {
   const key = String(cropId || '').trim().toLowerCase();
-  const rec = CROP_REFORGE_RECOMMENDATIONS[key];
-  if (rec) return rec;
-  return Object.freeze({
-    normalCoins: 'bountiful',
-    feastRareCropCoins: 'overpriced',
-    collection: 'blessed',
-    xp: 'blessed',
-    rareCrops: 'overpriced',
-    feastSeasoning: 'deep-fried',
-    sowdust: 'earthy',
-    source: FARMING_REFORGE_SOURCE,
-    lastVerified: FARMING_REFORGES_VERIFIED,
-  });
+  return CROP_REFORGE_RECOMMENDATIONS[key] || recommendationRecord(key);
 }
 
 export function recommendationLabels(cropId) {
