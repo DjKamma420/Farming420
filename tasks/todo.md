@@ -456,3 +456,44 @@ properties; reintroducing the bug fails two of them, which was verified.
   pet, kept the hand-entered boots, and ignored the spare helmet in the
   enderchest
 - schema migrated 3 -> 4, no console errors, no overflow at 390px
+
+---
+
+# Setups drive the gear cards
+
+The setups page shipped as a form with no effect: gear bonuses were still
+derived straight from the synced items, so the same value had two competing
+sources and editing a setup changed nothing.
+
+## What changed
+
+- `applySnapshotToProgress` now reads gear from the **active setup** when it
+  holds any piece of that class, and falls back to the worn gear a sync detected
+  only for a class the setup leaves empty. Deciding per class matters: a filled
+  armour setup must not silence detected equipment.
+- Set-wide entries are **recomputed** rather than only applied. Applying alone
+  was enough while the only source was a sync, which never retracts; an editable
+  setup can. Taking a piece out of the set now clears the card again.
+- Clearing is limited to entries this layer stamped as auto, so a value the
+  player typed in is never recomputed away.
+- `hasPerfectGem` reads both recorded gem shapes -- the decoded NBT object and
+  the setup editor's list -- so the rules do not care which source filled a slot.
+- A setup edit re-applies immediately through `reapplyGear`.
+- The badge now reads `derived`, not `synced`: the value can come from a
+  hand-edited setup, and calling that "synced" claimed the API said it.
+
+## Verified in a browser
+
+Empty setup -> the Mossy card reads "missing / Not set". Four mossy pieces ->
+"Owned", marked derived. Reforge one piece to blessed -> the card clears again.
+Back to mossy -> Owned. Switch to the empty Pest setup -> cleared. No console
+errors throughout.
+
+207 tests, 10 new for the setup-driven rules. App version 0.11.1.
+
+## Note to self
+
+Recorded in `tasks/lessons.md`: I wrote `\u0027` inside a quoted bash heredoc
+three times in this session, which a quoted heredoc passes through literally and
+which breaks the JavaScript. Use double quotes for the string, and run
+`node --check` in the same command that writes the file.

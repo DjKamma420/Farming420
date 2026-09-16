@@ -234,3 +234,117 @@ test('decoded items that match no tool are reported', () => {
   }));
   assert.ok(result.skipped.some(note => /No decoded item matched a known farming tool/.test(note)));
 });
+
+// --- the active setup drives the gear cards --------------------------------
+
+function setupPiece(overrides = {}) {
+  return { displayName: 'Helianthus Helmet', reforge: 'mossy', enchantments: {}, gems: [], ...overrides };
+}
+
+function stateWithSetup(slots) {
+  const state = emptyState();
+  state.profile.setups = {
+    modelVersion: 1,
+    activeId: 'normal',
+    list: [
+      { id: 'normal', name: 'Normal', slots: { helmet: null, chestplate: null, leggings: null, boots: null, equipment1: null, equipment2: null, equipment3: null, equipment4: null, pet: null, petItem: null, ...slots } },
+      { id: 'pest', name: 'Pest', slots: { helmet: null, chestplate: null, leggings: null, boots: null, equipment1: null, equipment2: null, equipment3: null, equipment4: null, pet: null, petItem: null } },
+    ],
+  };
+  return state;
+}
+
+test('a full armor set in the active setup produces the set-wide bonus', () => {
+  const state = stateWithSetup({
+    helmet: setupPiece(), chestplate: setupPiece(), leggings: setupPiece(), boots: setupPiece(),
+  });
+  applySnapshotToProgress(state, snapshotWith());
+  assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], 1);
+});
+
+test('the setup wins over the gear a sync detected', () => {
+  const synced = { container: 'armor', displayName: 'Old Helmet', reforge: 'blessed', enchantments: {}, gems: {} };
+  const state = stateWithSetup({
+    helmet: setupPiece(), chestplate: setupPiece(), leggings: setupPiece(), boots: setupPiece(),
+  });
+  applySnapshotToProgress(state, snapshotWith({ items: [synced, synced, synced, synced] }));
+  // The setup says mossy; the stale synced pieces say blessed. The setup is
+  // what the player states they wear.
+  assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], 1);
+});
+
+test('detected gear is still used for a class the setup leaves empty', () => {
+  const equipment = { container: 'equipment', displayName: 'Lotus', reforge: 'rooted', enchantments: {}, gems: {} };
+  const state = stateWithSetup({
+    helmet: setupPiece(), chestplate: setupPiece(), leggings: setupPiece(), boots: setupPiece(),
+  });
+  applySnapshotToProgress(state, snapshotWith({ items: [equipment, equipment, equipment, equipment] }));
+  assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], 1, 'armor from the setup');
+  assert.equal(state.profile.levels['equipment-reforge-rooted-on-full-equipment'], 1, 'equipment from the sync');
+});
+
+test('an incomplete setup says so rather than counting the bonus', () => {
+  const state = stateWithSetup({ helmet: setupPiece(), chestplate: setupPiece() });
+  const result = applySnapshotToProgress(state, snapshotWith());
+  assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], undefined);
+  assert.ok(result.skipped.some(note => /filled in your active setup/.test(note)));
+});
+
+test('removing a reforge from the setup clears the card again', () => {
+  const state = stateWithSetup({
+    helmet: setupPiece(), chestplate: setupPiece(), leggings: setupPiece(), boots: setupPiece(),
+  });
+  applySnapshotToProgress(state, snapshotWith());
+  assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], 1);
+
+  // The player reforges one piece to something else.
+  state.profile.setups.list[0].slots.boots.reforge = 'blessed';
+  applySnapshotToProgress(state, snapshotWith());
+  assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], undefined, 'a value nothing supports must go away');
+  assert.equal(state.profile.owned['armor-reforge-mossy-on-full-armor'], undefined);
+  assert.ok(!isAutoApplied(state, 'account', 'armor-reforge-mossy-on-full-armor'));
+});
+
+test('recomputing never clears a value the player set by hand', () => {
+  const state = stateWithSetup({});
+  state.profile.levels['armor-reforge-mossy-on-full-armor'] = 1;
+  state.profile.owned['armor-reforge-mossy-on-full-armor'] = true;
+  applySnapshotToProgress(state, snapshotWith());
+  assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], 1, 'a manual entry is not auto-applied, so it survives');
+});
+
+test('switching the active setup re-derives from the newly active one', () => {
+  const state = stateWithSetup({
+    helmet: setupPiece(), chestplate: setupPiece(), leggings: setupPiece(), boots: setupPiece(),
+  });
+  applySnapshotToProgress(state, snapshotWith());
+  assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], 1);
+
+  state.profile.setups.activeId = 'pest';
+  applySnapshotToProgress(state, snapshotWith());
+  assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], undefined, 'the pest setup is empty');
+});
+
+test("a perfect gem is read from the setup editor's list shape too", () => {
+  const withGem = () => setupPiece({ gems: ['PERFECT PERIDOT'] });
+  const state = stateWithSetup({
+    helmet: withGem(), chestplate: withGem(), leggings: withGem(), boots: withGem(),
+  });
+  applySnapshotToProgress(state, snapshotWith());
+  assert.equal(state.profile.levels['armor-gem-perfect-peridot-on-full-armor'], 1);
+});
+
+test('hasPerfectGem accepts both recorded shapes and rejects near-misses', () => {
+  assert.equal(hasPerfectGem(['PERFECT PERIDOT']), true);
+  assert.equal(hasPerfectGem(['FLAWLESS PERIDOT']), false);
+  assert.equal(hasPerfectGem(['PERFECT JASPER']), false);
+  assert.equal(hasPerfectGem({ PERIDOT_0: 'PERFECT' }), true);
+  assert.equal(hasPerfectGem([]), false);
+});
+
+test('a state without setups still evaluates the detected gear', () => {
+  const piece = { container: 'armor', displayName: 'H', reforge: 'mossy', enchantments: {}, gems: {} };
+  const state = emptyState();
+  applySnapshotToProgress(state, snapshotWith({ items: [piece, piece, piece, piece] }));
+  assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], 1);
+});

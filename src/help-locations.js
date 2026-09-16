@@ -54,7 +54,7 @@ const CURATED = Object.freeze({
 });
 
 const SYNCED_LOCATION = Object.freeze({
-  where: 'Nothing to look up. This is filled in automatically by a profile sync from your Hypixel API key.',
+  where: 'Nothing to look up. Farming420 fills this in automatically, from your profile sync and — for gear bonuses — from your active setup.',
   status: LOCATION_STATUS.SYNCED,
   source: null,
   lastVerified: null,

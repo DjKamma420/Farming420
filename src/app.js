@@ -1,7 +1,7 @@
 import { CROPS, UPGRADES, HIDDEN_INTERACTIONS, COMING_SOON } from './data.js';
 import { DATA_SCHEMA_VERSION, STORAGE_KEY } from './config.js';
 import { ensureProgressBucket, migrateState, toolKeyForCropId } from './migrations.js';
-import { isAutoApplied } from './snapshot-apply.js';
+import { applySnapshotToProgress, isAutoApplied } from './snapshot-apply.js';
 import { LOCATION_STATUS, isSyncFilled, locationFor, manualEntries, manualEntrySummary } from './help-locations.js';
 import {
   ITEM_SOURCE,
@@ -241,7 +241,7 @@ function card(item, compact=false) {
           <div class="item-title">${esc(item.name)}</div>
         </div>
         ${badge(item.status === 'VERIFY' ? 'verify' : (isMaxed(item) ? 'max' : isOwned(item) ? 'owned' : 'missing'), status)}
-        ${isSynced(item) ? badge('synced', 'synced') : ''}
+        ${isSynced(item) ? badge('derived', 'synced') : ''}
       </div>
       <div class="card-meta">
         ${max > 1 ? `<span>Level ${level}/${max}</span>` : `<span>${isOwned(item) ? 'Owned' : 'Not set'}</span>`}
@@ -429,7 +429,7 @@ function drawer() {
   return `<div class="drawer-backdrop" data-close-drawer><aside class="drawer">
     <div class="drawer-top"><div><div class="eyebrow">${esc(item.category)}</div><h2>${esc(item.name)}</h2></div><button class="close" data-close-drawer>×</button></div>
     <div class="drawer-badges">${badge(item.status,item.status==='VERIFY'?'verify':'soft')} ${isCropScopedItem(item)?badge(crop().name,'soft'):(item.cropScope!=='Any'?badge(item.cropScope,'soft'):'')} ${item.modeScope!=='Any'?badge(item.modeScope,'soft'):''}</div>
-    ${isSynced(item) ? '<div class="drawer-synced">This value came from your last Hypixel sync. Editing it here overrides it until the next sync.</div>' : ''}
+    ${isSynced(item) ? '<div class="drawer-synced">Farming420 worked this value out for you, from your profile sync and your active setup. Editing it here overrides it until the next sync or setup change.</div>' : ''}
     <div class="drawer-section"><h3>Ownership & Level</h3>
       ${max>1 ? `<div class="stepper"><button data-step="-1" data-id="${item.id}">−</button><strong>${level}/${max}</strong><button data-step="1" data-id="${item.id}">+</button><button class="ghost small" data-max="${item.id}">Max</button></div>` : `<label class="switch-row"><span>Owned</span><input type="checkbox" data-owned="${item.id}" ${isOwned(item)?'checked':''}></label>`}
     </div>
@@ -528,6 +528,16 @@ let catalogRequested = itemCatalog.length > 0;
 function setups() {
   state.profile.setups = normalizeSetups(state.profile.setups);
   return state.profile.setups;
+}
+
+/**
+ * Re-derives the progression cards from the current setup.
+ *
+ * The active setup is what the gear rules read, so a setup edit has to flow
+ * through to the cards immediately rather than waiting for the next sync.
+ */
+function reapplyGear() {
+  state.profile.lastApply = applySnapshotToProgress(state, state.profile.normalizedSnapshot || {});
 }
 
 function snapshot() {
@@ -665,7 +675,7 @@ function setupsPage() {
 
 function bindSetups() {
   const all = setups();
-  const rerender = () => { saveState(); render(); };
+  const rerender = () => { reapplyGear(); saveState(); render(); };
 
   document.querySelectorAll('[data-setup]').forEach(el => el.addEventListener('click', () => {
     all.activeId = el.dataset.setup; state.setupSlot = null; rerender();
