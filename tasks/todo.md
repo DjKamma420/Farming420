@@ -617,3 +617,56 @@ own Fortune value before it can be ranked, and the app currently models three
 shards. Listing them without values would add twelve dead planner cards.
 
 220 tests. App version 0.13.0.
+
+---
+
+# How farming changed since the beginning
+
+Brief: go deeper, read tutorials, learn how the farming system has changed since
+the start.
+
+## The insight this produced
+
+A `lastVerified` date is worthless on its own. What matters is whether the game
+changed **after** it. Nothing in this repo tracked the second date, which is
+precisely how the specialised tool rename sat here undetected and silently broke
+tool detection for seven of thirteen crops.
+
+`docs/FARMING_HISTORY.md` now records the timeline for that comparison, and
+`AGENTS.md` correctness rule 2 requires the check. A test enforces it: nothing
+may claim a `lastVerified` older than the newest known game change.
+
+## Four eras, and why old numbers do not transfer
+
+1. **Before the Garden (2021 - early 2023)** - Farming Fortune existed, farming
+   happened on the Private Island. A different game.
+2. **Garden, no pests (2023-02 - 2023-11)** - Crop Fortune existed but was
+   **hidden**, so community numbers from this window were reverse-engineered by
+   hand. Least trustworthy era.
+3. **Pests era (2023-11 - 2025-12)** - pests, the Fortune penalty, Bonus Pest
+   Chance. Most surviving community guidance dates from here.
+4. **Greenhouse and Chips era (2025-12 - now)** - Sowdust, Chips, Greenhouse,
+   and repeated Greenhouse rebalances including August 2026. Era 3 profit maths
+   does not carry over.
+
+## Two things I had to correct about my own earlier work
+
+**I overclaimed.** The community wiki's Farming Fortune page carries the wiki's
+own `Outdated pages` and `Confirmations needed` markers, even though it was
+edited 2026-09-14. So the 14 values I reported as "confirmed" are *consistent
+with the best available public source*, not verified against the live game.
+`docs/VERIFIED_MECHANICS.md` now says so at the top of that section, and this is
+the likely cause of the armour-Fortune discrepancy.
+
+**Licensing.** The wiki is CC BY-NC-SA 3.0 and its operator ships an explicit
+anti-AI-scraper signal. Recorded in the history doc: attribution is required
+and already satisfied by the per-entry source URLs, non-commercial and
+share-alike apply, extraction stays minimal, and the official API is preferred
+for anything it exposes. Nothing in this repo reproduces wiki prose.
+
+## Still missing
+
+The **date of the tool rename** is not pinned. It is the single most valuable
+missing entry, because it is the change that proved this file was needed.
+
+222 tests. App version 0.13.1.

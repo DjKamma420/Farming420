@@ -23,6 +23,8 @@ Read these files before changing progression or calculation logic:
 - `docs/MATH_MODEL.md` — required calculation architecture and correctness rules
 - `docs/VERIFIED_MECHANICS.md` — mechanics confirmed against a current source,
   with dates, plus the corrections and the gaps the verification pass found
+- `docs/FARMING_HISTORY.md` — how farming has changed since 2021, which is what
+  makes a verification date mean anything, plus the source's own caveats
 
 ## Current foundation
 

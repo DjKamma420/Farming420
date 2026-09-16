@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 
 import { COMING_SOON, CROPS, HIDDEN_INTERACTIONS, UPGRADES } from '../src/data.js';
 import { toolKeyForCropId } from '../src/migrations.js';
@@ -104,4 +105,35 @@ test('a verified mechanic carries a real source and a real date', () => {
 test('hidden interaction ids are unique', () => {
   const ids = HIDDEN_INTERACTIONS.map(entry => entry.id);
   assert.equal(new Set(ids).size, ids.length);
+});
+
+test('no verification predates a known game change to the same area', () => {
+  // A lastVerified date only means something relative to when the game last
+  // moved. docs/FARMING_HISTORY.md records the timeline; the newest farming
+  // change known there is the August 2026 Greenhouse rebalance, so nothing may
+  // claim to be verified before it.
+  const NEWEST_KNOWN_GAME_CHANGE = '2026-08-01';
+  const verified = HIDDEN_INTERACTIONS.filter(entry => entry.lastVerified);
+  for (const entry of verified) {
+    assert.ok(
+      entry.lastVerified >= NEWEST_KNOWN_GAME_CHANGE,
+      `${entry.id} was verified ${entry.lastVerified}, before the newest known game change ${NEWEST_KNOWN_GAME_CHANGE}`,
+    );
+  }
+  for (const crop of CROPS) {
+    assert.ok(
+      crop.toolVerified >= NEWEST_KNOWN_GAME_CHANGE,
+      `${crop.id} tool name verified ${crop.toolVerified}, before the newest known game change`,
+    );
+  }
+});
+
+test('the change history is referenced from the data layer docs', () => {
+  const history = readFileSync(new URL('../docs/FARMING_HISTORY.md', import.meta.url), 'utf8');
+  // The dates that matter for judging staleness must stay recorded.
+  for (const date of ['2021-01-15', '2023-02-14', '2023-05-22', '2023-11-14', '2025-12-15']) {
+    assert.ok(history.includes(date), `the timeline lost ${date}`);
+  }
+  assert.match(history, /Outdated pages/, 'the source caveat must stay recorded');
+  assert.match(history, /CC BY-NC-SA/, 'the licence must stay recorded');
 });

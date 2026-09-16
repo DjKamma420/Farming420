@@ -48,6 +48,12 @@ Source: <https://hypixelskyblock.minecraft.wiki/w/Farming_Tools>
 
 Each of these matched what `src/data.js` already stored.
 
+**Read this first.** The Farming Fortune page these came from carries the
+community wiki's own `Outdated pages` and `Confirmations needed` markers, so
+"confirmed" here means *consistent with the best available public source*, not
+verified against the live game. See `docs/FARMING_HISTORY.md`, and treat the
+armour-Fortune discrepancy below as a symptom of it.
+
 | Mechanic | Verified value |
 | --- | --- |
 | Farming skill | +4 Farming Fortune per level, up to +240 at Farming 60 |
@@ -223,6 +229,13 @@ Bustling is the cheap early armour reforge, later replaced by Mossy. Blooming is
 a good early Equipment reforge. Bountiful is the default tool reforge; Blessed
 gives more Farming Wisdom and some Fortune and is mainly for an XP-focused
 setup. Squeaky is used on the Pest-spawning Equipment set.
+
+## When a value goes stale
+
+A verification date alone does not establish that a value is current: what
+matters is whether the game changed after it. `docs/FARMING_HISTORY.md` records
+the change timeline for exactly that comparison, and names the eras whose
+numbers no longer transfer.
 
 ## How to extend this
 
