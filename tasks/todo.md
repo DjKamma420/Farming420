@@ -1011,3 +1011,65 @@ The scanner still does not repair the name itself. It reports `Melon |` as read.
 - The scale test was proved to fail against the old rule.
 - Run in a real browser against the user's actual photograph: 8.29 MP to
   1.44 MP, detection in 7 ms, clean console.
+
+## Item art from the player's own profile (0.21.0)
+
+### Why this and not the resource pack
+
+Hypixel's official pack only carries textures it overrides, and #41 established
+that it contains none of the farming armour, equipment or pets. In the game
+those are player heads, and their picture is a Minecraft skin served from
+Mojang's texture host. The reference travels inside the item's own NBT, so a
+synced profile already carries everything needed — no bundled assets, no repo
+weight, and the picture is the one the game itself shows.
+
+### What changed
+
+- `src/skull-art.js` reads the texture id out of `SkullOwner.Properties.textures`
+  and describes where the head sits on the skin sheet. Pure; no DOM, no network.
+- `item-normalizer.js` captures it, `setups.js` carries it into the slot record.
+  Older saves gain the field through `normalizeSetups`, so no migration.
+- `item-art-ui.js` prefers the head over the pack texture, and falls back to the
+  placeholder when an item has neither.
+- The CSP gains `https://textures.minecraft.net` in `img-src` only.
+
+### Decisions worth recording
+
+- **Displayed, never read back.** Mojang's host sends no CORS header, so cropping
+  the head in a canvas would fail. Two CSS layers with `background-position`
+  achieve the same crop and need nothing but permission to display. That is also
+  why the host has no business in `connect-src`.
+- **The texture id is validated, not trusted.** It is interpolated into a URL the
+  page loads, so anything that is not plain lowercase hex is refused.
+- **Both sheet heights are handled.** A skin is 64 wide and either 64 or 32 tall,
+  and a percentage offset is measured against the rendered height, so the layout
+  waits for the image to report which arrived rather than assuming.
+
+### Two bugs found by running it
+
+Both reproduced in a browser, neither visible in the diff:
+
+1. **A render loop that froze the page.** The guard asked whether the card held a
+   pack texture; a head is a different element, so it never matched, and the
+   observer saw its own insertion. Now guarded on a container class set on every
+   successful pass.
+2. **Two pictures per slot.** The selector matched a slot card *and* the portrait
+   inside it. Now only the innermost container is selected.
+
+### Verification
+
+- 375 tests pass; 9 are new, and two of them were proved to fail against the
+  reverted guard and the reverted id validation.
+- Rendered in a real browser against generated 64x64 and 64x32 skins whose head
+  squares are distinct flat colours. The rendered pixel came out (128, 100, 128),
+  which is exactly 50% magenta hat over green face — so both layers are cropped
+  to the right squares and composited in the right order. A wrong crop would have
+  shown red, blue, yellow or grey.
+- An item with no head keeps its placeholder; the placeholder hides when a head
+  renders; the editor portrait shows exactly one.
+
+### Limitation
+
+Mojang's texture host is blocked from this sandbox, so the verification above
+used a local server standing in for it. What is unverified is only that the real
+host responds as expected.

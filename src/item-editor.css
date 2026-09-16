@@ -314,3 +314,60 @@
   .lever-track::after,
   .enchant-line { transition: none; }
 }
+
+/* --- player-head item art ------------------------------------------------
+ *
+ * Farming armour, equipment and pets are player heads in the game, and their
+ * picture is a Minecraft skin. A skin sheet is 64 wide; the face is the 8x8
+ * square at (8, 8) and the hat the one at (40, 8), drawn over it.
+ *
+ * Scaling the sheet to 800% of the box makes one 8x8 square exactly fill it. The
+ * offsets are percentages, which are measured against the rendered size, so the
+ * two sheet heights in circulation need their own vertical figure: 100/7 for a
+ * square 64x64 sheet and 100/3 for the legacy 64x32 one. Horizontally both are
+ * 64 wide, so 100/7 and 500/7 serve either.
+ */
+
+.skull-art {
+  position: relative;
+  display: block;
+  width: 78%;
+  height: 78%;
+  overflow: hidden;
+}
+
+.skull-layer {
+  position: absolute;
+  inset: 0;
+  background-repeat: no-repeat;
+  background-size: 800% auto;
+  image-rendering: pixelated;
+  /* Hidden until the sheet height is known, so a head never flashes as a
+     mis-cropped slice of the whole skin. */
+  opacity: 0;
+}
+
+.skull-art.skull-square .skull-layer,
+.skull-art.skull-legacy .skull-layer {
+  opacity: 1;
+}
+
+.skull-square .skull-face { background-position: 14.2857% 14.2857%; }
+.skull-square .skull-hat { background-position: 71.4286% 14.2857%; }
+
+.skull-legacy .skull-face { background-position: 14.2857% 33.3333%; }
+.skull-legacy .skull-hat { background-position: 71.4286% 33.3333%; }
+
+.skull-art .skull-hat {
+  /* The hat is the second layer and is often fully transparent. */
+  z-index: 1;
+}
+
+.slot-portrait.has-official-item-art .item-portrait-fallback,
+.item-portrait.has-official-item-art .item-portrait-fallback {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skull-layer { transition: none; }
+}

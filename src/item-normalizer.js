@@ -1,4 +1,5 @@
 import { decodeHypixelInventory } from './nbt.js';
+import { skullTextureFromTag } from './skull-art.js';
 
 function stringOrNull(value) {
   if (typeof value !== 'string') return null;
@@ -83,6 +84,10 @@ export function normalizeDecodedItem(item, context = {}) {
     overclockerLevel: numberOrNull(extra.levelable_overclocks),
     itemTier: numberOrNull(extra.item_tier),
     petInfo: stringOrNull(extra.petInfo),
+    // Farming armour, equipment and pets are player heads in the game, so this
+    // is the only picture of them that exists. It rides along in the item's own
+    // NBT; no extra request is needed to discover it.
+    skullTexture: skullTextureFromTag(tag),
   };
 }
 
