@@ -47,7 +47,7 @@ patchEntry('equipment-reforge-rooted-on-full-equipment', {
 });
 
 patchEntry('equipment-enchant-green-thumb-v-on-equipment', {
-  name: 'Green Thumb on equipped equipment',
+  name: 'Green Thumb on equipment',
   status: 'ACTIVE',
   max: 20,
   stepGain: 0,
