@@ -32,6 +32,7 @@ jobs:
                       src/nbt.js src/item-normalizer.js src/profile-items.js \
                       src/profile-normalizer.js src/profile-sync.js src/scopes.js \
                       src/credentials.js src/hypixel-client.js src/live-sync.js src/snapshot-apply.js src/help-locations.js \
+                      src/setups.js src/item-catalog.js \
                       proxy/hypixel-proxy.js proxy/README.md \
                       src/styles.css src/enhancements.css src/foundation.css \
                       assets/icon.svg \

@@ -60,7 +60,7 @@ test('v1 account-scoped crop and tool entries move onto the selected setup', () 
   assert.equal(profile.levels[FARMING_LEVEL_ID], 50);
   assert.equal(profile.levels[CROP_UPGRADE_ID], undefined);
   assert.equal(profile.levels[TOOL_LEVEL_ID], undefined);
-  assert.deepEqual(result.applied, [2, 3]);
+  assert.deepEqual(result.applied, [2, 3, 4]);
 });
 
 test('v1 tool entries stored inside a crop bucket move to the physical tool bucket', () => {
@@ -105,7 +105,7 @@ test('schema 2 gains a null normalized snapshot without changing existing profil
     },
   };
   const result = migrateState(state);
-  assert.deepEqual(result.applied, [3]);
+  assert.deepEqual(result.applied, [3, 4]);
   assert.equal(result.state.profile.normalizedSnapshot, null);
   assert.equal(result.state.profile.name, 'Existing profile');
   assert.equal(result.state.profile.levels[FARMING_LEVEL_ID], 52);
@@ -117,8 +117,42 @@ test('schema 3 keeps an existing normalized snapshot untouched', () => {
     schemaVersion: 3,
     profile: { normalizedSnapshot: snapshot },
   });
-  assert.deepEqual(result.applied, []);
-  assert.deepEqual(result.state.profile.normalizedSnapshot, snapshot);
+  assert.deepEqual(result.applied, [4]);
+  assert.deepEqual(result.state.profile.normalizedSnapshot, snapshot, 'the snapshot survives the setup migration');
+});
+
+test('schema 4 adds setups without touching existing progression', () => {
+  const result = migrateState({
+    schemaVersion: 3,
+    profile: {
+      name: 'Existing profile',
+      levels: { [FARMING_LEVEL_ID]: 52 },
+      normalizedSnapshot: null,
+    },
+  });
+  assert.deepEqual(result.applied, [4]);
+  assert.equal(result.state.profile.name, 'Existing profile');
+  assert.equal(result.state.profile.levels[FARMING_LEVEL_ID], 52);
+  assert.equal(result.state.profile.setups.list.length, 3);
+  assert.equal(result.state.profile.setups.activeId, 'normal');
+  // Every slot starts empty; a migration must never invent a loadout.
+  for (const setup of result.state.profile.setups.list) {
+    assert.ok(Object.values(setup.slots).every(slot => slot === null));
+  }
+});
+
+test('setups a player already has are normalized, not replaced', () => {
+  const result = migrateState({
+    schemaVersion: 3,
+    profile: {
+      setups: { activeId: 'mine', list: [{ id: 'mine', name: 'My setup', slots: { helmet: { displayName: 'Helianthus Helmet' } } }] },
+    },
+  });
+  const setups = result.state.profile.setups;
+  assert.equal(setups.list.length, 1);
+  assert.equal(setups.list[0].name, 'My setup');
+  assert.equal(setups.list[0].slots.helmet.displayName, 'Helianthus Helmet');
+  assert.equal(setups.list[0].slots.boots, null, 'missing slots are filled in as empty');
 });
 
 test('migration is idempotent', () => {
@@ -160,7 +194,7 @@ test('an unknown crop bucket is kept and reported instead of dropped', () => {
 
 test('a state without a schema version is treated as the oldest schema', () => {
   const result = migrateState({ profile: { levels: { [CROP_UPGRADE_ID]: 4 } } });
-  assert.deepEqual(result.applied, [2, 3]);
+  assert.deepEqual(result.applied, [2, 3, 4]);
   assert.equal(result.state.profile.cropProgress.melon.levels[CROP_UPGRADE_ID], 4);
   assert.equal(result.state.profile.normalizedSnapshot, null);
 });
