@@ -1,4 +1,4 @@
-const VERSION = 'farming420-0.23.0';
+const VERSION = 'farming420-0.23.1';
 const APP_FILES = [
   './',
   './index.html',
@@ -8,16 +8,17 @@ const APP_FILES = [
   './src/navigation-dedupe.js',
   './src/workspace-ui.js',
   './src/workspace-ui.css',
+  './src/tool-presentation-ui.js',
+  './src/tool-presentation-ui.css',
   './src/farming-reforges.js',
+  './src/progression-chains.js',
+  './src/gemstone-slots.js',
   './src/data.js',
   './src/runtime-data-patches.js',
   './src/styles.css',
   './src/enhancements.js',
   './src/enhancements.css',
   './src/enchant-presentation.js',
-  './src/tooltip-scanner.js',
-  './src/tool-scan-apply.js',
-  './src/tool-scanner-ui.js',
   './src/ux-simplify.js',
   './src/ux-simplify.css',
   './src/config.js',
