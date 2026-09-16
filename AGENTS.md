@@ -20,7 +20,7 @@ The primary optimization target is long-term coin profit. Progression gates, unl
 
 1. Never invent a SkyBlock mechanic, value, formula, drop chance, item price, API field or interaction.
 2. Every non-trivial mechanic must have a source and a `lastVerified` date in the research/data layer.
-3. Prefer official Hypixel patch notes, official Hypixel API documentation and official wiki data. Use Elite SkyBlock/community sources for farming-specific mechanics when official documentation is incomplete. Mark uncertain information explicitly.
+3. Prefer official Hypixel patch notes and official Hypixel API documentation. **The official Hypixel Wiki was closed in July 2026** and its pages are gone, so `wiki.hypixel.net` is no longer a usable source and must not be cited. The community wiki at `hypixelskyblock.minecraft.wiki` is actively maintained and is the working reference for game mechanics; `hypixel-skyblock.fandom.com` is stale and has been observed carrying pre-rename item names, so prefer the community wiki over it and treat Fandom-only claims as uncertain. Use Elite SkyBlock/community sources for farming-specific mechanics where they are better. Mark uncertain information explicitly.
 4. Coming-soon or Alpha-only content must never affect live recommendations or profit calculations.
 5. Never add mutually exclusive setups together. Examples include active pets, incompatible reforges, alternative armor configurations and conditional buff states.
 6. Calculate marginal value from the player's current setup. Do not rank upgrades by raw Farming Fortune alone.

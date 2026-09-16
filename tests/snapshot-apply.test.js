@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { UPGRADES } from '../src/data.js';
+import { CROPS, UPGRADES } from '../src/data.js';
 import {
   applySnapshotToProgress,
   cropsForToolItem,
@@ -124,7 +124,7 @@ test('a shared tool fills both crops that use it', () => {
   applySnapshotToProgress(state, snapshotWith({
     items: [toolItem({ displayName: 'Eclipse Hoe', enchantments: { harvesting: 6 } })],
   }));
-  assert.equal(state.profile.toolProgress['eclipse-hoe'].levels['tool-enchant-harvesting-vi'], 6);
+  assert.equal(state.profile.toolProgress['eclipse-sickle'].levels['tool-enchant-harvesting-vi'], 6);
 });
 
 test('a set-wide armor bonus needs every slot, and an incomplete set is reported', () => {
@@ -347,4 +347,65 @@ test('a state without setups still evaluates the detected gear', () => {
   const state = emptyState();
   applySnapshotToProgress(state, snapshotWith({ items: [piece, piece, piece, piece] }));
   assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], 1);
+});
+
+// --- the in-game tool rename -----------------------------------------------
+
+test("a tool is recognised under its current in-game name", () => {
+  // Hypixel renamed the specialised tools (Hoe -> Sickle/Shovel/Cutter).
+  // src/data.js carried the pre-rename Fandom names, which silently broke
+  // detection for seven of thirteen crops.
+  const cases = [
+    ["Euclid's Wheat Sickle", 'wheat'],
+    ['Gauss Carrot Shovel', 'carrot'],
+    ['Pythagorean Potato Shovel', 'potato'],
+    ['Turing Sugar Cane Cutter', 'sugar-cane'],
+    ['Newton Nether Wart Cutter', 'nether-wart'],
+    ['Wild Rose Cutter', 'wild-rose'],
+    ['Melon Dicer', 'melon'],
+    ['Cactus Knife', 'cactus'],
+    ['Cocoa Chopper', 'cocoa-beans'],
+    ['Fungi Cutter', 'mushroom'],
+    ['Pumpkin Dicer', 'pumpkin'],
+  ];
+  for (const [displayName, cropId] of cases) {
+    assert.deepEqual(cropsForToolItem(toolItem({ displayName })), [cropId], displayName);
+  }
+});
+
+test('the pre-rename names still match, so older data is not stranded', () => {
+  for (const [displayName, cropId] of [
+    ["Euclid's Wheat Hoe", 'wheat'],
+    ['Gauss Carrot Hoe', 'carrot'],
+    ['Turing Sugar Cane Hoe', 'sugar-cane'],
+    ['Wild Rose Hoe', 'wild-rose'],
+  ]) {
+    assert.deepEqual(cropsForToolItem(toolItem({ displayName })), [cropId], displayName);
+  }
+});
+
+test('the shared tool matches both crops under either name', () => {
+  for (const displayName of ['Eclipse Sickle', 'Eclipse Hoe']) {
+    assert.deepEqual(cropsForToolItem(toolItem({ displayName })).sort(), ['moonflower', 'sunflower'], displayName);
+  }
+});
+
+test('a stack of the crop itself is not mistaken for the tool', () => {
+  // This is why a tool noun is required as well as the crop-distinctive part.
+  for (const displayName of ['Wild Rose', 'Melon Slice', 'Cactus', 'Cocoa Beans', 'Pumpkin', 'Enchanted Melon']) {
+    assert.deepEqual(cropsForToolItem(toolItem({ displayName })), [], displayName);
+  }
+});
+
+test('every crop declares a tool match, a source and a verification date', () => {
+  for (const crop of CROPS) {
+    assert.ok(crop.toolMatch, `${crop.id} has no toolMatch`);
+    assert.match(String(crop.toolSource || ''), /^https?:\/\//, `${crop.id} has no tool source`);
+    assert.match(String(crop.toolVerified || ''), /^\d{4}-\d{2}-\d{2}$/, `${crop.id} has no verification date`);
+    // The distinctive part must actually be part of the current name.
+    assert.ok(
+      crop.tool.toLowerCase().replace(/[^a-z0-9]+/g, ' ').includes(crop.toolMatch),
+      `${crop.id}: "${crop.toolMatch}" is not part of "${crop.tool}"`,
+    );
+  }
 });

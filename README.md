@@ -21,6 +21,8 @@ Read these files before changing progression or calculation logic:
 - `docs/PROFILE_DATA_MATRIX.md` — what can be imported automatically from Hypixel and what still needs manual/external data
 - `docs/PROFILE_MODEL.md` — normalized internal profile model, automatic item import and source provenance rules
 - `docs/MATH_MODEL.md` — required calculation architecture and correctness rules
+- `docs/VERIFIED_MECHANICS.md` — mechanics confirmed against a current source,
+  with dates, plus the corrections and the gaps the verification pass found
 
 ## Current foundation
 

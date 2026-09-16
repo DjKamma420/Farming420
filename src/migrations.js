@@ -105,6 +105,45 @@ function migrateSetups(state) {
   profile.setups = profile.setups ? normalizeSetups(profile.setups) : createDefaultSetups();
 }
 
+/**
+ * Schema 4 -> 5
+ *
+ * Hypixel renamed the specialised farming tools (Hoe -> Sickle/Shovel/Cutter),
+ * and `toolKeyForCropId` derives its storage key from the tool name, so the key
+ * for seven crops changed. Without this, every tool's stored progress would be
+ * orphaned under its old key and the cards would read as empty.
+ *
+ * Merges rather than overwrites: a value already under the new key wins, so
+ * re-running cannot undo newer progress.
+ */
+const RENAMED_TOOL_KEYS = Object.freeze({
+  'euclid-s-wheat-hoe': 'euclid-s-wheat-sickle',
+  'gauss-carrot-hoe': 'gauss-carrot-shovel',
+  'pythagorean-potato-hoe': 'pythagorean-potato-shovel',
+  'turing-sugar-cane-hoe': 'turing-sugar-cane-cutter',
+  'newton-nether-wart-hoe': 'newton-nether-wart-cutter',
+  'eclipse-hoe': 'eclipse-sickle',
+  'wild-rose-hoe': 'wild-rose-cutter',
+});
+
+function migrateRenamedToolKeys(state, warnings) {
+  const progress = state.profile?.toolProgress;
+  if (!progress || typeof progress !== 'object') return;
+
+  for (const [oldKey, newKey] of Object.entries(RENAMED_TOOL_KEYS)) {
+    const old = progress[oldKey];
+    if (!old) continue;
+    const destination = ensureProgressBucket(progress, newKey);
+    for (const field of PROGRESS_FIELDS) {
+      for (const [itemId, value] of Object.entries(old[field] || {})) {
+        if (destination[field][itemId] === undefined) destination[field][itemId] = value;
+      }
+    }
+    delete progress[oldKey];
+    warnings.push(`Moved tool progress from "${oldKey}" to "${newKey}" after the in-game tool rename.`);
+  }
+}
+
 const MIGRATIONS = [
   {
     to: 2,
@@ -120,6 +159,11 @@ const MIGRATIONS = [
     to: 4,
     description: 'Add item-centric farming setups.',
     run: migrateSetups,
+  },
+  {
+    to: 5,
+    description: 'Move tool progress to the renamed specialised farming tools.',
+    run: migrateRenamedToolKeys,
   },
 ];
 

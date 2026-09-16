@@ -497,3 +497,65 @@ Recorded in `tasks/lessons.md`: I wrote `\u0027` inside a quoted bash heredoc
 three times in this session, which a quoted heredoc passes through literally and
 which breaks the JavaScript. Use double quotes for the string, and run
 `node --check` in the same command that writes the file.
+
+---
+
+# Verification pass against a current source
+
+The research route that had blocked every earlier attempt is solved: this
+environment's egress proxy blocks all SkyBlock domains, but a server-side
+extractor reaches them. The community wiki refuses plain HTTP (403) and needs a
+browser tier.
+
+## Two findings that changed the repo
+
+**The official Hypixel Wiki was closed in July 2026.** Hypixel staff announced
+on 2026-07-21 that pages would stop being browsable. Three citations in this
+repo pointed at it, including two I shipped myself in `src/help-locations.js`.
+All replaced; `AGENTS.md` no longer names it in the source hierarchy, and a test
+fails if one is cited again.
+
+**The specialised farming tools were renamed in-game** (Hoe ->
+Sickle/Shovel/Cutter). `src/data.js` carried the pre-rename names, taken from
+Fandom, which is stale. Because `cropsForToolItem` matches a decoded item's
+display name against the tool name, **tool detection was silently failing for
+seven of thirteen crops** -- the sync wrote nothing to those tool cards.
+
+The browser test had passed because `tests/nbt-fixture.js` encoded the same
+wrong name: a self-consistent error that only an external source could catch.
+Proved empirically before changing anything: the current item name against the
+old data gives NO MATCH.
+
+## What was done
+
+- All 13 tool names updated, each with `toolSource` and `toolVerified`.
+- Matching moved to `toolMatch`, the crop-distinctive part, plus any known tool
+  noun. That survives the next rename, still matches the old names so older
+  data is not stranded, and the noun requirement stops a stack of the crop
+  itself being read as the tool.
+- **Schema 4 -> 5 migration** remaps the seven changed `toolProgress` keys.
+  `toolKeyForCropId` derives the key from the tool name, so without this every
+  affected tool's stored progress would have been orphaned. Merges rather than
+  overwrites, and is idempotent.
+- Fixture corrected to the current name.
+- `Turbo-Crop` cap corrected from 5 to 7 (+35 Crop Fortune at VII), sourced and
+  dated.
+- `docs/VERIFIED_MECHANICS.md` records 14 confirmed values, the corrections, the
+  confirmed in-game locations, and the gaps below.
+
+## Gaps this pass exposed
+
+Recorded rather than guessed at. Each materially affects profit, so the planner
+must not claim a coins/hour figure until they are modelled:
+
+1. Farming Fortune has **no effect on the Private Island**.
+2. **Pests reduce Fortune** -- 4+ pests cut Farming Fortune and every
+   crop-specific Fortune, first 5% then multiples of 15%, up to 8 pests, max
+   **75% loss**. Every 100 Bonus Pest Chance allows one more pest first. The
+   model has no concept of a negative term at all.
+3. Pest spawn rate: base 0.2% (1 in 500) per crop broken, off cooldown.
+4. Garden Bestiary: the Farming Fortune page says +102 max, the Pests page says
+   0.4 per tier up to +100. Left marked as needing confirmation rather than
+   picking one.
+
+218 tests. Data schema 5, app version 0.12.0.

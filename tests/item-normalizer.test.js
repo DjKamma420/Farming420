@@ -42,7 +42,7 @@ test('encoded inventory normalization preserves generic enchantments and ignores
   const items = await normalizeEncodedInventory(farmingInventoryBase64(), { container: 'inventory' });
   assert.equal(items.length, 1);
   assert.equal(items[0].slot, 0);
-  assert.equal(items[0].displayName, '§6Euclid\'s Wheat Hoe');
+  assert.equal(items[0].displayName, '§6Euclid\'s Wheat Sickle');
   assert.equal(items[0].enchantments.turbo_wheat, 5);
   assert.equal(items[0].gems.PERIDOT_0, 'PERFECT');
 });

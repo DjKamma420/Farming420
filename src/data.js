@@ -2,93 +2,132 @@ export const CROPS = [
   {
     "id": "wheat",
     "name": "Wheat",
-    "tool": "Euclid's Wheat Hoe",
+    "tool": "Euclid's Wheat Sickle",
     "color": "gold",
-    "icon": "W"
+    "icon": "W",
+    "toolMatch": "euclid s wheat",
+    "toolVerified": "2026-09-16",
+    "toolSource": "https://hypixelskyblock.minecraft.wiki/w/Farming_Tools"
   },
   {
     "id": "carrot",
     "name": "Carrot",
-    "tool": "Gauss Carrot Hoe",
+    "tool": "Gauss Carrot Shovel",
     "color": "orange",
-    "icon": "C"
+    "icon": "C",
+    "toolMatch": "gauss carrot",
+    "toolVerified": "2026-09-16",
+    "toolSource": "https://hypixelskyblock.minecraft.wiki/w/Farming_Tools"
   },
   {
     "id": "potato",
     "name": "Potato",
-    "tool": "Pythagorean Potato Hoe",
+    "tool": "Pythagorean Potato Shovel",
     "color": "amber",
-    "icon": "P"
+    "icon": "P",
+    "toolMatch": "pythagorean potato",
+    "toolVerified": "2026-09-16",
+    "toolSource": "https://hypixelskyblock.minecraft.wiki/w/Farming_Tools"
   },
   {
     "id": "pumpkin",
     "name": "Pumpkin",
     "tool": "Pumpkin Dicer",
     "color": "orange",
-    "icon": "Pu"
+    "icon": "Pu",
+    "toolMatch": "pumpkin",
+    "toolVerified": "2026-09-16",
+    "toolSource": "https://hypixelskyblock.minecraft.wiki/w/Farming_Tools"
   },
   {
     "id": "melon",
     "name": "Melon",
     "tool": "Melon Dicer",
     "color": "green",
-    "icon": "M"
+    "icon": "M",
+    "toolMatch": "melon",
+    "toolVerified": "2026-09-16",
+    "toolSource": "https://hypixelskyblock.minecraft.wiki/w/Farming_Tools"
   },
   {
     "id": "mushroom",
     "name": "Mushroom",
     "tool": "Fungi Cutter",
     "color": "red",
-    "icon": "Mu"
+    "icon": "Mu",
+    "toolMatch": "fungi",
+    "toolVerified": "2026-09-16",
+    "toolSource": "https://hypixelskyblock.minecraft.wiki/w/Farming_Tools"
   },
   {
     "id": "cactus",
     "name": "Cactus",
     "tool": "Cactus Knife",
     "color": "emerald",
-    "icon": "Ca"
+    "icon": "Ca",
+    "toolMatch": "cactus",
+    "toolVerified": "2026-09-16",
+    "toolSource": "https://hypixelskyblock.minecraft.wiki/w/Farming_Tools"
   },
   {
     "id": "sugar-cane",
     "name": "Sugar Cane",
-    "tool": "Turing Sugar Cane Hoe",
+    "tool": "Turing Sugar Cane Cutter",
     "color": "lime",
-    "icon": "S"
+    "icon": "S",
+    "toolMatch": "turing sugar cane",
+    "toolVerified": "2026-09-16",
+    "toolSource": "https://hypixelskyblock.minecraft.wiki/w/Farming_Tools"
   },
   {
     "id": "cocoa-beans",
     "name": "Cocoa Beans",
     "tool": "Cocoa Chopper",
     "color": "brown",
-    "icon": "Co"
+    "icon": "Co",
+    "toolMatch": "cocoa",
+    "toolVerified": "2026-09-16",
+    "toolSource": "https://hypixelskyblock.minecraft.wiki/w/Farming_Tools"
   },
   {
     "id": "nether-wart",
     "name": "Nether Wart",
-    "tool": "Newton Nether Wart Hoe",
+    "tool": "Newton Nether Wart Cutter",
     "color": "crimson",
-    "icon": "N"
+    "icon": "N",
+    "toolMatch": "newton nether wart",
+    "toolVerified": "2026-09-16",
+    "toolSource": "https://hypixelskyblock.minecraft.wiki/w/Farming_Tools"
   },
   {
     "id": "sunflower",
     "name": "Sunflower",
-    "tool": "Eclipse Hoe",
+    "tool": "Eclipse Sickle",
     "color": "gold",
-    "icon": "Su"
+    "icon": "Su",
+    "toolMatch": "eclipse",
+    "toolVerified": "2026-09-16",
+    "toolSource": "https://hypixelskyblock.minecraft.wiki/w/Farming_Tools"
   },
   {
     "id": "moonflower",
     "name": "Moonflower",
-    "tool": "Eclipse Hoe",
+    "tool": "Eclipse Sickle",
     "color": "violet",
-    "icon": "Mo"
+    "icon": "Mo",
+    "toolMatch": "eclipse",
+    "toolVerified": "2026-09-16",
+    "toolSource": "https://hypixelskyblock.minecraft.wiki/w/Farming_Tools"
   },
   {
     "id": "wild-rose",
     "name": "Wild Rose",
-    "tool": "Wild Rose Hoe",
+    "tool": "Wild Rose Cutter",
     "color": "rose",
-    "icon": "WR"
+    "icon": "WR",
+    "toolMatch": "wild rose",
+    "toolVerified": "2026-09-16",
+    "toolSource": "https://hypixelskyblock.minecraft.wiki/w/Farming_Tools"
   }
 ];
 
@@ -408,13 +447,14 @@ export const UPGRADES = [
     "modeScope": "Any",
     "cropScope": "Any",
     "status": "ACTIVE",
-    "max": 5,
+    "max": 7,
     "stepGain": 5,
     "manualDefault": null,
     "rawMarginal": 5,
     "hypercharge": false,
-    "notes": "Standard levels add selected-crop fortune; max reference +25 at V. Higher event tiers may need manual override.",
-    "source": "https://wiki.eliteskyblock.com/Farming_Fortune",
+    "notes": "+5 Crop Fortune per level for its crop, maxing at +35 Crop Fortune at Turbo-Crop VII. VI comes from a Turbo Gourd and VII from an Enchanted Turbo Gourd; I-V are contests/Librarian and book combining.",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune",
+    "lastVerified": "2026-09-16",
     "workbookRank": 26
   },
   {
@@ -504,7 +544,7 @@ export const UPGRADES = [
     "rawMarginal": 2,
     "hypercharge": false,
     "notes": "+2 FF per Cultivating tier; max +20 at Cultivating X.",
-    "source": "https://wiki.hypixel.net/Cultivating_Enchantment",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Cultivating",
     "workbookRank": 34
   },
   {

@@ -85,3 +85,11 @@ test('an unknown id degrades gracefully rather than throwing', () => {
   assert.equal(location.where, null);
   assert.equal(location.source, null);
 });
+
+test('no curated location cites the closed official Hypixel wiki', () => {
+  for (const id of ['input:globalFortune', 'input:cropFortune']) {
+    const location = locationFor(id);
+    assert.ok(!String(location.source || '').includes('wiki.hypixel.net'), `${id} cites the closed official wiki`);
+    assert.match(location.source, /^https?:\/\//);
+  }
+});
