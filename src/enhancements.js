@@ -1,3 +1,5 @@
+import { enchantPresentation } from './enchant-presentation.js';
+
 const GROUPS = [
   ['Progress', ['dashboard', 'account', 'crops', 'tools']],
   ['Loadout', ['gear', 'pets', 'buffs']],
@@ -178,6 +180,34 @@ function improveToolsPage(root) {
   heading.insertAdjacentElement('afterend', context);
 }
 
+function decorateEnchantRow(row) {
+  const nameInput = row.querySelector('[data-ench-name], [data-ench-new]');
+  const levelInput = row.querySelector('[data-ench-level], [data-ench-new-level]');
+  if (!nameInput || !levelInput) return;
+
+  const presentation = enchantPresentation(nameInput.value, levelInput.value);
+  row.classList.remove('enchant-maxed', 'enchant-active', 'enchant-missing', 'enchant-unverified');
+  row.classList.add(`enchant-${presentation.state}`);
+  if (presentation.maxLevel !== null) {
+    row.dataset.enchantMax = String(presentation.maxLevel);
+    row.title = presentation.state === 'maxed'
+      ? `Verified max level ${presentation.maxLevel}`
+      : `Verified max level: ${presentation.maxLevel}`;
+  } else {
+    delete row.dataset.enchantMax;
+    row.title = 'Maximum level not verified yet';
+  }
+}
+
+function decorateEnchantments(root) {
+  root.querySelectorAll('.enchant-row').forEach(row => {
+    decorateEnchantRow(row);
+    if (row.dataset.enchantVisualBound === '1') return;
+    row.dataset.enchantVisualBound = '1';
+    row.addEventListener('input', () => decorateEnchantRow(row));
+  });
+}
+
 function enhance() {
   const root = document.querySelector('#app');
   if (!root) return;
@@ -186,6 +216,7 @@ function enhance() {
   simplifyDashboard(root);
   enhanceCropWorkspace(root);
   improveToolsPage(root);
+  decorateEnchantments(root);
 }
 
 let scheduled = false;
