@@ -1,0 +1,277 @@
+{
+  "meta": {
+    "title": "Hypixel SkyBlock Farming Master Knowledge Base",
+    "format_version": "1.0.0-repo",
+    "as_of": "2026-09-16",
+    "target_reader": "AI/optimizer",
+    "status": "canonical research entry point; newer verified live behavior overrides this file",
+    "source_chat_artifact": "hypixel_farming_master_ai_2026-09-16.json",
+    "rules": [
+      "Never use Alpha/coming-soon values in live calculations.",
+      "Never invent unknown formulas or drop chances.",
+      "Reverify any value older than the newest relevant Farming patch.",
+      "Keep mutually exclusive loadouts separate.",
+      "Rank marginal value from the player's current state, not raw stats alone."
+    ]
+  },
+  "stat_model": {
+    "farming_fortune": {
+      "scope": "general normal crop drops",
+      "expected_drop_formula": "base_crop_drops * (1 + (farming_fortune + matching_crop_fortune) / 100)",
+      "marginal_value": "base_crop_drops / 100 per valid crop break per +1 point"
+    },
+    "crop_fortune": {
+      "scope": "single matching crop",
+      "rule": "+1 Crop Fortune is equivalent to +1 Farming Fortune only for normal drops of its matching crop; value is 0 for other crops",
+      "never_globalize": true
+    },
+    "overbloom": {
+      "scope": "eligible Farming rare-drop/RNG pools",
+      "probability_formula": "base_probability * (1 + applicable_overbloom / 100)",
+      "rule": "Since 2026-05-14 listed non-guaranteed Pest drops scale with Overbloom instead of Farming Fortune"
+    },
+    "pest_overbloom": {
+      "scope": "Pest-eligible RNG only",
+      "rule": "Do not apply to non-Pest rare-crop rolls"
+    },
+    "magic_find": {
+      "scope": "only loot tables that explicitly use Magic Find",
+      "rule": "Never add Magic Find to Overbloom"
+    },
+    "bonus_pest_chance": {
+      "scope": "Pest spawn side",
+      "rule": "Do not treat as Pest loot quality or Farming Fortune"
+    },
+    "farming_wisdom": {
+      "scope": "Farming skill XP",
+      "primary_priority": false,
+      "marker": "WISDOM_SECONDARY",
+      "use_when": "player is below a required/desired Farming skill level"
+    },
+    "greenhouse_yield": {
+      "scope": "Greenhouse output",
+      "rule": "Separate effect layer; do not convert to Farming Fortune without context simulation"
+    }
+  },
+  "value_conversion": {
+    "fixed_ff_to_overbloom_rate": null,
+    "reason": "Their value depends on crop throughput, Pest/RNG roll rate, eligible drop pools and prices",
+    "coin_per_hour_per_1_ff": "blocks_per_second * 3600 * base_crop_drops * net_unit_crop_value / 100",
+    "coin_per_hour_per_1_crop_ff": "same as +1 FF only for matching crop; otherwise 0",
+    "coin_per_hour_per_1_overbloom": "SUM(eligible_rolls_per_hour * base_probability * net_drop_value / 100)",
+    "ff_equivalent_per_1_overbloom": "marginal_coin_per_hour_per_1_overbloom / marginal_coin_per_hour_per_1_ff",
+    "required_context": ["crop","blocks_per_second","prices","pests_per_hour","eligible_rng_pool","feast_state","contest_state","loadout"]
+  },
+  "upgrade_evaluation": {
+    "coin_factor": {
+      "coins_per_ff": "net_coin_cost / delta_effective_farming_fortune",
+      "coins_per_crop_ff": "net_coin_cost / delta_matching_crop_fortune",
+      "coins_per_overbloom": "net_coin_cost / delta_applicable_overbloom",
+      "roi_hours": "net_coin_cost / delta_profit_per_hour"
+    },
+    "time_factor": {
+      "grind_hours": "remaining_progress / measured_progress_per_hour",
+      "examples": ["Cultivating crop breaks","Tool XP","Sowdust","Crop Milestones","unique Visitors"]
+    },
+    "optional_combined_cost": "coin_cost + grind_hours * user_time_value_coins_per_hour",
+    "priority_classes": ["mandatory_gate","high_efficiency","contextual","luxury","wisdom_secondary"],
+    "rule": "Keep coin and time axes separate unless user explicitly supplies a coin value for their time"
+  },
+  "contexts": [
+    "normal_crop_farming","crop_specific_farming","pest_spawn","pest_kill","pest_loot","jacob_contest","greenhouse","harvest_feast","grand_feast","visitor_progression","composter","tool_leveling","chip_leveling","ironman"
+  ],
+  "progression": {
+    "armor": {
+      "main_chain": ["early Farm Suit/Farm Armor","Melon Armor","Cropie Armor","Squash Armor","Fermento Armor","Helianthus Armor"],
+      "normal_crop_branch": "Mossy-oriented",
+      "pest_spawn_branch": "Mantid-oriented",
+      "endgame_speed_rule": "After Sundial unlock, prefer full current Farming boots rather than Rancher's Boots for Garden endgame unless a specific exception is verified"
+    },
+    "equipment": {
+      "normal_progression": ["early farming equipment","Lotus-generation","Peony/Blossom-generation"],
+      "reforge_branches": {
+        "rooted": "normal Farming Fortune",
+        "squeaky": "Pest spawn/cooldown specialization",
+        "thorny": "Farming Fortune + Overbloom; gains extra Overbloom from worn Armor Thorns tiers"
+      }
+    },
+    "tools": {
+      "per_crop": true,
+      "modern_rule": "Farming Tools level with Tool XP and can gain Fortune/rarity/Gemstone progression",
+      "max_layers": ["tool model/tier","tool level","rarity","Gemstone slots","Peridot quality","reforge","Harvesting","Cultivating","Dedication","matching Turbo","Feast","Crop Fever","Farming for Dummies","Replenish where functional","Delicate where functional"]
+    },
+    "pets": {
+      "rule": "No single universal pet progression; evaluate per context",
+      "notable": ["Rabbit for XP only","Elephant","Mooshroom Cow","Rose Dragon","Mosquito for Sugar Cane/Visitors/Pests","Hedgehog for Pest specialization","Orchid Mantis for Tool XP/Speed interactions"]
+    }
+  },
+  "cross_stat_dependencies": [
+    "Strength -> Mooshroom Cow -> Farming Fortune",
+    "Accessory Power/Tunings -> Strength -> Mooshroom Cow -> Farming Fortune",
+    "Rarity/Recombobulator -> stronger rarity-scaled reforge -> Farming/Overbloom/BPC delta",
+    "Armor Thorns tiers -> Thorny Equipment -> additional Overbloom",
+    "Unique Visitors -> Mosquito -> Sugar Cane Fortune",
+    "Crop Milestone -> Dedication -> matching Crop Fortune",
+    "Sundial -> crop-specific Speed cap -> full Farming boots remain usable",
+    "Speed -> real blocks/sec and therefore output/hour",
+    "Temporary whitelisted FF buff -> Hypercharge -> amplified buff; never multiply total FF"
+  ],
+  "current_key_values": {
+    "farming_skill_60_fortune": 240,
+    "harvesting_vi_fortune": 75,
+    "cultivating_x_fortune": 20,
+    "cultivating_x_wisdom": 10,
+    "turbo_v_matching_crop_fortune": 25,
+    "desk_crop_upgrade_max_crop_fortune": 45,
+    "cropshot_legendary_level_20_fortune": 100,
+    "rarefinder_current_max_overbloom": 50,
+    "lucky_clover_overbloom": 7,
+    "poignant_lucky_clover_overbloom": 13,
+    "philip_fortune_per_pest_0_27": 5,
+    "philip_pest_cap_0_27": 200,
+    "philip_max_farming_fortune_0_27": 1000,
+    "normal_pest_feast_rare_crop_base_probability": 0.15,
+    "field_mouse_feast_rare_crop_base_probability": 0.30,
+    "chocolate_century_cake_farming_fortune": 5,
+    "celestial_mason_jar_farming_fortune": 15,
+    "harvest_harbinger_potion_farming_fortune": 50
+  },
+  "permanent_and_account_progress": [
+    {"id":"farming_skill","value":"up to +240 FF","cost_axis":"time","wisdom_can_accelerate":true},
+    {"id":"elizabeth_garden_fortune","value":"historically up to +40 FF","status":"reverify against current 0.27 data before optimizer auto-applies"},
+    {"id":"garden_plot_fortune","value":"historically up to +72 FF","status":"reverify current live"},
+    {"id":"anita_fortune","value":"historically up to +60 FF","status":"reverify current live"},
+    {"id":"pest_bestiary","value":"historically up to +66 FF","status":"reverify current live"},
+    {"id":"fermento_accessory_family","value":"up to +30 FF historically","family_exclusive":true,"status":"reverify current live"},
+    {"id":"relic_of_power","value":"historically +5 FF","status":"reverify current live"},
+    {"id":"salesperson_visitor_perk","value":"historically up to +60 FF at visitor progression","status":"reverify current live"},
+    {"id":"feast_burger_permanent_overbloom","value":"up to +5 permanent Overbloom","status":"verify exact current item text before auto-apply"}
+  ],
+  "crop_specific_sources": [
+    {"id":"desk_crop_upgrade","max_crop_fortune":45,"scope":"each crop independently"},
+    {"id":"personal_best_perk","historical_max_crop_fortune":100,"scope":"each crop independently","status":"reverify live"},
+    {"id":"specialized_tool","effect":"tool/crop-level dependent Crop Fortune"},
+    {"id":"dedication","effect":"current crop milestone * enchant coefficient"},
+    {"id":"turbo_crop","max_crop_fortune":25,"scope":"matching crop only"},
+    {"id":"anita_talisman_crop_bonus","historical_max_crop_fortune":25,"conditional":true,"status":"reverify live"},
+    {"id":"exportable_crop_items","historical_crop_fortune":12,"status":"reverify live","examples":["Fine Flour -> Wheat","Exportable Carrots -> Carrot","Expired Pumpkin -> Pumpkin","Supreme Chocolate Bar -> Cocoa","Half-Eaten Mushroom -> Mushroom","Warty -> Nether Wart"]}
+  ],
+  "enchantments": {
+    "harvesting": {"levels":{"I":12.5,"II":25,"III":37.5,"IV":50,"V":62.5,"VI":75},"stat":"Farming Fortune"},
+    "cultivating": {"level_10":{"farming_fortune":20,"farming_wisdom":10},"time_factor":"remaining crop breaks / crop breaks per hour","wisdom_marker":true},
+    "turbo": {"max_matching_crop_fortune":25,"scope":"matching crop"},
+    "dedication": {"scope":"matching crop milestone","dynamic":true},
+    "feast": {"effect_per_level_overbloom":2},
+    "crop_fever": {"role":"temporary proc; FF + rare-drop behavior; model uptime/rolls rather than permanent FF"},
+    "pesterminator": {"role":"Armor Farming/Pest enchant","status":"resolve current 2026 full level table before exact ranking"},
+    "green_thumb": {"role":"Equipment Fortune scaling with unique Visitors","status":"reverify current cap"},
+    "thorns": {"direct_farming_stat":0,"indirect":"Thorny equipment Overbloom synergy"},
+    "replenish": {"direct_stat":0,"role":"sustainable replant throughput"},
+    "delicate": {"direct_stat":0,"role":"farm integrity"}
+  },
+  "reforges": {
+    "tool": {
+      "blessed":"normal crop/fortune plus special proc",
+      "bountiful":"coin-output oriented",
+      "earthy":"Sowdust/progression oriented",
+      "deep_fried":"Harvest Feast/Seasoning oriented",
+      "overpriced":"Rare Crop/Feast RNG oriented"
+    },
+    "armor": {"bustling":"budget FF","mossy":"normal crop FF","mantid":"Bonus Pest Chance/Pest spawn"},
+    "equipment": {"rooted":"normal FF","squeaky":"Pest spawn/cooldown","thorny":"FF + Overbloom + Armor Thorns synergy"},
+    "vacuum": {"beady":"Pest-specific Fortune/loot side","buzzing":"Vacuum damage/other Pest utility"},
+    "mutual_exclusion_rule":"Only one compatible reforge per item; always compare the lost alternative effect"
+  },
+  "chips": {
+    "cropshot":{"rare_ff_per_level":3,"epic_ff_per_level":4,"legendary_ff_per_level":5,"legendary_max_ff":100},
+    "rarefinder":{"current_legendary_max_overbloom":50},
+    "vermin_vaporizer":{"role":"Bonus Pest Chance"},
+    "overdrive":{"role":"Jacob active-crop Fortune; contest-only"},
+    "hypercharge":{"role":"amplifies only whitelisted temporary FF sources","rule":"never multiply total FF"},
+    "evergreen":{"role":"Greenhouse base crops"},
+    "quickdraw":{"role":"Visitor cooldown"},
+    "mechamind":{"role":"Tool XP","primary_profit_priority":false},
+    "sowledge":{"role":"Farming Wisdom","wisdom_marker":true,"primary_profit_priority":false},
+    "synthesis":{"role":"Crop Analyzer base Copper"},
+    "time_factor_rule":"remaining Sowdust / measured Sowdust per hour plus duplicate-chip rarity requirements"
+  },
+  "temporary_and_consumable": {
+    "booster_cookie":{"direct_ff":0,"relevant":["+25 all Wisdom","Garden flight","AFK immunity","Mixin/potion convenience"],"wisdom_marker":true},
+    "god_potion":{"rule":"evaluate contained effects separately; never assign a fake single FF value"},
+    "chocolate_century_cake":{"farming_fortune":5,"duration_hours":48},
+    "celestial_mason_jar":{"farming_fortune":15,"also":"other stats/Wisdom","wisdom_marker":true},
+    "melon_juice_mixin":{"reported_farming_fortune":15,"status":"verify live availability before auto-apply"},
+    "harvest_harbinger_potion":{"farming_fortune":50},
+    "atmospheric_filter":{"spring":"+25 FF","summer":"+20 Farming Wisdom","autumn":"Pest spawn-frequency effect","winter":"Visitor Copper effect","garden_only":true,"wisdom_marker":true},
+    "magic_8_ball":{"conditional":"season/state","possible":"+25 FF +1 Farming Wisdom","wisdom_marker":true},
+    "pesthunter_philip":{"current_0_27":"+5 FF per Pest, cap 200 = +1000 FF max","temporary":true},
+    "dark_cacao_truffle":{"status":"0.27 Cocoa-specific behavior requires exact live recheck before global use"}
+  },
+  "pests": {
+    "spawn_pipeline":["crop break","cooldown eligibility","Bonus Pest Chance","spray/vinyl/pet/armor/chip/shard modifiers","Pest type"],
+    "loot_pipeline":["kill/vacuum","guaranteed drops","non-guaranteed roll","Overbloom + Pest Overbloom","Feast in-season roll if active"],
+    "critical_rule":"Do not use Farming Fortune to scale 2026 non-guaranteed Pest loot unless a specific mechanic explicitly says so",
+    "artifact_toggle_rule":"Pesthunter Artifact can make more BPC undesirable in some contexts; model enabled/disabled state"
+  },
+  "feast": {
+    "overbloom_rule":"+1 OB = +1% relative eligible Rare Crop probability",
+    "current_crops_per_season":4,
+    "freshly_baked_rule":"during Feast double only the accessory's own Overbloom, not total account Overbloom",
+    "grand_feast":"Finnegan extension with Kernels/Grand Bakery progression",
+    "jerry_rule":"Grand Feast no longer copied by Jerry Perkpocalypse after 2026-06-19"
+  },
+  "greenhouse": {
+    "unlock":"Garden 7 + Carpenter progression; Beth progression for mutation analysis",
+    "systems":["offline growth","water","growth cycles","decay","mutations","Crop Effects","Greenhouse Yield","Evergreen","Crop Analyzer"],
+    "rule":"Optimize output per real maintenance interval; more visible Growth Speed is not automatically better if water/decay becomes limiting",
+    "unknown":"exact current order of operations for base yield, Evergreen, Fortune, Greenhouse Yield must be tested/verified rather than guessed"
+  },
+  "visitors": {
+    "value":["Copper","Garden XP","Farming XP","special rewards","unique completion","unlock gates","Mosquito Sugar Cane Fortune"],
+    "rule":"A first-time unique Visitor may have positive long-term value despite poor immediate coin EV"
+  },
+  "composter": {
+    "base":{"organic_matter":4000,"fuel":2000,"cycle_minutes":10,"organic_capacity":40000,"fuel_capacity":100000},
+    "upgrades":["Speed","Multi Drop","Cost Reduction","Organic Matter Capacity","Fuel Capacity"],
+    "profit_formula":"expected Compost/hour * net Compost value - Organic Matter cost/hour - Fuel cost/hour",
+    "opportunity_cost":"self-farmed crops are not economically free"
+  },
+  "contest": {
+    "score_model":"prepared burst + sustained in-contest harvest",
+    "inputs":["Greenhouse prep","Pest/Philip prep","Overdrive","Zorro's Cape conditional stats","matching Crop Fortune","Sundial speed","active crop tool"],
+    "rule":"historical crop-score cutoffs are patch/Finnegan/meta dependent; do not hardcode old values as current"
+  },
+  "meta_strategy": {
+    "normal_crop":"Maximize successful breaks/sec plus effective FF and matching Crop Fortune; use Sundial + full modern Farming boots in endgame",
+    "pest_spawn":"Prioritize BPC/cooldown using Mantid/Squeaky/Vermin and appropriate pet/loadout",
+    "pest_loot":"Prioritize Overbloom/Pest Overbloom; Thorny + Thorns can matter",
+    "contest":"Prepared burst + sustained active-crop farming",
+    "greenhouse":"Optimize yield against growth/water/maintenance schedule",
+    "feast":"Optimize Overbloom, Rare Crops, Seasoning/Kernels and event progression",
+    "tool_leveling":"Treat Tool XP/Cultivating as time investments",
+    "chip_leveling":"Treat Sowdust and duplicate Chips as time/resource investments"
+  },
+  "dynamic_inputs_required": {
+    "prices":["Bazaar","Auction-derived upgrade items","NPC values","Rare Crop materials","Pets/Pet items","Compost/Organic Matter inputs"],
+    "rates":["blocks/sec per crop","crop breaks/hour","collection/hour","Sowdust/hour","Tool XP/hour","Pests/hour","Visitors/hour","Greenhouse maintenance interval"],
+    "rule":"Do not hardcode market prices in long-lived research data"
+  },
+  "research_gaps": [
+    "current Pesterminator full level table",
+    "final live Helianthus piece stats/set effects",
+    "exact current Thorny rarity table",
+    "all 0.27 Farming-relevant Shards and exact scaling",
+    "Dark Cacao Truffle exact 0.27 live stat type",
+    "Hypercharge exact whitelist",
+    "Rose Dragon exact current scaling",
+    "Tool level 1-50 tables for all Farming Tool classes",
+    "Chip Sowdust cost table by level/rarity",
+    "Greenhouse exact order of operations",
+    "gear-swap snapshot timing for Pest spawn/loot and Greenhouse harvest"
+  ],
+  "source_policy": {
+    "preferred":["official current Hypixel patch notes","official Hypixel API docs","current hypixelskyblock.minecraft.wiki","Elite SkyBlock for current Farming-specific data","recent reproducible live tests"],
+    "avoid_as_current_authority":["closed wiki.hypixel.net pages","stale Fandom-only claims","old guides predating Greenhouse/Feast/0.26.1/0.27"],
+    "important":"Every concrete mechanic used by production calculations should gain a source and lastVerified date in the normalized research/data layer"
+  }
+}
