@@ -52,6 +52,7 @@ export function createEmptyItem() {
   return {
     skyblockId: null,
     displayName: '',
+    rarity: null,
     reforge: null,
     enchantments: {},
     gems: [],
@@ -137,6 +138,7 @@ export function itemRecordFromDecoded(decoded) {
     ...createEmptyItem(),
     skyblockId: decoded.skyblockId ?? null,
     displayName: cleanName(decoded.displayName) || decoded.skyblockId || '',
+    rarity: decoded.rarity ?? null,
     reforge: decoded.reforge ?? null,
     enchantments: { ...(decoded.enchantments || {}) },
     gems: gemListFrom(decoded.gems),
@@ -188,6 +190,7 @@ export function prefillSetupFromSnapshot(setup, snapshot, { overwrite = false } 
       ...createEmptyItem(),
       skyblockId: activePet.type ?? null,
       displayName: [activePet.rarity, activePet.type].filter(Boolean).join(' ') || String(activePet.type || ''),
+      rarity: activePet.rarity ?? null,
       source: ITEM_SOURCE.SYNC,
     });
     if (activePet.heldItem) {
