@@ -4,17 +4,18 @@ import { SLOT_IDS } from './setups.js';
  * Hard game-state constraints that optimizers and recommendation code must obey.
  *
  * These are not stat values. They describe combinations that cannot be active
- * at the same time, so raw upgrade gains must never be summed across a group.
+ * on the same physical item or in the same active slot at the same time, so raw
+ * upgrade gains must never be summed across a group.
  */
 export const EXCLUSIVE_ENTRY_GROUPS = Object.freeze([
   Object.freeze({
     id: 'farming-tool-reforge',
     label: 'Farming tool reforge',
+    itemClass: 'farming-tool',
     maxActive: 1,
     members: Object.freeze([
       'tool-reforge-blessed-reforge',
       'tool-reforge-bountiful-reforge',
-      'vacuum-reforge-beady-pest-only-farming-fortune',
     ]),
   }),
 ]);
@@ -28,8 +29,9 @@ export function exclusiveGroupForEntry(entryId) {
 }
 
 /**
- * Returns impossible exclusive combinations in a proposed active entry set.
- * Duplicate ids are ignored because ownership and activation are boolean here.
+ * Returns impossible exclusive combinations in a proposed active entry set for
+ * one physical item/setup context. Duplicate ids are ignored because ownership
+ * and activation are boolean here.
  */
 export function exclusiveSelectionViolations(entryIds) {
   const selected = new Set(Array.isArray(entryIds) ? entryIds : []);
@@ -40,6 +42,7 @@ export function exclusiveSelectionViolations(entryIds) {
       violations.push({
         groupId: group.id,
         label: group.label,
+        itemClass: group.itemClass,
         maxActive: group.maxActive,
         active,
       });
