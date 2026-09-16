@@ -29,12 +29,13 @@ export function removeDuplicateNavigation(root = globalThis.document) {
   if (!root?.querySelectorAll) return 0;
   let removed = 0;
   for (const page of Object.keys(DUPLICATE_PAGE_TARGETS)) {
-    for (const element of root.querySelectorAll(`nav [data-page="${page}"]`)) {
-      element.remove();
-      removed += 1;
-    }
-    for (const element of root.querySelectorAll(`[data-page="${page}"]:not(nav [data-page="${page}"])`)) {
-      element.dataset.page = DUPLICATE_PAGE_TARGETS[page];
+    for (const element of root.querySelectorAll(`[data-page="${page}"]`)) {
+      if (element.closest?.('nav')) {
+        element.remove();
+        removed += 1;
+      } else {
+        element.dataset.page = DUPLICATE_PAGE_TARGETS[page];
+      }
     }
   }
   return removed;
