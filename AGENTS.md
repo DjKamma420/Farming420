@@ -60,6 +60,12 @@ The primary optimization target is long-term coin profit. Progression gates, unl
 - Setup/net-worth estimate
 - Settings, backup/restore, app install/update status and data migration tools
 
+## AI research knowledge base
+
+Before changing Farming mechanics, progression, upgrade ranking, profit calculations, Pest/Overbloom logic, Greenhouse logic, Contest logic or recommendation logic, read `research/AI_KNOWLEDGE.md` and the canonical machine-readable knowledge file at `research/hypixel_farming_master_ai_2026-09-16.json`.
+
+The machine-readable file is research input, not infallible game truth. Newer verified live Hypixel behavior overrides it. If it is older than the newest relevant Farming change, reverify and update the research layer before relying on it for calculations.
+
 ## UX direction
 
 Use `DjKamma420/StundenplanNothing` as a structural quality reference, not as a visual copy. Important patterns to carry over:
