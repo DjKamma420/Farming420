@@ -1,11 +1,12 @@
 {
   "name": "farming420",
-  "version": "0.16.9",
+  "version": "0.17.0",
   "private": true,
   "type": "module",
   "description": "Profile-aware Hypixel SkyBlock farming progression and profit planner",
   "scripts": {
     "serve": "python3 -m http.server 4173",
+    "sync:pack": "python3 scripts/sync-hypixel-pack.py",
     "test": "node --test tests/*.test.js"
   }
 }
