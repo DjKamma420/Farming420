@@ -24,6 +24,11 @@ jobs:
             node --check "$file"
           done
 
+      - name: Validate Python pack tooling
+        run: |
+          python3 -m py_compile scripts/sync-hypixel-pack.py
+          python3 -m unittest tests/test_resource_pack_sync.py
+
       - name: Check required app files
         run: |
           for file in index.html manifest.webmanifest sw.js package.json \
