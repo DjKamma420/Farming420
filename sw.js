@@ -1,4 +1,4 @@
-const VERSION = 'farming420-0.16.7';
+const VERSION = 'farming420-0.16.8';
 const APP_FILES = [
   './',
   './index.html',
@@ -23,6 +23,7 @@ const APP_FILES = [
   './src/pet-strategy.js',
   './src/resource-pack.js',
   './src/item-catalog.js',
+  './src/armor-fortune.js',
   './src/equipment-fortune.js',
   './src/snapshot-apply.js',
   './src/help-locations.js',
