@@ -42,3 +42,15 @@ branching is the tell.
 version bumps in files that had no other change. Prefer committing on the wrong
 branch and cherry-picking, or re-apply and verify the version numbers by
 grepping them afterwards, which is what caught it.
+
+## `'` inside a quoted bash heredoc (4th occurrence)
+
+Writing `game's` inside `<<'EOF'` emits the six literal characters, not an
+apostrophe, and the file fails to parse. The escape only means something to a
+JS string literal, and a quoted heredoc passes bytes through untouched.
+
+Rule: never reach for `'` in a heredoc. Either write the file with a Python
+script (where the escaping is explicit and visible), or rewrite the sentence so
+it needs no apostrophe. Always run `node --check` on the file in the same
+command that writes it, so the failure surfaces immediately instead of inside a
+test-runner summary that only says "test failed".

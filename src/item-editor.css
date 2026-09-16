@@ -1,0 +1,316 @@
+/*
+ * The item editor reads like an in-game item: art, a rarity-coloured name, then
+ * the things that can be on it. The rarity hues are the game's own chat-colour
+ * palette, carried here from `src/item-editor.js` so both agree.
+ */
+
+.rarity-common { --rarity: #ffffff; }
+.rarity-uncommon { --rarity: #55ff55; }
+.rarity-rare { --rarity: #5555ff; }
+.rarity-epic { --rarity: #aa00aa; }
+.rarity-legendary { --rarity: #ffaa00; }
+.rarity-mythic { --rarity: #ff55ff; }
+.rarity-divine { --rarity: #55ffff; }
+.rarity-special,
+.rarity-very-special { --rarity: #ff5555; }
+.rarity-unknown { --rarity: #6d7d73; }
+
+/* --- collapsed slot cards --------------------------------------------- */
+
+.slot-card {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  border-left: 3px solid color-mix(in srgb, var(--rarity, #6d7d73) 55%, transparent);
+}
+
+.slot-card .slot-text {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.slot-card.filled strong {
+  color: var(--rarity, inherit);
+}
+
+.slot-card strong,
+.slot-card .slot-text > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.slot-portrait,
+.item-portrait {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  border-radius: 10px;
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--rarity, #6d7d73) 16%, #0a1610), #060d09);
+  border: 1px solid color-mix(in srgb, var(--rarity, #6d7d73) 32%, transparent);
+}
+
+.slot-portrait { width: 46px; height: 46px; }
+.item-portrait { width: 72px; height: 72px; }
+
+.item-portrait-fallback {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  color: color-mix(in srgb, var(--rarity, #6d7d73) 70%, #ffffff);
+  opacity: .75;
+}
+
+/* The official texture replaces the two-letter placeholder when the resource
+   pack has been synced into assets/. Without it the placeholder is the UI. */
+.slot-portrait.has-official-item-art .item-portrait-fallback,
+.item-portrait.has-official-item-art .item-portrait-fallback {
+  display: none;
+}
+
+.slot-portrait .official-item-art,
+.item-portrait .official-item-art {
+  position: static;
+  transform: none;
+  left: auto;
+  top: auto;
+  width: 78%;
+  height: 78%;
+}
+
+/* --- open editor ------------------------------------------------------- */
+
+.item-editor {
+  margin-top: 20px;
+  border: 1px solid color-mix(in srgb, var(--rarity, #6d7d73) 26%, var(--line));
+  border-radius: 16px;
+  padding: 20px;
+  background:
+    radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--rarity, #6d7d73) 9%, transparent), transparent 60%),
+    linear-gradient(180deg, var(--panel2), var(--panel));
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 16px;
+}
+
+.item-editor-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+}
+
+.item-identity { min-width: 0; }
+
+.item-editor .item-title {
+  display: block;
+  font-size: 21px;
+  line-height: 1.2;
+  margin: 4px 0 3px;
+  color: var(--rarity, var(--text));
+  text-shadow: 0 0 18px color-mix(in srgb, var(--rarity, transparent) 30%, transparent);
+}
+
+.item-editor .item-rarity {
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  font-weight: 800;
+  color: color-mix(in srgb, var(--rarity, #6d7d73) 78%, #ffffff);
+}
+
+.item-editor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.item-editor .settings-field { display: grid; gap: 6px; }
+
+.item-editor .settings-field > span {
+  font-size: 11px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.item-editor input[type="text"],
+.item-editor select {
+  width: 100%;
+  box-sizing: border-box;
+  background: #08120d;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  color: var(--text);
+  padding: 10px;
+  font: inherit;
+}
+
+.item-editor-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #0a1610;
+  padding: 12px 14px;
+}
+
+.item-editor-row strong { display: block; }
+
+.item-editor-section { display: grid; gap: 10px; }
+.item-editor-section .section-row { margin: 8px 0 0; }
+.item-editor-section h3 { margin: 0 0 4px; }
+
+/* --- the lever --------------------------------------------------------- */
+
+.lever {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex: none;
+  cursor: pointer;
+}
+
+.lever input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.lever-track {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: #13241b;
+  border: 1px solid var(--line);
+  transition: background .14s, border-color .14s;
+  pointer-events: none;
+}
+
+.lever-track::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #6d7d73;
+  transition: transform .14s, background .14s;
+}
+
+.lever input:checked + .lever-track {
+  background: #1d4a33;
+  border-color: #2f7f59;
+}
+
+.lever input:checked + .lever-track::after {
+  transform: translateX(20px);
+  background: var(--accent);
+}
+
+.lever input:focus-visible + .lever-track {
+  outline: 2px solid var(--accent2);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- enchantment lines -------------------------------------------------- */
+
+.enchant-grid { display: grid; gap: 6px; }
+
+.enchant-line {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) 84px 92px;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: #0a1610;
+  padding: 9px 12px;
+  transition: border-color .14s, background .14s;
+}
+
+.enchant-line.off { opacity: .62; }
+.enchant-line.on { border-color: #2b6c4a; }
+
+.enchant-name { font-weight: 700; }
+
+.enchant-line.on .enchant-name { color: var(--accent2); }
+
+.enchant-line.enchant-maxed .enchant-name {
+  background: linear-gradient(90deg, #ffe08a, #7ef0b4, #8ab6ff, #ffe08a);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.enchant-tag {
+  margin-left: 7px;
+  font-size: 10px;
+  font-style: normal;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  border: 1px solid #694e95;
+  color: #d4c0ff;
+  border-radius: 999px;
+  padding: 2px 6px;
+}
+
+.enchant-tag.unknown { border-color: #795027; color: #ffd39c; }
+
+.enchant-line select { padding: 7px 8px; text-align: center; }
+.enchant-line select:disabled { opacity: .45; }
+
+.enchant-max {
+  color: var(--muted);
+  font-size: 11px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* --- gemstones ---------------------------------------------------------- */
+
+.gem-grid { display: grid; gap: 7px; }
+
+.gem-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+@media (max-width: 780px) {
+  .item-editor-head { grid-template-columns: auto minmax(0, 1fr); }
+  .item-editor-head > button { grid-column: 1 / -1; }
+  .enchant-line { grid-template-columns: auto minmax(0, 1fr) 72px; }
+  .enchant-max { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lever-track,
+  .lever-track::after,
+  .enchant-line { transition: none; }
+}

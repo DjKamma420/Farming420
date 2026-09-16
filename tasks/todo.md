@@ -770,3 +770,69 @@ contributing nothing derived. A test asserts that no `VERIFY` shard can score.
 - Real-browser sweep: the Shards page renders 12 entries with the correct
   per-step labels and metrics, Moth renders as `verify` / `dynamic`, the planner
   ranks without errors, and the console is clean.
+
+## Item-centric gear editor (0.18.0)
+
+### Plan
+
+- [x] Drive each slot's enchantment list from the verified metadata instead of free text
+- [x] A lever per enchantment plus a level select bounded by the sourced maximum
+- [x] Item art, rarity colour and a readable identity header per slot
+- [x] Never drop an enchantment the app has not verified
+- [x] Tests, proved to fail against a regressed module
+
+### What changed
+
+Editing a piece of gear used to mean typing enchantment identifiers into a text
+box. An empty box gives no hint that Pesterminator exists, none that it stops at
+VI, and no protection against a typo silently creating a second enchantment.
+Worse, the suggestion list was built only from the player's own synced profile,
+so before a first sync there were no suggestions at all.
+
+Each slot now shows a fixed list of exactly the enchantments that can sit on it,
+read from `VERIFIED_FARMING_ENCHANT_META`, with a lever for "I have this" and a
+level select whose options stop at the sourced maximum. Recombobulated is the
+same lever. Gemstones are a closed list of the five qualities across the twelve
+types rather than free text.
+
+`src/item-editor.js` holds all of it as pure functions over one item record and
+touches no DOM, so every rule above is testable without a browser.
+
+### Decisions worth recording
+
+- **Toggling on starts at level I, never at the maximum.** A planner that
+  assumes the best case credits Fortune the player never claimed; understating
+  is the cheaper error.
+- **An unverified enchantment is shown, not hidden.** A synced profile can carry
+  an enchant this repo has not researched. Dropping it from the editor would let
+  the next save quietly delete a real value, so it renders with a "not verified"
+  tag and no invented maximum.
+- **A crop-specific Turbo enchant keeps its own storage key.** All Turbo-Crop
+  variants share one row; each row carries the key it actually came from, so
+  editing the level of a Turbo-Melon writes back `turbo_melon` rather than
+  replacing it with a generic `turbo_crop`.
+- **Rarity colours are not a design choice.** They are the colour codes the game
+  writes into the item lore footer, which `rarityFromLore` already reads back. A
+  test asserts every rarity the normalizer parses has one.
+- Picking an item from the official list now carries Hypixel's own `tier` into
+  the record, so the name is coloured correctly without anyone typing a rarity.
+
+### Known limitation
+
+`assets/hypixel-pack/` is empty in the repository, so `item-art-ui.js` finds no
+manifest and the portraits fall back to a rarity-tinted placeholder. The pack is
+fetched by `scripts/sync-hypixel-pack.py`, which needs `api.hypixel.net` and
+`resourcepacks.hypixel.net`; both are blocked from this sandbox, so the sync
+could not be run here. Running it locally fills every portrait with the official
+texture without any further change.
+
+### Verification
+
+- 345 tests pass (was 333); 12 are new.
+- The new tests were proved to fail against a deliberately regressed
+  `src/item-editor.js` (slot kind removed, toggle defaulting to the maximum):
+  3 failures, then green again on restore.
+- Real-browser sweep: all ten slots render an editor without console errors;
+  a lever + level edit persists through a reload; turning an enchantment off
+  clears its level and disables the select; turning it back on starts at I;
+  gemstone add and recombobulated both round-trip to storage.

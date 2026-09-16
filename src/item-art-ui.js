@@ -49,9 +49,12 @@ function imageNode(asset, item) {
 export function renderSetupItemArt({ root = document, rawState = readState(), manifestValue = manifest } = {}) {
   if (!root?.querySelectorAll || !rawState || !manifestValue) return 0;
   let rendered = 0;
-  root.querySelectorAll('.slot-card[data-slot]').forEach(card => {
+  // Both surfaces that show one slot's item: the collapsed card in the grid and
+  // the portrait at the top of the open editor.
+  root.querySelectorAll('.slot-card[data-slot], [data-item-art-slot], .slot-portrait').forEach(card => {
     if (card.querySelector('.official-item-art')) return;
-    const slotId = card.dataset.slot;
+    const slotId = card.dataset.slot || card.dataset.itemArtSlot || card.closest('[data-slot]')?.dataset.slot;
+    if (!slotId) return;
     const item = itemForSetupSlot(rawState, slotId);
     const asset = item?.skyblockId ? itemAssetForSkyblockId(manifestValue, item.skyblockId) : null;
     if (!asset) return;
