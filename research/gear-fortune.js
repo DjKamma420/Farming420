@@ -31,10 +31,11 @@ export const GEAR_FORTUNE_FACTS = Object.freeze([
   }),
   Object.freeze({
     id: 'equipment-blossom-set-base-stats',
-    stepGain: 28,
+    stepGain: 7,
+    max: 4,
     source: 'https://hypixelskyblock.minecraft.wiki/w/Blossom_Set',
     lastVerified: GEAR_FORTUNE_VERIFIED,
-    note: 'Each Blossom equipment piece has +7 base Farming Fortune. Four pieces therefore total +28 before Florist, reforges or enchants.',
+    note: 'Each Blossom equipment piece has +7 base Farming Fortune. Four pieces total +28 before Florist, reforges or enchants.',
   }),
   Object.freeze({
     id: 'equipment-blossom-set-visitor-bonus',
