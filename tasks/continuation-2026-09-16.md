@@ -56,12 +56,22 @@ This file is for future coding agents continuing the project.
   - Stores economics under `profile.plannerEconomics[cropId]`.
   - Dashboard next-upgrade card switches to shortest-payback recommendation when a profit baseline and a priced candidate exist.
   - Missing costs are shown as missing, not treated as free.
+- `src/planner-modes.js`
+  - Defines seven planner goals: Profit, Collection/Contest, Farming XP, Feast RARE CROPS, Seasoning, Sowdust and Pest Farming.
+  - Profit remains revenue/payback based.
+  - Non-profit goals use relevance filtering and never invent Coin/FF conversions for unrelated metrics.
+- `src/planner-mode-ui.js` + `.css`
+  - Adds direct planner goal tabs.
+  - Stores the selected mode under `profile.plannerMode`.
+  - Non-profit modes hide the revenue panel and show only active, non-maxed upgrades relevant to that goal and crop.
+  - Rows show marginal value, current level and mode context without pretending they have a payback value.
 - `research/effective-gain-model-2026-09-16.md`
   - Documents the formulas, source assumptions and planner implications for future agents.
 - Tests:
   - `tests/farming-reforges.test.js`
   - `tests/effective-gain.test.js`
   - `tests/revenue-ranking.test.js`
+  - `tests/planner-modes.test.js`
 
 ## Effective-gain formula
 
@@ -73,13 +83,13 @@ Use this only for coin-efficiency comparison. Collection, XP, Feast milestone, S
 
 ## Next implementation priorities
 
-1. Remove the hidden legacy planner implementation from `src/app.js` once browser-level coverage exists; the visible Planner is now revenue-aware but the old markup remains as a compatibility surface.
-2. Add goal-aware planner modes: normal profit, total profit, contest/collection, Farming XP, Feast RARE CROPS, Seasoning, Sowdust and pest farming.
-3. Continue the complete live-version farming audit, focusing on sources still marked VERIFY rather than re-researching mechanics already confirmed in runtime patches.
-4. Expand texture-pack-backed item art coverage and make missing-art fallbacks visually consistent.
-5. Add browser-level/UI regression coverage for direct controls, revenue inputs, drawer opening and exclusive-state transitions.
-6. Add automatic or assisted cost acquisition where data quality is sufficient; until then, unknown prices must remain explicit rather than guessed.
-7. Continue collapsing one-state/multiple-editor leftovers in Gear/Setups where the same property is still represented twice.
+1. Continue the complete live-version farming audit, focusing on sources still marked VERIFY rather than re-researching mechanics already confirmed in runtime patches.
+2. Expand texture-pack-backed item art coverage and make missing-art fallbacks visually consistent.
+3. Add browser-level/UI regression coverage for direct controls, revenue inputs, planner goal switching, drawer opening and exclusive-state transitions.
+4. Add automatic or assisted cost acquisition where data quality is sufficient; until then, unknown prices must remain explicit rather than guessed.
+5. Continue collapsing one-state/multiple-editor leftovers in Gear/Setups where the same property is still represented twice.
+6. Remove the hidden legacy planner implementation from `src/app.js` once browser-level coverage exists; the visible Planner is now revenue-aware and goal-aware but old markup remains as a compatibility surface.
+7. Improve non-profit goal ranking beyond text relevance where verified formulas exist (for example explicit XP/hour, Seasoning/hour, Sowdust/hour or pest-output models). Do not create fake universal conversions.
 
 ## Verification note
 
