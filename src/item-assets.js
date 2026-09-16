@@ -8,11 +8,12 @@ function plainObject(value) {
 /**
  * Resource-pack item paths are lower-case. This normalization never falls back
  * to display names; it only derives a deterministic key from the real Hypixel
- * ExtraAttributes.id. A miss remains a miss.
+ * ExtraAttributes.id. A miss remains a miss. SkyBlock ids are identifiers, not
+ * paths, so path separators and traversal syntax are rejected here.
  */
 export function assetKeyForSkyblockId(skyblockId) {
   const value = typeof skyblockId === 'string' ? skyblockId.trim() : '';
-  if (!value || !/^[A-Za-z0-9_./-]+$/.test(value)) return null;
+  if (!value || !/^[A-Za-z0-9_-]+$/.test(value)) return null;
   return value.toLowerCase();
 }
 
