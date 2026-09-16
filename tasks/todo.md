@@ -836,3 +836,50 @@ texture without any further change.
   a lever + level edit persists through a reload; turning an enchantment off
   clears its level and disables the select; turning it back on starts at I;
   gemstone add and recombobulated both round-trip to storage.
+
+## The physical tool as one item (0.19.0)
+
+### Plan
+
+- [x] Give the Tools page the same item-centric panel the gear slots got
+- [x] Write to the existing tool progression, never to a second copy of it
+- [x] Respect the reforge exclusivity the game enforces
+- [x] Pin the panel against a renamed or forgotten entry
+
+### What changed
+
+The Tools page was fourteen cards, each hiding its control behind a drawer. It
+now opens with the tool itself: its name, how many of its parts are set, and one
+line per part with a lever and a level.
+
+The panel writes to the same `toolProgress` bucket the cards already read, so
+there is exactly one stored value per part and the cards below the panel stay
+in step automatically. They keep their job — the Fortune each part contributes
+and the source behind it — under a heading that says so.
+
+`SETUP_SLOTS` still has no tool slot, deliberately. The tool is already
+crop-scoped and filled by a profile sync; a copy inside a setup would give the
+same value two competing owners, which is the thing the setups module was
+written to avoid.
+
+### Decisions worth recording
+
+- **The reforge group is exclusive in the UI, not just in the maths.** Picking
+  Bountiful clears Blessed, because the game only lets a tool carry one.
+- **The control follows the level count.** One level is a lever, up to ten is a
+  roman-numeral select, more than that is a number field: fifty numerals in a
+  dropdown is not a control anyone can use.
+- **The vacuum stays off the tool panel.** Beady is a vacuum reforge; showing it
+  beside the tool reforges would imply a crop tool can carry it.
+- **Turning a part on starts it at its first level**, matching the gear editor.
+
+### Verification
+
+- 354 tests pass (was 348); 6 are new.
+- The new tests were proved to fail against a regressed `src/item-editor.js`
+  (an entry dropped from the panel, the select threshold widened to 60):
+  2 failures, green again on restore.
+- Real-browser sweep: picking Blessed cleared Bountiful; a level of 999 clamped
+  to the entry maximum of 50; the card below the panel reported the same
+  "Level 4/4 max" as the panel; switching crop switched the tool being edited
+  and kept each tool's values separate; console clean.

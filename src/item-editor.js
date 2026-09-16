@@ -247,3 +247,76 @@ export function itemSummary(slotId, item) {
     item.gems?.length ? `${item.gems.length} gem${item.gems.length === 1 ? '' : 's'}` : null,
   ].filter(Boolean).join(' · ') || 'No upgrades yet';
 }
+
+/**
+ * The physical farming tool, described as an item rather than as a scatter of
+ * progression cards.
+ *
+ * Each part points at a scored entry that already exists in `src/data.js`, so
+ * this panel is a second *view* of the same stored value and never a second
+ * copy of it. `assertToolPanelEntries` fails loudly at import time if an entry
+ * is renamed out from under it, the way `enchant-presentation.js` guards its
+ * own runtime ids.
+ */
+export const TOOL_PANEL = Object.freeze([
+  Object.freeze({
+    id: 'reforge',
+    title: 'Reforge',
+    note: 'A tool carries one reforge, so picking one clears the other.',
+    control: 'exclusive',
+    entries: Object.freeze(['tool-reforge-bountiful-reforge', 'tool-reforge-blessed-reforge']),
+  }),
+  Object.freeze({
+    id: 'enchantments',
+    title: 'Enchantments',
+    note: 'Flip the ones this tool has, then pick the level.',
+    control: 'level',
+    entries: Object.freeze([
+      'tool-enchant-cultivating-x',
+      'tool-enchant-dedication',
+      'tool-enchant-harvesting-vi',
+      'tool-enchant-turbo-crop',
+    ]),
+  }),
+  Object.freeze({
+    id: 'upgrades',
+    title: 'Tool upgrades',
+    note: 'Counters and tiers that live on the tool itself.',
+    control: 'level',
+    entries: Object.freeze([
+      'tool-tool-base-counter-fortune',
+      'tool-overclocker-3000',
+      'tool-farming-for-dummies',
+      'tool-mk-ii',
+      'tool-mk-iii',
+    ]),
+  }),
+  Object.freeze({
+    id: 'finish',
+    title: 'Gemstone and rarity',
+    note: 'A recombobulated tool gets more out of its reforge and its gemstone.',
+    control: 'level',
+    entries: Object.freeze([
+      'tool-gem-perfect-peridot-on-farming-tool',
+      'tool-recombobulator-effect-on-tool-stats',
+    ]),
+  }),
+]);
+
+export function toolPanelEntryIds() {
+  return TOOL_PANEL.flatMap(group => [...group.entries]);
+}
+
+/** A level small enough to read as roman numerals gets a select; 0-50 does not. */
+export function levelControlFor(max) {
+  const value = Math.max(1, Math.floor(Number(max) || 1));
+  if (value === 1) return 'lever';
+  return value <= 10 ? 'select' : 'number';
+}
+
+export function assertToolPanelEntries(entryIds) {
+  const known = new Set(entryIds);
+  const missing = toolPanelEntryIds().filter(id => !known.has(id));
+  if (missing.length) throw new Error(`Tool panel references unknown entries: ${missing.join(', ')}`);
+  return true;
+}
