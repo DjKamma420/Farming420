@@ -49,9 +49,15 @@ export function greenThumbTotalLevel(pieces) {
   }, 0);
 }
 
+function visitorCountOrNull(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const visitors = Number(value);
+  return Number.isFinite(visitors) && visitors >= 0 ? visitors : null;
+}
+
 export function greenThumbFortune(pieces, uniqueVisitors) {
-  const visitors = Number(uniqueVisitors);
-  if (!Number.isFinite(visitors) || visitors < 0) return null;
+  const visitors = visitorCountOrNull(uniqueVisitors);
+  if (visitors === null) return null;
   return greenThumbTotalLevel(pieces)
     * visitors
     * GREEN_THUMB_FORTUNE_PER_LEVEL_PER_UNIQUE_VISITOR;
@@ -59,8 +65,8 @@ export function greenThumbFortune(pieces, uniqueVisitors) {
 
 /** The next +1 Green Thumb level on one equipped piece adds this much FF. */
 export function greenThumbMarginalPerLevel(uniqueVisitors) {
-  const visitors = Number(uniqueVisitors);
-  if (!Number.isFinite(visitors) || visitors < 0) return null;
+  const visitors = visitorCountOrNull(uniqueVisitors);
+  if (visitors === null) return null;
   return visitors * GREEN_THUMB_FORTUNE_PER_LEVEL_PER_UNIQUE_VISITOR;
 }
 
