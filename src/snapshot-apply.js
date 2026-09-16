@@ -9,6 +9,17 @@ import {
   greenThumbTotalLevel,
   rootedFortuneForPieces,
 } from './equipment-fortune.js';
+import {
+  helianthusBaseFortune,
+  helianthusFeastFortune,
+  helianthusPieceCount,
+  mossyFortuneForPieces,
+  mossyPieceCount,
+  pesterminatorTotalLevel,
+  perfectPeridotCountOnArmor,
+  perfectPeridotFortuneOnArmor,
+  sunsetTotalLevel,
+} from './armor-fortune.js';
 
 const AUTO_SOURCE = 'hypixel-sync';
 
@@ -29,19 +40,18 @@ const TOOL_REFORGES = Object.freeze({
   beady: 'vacuum-reforge-beady-pest-only-farming-fortune',
 });
 
-const ARMOR_REFORGES = Object.freeze({ mossy: 'armor-reforge-mossy-on-full-armor' });
 const EQUIPMENT_REFORGES = Object.freeze({ rooted: 'equipment-reforge-rooted-on-full-equipment' });
-const ARMOR_ENCHANTS = Object.freeze({
-  pesterminator: 'armor-enchant-pesterminator-vi-on-full-armor',
-  sunset: 'armor-enchant-sunset-v-day-overbloom',
-});
 const EQUIPMENT_ENCHANTS = Object.freeze({ green_thumb: 'equipment-enchant-green-thumb-v-on-equipment' });
 
-const ARMOR_SLOTS = 4;
-const EQUIPMENT_SLOTS = 4;
 const BLOSSOM_BASE_ID = 'equipment-blossom-set-base-stats';
 const ROOTED_ID = EQUIPMENT_REFORGES.rooted;
 const GREEN_THUMB_ID = EQUIPMENT_ENCHANTS.green_thumb;
+const HELIANTHUS_BASE_ID = 'armor-helianthus-armor-base-stats';
+const HELIANTHUS_FEAST_ID = 'armor-helianthus-feast-set-bonus';
+const MOSSY_ID = 'armor-reforge-mossy-on-full-armor';
+const PESTERMINATOR_ID = 'armor-enchant-pesterminator-vi-on-full-armor';
+const SUNSET_ID = 'armor-enchant-sunset-v-day-overbloom';
+const ARMOR_PERIDOT_ID = 'armor-gem-perfect-peridot-on-full-armor';
 const upgradeById = new Map(UPGRADES.map(item => [item.id, item]));
 
 function maxFor(itemId) {
@@ -112,10 +122,16 @@ export function gearPiecesFor(state, snapshot, slotIds, containerPredicate) {
   return { pieces: itemsInContainers(items, containerPredicate), source: 'sync' };
 }
 
-const SET_WIDE_ENTRY_IDS = Object.freeze([
-  ...Object.values(ARMOR_REFORGES), ...Object.values(ARMOR_ENCHANTS),
-  ...Object.values(EQUIPMENT_REFORGES), ...Object.values(EQUIPMENT_ENCHANTS),
-  'armor-gem-perfect-peridot-on-full-armor', BLOSSOM_BASE_ID,
+const GEAR_DERIVED_ENTRY_IDS = Object.freeze([
+  HELIANTHUS_BASE_ID,
+  HELIANTHUS_FEAST_ID,
+  MOSSY_ID,
+  PESTERMINATOR_ID,
+  SUNSET_ID,
+  ARMOR_PERIDOT_ID,
+  ...Object.values(EQUIPMENT_REFORGES),
+  ...Object.values(EQUIPMENT_ENCHANTS),
+  BLOSSOM_BASE_ID,
 ]);
 
 function clearAutoAppliedFromStore(store, scope, entryIds) {
@@ -186,23 +202,48 @@ function applyToolItem(state, cropIds, item, autoApplied, applied) {
   }
 }
 
-function applySetWide(pieces, expectedSlots, reforgeMap, enchantMap, gemItemId, state, autoApplied, applied, skipped, label, source = 'sync') {
+function missingRarityFor(pieces, predicate) {
+  return pieces.some(piece => predicate(piece) && !String(piece?.rarity || '').trim());
+}
+
+function applyArmorDerived(pieces, state, autoApplied, applied, skipped) {
   if (!pieces.length) return;
   const scope = autoApplied.account ||= {};
   const store = state.profile;
-  if (pieces.length < expectedSlots) {
-    const where = source === 'setup' ? 'filled in your active setup' : 'visible in your profile';
-    skipped.push(`Only ${pieces.length} of ${expectedSlots} ${label} pieces are ${where}, so set-wide ${label} bonuses were not applied.`);
-    return;
+
+  const helianthusCount = helianthusPieceCount(pieces);
+  if (helianthusCount > 0) {
+    applyDynamicValue(store, scope, HELIANTHUS_BASE_ID, helianthusCount, helianthusBaseFortune(pieces), applied);
+    applyDynamicValue(store, scope, HELIANTHUS_FEAST_ID, helianthusCount, helianthusFeastFortune(pieces), applied);
   }
-  for (const [reforge, itemId] of Object.entries(reforgeMap)) {
-    if (pieces.every(piece => String(piece.reforge || '').toLowerCase() === reforge)) applyValue(store, scope, itemId, 1, applied);
+
+  const mossyCount = mossyPieceCount(pieces);
+  if (mossyCount > 0) {
+    const unknownMossyRarity = missingRarityFor(pieces, piece => String(piece?.reforge || '').toLowerCase() === 'mossy');
+    if (unknownMossyRarity) {
+      applyValue(store, scope, MOSSY_ID, mossyCount, applied);
+      skipped.push('Mossy was detected on equipped armor, but at least one Mossy piece has unknown rarity, so its Farming Fortune was not guessed.');
+    } else {
+      applyDynamicValue(store, scope, MOSSY_ID, mossyCount, mossyFortuneForPieces(pieces), applied);
+    }
   }
-  for (const [enchant, itemId] of Object.entries(enchantMap)) {
-    const levels = pieces.map(piece => Number(piece.enchantments?.[enchant] || 0));
-    if (levels.every(level => level > 0)) applyValue(store, scope, itemId, Math.min(...levels), applied);
+
+  const pesterminatorLevels = pesterminatorTotalLevel(pieces);
+  if (pesterminatorLevels > 0) applyValue(store, scope, PESTERMINATOR_ID, pesterminatorLevels, applied);
+
+  const sunsetLevels = sunsetTotalLevel(pieces);
+  if (sunsetLevels > 0) applyValue(store, scope, SUNSET_ID, sunsetLevels, applied);
+
+  const peridotCount = perfectPeridotCountOnArmor(pieces);
+  if (peridotCount > 0) {
+    const unknownGemRarity = missingRarityFor(pieces, piece => hasPerfectGem(piece?.gems));
+    if (unknownGemRarity) {
+      applyValue(store, scope, ARMOR_PERIDOT_ID, peridotCount, applied);
+      skipped.push('Perfect Peridot was detected on equipped armor, but at least one host piece has unknown rarity, so its Farming Fortune was not guessed.');
+    } else {
+      applyDynamicValue(store, scope, ARMOR_PERIDOT_ID, peridotCount, perfectPeridotFortuneOnArmor(pieces), applied);
+    }
   }
-  if (gemItemId && pieces.every(piece => hasPerfectGem(piece.gems))) applyValue(store, scope, gemItemId, 1, applied);
 }
 
 function applyEquipmentDerived(pieces, state, snapshot, autoApplied, applied, skipped) {
@@ -226,15 +267,14 @@ function applyEquipmentDerived(pieces, state, snapshot, autoApplied, applied, sk
   }
 
   const rootedPieces = pieces.filter(piece => String(piece?.reforge || '').toLowerCase() === 'rooted');
-  if (rootedPieces.length !== EQUIPMENT_SLOTS) return;
-  const missingRarity = rootedPieces.some(piece => !String(piece?.rarity || '').trim());
-  if (missingRarity) {
-    applyDynamicValue(store, scope, ROOTED_ID, 1, 0, applied);
-    skipped.push('Rooted is present on all four equipment pieces, but at least one rarity is unknown, so Farming420 did not assume a Rooted Fortune value.');
+  if (!rootedPieces.length) return;
+  if (rootedPieces.some(piece => !String(piece?.rarity || '').trim())) {
+    applyValue(store, scope, ROOTED_ID, rootedPieces.length, applied);
+    skipped.push('Rooted was detected on equipped equipment, but at least one Rooted piece has unknown rarity, so its Farming Fortune was not guessed.');
     return;
   }
   const rootedGain = rootedFortuneForPieces(rootedPieces);
-  if (rootedGain > 0) applyDynamicValue(store, scope, ROOTED_ID, 1, rootedGain, applied);
+  if (rootedGain > 0) applyDynamicValue(store, scope, ROOTED_ID, rootedPieces.length, rootedGain, applied);
 }
 
 export function applySnapshotToProgress(state, snapshot) {
@@ -270,19 +310,11 @@ export function applySnapshotToProgress(state, snapshot) {
     if (cropIds.length) applyToolItem(state, cropIds, item, autoApplied, applied);
   }
 
-  clearAccountAutoApplied(state, autoApplied, SET_WIDE_ENTRY_IDS);
+  clearAccountAutoApplied(state, autoApplied, GEAR_DERIVED_ENTRY_IDS);
   const armorSource = gearPiecesFor(state, snapshot, SETUP_ARMOR_SLOTS, isArmorContainer);
-  applySetWide(
-    armorSource.pieces, ARMOR_SLOTS,
-    ARMOR_REFORGES, ARMOR_ENCHANTS, 'armor-gem-perfect-peridot-on-full-armor',
-    state, autoApplied, applied, skipped, 'armor', armorSource.source,
-  );
+  applyArmorDerived(armorSource.pieces, state, autoApplied, applied, skipped);
+
   const equipmentSource = gearPiecesFor(state, snapshot, SETUP_EQUIPMENT_SLOTS, isEquipmentContainer);
-  applySetWide(
-    equipmentSource.pieces, EQUIPMENT_SLOTS,
-    {}, {}, null,
-    state, autoApplied, applied, skipped, 'equipment', equipmentSource.source,
-  );
   applyEquipmentDerived(equipmentSource.pieces, state, snapshot, autoApplied, applied, skipped);
 
   if (items.length && !applied.some(entry => entry.id.startsWith('tool-'))) {
@@ -298,11 +330,11 @@ export function applySnapshotToProgress(state, snapshot) {
 
 export const MAPPABLE_ENTRY_IDS = Object.freeze(new Set([
   ...Object.values(TOOL_COUNTERS), ...Object.values(TOOL_ENCHANTS), ...Object.values(TOOL_REFORGES),
-  ...Object.values(ARMOR_REFORGES), ...Object.values(ARMOR_ENCHANTS), ...Object.values(EQUIPMENT_REFORGES),
-  ...Object.values(EQUIPMENT_ENCHANTS),
+  ...Object.values(EQUIPMENT_REFORGES), ...Object.values(EQUIPMENT_ENCHANTS),
+  HELIANTHUS_BASE_ID, HELIANTHUS_FEAST_ID, MOSSY_ID, PESTERMINATOR_ID, SUNSET_ID, ARMOR_PERIDOT_ID,
   BLOSSOM_BASE_ID,
   'tool-enchant-turbo-crop', 'tool-recombobulator-effect-on-tool-stats',
-  'tool-gem-perfect-peridot-on-farming-tool', 'armor-gem-perfect-peridot-on-full-armor',
+  'tool-gem-perfect-peridot-on-farming-tool',
   'account-skill-farming-skill-level', 'garden-garden-plots-unlocked',
   'crop-progression-crop-upgrade-selected-crop',
 ]));

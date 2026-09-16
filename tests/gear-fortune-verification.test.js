@@ -16,18 +16,29 @@ test('verified farming gear facts are dated after the 2026 farming changes', () 
   assert.ok(GEAR_FORTUNE_VERIFIED >= '2026-08-01');
 });
 
-test('verified gear values still match the runtime data', () => {
-  assert.equal(GEAR_FORTUNE_FACTS.length, 6);
+test('verified gear facts remain mapped to active runtime entries', () => {
+  assert.equal(GEAR_FORTUNE_FACTS.length, 8);
 
   for (const fact of GEAR_FORTUNE_FACTS) {
     const upgrade = byId.get(fact.id);
     assert.ok(upgrade, `verified gear upgrade is missing from runtime data: ${fact.id}`);
     assert.equal(upgrade.status, 'ACTIVE', `${fact.id} is no longer active`);
-    assert.equal(upgrade.stepGain, fact.stepGain, `${fact.id} drifted from the verified Fortune value`);
+    if (fact.stepGain !== undefined) assert.equal(upgrade.stepGain, fact.stepGain, `${fact.id} drifted from the verified Fortune value`);
     if (fact.max !== undefined) assert.equal(upgrade.max, fact.max, `${fact.id} drifted from the verified max`);
-    assert.ok(fact.source.startsWith('https://hypixelskyblock.minecraft.wiki/'));
+    assert.match(fact.source, /^https:\/\/(hypixelskyblock\.minecraft\.wiki|hypixel\.net|hypixel-skyblock\.fandom\.com)\//);
     assert.equal(fact.lastVerified, GEAR_FORTUNE_VERIFIED);
   }
+});
+
+test('armor research distinguishes item-local mechanics from tiered bonuses', () => {
+  const helianthus = GEAR_FORTUNE_FACTS.find(fact => fact.id === 'armor-helianthus-armor-base-stats');
+  const feast = GEAR_FORTUNE_FACTS.find(fact => fact.id === 'armor-helianthus-feast-set-bonus');
+  const mossy = GEAR_FORTUNE_FACTS.find(fact => fact.id === 'armor-reforge-mossy-on-full-armor');
+  const pesterminator = GEAR_FORTUNE_FACTS.find(fact => fact.id === 'armor-enchant-pesterminator-vi-on-full-armor');
+  assert.match(helianthus.note, /item-local/i);
+  assert.match(feast.note, /tiered piece-count bonus/i);
+  assert.match(mossy.note, /one armor item at a time/i);
+  assert.match(pesterminator.note, /item-local/i);
 });
 
 test('Blossom base Fortune is modeled per piece and separately from Florist', () => {

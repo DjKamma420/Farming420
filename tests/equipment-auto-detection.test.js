@@ -55,8 +55,15 @@ test('Blossom base Fortune is auto-derived per equipped piece', () => {
 test('four Legendary Rooted equipment pieces derive exactly +72 Fortune', () => {
   const state = stateWithEquipment([0, 1, 2, 3].map(i => blossom(i)));
   applySnapshotToProgress(state, snapshot());
-  assert.equal(state.profile.levels['equipment-reforge-rooted-on-full-equipment'], 1);
+  assert.equal(state.profile.levels['equipment-reforge-rooted-on-full-equipment'], 4);
   assert.equal(state.profile.manualGain['equipment-reforge-rooted-on-full-equipment'], 72);
+});
+
+test('one Legendary Rooted equipment piece contributes independently', () => {
+  const state = stateWithEquipment([blossom(0)]);
+  applySnapshotToProgress(state, snapshot());
+  assert.equal(state.profile.levels['equipment-reforge-rooted-on-full-equipment'], 1);
+  assert.equal(state.profile.manualGain['equipment-reforge-rooted-on-full-equipment'], 18);
 });
 
 test('Rooted uses the actual rarity mix instead of assuming +72', () => {
@@ -79,20 +86,20 @@ test('unknown Rooted rarity is recognized but its Fortune is not guessed', () =>
     blossom(0), blossom(1), blossom(2), blossom(3, { rarity: '' }),
   ]);
   const result = applySnapshotToProgress(state, snapshot());
-  assert.equal(state.profile.levels['equipment-reforge-rooted-on-full-equipment'], 1);
-  assert.equal(state.profile.manualGain['equipment-reforge-rooted-on-full-equipment'], 0);
-  assert.ok(result.skipped.some(note => /rarity is unknown/i.test(note)));
+  assert.equal(state.profile.levels['equipment-reforge-rooted-on-full-equipment'], 4);
+  assert.equal(state.profile.manualGain['equipment-reforge-rooted-on-full-equipment'], undefined);
+  assert.ok(result.skipped.some(note => /rarity/i.test(note)));
 });
 
-test('removing Rooted clears only the previous auto-derived dynamic gain', () => {
+test('removing Rooted from one piece keeps the remaining three Rooted pieces', () => {
   const state = stateWithEquipment([0, 1, 2, 3].map(i => blossom(i)));
   applySnapshotToProgress(state, snapshot());
   assert.equal(state.profile.manualGain['equipment-reforge-rooted-on-full-equipment'], 72);
 
   state.profile.setups.list[0].slots.equipment4.reforge = 'blooming';
   applySnapshotToProgress(state, snapshot());
-  assert.equal(state.profile.levels['equipment-reforge-rooted-on-full-equipment'], undefined);
-  assert.equal(state.profile.manualGain['equipment-reforge-rooted-on-full-equipment'], undefined);
+  assert.equal(state.profile.levels['equipment-reforge-rooted-on-full-equipment'], 3);
+  assert.equal(state.profile.manualGain['equipment-reforge-rooted-on-full-equipment'], 54);
 });
 
 test('Green Thumb uses summed equipment levels and synced unique visitors', () => {

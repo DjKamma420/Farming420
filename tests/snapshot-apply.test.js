@@ -127,39 +127,44 @@ test('a shared tool fills both crops that use it', () => {
   assert.equal(state.profile.toolProgress['eclipse-sickle'].levels['tool-enchant-harvesting-vi'], 6);
 });
 
-test('a set-wide armor bonus needs every slot, and an incomplete set is reported', () => {
-  const piece = extra => ({ container: 'armor', displayName: 'Helianthus Helmet', gems: {}, enchantments: {}, ...extra });
-
-  const partial = emptyState();
-  const partialResult = applySnapshotToProgress(partial, snapshotWith({
-    items: [piece({ reforge: 'mossy' }), piece({ reforge: 'mossy' })],
-  }));
-  assert.equal(partial.profile.levels['armor-reforge-mossy-on-full-armor'], undefined);
-  assert.ok(partialResult.skipped.some(note => /2 of 4 armor pieces/.test(note)));
-
-  const full = emptyState();
-  applySnapshotToProgress(full, snapshotWith({
-    items: Array.from({ length: 4 }, () => piece({ reforge: 'mossy', enchantments: { pesterminator: 6 }, gems: { PERIDOT_0: 'PERFECT' } })),
-  }));
-  assert.equal(full.profile.levels['armor-reforge-mossy-on-full-armor'], 1);
-  assert.equal(full.profile.levels['armor-enchant-pesterminator-vi-on-full-armor'], 1);
-  assert.equal(full.profile.levels['armor-gem-perfect-peridot-on-full-armor'], 1);
-});
-
-test('one armor piece missing the effect blocks the set-wide bonus', () => {
-  const piece = reforge => ({ container: 'armor', displayName: 'Helianthus Helmet', gems: {}, enchantments: {}, reforge });
+test('armor reforges, enchants and gems apply per equipped piece', () => {
+  const armor = (displayName, extra = {}) => ({
+    container: 'armor', displayName, rarity: 'LEGENDARY', gems: {}, enchantments: {}, ...extra,
+  });
   const state = emptyState();
   applySnapshotToProgress(state, snapshotWith({
-    items: [piece('mossy'), piece('mossy'), piece('mossy'), piece('blessed')],
+    items: [
+      armor('Helianthus Helmet', { reforge: 'mossy', enchantments: { pesterminator: 6 }, gems: { PERIDOT_0: 'PERFECT' } }),
+      armor('Helianthus Chestplate', { reforge: 'mossy', enchantments: { pesterminator: 3 } }),
+    ],
   }));
-  assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], undefined);
+  assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], 2);
+  assert.equal(state.profile.manualGain['armor-reforge-mossy-on-full-armor'], 50);
+  assert.equal(state.profile.levels['armor-enchant-pesterminator-vi-on-full-armor'], 9);
+  assert.equal(state.profile.levels['armor-gem-perfect-peridot-on-full-armor'], 1);
+  assert.equal(state.profile.manualGain['armor-gem-perfect-peridot-on-full-armor'], 8);
 });
 
-test('a set-wide enchantment is recorded at the lowest level across the set', () => {
-  const piece = level => ({ container: 'armor', displayName: 'Helianthus Helmet', gems: {}, enchantments: { sunset: level } });
+test('one armor piece without Mossy does not erase Mossy from the other pieces', () => {
+  const piece = (name, reforge) => ({ container: 'armor', displayName: name, rarity: 'LEGENDARY', gems: {}, enchantments: {}, reforge });
+  const state = emptyState();
+  applySnapshotToProgress(state, snapshotWith({
+    items: [
+      piece('Helianthus Helmet', 'mossy'),
+      piece('Helianthus Chestplate', 'mossy'),
+      piece('Helianthus Leggings', 'mossy'),
+      piece('Helianthus Boots', 'blessed'),
+    ],
+  }));
+  assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], 3);
+  assert.equal(state.profile.manualGain['armor-reforge-mossy-on-full-armor'], 75);
+});
+
+test('Sunset levels are summed per armor piece instead of taking a set minimum', () => {
+  const piece = level => ({ container: 'armor', displayName: 'Armor Piece', gems: {}, enchantments: { sunset: level } });
   const state = emptyState();
   applySnapshotToProgress(state, snapshotWith({ items: [piece(5), piece(3), piece(5), piece(4)] }));
-  assert.equal(state.profile.levels['armor-enchant-sunset-v-day-overbloom'], 3);
+  assert.equal(state.profile.levels['armor-enchant-sunset-v-day-overbloom'], 17);
 });
 
 test('loadout containers count as armor and equipment', () => {
@@ -167,10 +172,11 @@ test('loadout containers count as armor and equipment', () => {
   applySnapshotToProgress(state, snapshotWith({
     items: Array.from({ length: 4 }, (_, index) => ({
       container: `loadout.equipment.set_a.equipment_slot_${index + 1}`,
-      displayName: 'Lotus Bracelet', gems: {}, enchantments: { green_thumb: 5 }, reforge: 'rooted',
+      displayName: 'Lotus Bracelet', rarity: 'LEGENDARY', gems: {}, enchantments: { green_thumb: 5 }, reforge: 'rooted',
     })),
   }));
-  assert.equal(state.profile.levels['equipment-reforge-rooted-on-full-equipment'], 1);
+  assert.equal(state.profile.levels['equipment-reforge-rooted-on-full-equipment'], 4);
+  assert.equal(state.profile.manualGain['equipment-reforge-rooted-on-full-equipment'], 72);
   assert.equal(state.profile.levels['equipment-enchant-green-thumb-v-on-equipment'], 20);
 });
 
@@ -234,8 +240,17 @@ test('decoded items that match no tool are reported', () => {
 
 // --- the active setup drives the gear cards --------------------------------
 
-function setupPiece(overrides = {}) {
-  return { displayName: 'Helianthus Helmet', reforge: 'mossy', enchantments: {}, gems: [], ...overrides };
+function setupPiece(displayName = 'Helianthus Helmet', overrides = {}) {
+  return { displayName, rarity: 'LEGENDARY', reforge: 'mossy', enchantments: {}, gems: [], ...overrides };
+}
+
+function fullSetupArmor(overrides = {}) {
+  return {
+    helmet: setupPiece('Helianthus Helmet', overrides.helmet),
+    chestplate: setupPiece('Helianthus Chestplate', overrides.chestplate),
+    leggings: setupPiece('Helianthus Leggings', overrides.leggings),
+    boots: setupPiece('Helianthus Boots', overrides.boots),
+  };
 }
 
 function stateWithSetup(slots) {
@@ -251,52 +266,56 @@ function stateWithSetup(slots) {
   return state;
 }
 
-test('a full armor set in the active setup produces the set-wide bonus', () => {
-  const state = stateWithSetup({
-    helmet: setupPiece(), chestplate: setupPiece(), leggings: setupPiece(), boots: setupPiece(),
-  });
+test('a complete Helianthus setup separates base stats, Feast and per-piece Mossy', () => {
+  const state = stateWithSetup(fullSetupArmor());
   applySnapshotToProgress(state, snapshotWith());
-  assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], 1);
+  assert.equal(state.profile.levels['armor-helianthus-armor-base-stats'], 4);
+  assert.equal(state.profile.manualGain['armor-helianthus-armor-base-stats'], 150);
+  assert.equal(state.profile.levels['armor-helianthus-feast-set-bonus'], 4);
+  assert.equal(state.profile.manualGain['armor-helianthus-feast-set-bonus'], 75);
+  assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], 4);
+  assert.equal(state.profile.manualGain['armor-reforge-mossy-on-full-armor'], 100);
 });
 
-test('the setup wins over the gear a sync detected', () => {
-  const synced = { container: 'armor', displayName: 'Old Helmet', reforge: 'blessed', enchantments: {}, gems: {} };
-  const state = stateWithSetup({
-    helmet: setupPiece(), chestplate: setupPiece(), leggings: setupPiece(), boots: setupPiece(),
-  });
+test('the setup wins over stale synced armor', () => {
+  const synced = { container: 'armor', displayName: 'Old Helmet', rarity: 'LEGENDARY', reforge: 'blessed', enchantments: {}, gems: {} };
+  const state = stateWithSetup(fullSetupArmor());
   applySnapshotToProgress(state, snapshotWith({ items: [synced, synced, synced, synced] }));
-  assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], 1);
+  assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], 4);
+  assert.equal(state.profile.manualGain['armor-reforge-mossy-on-full-armor'], 100);
 });
 
-test('detected gear is still used for a class the setup leaves empty', () => {
-  const equipment = { container: 'equipment', displayName: 'Lotus', reforge: 'rooted', enchantments: {}, gems: {} };
-  const state = stateWithSetup({
-    helmet: setupPiece(), chestplate: setupPiece(), leggings: setupPiece(), boots: setupPiece(),
-  });
+test('detected equipment is still used when the active setup leaves equipment empty', () => {
+  const equipment = { container: 'equipment', displayName: 'Lotus', rarity: 'LEGENDARY', reforge: 'rooted', enchantments: {}, gems: {} };
+  const state = stateWithSetup(fullSetupArmor());
   applySnapshotToProgress(state, snapshotWith({ items: [equipment, equipment, equipment, equipment] }));
-  assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], 1, 'armor from the setup');
-  assert.equal(state.profile.levels['equipment-reforge-rooted-on-full-equipment'], 1, 'equipment from the sync');
+  assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], 4, 'armor from the setup');
+  assert.equal(state.profile.levels['equipment-reforge-rooted-on-full-equipment'], 4, 'equipment from the sync');
+  assert.equal(state.profile.manualGain['equipment-reforge-rooted-on-full-equipment'], 72);
 });
 
-test('an incomplete setup says so rather than counting the bonus', () => {
-  const state = stateWithSetup({ helmet: setupPiece(), chestplate: setupPiece() });
-  const result = applySnapshotToProgress(state, snapshotWith());
-  assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], undefined);
-  assert.ok(result.skipped.some(note => /filled in your active setup/.test(note)));
-});
-
-test('removing a reforge from the setup clears the card again', () => {
+test('an incomplete armor setup still counts the individual pieces that are actually equipped', () => {
   const state = stateWithSetup({
-    helmet: setupPiece(), chestplate: setupPiece(), leggings: setupPiece(), boots: setupPiece(),
+    helmet: setupPiece('Helianthus Helmet'),
+    chestplate: setupPiece('Helianthus Chestplate'),
   });
   applySnapshotToProgress(state, snapshotWith());
-  assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], 1);
+  assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], 2);
+  assert.equal(state.profile.manualGain['armor-reforge-mossy-on-full-armor'], 50);
+  assert.equal(state.profile.manualGain['armor-helianthus-armor-base-stats'], 75);
+  assert.equal(state.profile.manualGain['armor-helianthus-feast-set-bonus'], 25);
+});
+
+test('removing Mossy from one setup piece keeps the other three Mossy pieces', () => {
+  const state = stateWithSetup(fullSetupArmor());
+  applySnapshotToProgress(state, snapshotWith());
+  assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], 4);
 
   state.profile.setups.list[0].slots.boots.reforge = 'blessed';
   applySnapshotToProgress(state, snapshotWith());
-  assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], undefined, 'a value nothing supports must go away');
-  assert.equal(state.profile.owned['armor-reforge-mossy-on-full-armor'], undefined);
-  assert.ok(!isAutoApplied(state, 'account', 'armor-reforge-mossy-on-full-armor'));
+  assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], 3);
+  assert.equal(state.profile.manualGain['armor-reforge-mossy-on-full-armor'], 75);
+  assert.ok(isAutoApplied(state, 'account', 'armor-reforge-mossy-on-full-armor'));
 });
 
 test('recomputing never clears a value the player set by hand', () => {
@@ -308,24 +327,26 @@ test('recomputing never clears a value the player set by hand', () => {
 });
 
 test('switching the active setup re-derives from the newly active one', () => {
-  const state = stateWithSetup({
-    helmet: setupPiece(), chestplate: setupPiece(), leggings: setupPiece(), boots: setupPiece(),
-  });
+  const state = stateWithSetup(fullSetupArmor());
   applySnapshotToProgress(state, snapshotWith());
-  assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], 1);
+  assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], 4);
 
   state.profile.setups.activeId = 'pest';
   applySnapshotToProgress(state, snapshotWith());
   assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], undefined, 'the pest setup is empty');
 });
 
-test("a perfect gem is read from the setup editor's list shape too", () => {
-  const withGem = () => setupPiece({ gems: ['PERFECT PERIDOT'] });
+test("Perfect Peridot is read per slot from the setup editor's list shape", () => {
+  const withGem = name => setupPiece(name, { gems: ['PERFECT PERIDOT'] });
   const state = stateWithSetup({
-    helmet: withGem(), chestplate: withGem(), leggings: withGem(), boots: withGem(),
+    helmet: withGem('Helianthus Helmet'),
+    chestplate: withGem('Helianthus Chestplate'),
+    leggings: withGem('Helianthus Leggings'),
+    boots: withGem('Helianthus Boots'),
   });
   applySnapshotToProgress(state, snapshotWith());
-  assert.equal(state.profile.levels['armor-gem-perfect-peridot-on-full-armor'], 1);
+  assert.equal(state.profile.levels['armor-gem-perfect-peridot-on-full-armor'], 4);
+  assert.equal(state.profile.manualGain['armor-gem-perfect-peridot-on-full-armor'], 32);
 });
 
 test('hasPerfectGem accepts both recorded shapes and rejects near-misses', () => {
@@ -336,11 +357,17 @@ test('hasPerfectGem accepts both recorded shapes and rejects near-misses', () =>
   assert.equal(hasPerfectGem([]), false);
 });
 
-test('a state without setups still evaluates the detected gear', () => {
-  const piece = { container: 'armor', displayName: 'H', reforge: 'mossy', enchantments: {}, gems: {} };
+test('a state without setups still evaluates detected armor piece-by-piece', () => {
+  const piece = name => ({ container: 'armor', displayName: name, rarity: 'LEGENDARY', reforge: 'mossy', enchantments: {}, gems: {} });
   const state = emptyState();
-  applySnapshotToProgress(state, snapshotWith({ items: [piece, piece, piece, piece] }));
-  assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], 1);
+  applySnapshotToProgress(state, snapshotWith({ items: [
+    piece('Helianthus Helmet'),
+    piece('Helianthus Chestplate'),
+    piece('Helianthus Leggings'),
+    piece('Helianthus Boots'),
+  ] }));
+  assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], 4);
+  assert.equal(state.profile.manualGain['armor-reforge-mossy-on-full-armor'], 100);
 });
 
 // --- the in-game tool rename -----------------------------------------------
