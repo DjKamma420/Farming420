@@ -4,6 +4,18 @@ import { ensureProgressBucket, migrateState, toolKeyForCropId } from './migratio
 import { applySnapshotToProgress, isAutoApplied } from './snapshot-apply.js';
 import { LOCATION_STATUS, isSyncFilled, locationFor, manualEntries, manualEntrySummary } from './help-locations.js';
 import {
+  ARMOR_CHAIN,
+  ENCHANT_LADDERS,
+  PET_OPTIONS,
+  PHASE_LOADOUTS,
+  PROGRESSION_SOURCE,
+  STAGES,
+  TIER_LABEL,
+  armorProgress,
+  nextArmorSet,
+  stageForLevel,
+} from './progression.js';
+import {
   ITEM_SOURCE,
   SETUP_SLOTS,
   activeSetup,
@@ -43,6 +55,7 @@ const NAV = [
   ['shards', 'Shards'],
   ['buffs', 'Buffs'],
   ['pests', 'Pests'],
+  ['guide', 'Guide 0-60'],
   ['setup', 'What to enter'],
   ['planner', 'Upgrade Planner'],
   ['research', 'Mechanics'],
@@ -785,6 +798,116 @@ async function ensureItemCatalog() {
   if (state.page === 'setups' && (result.items.length || result.error)) render();
 }
 
+// --- Guide 0-60 -------------------------------------------------------------
+// A staged walkthrough driven by the player's own synced Farming level, with
+// selectable alternatives where the source names more than one good answer.
+
+const FARMING_LEVEL_ENTRY = 'account-skill-farming-skill-level';
+
+function farmingLevel() {
+  const synced = state.profile.normalizedSnapshot?.skills?.farming?.level;
+  if (Number.isFinite(synced)) return synced;
+  const entered = Number(state.profile.levels?.[FARMING_LEVEL_ENTRY]);
+  return Number.isFinite(entered) && entered > 0 ? entered : null;
+}
+
+function petChoice(phase) {
+  return state.profile.petChoices?.[phase] || null;
+}
+
+function guidePage() {
+  const level = farmingLevel();
+  const current = level === null ? null : stageForLevel(level);
+  const openStage = state.guideStage || current?.id || STAGES[0].id;
+  const next = level === null ? null : nextArmorSet(level);
+
+  return `${pageHeader('Guide', 'Farming 0 to 60', 'Every stage from the first crop to a maxed setup, with the alternatives the source names as equal or only slightly worse.')}
+    <div class="planner-context">
+      <div><span>Your Farming level</span><strong>${level === null ? 'Unknown' : level}</strong></div>
+      <div><span>Current stage</span><strong>${esc(current?.name || 'Sync to find out')}</strong></div>
+      <div><span>Next armour</span><strong>${esc(next ? `${next.set} at ${next.level}` : (level === null ? '—' : 'All reached'))}</strong></div>
+      <div><span>Stages</span><strong>${STAGES.length}</strong></div>
+    </div>
+    ${level === null ? '<div class="hint">Sync your profile in Settings, or enter your Farming Skill level on the Account page, and this guide will follow along.</div>' : ''}
+
+    <div class="setup-tabs">
+      ${STAGES.map(stage => `<button class="setup-tab ${stage.id === openStage ? 'active' : ''}" data-guide-stage="${esc(stage.id)}">
+        ${esc(stage.name)}<small> ${stage.levelFrom}-${stage.levelTo}</small>${stage.id === current?.id ? ' •' : ''}
+      </button>`).join('')}
+    </div>
+
+    ${STAGES.filter(stage => stage.id === openStage).map(stage => `
+      <article class="guide-stage">
+        <div class="eyebrow">Farming ${stage.levelFrom}-${stage.levelTo}${stage.id === current?.id ? ' · you are here' : ''}</div>
+        <h2>${esc(stage.name)}</h2>
+        <p>${esc(stage.summary)}</p>
+        <ol class="guide-steps">${stage.steps.map(step => `<li>${esc(step)}</li>`).join('')}</ol>
+      </article>`).join('')}
+
+    <div class="section-row"><div><h2>Armour chain</h2><p>The level each set unlocks at. Fortune figures are the guide's; the Farming Fortune page disagrees from Tater upward, so those are marked.</p></div></div>
+    <div class="armor-chain">
+      ${armorProgress(level).map(entry => `<div class="armor-step ${entry.reached === true ? 'done' : ''} ${entry.reached === false && next?.set === entry.set ? 'next' : ''}">
+        <span>Farming ${entry.level}</span>
+        <strong>${esc(entry.set)}</strong>
+        <small>+${entry.fortune} FF${entry.disputed ? ' <i title="Sources disagree on this figure">disputed</i>' : ''}</small>
+        ${entry.reached === true ? badge('reached', 'maxed') : (next?.set === entry.set ? badge('next', 'owned') : '')}
+      </div>`).join('')}
+    </div>
+
+    <div class="section-row"><div><h2>Pets</h2><p>Your best pet changes between farming, spawning Pests and killing them. Pick the one you use and it is remembered.</p></div></div>
+    ${PET_OPTIONS.map(group => `
+      <div class="pet-group">
+        <div class="eyebrow">${esc(group.label)}</div>
+        <div class="pet-options">
+          ${group.options.map(option => `<button class="pet-option ${petChoice(group.phase) === option.name ? 'chosen' : ''}"
+              data-pet-phase="${esc(group.phase)}" data-pet-name="${esc(option.name)}">
+            <div class="pet-head">${badge(TIER_LABEL[option.tier], option.tier === 'best' ? 'maxed' : (option.tier === 'budget' ? 'soft' : 'owned'))}<strong>${esc(option.name)}</strong></div>
+            <p>${esc(option.note)}</p>
+          </button>`).join('')}
+        </div>
+      </div>`).join('')}
+
+    <div class="section-row"><div><h2>Enchantments by level</h2><p>Which level is reachable now, and what the next one takes.</p></div></div>
+    <div class="ladder-grid">
+      ${ENCHANT_LADDERS.map(ladder => `<article class="ladder">
+        <div class="eyebrow">${esc(ladder.scope)}</div>
+        <h3>${esc(ladder.name)}</h3>
+        <p><strong>${esc(ladder.perLevel)}</strong> · max ${esc(ladder.max)}</p>
+        <ul>${ladder.steps.map(step => `<li><b>${esc(step.levels)}</b> — ${esc(step.from)}</li>`).join('')}</ul>
+        ${ladder.gate ? `<p class="find-warn">${esc(ladder.gate)}</p>` : ''}
+      </article>`).join('')}
+    </div>
+
+    <div class="section-row"><div><h2>The three-phase loadout</h2><p>From budget to hypermax. Each phase has a different job, so one setup for all three always gives something up.</p></div></div>
+    ${PHASE_LOADOUTS.map(loadout => `
+      <div class="loadout">
+        <div class="eyebrow">${esc(loadout.label)}</div>
+        <div class="loadout-rows">
+          ${loadout.rows.map(row => `<div class="loadout-row">
+            <strong>${esc(row.phase)}</strong>
+            <span><b>Armour</b> ${esc(row.armor)}</span>
+            <span><b>Equipment</b> ${esc(row.equipment)}</span>
+            <span><b>Pet</b> ${esc(row.pet)}</span>
+          </div>`).join('')}
+        </div>
+      </div>`).join('')}
+
+    <a class="source-btn" href="${esc(PROGRESSION_SOURCE)}" target="_blank" rel="noreferrer">Open the source guide</a>`;
+}
+
+function bindGuide() {
+  document.querySelectorAll('[data-guide-stage]').forEach(el => el.addEventListener('click', () => {
+    state.guideStage = el.dataset.guideStage; saveState(); render();
+  }));
+  document.querySelectorAll('[data-pet-phase]').forEach(el => el.addEventListener('click', () => {
+    state.profile.petChoices ||= {};
+    const phase = el.dataset.petPhase;
+    // Clicking the chosen option again clears it.
+    state.profile.petChoices[phase] = state.profile.petChoices[phase] === el.dataset.petName ? null : el.dataset.petName;
+    saveState(); render();
+  }));
+}
+
 function render() {
   let content = '';
   switch(state.page) {
@@ -798,6 +921,7 @@ function render() {
     case 'shards': content = genericSectionPage('shards','Attribute Shards','Shards','Track day/night, pest-conditional and general Farming Fortune shards separately.'); break;
     case 'buffs': content = genericSectionPage('buffs','Buffs','Temporary Buffs & Mixins','God Potion, mixins, cakes and seasonal effects are kept separate from permanent progression.'); break;
     case 'pests': content = genericSectionPage('pests','Pests','Pest Setup','Pest-specific stats, spawn mechanics and loot logic stay separate from normal crop farming.'); break;
+    case 'guide': content = guidePage(); break;
     case 'setup': content = setupPage(); break;
     case 'setups': content = setupsPage(); break;
     case 'planner': content = plannerPage(); break;
@@ -811,6 +935,7 @@ function render() {
     bindSetups();
     ensureItemCatalog();
   }
+  if (state.page === 'guide') bindGuide();
 }
 
 function bind() {
