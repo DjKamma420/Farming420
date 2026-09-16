@@ -103,6 +103,10 @@ function renderScan(panel, rawText) {
 
 async function scanFile(panel, file) {
   if (!file?.type?.startsWith('image/')) return;
+  // A second scan started on top of the first leaves two workers writing to the
+  // same status line, so the panel looks stuck on whichever finishes last.
+  if (panel._toolScanBusy) return;
+  panel._toolScanBusy = true;
   const progress = panel.querySelector('[data-tool-scan-progress]');
   const status = panel.querySelector('[data-tool-scan-status]');
   progress.hidden = false;
@@ -121,6 +125,7 @@ async function scanFile(panel, file) {
     status.textContent = error?.message || String(error);
   } finally {
     progress.hidden = true;
+    panel._toolScanBusy = false;
   }
 }
 
@@ -146,7 +151,14 @@ function buildPanel() {
     <button class="primary-btn scanner-apply-addon" type="button" data-tool-scan-apply disabled>Apply recognized tool values</button>
   `;
 
-  panel.querySelector('[data-tool-scan-file]').addEventListener('change', event => scanFile(panel, event.target.files?.[0]));
+  panel.querySelector('[data-tool-scan-file]').addEventListener('change', async event => {
+    const input = event.target;
+    const file = input.files?.[0];
+    // Clearing the input is what lets the same screenshot be picked again after
+    // a failed run; otherwise the second pick fires no change event at all.
+    await scanFile(panel, file);
+    input.value = '';
+  });
   panel.querySelector('[data-tool-scan-parse]').addEventListener('click', () => renderScan(panel, panel.querySelector('[data-tool-scan-text]').value));
   panel.addEventListener('paste', event => {
     const image = [...(event.clipboardData?.files || [])].find(file => file.type.startsWith('image/'));
