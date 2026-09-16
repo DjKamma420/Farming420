@@ -11,6 +11,13 @@ function patchEntry(id, patch) {
   return entry;
 }
 
+function upsertEntry(entry) {
+  const existing = UPGRADES.find(item => item.id === entry.id);
+  if (existing) Object.assign(existing, entry);
+  else UPGRADES.push(entry);
+  return entry;
+}
+
 export const BLOSSOM_BASE_ENTRY = Object.freeze({
   id: 'equipment-blossom-set-base-stats',
   category: 'Equipment',
@@ -31,9 +38,7 @@ export const BLOSSOM_BASE_ENTRY = Object.freeze({
   workbookRank: null,
 });
 
-const existingBlossom = UPGRADES.find(entry => entry.id === BLOSSOM_BASE_ENTRY.id);
-if (existingBlossom) Object.assign(existingBlossom, BLOSSOM_BASE_ENTRY);
-else UPGRADES.push(BLOSSOM_BASE_ENTRY);
+upsertEntry(BLOSSOM_BASE_ENTRY);
 
 patchEntry('equipment-reforge-rooted-on-full-equipment', {
   name: 'Rooted on equipped equipment',
@@ -122,4 +127,82 @@ patchEntry('armor-enchant-sunset-v-day-overbloom', {
   source: 'https://hypixel.net/threads/april-21-fossil-essence-shop-farming-toolkit-harvest-feast-changes.6083245/',
   lastVerified: '2026-09-16',
   notes: 'Sunset is per armor item and does not grant Farming Fortune. Each level gives +1 Overbloom during the day and -1% Visitor Cooldown during the night, up to V per piece.',
+});
+
+// Verified permanent account sources that were still marked VERIFY in the bulk
+// data. These are safe to model directly because both the per-step value and
+// cap are explicit.
+patchEntry('consumable-rosewater-flask-permanent-stacks', {
+  name: 'Filled Rosewater Flask permanent Farming Fortune',
+  status: 'ACTIVE',
+  max: 5,
+  stepGain: 1,
+  rawMarginal: 1,
+  source: 'https://hypixel-skyblock.fandom.com/wiki/Rosewater_Flask',
+  lastVerified: '2026-09-16',
+  notes: 'Each Filled Rosewater Flask consumed grants +1 permanent Farming Fortune, up to 5 times (+5 total). The Greenhouse growth-stage effect is separate and is not counted as Fortune.',
+});
+
+patchEntry('greenhouse-mutation-analysis-rewards', {
+  name: 'Mutation Analysis permanent Farming Fortune',
+  status: 'ACTIVE',
+  max: 1,
+  stepGain: 30,
+  rawMarginal: 30,
+  source: 'https://hypixel-skyblock.fandom.com/wiki/Farming_Fortune',
+  lastVerified: '2026-09-16',
+  notes: 'Completing the Farming Fortune rewards from Jake\'s Crop Analyzer contributes +30 permanent Farming Fortune in total. Modeled as one completed source because the planner does not yet track individual analysis reward breakpoints.',
+});
+
+// The old generated aggregate said every selected crop could have an exportable
+// +12 bonus. That is incorrect: Carrolyn only accepts a defined set. Move the
+// aggregate out of visible progression and expose the supported crops directly.
+patchEntry('permanent-crop-item-exportable-item-selected-crop', {
+  section: 'legacy',
+  status: 'VERIFY',
+  stepGain: 0,
+  rawMarginal: 0,
+  notes: 'Legacy aggregate retained only for stored-state compatibility. Superseded by crop-specific Carrolyn entries; do not use for planner scoring.',
+  lastVerified: '2026-09-16',
+});
+
+export const CARROLYN_CROP_FORTUNE_ENTRIES = Object.freeze([
+  ['wheat', 'Wheat', 'Fine Flour'],
+  ['carrot', 'Carrot', 'Exportable Carrots'],
+  ['pumpkin', 'Pumpkin', 'Expired Pumpkin'],
+  ['mushroom', 'Mushroom', 'Half-Eaten Mushroom'],
+  ['cocoa-beans', 'Cocoa Beans', 'Supreme Chocolate Bar'],
+  ['nether-wart', 'Nether Wart', 'Warty'],
+  ['wild-rose', 'Wild Rose', 'Prickly Kiss'],
+].map(([cropId, cropName, itemName]) => Object.freeze({
+  id: `carrolyn-${cropId}-fortune`,
+  category: 'Permanent Crop Item',
+  section: 'crops',
+  name: `Carrolyn: ${itemName}`,
+  metric: 'Crop Yield',
+  modeScope: 'Any',
+  cropScope: cropName,
+  status: 'ACTIVE',
+  max: 1,
+  stepGain: 12,
+  manualDefault: null,
+  rawMarginal: 12,
+  hypercharge: false,
+  notes: `Give Carrolyn 3,000 ${itemName} to permanently gain +12 ${cropName} Fortune.`,
+  source: 'https://hypixel-skyblock.fandom.com/wiki/Carrolyn',
+  lastVerified: '2026-09-16',
+  workbookRank: null,
+})));
+
+for (const entry of CARROLYN_CROP_FORTUNE_ENTRIES) upsertEntry(entry);
+
+// Intentionally unresolved: current references disagree on the total Garden /
+// Pest Bestiary Farming Fortune after later pest additions. Keep VERIFY until a
+// current authoritative value is available instead of hard-coding 66 or 96.
+patchEntry('garden-pest-garden-bestiary-ff', {
+  status: 'VERIFY',
+  stepGain: 0,
+  rawMarginal: 0,
+  lastVerified: '2026-09-16',
+  notes: 'Current references still disagree on the post-update maximum (notably 66 vs 96 Farming Fortune). Keep this manual/VERIFY until a current authoritative total is confirmed.',
 });
