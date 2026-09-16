@@ -1,4 +1,4 @@
-const VERSION = 'farming420-0.16.4';
+const VERSION = 'farming420-0.16.5';
 const APP_FILES = [
   './',
   './index.html',
@@ -21,6 +21,7 @@ const APP_FILES = [
   './src/pet-strategy.js',
   './src/resource-pack.js',
   './src/item-catalog.js',
+  './src/equipment-fortune.js',
   './src/snapshot-apply.js',
   './src/help-locations.js',
   './src/scopes.js',
@@ -37,6 +38,7 @@ const APP_FILES = [
   './src/profile-sync.js',
   './src/foundation.js',
   './src/foundation.css',
+  './research/equipment-fortune.js',
 ];
 
 self.addEventListener('install', event => {
