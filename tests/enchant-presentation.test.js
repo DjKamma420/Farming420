@@ -82,10 +82,11 @@ test('non-max verified enchantments remain active instead of rainbow', () => {
   assert.equal(enchantPresentation('Sunset', 4).state, 'active');
 });
 
-test('removed Sunder is legacy instead of current or maxed', () => {
+test('removed Sunder is known legacy data but never presented as a current max', () => {
+  assert.equal(LEGACY_FARMING_ENCHANT_META.sunder.status, 'removed');
   assert.equal(LEGACY_FARMING_ENCHANT_META.sunder.removedAt, '2026-04-28');
   assert.deepEqual(enchantPresentation('sunder', 6), {
-    id: 'sunder', level: 6, maxLevel: null, state: 'legacy',
+    id: 'sunder', level: 6, maxLevel: null, state: 'unverified',
   });
 });
 
