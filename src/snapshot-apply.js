@@ -149,7 +149,7 @@ function applyDynamicValue(store, autoScope, itemId, rawLevel, manualGain, appli
   applyValue(store, autoScope, itemId, rawLevel, applied);
   if (!autoScope[itemId]) return;
   const gain = Number(manualGain);
-  if (!Number.isFinite(gain) || gain <= 0) return;
+  if (!Number.isFinite(gain) || gain < 0) return;
   store.manualGain ||= {};
   store.manualGain[itemId] = gain;
   autoScope[itemId].manualGain = gain;
@@ -210,6 +210,7 @@ function applyEquipmentDerived(pieces, state, autoApplied, applied, skipped) {
   if (rootedPieces.length !== EQUIPMENT_SLOTS) return;
   const missingRarity = rootedPieces.some(piece => !String(piece?.rarity || '').trim());
   if (missingRarity) {
+    applyDynamicValue(store, scope, ROOTED_ID, 1, 0, applied);
     skipped.push('Rooted is present on all four equipment pieces, but at least one rarity is unknown, so Farming420 did not assume a Rooted Fortune value.');
     return;
   }
