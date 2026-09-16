@@ -31,6 +31,11 @@ This file is for future coding agents continuing the project.
   - Marks Overpriced/RARE-CROP recommendations as in-season conditional.
 - `src/workspace-direct-picker.js` + `.css`
   - Replaces the visible Tools dropdown with direct tool choice buttons while preserving the existing select as the underlying state/control bridge.
+- `src/farming-tool-art.js` + `src/farming-tool-art-ui.js` + `.css`
+  - Adds verified resource-pack art for Pumpkin Dicer, Melon Dicer, Fungi Cutter and Cactus Knife.
+  - Uses the correct Mk. I / Mk. II / Mk. III pack keys for each verified family.
+  - Renders pack art in both the physical-tool picker and the active Tool editor portrait.
+  - Unknown tools deliberately remain on the generic fallback instead of guessing pack IDs.
 - `src/direct-controls.js` + `.css`
   - Direct controls apply to non-derived progression cards.
   - Binary entries use direct ON/OFF controls.
@@ -86,6 +91,7 @@ This file is for future coding agents continuing the project.
   - `tests/revenue-ranking.test.js`
   - `tests/planner-modes.test.js`
   - `tests/verified-permanent-sources.test.js`
+  - `tests/farming-tool-art.test.js`
 
 ## Effective-gain formula
 
@@ -98,8 +104,8 @@ Use this only for coin-efficiency comparison. Collection, XP, Feast milestone, S
 ## Next implementation priorities
 
 1. Continue the live-version VERIFY audit for unresolved entries other than the now-documented Garden/Pest Bestiary conflict; prioritize exact current mechanics over theoretical-max lists.
-2. Expand actual pack-backed coverage by attaching verified SkyBlock IDs/packAsset keys to more upgrade entries, now that missing assets have a safe fallback.
-3. Add browser-level/UI regression coverage for direct controls, revenue inputs, planner goal switching, drawer opening, art fallback and exclusive-state transitions.
+2. Extend verified pack-art mapping to the remaining farming tool families and important farming upgrades only when their exact keys are confirmed in the manifest; never infer IDs from display names.
+3. Add browser-level/UI regression coverage for direct controls, revenue inputs, planner goal switching, drawer opening, art fallback/art tier switching and exclusive-state transitions.
 4. Add automatic or assisted cost acquisition where data quality is sufficient; until then, unknown prices must remain explicit rather than guessed.
 5. Continue collapsing one-state/multiple-editor leftovers outside Gear; Gear state is now authoritative in Setups and analysis-only elsewhere.
 6. Remove the hidden legacy planner implementation from `src/app.js` once browser-level coverage exists; the visible Planner is now revenue-aware and goal-aware but old markup remains as a compatibility surface.
