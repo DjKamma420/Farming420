@@ -23,9 +23,7 @@ function cropLabel(cropId) {
   return CROPS.find(crop => crop.id === cropId)?.name || cropId;
 }
 
-function toolTarget(scan) {
-  const cropIds = cropsForToolItem({ displayName: scan?.displayName || '' });
-  if (!cropIds.length) return null;
+function groupByTool(cropIds, via) {
   const byKey = new Map();
   for (const cropId of cropIds) {
     const key = toolKeyForCropId(cropId);
@@ -33,7 +31,39 @@ function toolTarget(scan) {
     list.push(cropId);
     byKey.set(key, list);
   }
-  return [...byKey.entries()].map(([key, ids]) => ({ key, cropIds: ids }));
+  const targets = [...byKey.entries()].map(([key, ids]) => ({ key, cropIds: ids }));
+  targets.via = via;
+  return targets;
+}
+
+/**
+ * Works out which physical tool the scan belongs to.
+ *
+ * The item name is the direct answer, but OCR truncates a title line often
+ * enough that it cannot be the only one: a photographed tooltip read back as
+ * "Melon |" with every enchantment intact. The two fallbacks use evidence the
+ * tooltip repeats, and the caller says which one was used so the player can
+ * check it before applying anything.
+ */
+export function toolTarget(scan) {
+  const named = cropsForToolItem({ displayName: scan?.displayName || '' });
+  if (named.length) return groupByTool(named, 'name');
+
+  // The tooltip names the tool again in its own description text.
+  for (const line of scan?.lines || []) {
+    const hit = cropsForToolItem({ displayName: line });
+    if (hit.length) return groupByTool(hit, 'line');
+  }
+
+  // A Turbo enchantment names exactly one crop, so it identifies the tool even
+  // when no line survived legibly.
+  const turboId = Object.keys(scan?.enchantments || {}).find(id => id.startsWith('turbo_'));
+  const cropId = turboId
+    ? Object.entries(CROP_TURBO_IDS).find(([, id]) => id === turboId)?.[0]
+    : null;
+  if (cropId) return groupByTool([cropId], 'turbo');
+
+  return null;
 }
 
 function cropIdForTurbo(scan, cropIds) {
@@ -76,9 +106,14 @@ function resultRows(scan) {
   const targetText = targets?.length
     ? targets.flatMap(target => target.cropIds.map(cropLabel)).join(', ')
     : 'Not recognized';
+  const VIA_LABEL = {
+    name: 'from the item name',
+    line: 'from a line in the tooltip, because the name was not readable',
+    turbo: 'from the Turbo enchantment, because the name was not readable',
+  };
   return [
     ['Item', scan.displayName || 'Not recognized'],
-    ['Tool target', targetText],
+    ['Tool target', targets?.length ? `${targetText} (${VIA_LABEL[targets.via] || 'recognized'})` : targetText],
     ['Rarity', scan.rarity || 'Not recognized'],
     ['Reforge', scan.reforge || 'Not recognized'],
     ['Enchantments', enchants],
@@ -97,6 +132,9 @@ function renderScan(panel, rawText) {
   result.innerHTML = resultRows(scan);
   const warnings = [...scan.warnings];
   if (!targets?.length && scan.displayName) warnings.push('This item name does not match a known farming tool, so nothing will be applied.');
+  if (targets?.via && targets.via !== 'name') {
+    warnings.push(`The item name was not read clearly, so the tool was identified ${targets.via === 'turbo' ? 'from the Turbo enchantment' : 'from another line of the tooltip'}. Check the tool target above before applying.`);
+  }
   panel.querySelector('[data-tool-scan-warnings]').innerHTML = warnings.map(message => `<li>${message}</li>`).join('');
   panel.querySelector('[data-tool-scan-apply]').disabled = !scan.displayName || !targets?.length;
 }
