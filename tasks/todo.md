@@ -883,3 +883,54 @@ written to avoid.
   to the entry maximum of 50; the card below the panel reported the same
   "Level 4/4 max" as the panel; switching crop switched the tool being edited
   and kept each tool's values separate; console clean.
+
+## Getting the official item art into the app (0.19.1)
+
+### The gap
+
+`src/item-assets.js` and `src/item-art-ui.js` already read `assets/hypixel-pack/`
+and paint its textures onto every slot card and item editor.
+`scripts/sync-hypixel-pack.py` already fetches and verifies that pack. Nothing
+ever ran the script, so the directory did not exist and every item showed a
+placeholder.
+
+The sync needs `api.hypixel.net` and `resourcepacks.hypixel.net`, both blocked
+from this sandbox. A GitHub runner has neither restriction, and an earlier
+inspection run proved it: the script succeeded there and produced a **1.53 MB**
+artifact, so size was never the obstacle either.
+
+### What changed
+
+`.github/workflows/sync-pack.yml` runs the sync on demand and weekly, verifies
+what came out, runs the repository's own checks against it, and opens a pull
+request. It does not push: the pack is a third party's asset tree, so its
+contents and size are reviewed before they land. A run that finds the same
+pack SHA-1 downloads nothing and opens nothing.
+
+### A latent bug this uncovered
+
+`scripts/check-sw-manifest.js` listed `assets/` without distinguishing files
+from directories, so the moment `assets/hypixel-pack/` existed it reported that
+directory as an uncached shipped file and failed. Anyone running the sync — the
+workflow included — would have hit it immediately. Proved by creating the
+directory and running the old checker: it exits 1 with
+`sw.js does not cache: ./assets/hypixel-pack`.
+
+The pack is now explicitly named as not precached, with the reason: it is around
+a thousand textures the app only fetches for items the player owns, so
+precaching it would make every install download the whole pack to show at most a
+dozen pictures. Item art falls back to the placeholder when a texture is not
+cached, which is the intended offline behaviour.
+
+### Verification
+
+- 356 tests pass; 2 are new.
+- The old checker was proved to fail against a synced pack, and the new one to
+  pass with the same directory present.
+- The workflow YAML parses, and the commit message and PR body were confirmed to
+  come out at column 0 rather than carrying the block scalar's indentation.
+
+### Still the user's call
+
+Merging the pull request the workflow opens. That is what puts Hypixel's
+textures into the repository.
