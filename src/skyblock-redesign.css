@@ -1,0 +1,571 @@
+:root {
+  --sb-panel: #111914;
+  --sb-panel-2: #18231c;
+  --sb-panel-3: #202e24;
+  --sb-border: #34483a;
+  --sb-border-bright: #58745f;
+  --sb-text: #eef8ef;
+  --sb-muted: #9bb1a0;
+  --sb-green: #55ff55;
+  --sb-aqua: #55ffff;
+  --sb-gold: #ffaa00;
+  --sb-purple: #aa00aa;
+  --sb-red: #ff5555;
+  --sb-shadow: rgba(0, 0, 0, .46);
+}
+
+.skyblock-redesign body {
+  background:
+    linear-gradient(rgba(4, 10, 6, .92), rgba(4, 10, 6, .96)),
+    repeating-linear-gradient(0deg, rgba(255,255,255,.018) 0 1px, transparent 1px 4px),
+    #071009;
+}
+
+.skyblock-redesign .app-shell {
+  grid-template-columns: 88px minmax(0, 1fr);
+}
+
+.skyblock-redesign .sidebar.sb-rail {
+  width: 88px;
+  padding: 10px 8px;
+  border-right: 2px solid #283b2d;
+  background: linear-gradient(180deg, #101a13 0%, #0a110c 100%);
+  box-shadow: 5px 0 18px rgba(0,0,0,.3);
+  overflow: visible;
+  z-index: 20;
+}
+
+.skyblock-redesign .sb-rail .brand {
+  min-height: 56px;
+  justify-content: center;
+  padding: 4px 0 10px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.skyblock-redesign .sb-rail .brand > div:last-child,
+.skyblock-redesign .sb-rail .side-foot {
+  display: none;
+}
+
+.skyblock-redesign .sb-rail .brand-mark {
+  width: 44px;
+  height: 44px;
+  border-radius: 4px;
+  display: grid;
+  place-items: center;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-weight: 900;
+  color: #071009;
+  background: var(--sb-green);
+  border: 2px solid #b9ffb9;
+  box-shadow: inset -3px -3px 0 rgba(0,0,0,.24), inset 3px 3px 0 rgba(255,255,255,.22), 0 3px 0 #030704;
+}
+
+.skyblock-redesign .sb-rail nav {
+  display: grid;
+  gap: 4px;
+  padding-top: 10px;
+  max-height: calc(100vh - 76px);
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.skyblock-redesign .sb-rail nav::-webkit-scrollbar { display: none; }
+
+.skyblock-redesign .sb-rail .nav-link {
+  position: relative;
+  width: 64px;
+  height: 54px;
+  padding: 4px;
+  margin: 0 auto;
+  display: grid;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--sb-muted);
+  overflow: visible;
+}
+
+.skyblock-redesign .sb-rail .nav-link:hover,
+.skyblock-redesign .sb-rail .nav-link.active {
+  border-color: #426149;
+  background: linear-gradient(180deg, #25352a, #17221b);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.04), 0 2px 0 rgba(0,0,0,.4);
+}
+
+.skyblock-redesign .sb-rail .nav-link.active::before {
+  content: '';
+  position: absolute;
+  left: -9px;
+  top: 10px;
+  bottom: 10px;
+  width: 4px;
+  background: var(--sb-green);
+  box-shadow: 0 0 10px rgba(85,255,85,.55);
+}
+
+.skyblock-redesign .sb-nav-icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  image-rendering: pixelated;
+  font-family: ui-monospace, monospace;
+  font-weight: 900;
+}
+
+.skyblock-redesign .sb-nav-icon img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(2px 3px 0 rgba(0,0,0,.45));
+}
+
+.skyblock-redesign .sb-nav-label {
+  position: absolute;
+  left: 72px;
+  top: 50%;
+  transform: translateY(-50%) translateX(-5px);
+  display: none;
+  width: max-content;
+  max-width: 220px;
+  padding: 7px 9px;
+  color: #fff;
+  background: #080b09;
+  border: 1px solid #394b3e;
+  border-radius: 3px;
+  box-shadow: 0 4px 14px rgba(0,0,0,.45);
+  font-size: 12px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.skyblock-redesign .sb-rail .nav-link:hover .sb-nav-label { display: block; }
+
+.skyblock-redesign .main { min-width: 0; }
+
+.skyblock-redesign .topbar {
+  min-height: 58px;
+  border-bottom: 1px solid #28392d;
+  background: rgba(8, 15, 10, .9);
+  backdrop-filter: blur(10px);
+}
+
+.skyblock-redesign .content {
+  max-width: 1500px;
+  padding: 26px clamp(18px, 3vw, 46px) 60px;
+}
+
+.skyblock-redesign .page-head {
+  margin-bottom: 20px;
+}
+
+.skyblock-redesign .page-head h1,
+.skyblock-redesign .section-row h2,
+.skyblock-redesign .section-row h3,
+.skyblock-redesign .sb-block-title h2,
+.skyblock-redesign .sb-block-title h3 {
+  letter-spacing: -.025em;
+}
+
+.skyblock-redesign .page-head h1 {
+  font-size: clamp(28px, 3vw, 42px);
+}
+
+.skyblock-redesign .eyebrow {
+  color: var(--sb-green);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.skyblock-redesign .sb-hidden-context { display: none !important; }
+
+.skyblock-redesign .sb-tool-picker,
+.skyblock-redesign .sb-reforge-panel {
+  margin: 0 0 22px;
+  padding: 18px;
+  border: 2px solid var(--sb-border);
+  border-radius: 7px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.022), transparent 45%),
+    var(--sb-panel);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.5), 0 7px 20px var(--sb-shadow);
+}
+
+.skyblock-redesign .sb-block-title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 15px;
+}
+
+.skyblock-redesign .sb-block-title h2,
+.skyblock-redesign .sb-block-title h3 {
+  margin: 4px 0 0;
+}
+
+.skyblock-redesign .sb-block-title p {
+  max-width: 780px;
+  margin: 6px 0 0;
+  color: var(--sb-muted);
+}
+
+.skyblock-redesign .sb-hint {
+  max-width: 340px;
+  color: var(--sb-muted);
+  font-size: 12px;
+  text-align: right;
+}
+
+.skyblock-redesign .sb-tool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 9px;
+}
+
+.skyblock-redesign .sb-tool-card {
+  position: relative;
+  min-height: 78px;
+  padding: 10px 34px 10px 10px;
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 11px;
+  align-items: center;
+  text-align: left;
+  border: 2px solid #2e4134;
+  border-radius: 5px;
+  color: var(--sb-text);
+  background: linear-gradient(180deg, #1a261e, #121a15);
+  box-shadow: inset -2px -2px 0 rgba(0,0,0,.23), inset 2px 2px 0 rgba(255,255,255,.025);
+}
+
+.skyblock-redesign .sb-tool-card:hover {
+  border-color: #547260;
+  transform: translateY(-1px);
+}
+
+.skyblock-redesign .sb-tool-card.selected {
+  border-color: var(--sb-green);
+  background: linear-gradient(180deg, #203828, #14261b);
+  box-shadow: inset 0 0 0 1px rgba(85,255,85,.13), 0 0 14px rgba(85,255,85,.08);
+}
+
+.skyblock-redesign .sb-tool-art,
+.skyblock-redesign .sb-reforge-art {
+  position: relative;
+  display: grid;
+  place-items: center;
+  image-rendering: pixelated;
+}
+
+.skyblock-redesign .sb-tool-art { width: 52px; height: 52px; }
+.skyblock-redesign .sb-reforge-art { width: 56px; height: 56px; }
+
+.skyblock-redesign .sb-pack-icon {
+  position: relative;
+  z-index: 2;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(3px 4px 0 rgba(0,0,0,.4));
+}
+
+.skyblock-redesign .sb-tool-fallback,
+.skyblock-redesign .sb-reforge-fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  color: #d9e8dc;
+  background: #26382c;
+  border: 1px solid #425c49;
+  border-radius: 4px;
+  font-family: ui-monospace, monospace;
+  font-weight: 900;
+}
+
+.skyblock-redesign .sb-pack-icon + .sb-tool-fallback,
+.skyblock-redesign .sb-pack-icon + .sb-reforge-fallback { display: none; }
+
+.skyblock-redesign .sb-tool-copy,
+.skyblock-redesign .sb-reforge-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.skyblock-redesign .sb-tool-copy strong,
+.skyblock-redesign .sb-reforge-copy strong {
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.skyblock-redesign .sb-tool-copy small,
+.skyblock-redesign .sb-reforge-copy small { color: var(--sb-gold); }
+
+.skyblock-redesign .sb-state-dot {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  transform: translateY(-50%);
+  border: 2px solid #536058;
+  background: #172019;
+  box-shadow: inset 0 0 0 2px #0c110d;
+}
+
+.skyblock-redesign .selected > .sb-state-dot {
+  border-color: #aaffaa;
+  background: var(--sb-green);
+  box-shadow: 0 0 9px rgba(85,255,85,.5), inset 0 0 0 2px #16341b;
+}
+
+.skyblock-redesign .sb-native-reforge-section { display: none !important; }
+
+.skyblock-redesign .sb-goal-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.skyblock-redesign .sb-goal-tabs button {
+  padding: 7px 10px;
+  border: 1px solid #3a5141;
+  border-radius: 4px;
+  color: var(--sb-muted);
+  background: #111a14;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.skyblock-redesign .sb-goal-tabs button:hover { color: #fff; border-color: #64816b; }
+.skyblock-redesign .sb-goal-tabs button.active {
+  color: #071009;
+  border-color: #aaffaa;
+  background: var(--sb-green);
+}
+
+.skyblock-redesign .sb-recommendation {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border-left: 4px solid var(--sb-gold);
+  color: #dce9df;
+  background: rgba(255,170,0,.07);
+  font-size: 13px;
+}
+
+.skyblock-redesign .sb-recommendation span {
+  color: var(--sb-gold);
+  font-weight: 900;
+}
+
+.skyblock-redesign .sb-reforge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 9px;
+}
+
+.skyblock-redesign .sb-reforge-card {
+  position: relative;
+  min-height: 118px;
+  padding: 12px 34px 12px 10px;
+  display: grid;
+  grid-template-columns: 56px minmax(0,1fr);
+  gap: 12px;
+  align-items: center;
+  text-align: left;
+  border: 2px solid #2f4235;
+  border-radius: 5px;
+  color: var(--sb-text);
+  background: linear-gradient(180deg, #1a251e, #111914);
+}
+
+.skyblock-redesign .sb-reforge-card:hover { border-color: #5a7862; }
+.skyblock-redesign .sb-reforge-card.selected { border-color: var(--sb-aqua); }
+.skyblock-redesign .sb-reforge-card.recommended { box-shadow: inset 0 0 0 1px rgba(255,170,0,.35); }
+.skyblock-redesign .sb-reforge-card.selected.recommended { border-color: var(--sb-green); }
+
+.skyblock-redesign .sb-reforge-copy span {
+  margin-top: 4px;
+  color: var(--sb-muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.skyblock-redesign .sb-reforge-card em {
+  position: absolute;
+  right: 7px;
+  top: 7px;
+  padding: 3px 5px;
+  color: #161006;
+  background: var(--sb-gold);
+  border-radius: 3px;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.skyblock-redesign .sb-reforge-card em ~ .sb-state-dot { top: auto; bottom: 12px; transform: none; }
+
+.skyblock-redesign .sb-research-note {
+  margin: 12px 0 0;
+  color: #829489;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.skyblock-redesign [data-tool-editor] {
+  border-radius: 7px;
+  border-width: 2px;
+  background: #0d1510;
+  box-shadow: 0 9px 28px rgba(0,0,0,.34);
+}
+
+.skyblock-redesign [data-tool-editor] > .item-editor-head {
+  padding: 15px;
+  background: linear-gradient(90deg, rgba(85,255,85,.06), transparent 54%);
+  border-bottom: 1px solid #2c4032;
+}
+
+.skyblock-redesign [data-tool-editor] .item-portrait {
+  border-radius: 4px;
+  background: #17251b;
+  border: 2px solid #395444;
+}
+
+.skyblock-redesign [data-tool-editor] .item-portrait .sb-pack-icon {
+  width: 50px;
+  height: 50px;
+}
+
+.skyblock-redesign [data-tool-editor] .item-portrait .sb-pack-icon ~ .item-portrait-fallback { display: none; }
+
+.skyblock-redesign .enchant-grid {
+  gap: 6px;
+}
+
+.skyblock-redesign .enchant-line {
+  border-radius: 4px;
+  border-color: #2d4133;
+  background: #111a14;
+}
+
+.skyblock-redesign .enchant-line.on {
+  border-color: #476a50;
+  background: #17241b;
+}
+
+.skyblock-redesign .lever .lever-track {
+  border-radius: 3px;
+  border: 2px solid #46564a;
+  background: #151c17;
+}
+
+.skyblock-redesign .lever input:checked + .lever-track {
+  background: #286331;
+  border-color: var(--sb-green);
+}
+
+.skyblock-redesign .item-card.sb-inventory-card,
+.skyblock-redesign .crop-card,
+.skyblock-redesign .slot-card,
+.skyblock-redesign .research-card,
+.skyblock-redesign .planner-row {
+  border-radius: 5px;
+  border-width: 1px;
+  background: linear-gradient(180deg, rgba(31,45,35,.96), rgba(17,26,20,.98));
+  box-shadow: inset -2px -2px 0 rgba(0,0,0,.15), inset 2px 2px 0 rgba(255,255,255,.018);
+}
+
+.skyblock-redesign .item-card.sb-inventory-card:hover,
+.skyblock-redesign .crop-card:hover,
+.skyblock-redesign .slot-card:hover {
+  border-color: #5a7661;
+  transform: translateY(-1px);
+}
+
+.skyblock-redesign .card-grid {
+  gap: 10px;
+}
+
+.skyblock-redesign select,
+.skyblock-redesign input,
+.skyblock-redesign textarea {
+  border-radius: 4px;
+  border-color: #3a4d40;
+  background: #0c120e;
+}
+
+.skyblock-redesign button,
+.skyblock-redesign .ghost,
+.skyblock-redesign .primary-btn,
+.skyblock-redesign .source-btn {
+  border-radius: 4px;
+}
+
+.skyblock-redesign .primary-btn {
+  color: #071009;
+  background: var(--sb-green);
+  border-color: #aaffaa;
+  box-shadow: inset -2px -2px 0 rgba(0,0,0,.2), inset 2px 2px 0 rgba(255,255,255,.2);
+}
+
+@media (max-width: 920px) {
+  .skyblock-redesign .app-shell { grid-template-columns: 68px minmax(0, 1fr); }
+  .skyblock-redesign .sidebar.sb-rail { width: 68px; padding-inline: 4px; }
+  .skyblock-redesign .sb-rail .nav-link { width: 54px; }
+  .skyblock-redesign .sb-nav-label { left: 60px; }
+  .skyblock-redesign .sb-tool-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+  .skyblock-redesign .sb-reforge-grid { grid-template-columns: 1fr 1fr; }
+  .skyblock-redesign .sb-block-title { display: block; }
+  .skyblock-redesign .sb-hint { margin-top: 8px; max-width: none; text-align: left; }
+}
+
+@media (max-width: 650px) {
+  .skyblock-redesign .app-shell { display: block; }
+  .skyblock-redesign .sidebar.sb-rail {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+    width: auto;
+    height: 68px;
+    padding: 5px 8px;
+    border-right: 0;
+    border-top: 2px solid #2b4030;
+  }
+  .skyblock-redesign .sb-rail .brand { display: none; }
+  .skyblock-redesign .sb-rail nav {
+    display: flex;
+    gap: 5px;
+    max-height: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0;
+  }
+  .skyblock-redesign .sb-rail .nav-link { flex: 0 0 52px; height: 54px; }
+  .skyblock-redesign .sb-rail .nav-link.active::before {
+    left: 10px;
+    right: 10px;
+    top: auto;
+    bottom: -6px;
+    width: auto;
+    height: 4px;
+  }
+  .skyblock-redesign .sb-nav-label { display: none !important; }
+  .skyblock-redesign .content { padding: 18px 14px 88px; }
+  .skyblock-redesign .sb-tool-grid,
+  .skyblock-redesign .sb-reforge-grid { grid-template-columns: 1fr; }
+  .skyblock-redesign .sb-reforge-card { min-height: 100px; }
+}
