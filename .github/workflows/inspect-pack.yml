@@ -1,0 +1,34 @@
+name: Inspect official SkyBlock pack
+
+on:
+  push:
+    branches: ["chatgpt/official-pack-assets"]
+
+permissions:
+  contents: read
+
+jobs:
+  build-pack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve and generate current official pack assets
+        run: python3 scripts/sync-hypixel-pack.py
+      - name: Verify generated output
+        run: |
+          test -s assets/hypixel-pack/manifest.json
+          test -s assets/hypixel-pack/LICENSE
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          manifest = json.loads(Path('assets/hypixel-pack/manifest.json').read_text())
+          assert manifest['pack']['id'] == 'SkyBlock'
+          assert manifest['pack']['hash']
+          assert len(manifest['items']) > 0
+          print(f"pack={manifest['pack']['hash']} items={len(manifest['items'])}")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hypixel-pack-inspection
+          path: assets/hypixel-pack
+          retention-days: 1
