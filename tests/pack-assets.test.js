@@ -59,6 +59,14 @@ test('only the pictures are shipped, not the definitions that resolve them', () 
   assert.doesNotMatch(assets, /record\.definition/);
 });
 
+test('a re-run for the same pack can replace the branch it left behind', () => {
+  // The branch name is the pack hash, so a second run meets the first run's
+  // branch. A CI checkout has never seen that ref, and --force-with-lease
+  // refuses one it cannot compare against, so the push failed with "stale info".
+  assert.match(workflow, /git fetch origin "\$BRANCH" \|\| true/);
+  assert.match(workflow, /git push --force-with-lease origin "\$BRANCH"/);
+});
+
 test('the sync refuses to finish if the app names a picture the pack lacks', () => {
   // Otherwise a renamed item quietly falls back to a placeholder and nobody
   // notices until they open the page.
