@@ -1,0 +1,113 @@
+.topbar-simplified-addon {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.topbar-simplified-addon .search-wrap {
+  width: 100%;
+}
+
+.compact-context-addon {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 320px);
+  gap: 18px;
+  align-items: center;
+  padding: 18px 20px;
+  margin: 0 0 18px;
+  border: 1px solid var(--border, rgba(255,255,255,.12));
+  border-radius: 18px;
+  background: rgba(255,255,255,.025);
+}
+
+.compact-context-addon strong {
+  display: block;
+  font-size: 1rem;
+  margin-top: 2px;
+}
+
+.compact-context-addon p {
+  margin: 5px 0 0;
+  color: var(--muted, #9ca9a1);
+  line-height: 1.45;
+}
+
+.compact-context-addon select {
+  width: 100%;
+  min-height: 46px;
+}
+
+.compact-scanner-addon {
+  padding: 20px;
+}
+
+.compact-scanner-addon .scanner-copy-addon {
+  max-width: 720px;
+  margin-bottom: 14px;
+}
+
+.compact-scanner-addon .scanner-text-addon {
+  margin-top: 12px;
+}
+
+.compact-scanner-addon .scanner-apply-addon {
+  width: auto;
+  min-width: 240px;
+}
+
+.planner-row[hidden],
+.stat-card[hidden],
+.crop-feature[hidden],
+.section-row[hidden],
+.planner-context[hidden] {
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  .topbar-simplified-addon {
+    display: flex;
+    gap: 10px;
+    padding-inline: 16px;
+  }
+
+  .topbar-simplified-addon .mobile-title {
+    display: none;
+  }
+
+  .compact-context-addon {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 15px;
+    border-radius: 16px;
+  }
+
+  .compact-scanner-addon {
+    padding: 16px;
+    border-radius: 18px;
+  }
+
+  .compact-scanner-addon .scanner-head-addon {
+    align-items: flex-start;
+  }
+
+  .compact-scanner-addon .scanner-actions-addon {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .compact-scanner-addon .scanner-actions-addon > * {
+    width: 100%;
+  }
+
+  .compact-scanner-addon .scanner-apply-addon {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .scanner-result-line-addon {
+    grid-template-columns: 120px minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .scanner-result-line-addon strong {
+    overflow-wrap: anywhere;
+  }
+}
