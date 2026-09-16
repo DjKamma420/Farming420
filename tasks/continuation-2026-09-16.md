@@ -13,7 +13,13 @@ This file is for future coding agents continuing the project.
 - Show recommendations in crop context, but do not invent crop-specific differences where mechanics are actually goal/event dependent.
 - Use SkyBlock/Minecraft texture-pack art wherever useful and available.
 - Progression must include lower tiers through max tiers, not only endgame states.
-- Upgrade ranking must eventually account for cost versus effective gain, including Farming Fortune and Overbloom rather than treating Crop Fortune as a universal stat.
+- Upgrade ranking must account for cost versus effective gain, including Farming Fortune and Overbloom rather than treating Crop Fortune as a universal stat.
+
+## Current game-version baseline
+
+- Do not stop the audit at 0.26.1. The live game has since received 0.27 and 0.27.1 changes.
+- Relevant current farming corrections already represented in the data include Cropshot Chip +3/+4/+5 FF per chip level by rarity, Harvesting up to +75 total, Pesthunter Phillip +5 FF per pest capped at +200, Orchid Mantis, Thorny/Overbloom and the current God-Potion/Mixin handling.
+- Keep official Hypixel patch notes as the preferred source when a later patch supersedes older wiki/community values.
 
 ## Implemented in this continuation
 
@@ -22,21 +28,43 @@ This file is for future coding agents continuing the project.
   - Separates normal crop-profit, Feast RARE-CROP/Overbloom, XP/collection, Seasoning/milestone, and Sowdust use cases.
   - Adds explicit records for all 13 farming crops.
   - Marks Overpriced/RARE-CROP recommendations as in-season conditional.
-  - Uses official Hypixel Harvest Feast notes for Blessed/Golden Ball/Large Walnut mechanics and the current community reforge guide for the specialist Feast reforges.
 - `src/workspace-direct-picker.js` + `.css`
   - Replaces the visible Tools dropdown with direct tool choice buttons while preserving the existing select as the underlying state/control bridge.
-- `tests/farming-reforges.test.js`
-  - Guards five-reforge coverage, all 13 crop records, and Feast condition handling.
+- `src/direct-controls.js` + `.css`
+  - Direct controls now apply consistently to upgrade cards across Account/Crops/Items-style sections.
+  - Binary entries use direct ON/OFF controls.
+  - Small level chains expose every state from 0 through max.
+  - Large chains use compact decrement/current/increment controls.
+  - Reads state fresh on each action instead of using a stale captured level.
+  - Clears mutually exclusive peers when a new exclusive state is selected.
+- `src/effective-gain.js`
+  - Adds pure revenue-aware math for Farming Fortune versus Overbloom.
+  - There is intentionally no fixed universal `1 Overbloom = X FF` conversion.
+  - FF-equivalent Overbloom depends on current FF, current Overbloom, normal crop coins/hour, and RARE-CROP coins/hour.
+  - Includes marginal coins/hour, Coins per Effective Fortune and payback-hours helpers.
+- `research/effective-gain-model-2026-09-16.md`
+  - Documents the formulas, source assumptions and planner implications for future agents.
+- Tests:
+  - `tests/farming-reforges.test.js`
+  - `tests/effective-gain.test.js`
+
+## Effective-gain formula
+
+For normal crop revenue `N`, effective Fortune `F`, rare-crop revenue `R`, Overbloom `O`, and Overbloom change `dO`:
+
+`FF_equivalent = dO * (R / N) * ((100 + F) / (100 + O))`
+
+Use this only for coin-efficiency comparison. Collection, XP, Feast milestone, Sowdust and other goals require separate scoring.
 
 ## Next implementation priorities
 
-1. Make the same direct-choice interaction pattern consistent across the remaining Account/Crops/Items editors.
-2. Replace duplicated/legacy editor surfaces instead of stacking new cards on top of old ones.
-3. Add goal-aware recommendation presentation: normal profit, contest/collection, Farming XP, Feast RARE CROPS, Seasoning, Sowdust.
-4. Audit complete farming progression and hidden stat sources after the 0.26.1 changes, including equipment/Thorny, pets, permanent consumables, account upgrades, buffs, cookies/potions, pests, Greenhouse and Feast systems.
-5. Tie recommendations to the cost-vs-effective-gain model and live prices where data quality permits.
-6. Expand texture-pack-backed item art coverage.
+1. Remove duplicated/legacy editor surfaces now that direct card controls work, instead of stacking new UI on old UI.
+2. Add setup inputs/estimates for normal crop coins/hour, RARE-CROP coins/hour and current Overbloom, then replace the prototype Fortune-only planner sort with `effective-gain.js` marginal coins/hour/payback logic.
+3. Add goal-aware planner modes: normal profit, total profit, contest/collection, Farming XP, Feast RARE CROPS, Seasoning, Sowdust and pest farming.
+4. Continue the complete live-version farming audit, focusing on sources still marked VERIFY rather than re-researching mechanics already confirmed in runtime patches.
+5. Expand texture-pack-backed item art coverage and make missing-art fallbacks visually consistent.
+6. Add browser-level/UI regression coverage for direct controls and exclusive-state transitions.
 
 ## Verification note
 
-The repository currently exposes no GitHub Actions run for the latest commit, so the new Node test file has been added but no connector-visible CI result was available at the time of this handoff.
+The repository has not exposed a connector-visible GitHub Actions run for these latest commits. Node tests have been added to the repository, but CI confirmation is still pending.
