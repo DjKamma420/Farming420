@@ -72,13 +72,13 @@ test('Rooted uses the actual rarity mix instead of assuming +72', () => {
   assert.equal(state.profile.manualGain['equipment-reforge-rooted-on-full-equipment'], 66);
 });
 
-test('unknown Rooted rarity is not guessed', () => {
+test('unknown Rooted rarity is recognized but its Fortune is not guessed', () => {
   const state = stateWithEquipment([
     blossom(0), blossom(1), blossom(2), blossom(3, { rarity: '' }),
   ]);
   const result = applySnapshotToProgress(state, snapshot());
-  assert.equal(state.profile.levels['equipment-reforge-rooted-on-full-equipment'], undefined);
-  assert.equal(state.profile.manualGain['equipment-reforge-rooted-on-full-equipment'], undefined);
+  assert.equal(state.profile.levels['equipment-reforge-rooted-on-full-equipment'], 1);
+  assert.equal(state.profile.manualGain['equipment-reforge-rooted-on-full-equipment'], 0);
   assert.ok(result.skipped.some(note => /rarity is unknown/i.test(note)));
 });
 
