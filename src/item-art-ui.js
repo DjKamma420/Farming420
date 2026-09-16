@@ -35,6 +35,14 @@ function readState(storage = globalThis.localStorage) {
   }
 }
 
+function removeRenderedArt(container) {
+  if (!container?.querySelectorAll) return;
+  container.querySelectorAll(':scope > .official-item-art, :scope > .skull-art').forEach(node => node.remove());
+  container.classList.remove('has-official-item-art');
+  delete container.dataset.renderedPackAsset;
+  delete container.dataset.renderedItemArt;
+}
+
 /**
  * A player head, drawn from the skin the item itself points at.
  *
@@ -43,10 +51,6 @@ function readState(storage = globalThis.localStorage) {
  * with background-size and background-position rather than cropped in a canvas:
  * Mojang's texture host sends no CORS header, so reading these pixels back would
  * fail, while simply displaying them does not.
- *
- * Every property is set through the CSSOM. The page's Content Security Policy
- * drops inline style attributes, so building this as an HTML string would
- * silently render the whole skin instead of the head.
  */
 function skullNode(textureId, item) {
   const url = skullTextureUrl(textureId);
@@ -65,9 +69,6 @@ function skullNode(textureId, item) {
     node.append(element);
   }
 
-  // A skin sheet is 64 wide and either 64 or 32 tall. The two share the face and
-  // hat coordinates, but a percentage offset is relative to the rendered height,
-  // so the layout has to know which sheet arrived.
   const probe = new Image();
   probe.addEventListener('load', () => {
     node.classList.add(probe.naturalHeight >= probe.naturalWidth ? 'skull-square' : 'skull-legacy');
@@ -91,44 +92,48 @@ function imageNode(asset, item) {
 }
 
 export function renderSetupItemArt({ root = document, rawState = readState(), manifestValue = manifest } = {}) {
-  // No manifest is needed for a head, so this no longer waits for the pack.
   if (!root?.querySelectorAll || !rawState) return 0;
   let rendered = 0;
-  // Both surfaces that show one slot's item: the collapsed card in the grid and
-  // the portrait at the top of the open editor.
-  // Progression cards name their picture directly, because a chip is an entry in
-  // the upgrade list rather than something worn in a setup slot; without this
-  // the art layer never reached the Garden Chips page at all.
+
+  // Progression surfaces can change their requested pack id after they were
+  // inserted into the DOM (for example Mk. I -> Mk. III). Track the exact id
+  // that was rendered so a changed selection replaces stale art instead of the
+  // old `has-official-item-art` guard keeping the first image forever.
   root.querySelectorAll('[data-pack-asset]').forEach(card => {
-    if (card.classList.contains('has-official-item-art')) return;
-    const asset = itemAssetForSkyblockId(manifestValue, card.dataset.packAsset);
+    const requestedKey = String(card.dataset.packAsset || '');
+    if (!requestedKey) return;
+    if (card.classList.contains('has-official-item-art') && card.dataset.renderedPackAsset === requestedKey) return;
+    if (card.classList.contains('has-official-item-art')) removeRenderedArt(card);
+    const asset = itemAssetForSkyblockId(manifestValue, requestedKey);
     if (!asset) return;
     card.append(imageNode(asset, { displayName: card.closest('.item-card')?.querySelector('.item-title')?.textContent }));
     card.classList.add('has-official-item-art');
+    card.dataset.renderedPackAsset = requestedKey;
     rendered += 1;
   });
 
-  // Only the innermost art container, never both it and its card. A slot card
-  // contains its own portrait, so matching the card as well put one head in the
-  // card and a second in the portrait inside it.
   root.querySelectorAll('.slot-portrait, [data-item-art-slot]').forEach(card => {
-    // Guard on the container, not on one kind of child. A head and a pack
-    // texture are different elements, and checking only for the pack texture let
-    // every mutation add another head: the observer that watches for new cards
-    // sees its own insertion and runs again, without end.
-    if (card.classList.contains('has-official-item-art')) return;
     const slotId = card.dataset.slot || card.dataset.itemArtSlot || card.closest('[data-slot]')?.dataset.slot;
     if (!slotId) return;
     const item = itemForSetupSlot(rawState, slotId);
-    if (!item) return;
-    // The head comes first. Farming armour, equipment and pets have no entry in
-    // the resource pack at all, so for those slots this is the only real picture
-    // there is; where both exist, the head is what the game itself shows.
+    if (!item) {
+      if (card.classList.contains('has-official-item-art')) removeRenderedArt(card);
+      return;
+    }
+
+    const identity = item.skullTexture
+      ? `skull:${item.skullTexture}`
+      : item.skyblockId ? `item:${item.skyblockId}` : '';
+    if (!identity) return;
+    if (card.classList.contains('has-official-item-art') && card.dataset.renderedItemArt === identity) return;
+    if (card.classList.contains('has-official-item-art')) removeRenderedArt(card);
+
     const asset = item.skyblockId ? itemAssetForSkyblockId(manifestValue, item.skyblockId) : null;
     const node = skullNode(item.skullTexture, item) || (asset ? imageNode(asset, item) : null);
     if (!node) return;
     card.prepend(node);
     card.classList.add('has-official-item-art');
+    card.dataset.renderedItemArt = identity;
     rendered += 1;
   });
   return rendered;
@@ -156,7 +161,12 @@ function boot() {
   apply();
   if (typeof MutationObserver === 'function') {
     const observer = new MutationObserver(() => apply());
-    observer.observe(document.documentElement, { childList: true, subtree: true });
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['data-pack-asset'],
+    });
   }
   window.addEventListener('farming420:state-changed', apply);
 }
