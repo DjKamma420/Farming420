@@ -1,0 +1,31 @@
+.slot-card.has-official-item-art {
+  position: relative;
+  min-height: 112px;
+  padding-left: 82px;
+  overflow: hidden;
+}
+
+.official-item-art {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  width: 54px;
+  height: 54px;
+  transform: translateY(-50%);
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, .32));
+  pointer-events: none;
+}
+
+@media (max-width: 720px) {
+  .slot-card.has-official-item-art {
+    padding-left: 72px;
+  }
+
+  .official-item-art {
+    left: 12px;
+    width: 46px;
+    height: 46px;
+  }
+}
