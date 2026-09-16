@@ -1,6 +1,6 @@
 .skyblock-redesign .item-card[data-direct-ready="1"] {
   position: relative;
-  padding-bottom: 54px;
+  padding-bottom: 58px;
 }
 
 .skyblock-redesign .sb-card-controls {
@@ -8,7 +8,7 @@
   left: 12px;
   right: 12px;
   bottom: 10px;
-  min-height: 32px;
+  min-height: 36px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -21,13 +21,14 @@
 .skyblock-redesign .sb-card-power,
 .skyblock-redesign .sb-card-minus,
 .skyblock-redesign .sb-card-plus,
+.skyblock-redesign .sb-card-stage,
 .skyblock-redesign .sb-card-level {
   min-width: 32px;
-  height: 27px;
+  height: 29px;
   display: inline-grid;
   place-items: center;
   border: 1px solid #425847;
-  border-radius: 3px;
+  border-radius: 4px;
   color: #a8b8ac;
   background: #0d1510;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -39,27 +40,30 @@
 
 .skyblock-redesign .sb-card-power,
 .skyblock-redesign .sb-card-minus,
-.skyblock-redesign .sb-card-plus {
+.skyblock-redesign .sb-card-plus,
+.skyblock-redesign .sb-card-stage {
   cursor: pointer;
   box-shadow: inset -1px -1px 0 rgba(0,0,0,.3), inset 1px 1px 0 rgba(255,255,255,.03);
 }
 
 .skyblock-redesign .sb-card-power:hover,
 .skyblock-redesign .sb-card-minus:hover,
-.skyblock-redesign .sb-card-plus:hover {
+.skyblock-redesign .sb-card-plus:hover,
+.skyblock-redesign .sb-card-stage:hover {
   color: #fff;
   border-color: #65806b;
   background: #17231b;
 }
 
 .skyblock-redesign .sb-card-power {
-  min-width: 54px;
+  min-width: 58px;
   margin-left: auto;
   color: #ff7777;
   border-color: #664040;
 }
 
-.skyblock-redesign .sb-card-power.on {
+.skyblock-redesign .sb-card-power.on,
+.skyblock-redesign .sb-card-stage.selected {
   color: #071009;
   border-color: #aaffaa;
   background: #55ff55;
@@ -67,7 +71,7 @@
 }
 
 .skyblock-redesign .sb-card-level {
-  min-width: 52px;
+  min-width: 60px;
   color: #eef8ef;
   cursor: default;
 }
@@ -78,7 +82,23 @@
   font-size: 17px;
 }
 
+.skyblock-redesign .sb-card-chain {
+  display: flex;
+  flex: 1 1 auto;
+  justify-content: flex-end;
+  gap: 4px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.skyblock-redesign .sb-card-stage {
+  min-width: 28px;
+  flex: 0 0 28px;
+}
+
 @media (max-width: 650px) {
-  .skyblock-redesign .item-card[data-direct-ready="1"] { padding-bottom: 58px; }
+  .skyblock-redesign .item-card[data-direct-ready="1"] { padding-bottom: 62px; }
   .skyblock-redesign .sb-card-controls { left: 10px; right: 10px; }
+  .skyblock-redesign .sb-card-stage { min-width: 26px; flex-basis: 26px; }
 }
