@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 const ROOT = new URL('../research/knowledge-base/', import.meta.url);
+const AI_ENTRY = new URL('../research/AI_KNOWLEDGE.md', import.meta.url);
 const REQUIRED = [
   'README.md',
   '00-ontology-and-model-rules.md',
@@ -49,9 +50,18 @@ test('source index records maintained wiki and uncertainty policy', () => {
   assert.match(sources, /Unknown is not zero/i);
 });
 
-test('AI entry point points agents to the long-form corpus', () => {
-  const entry = readFileSync(new URL('../research/AI_KNOWLEDGE.md', import.meta.url), 'utf8');
-  assert.match(entry, /research\/knowledge-base\/README\.md/);
-  assert.match(entry, /physical item is the atomic object/i);
+test('AI_KNOWLEDGE is the canonical detailed single-file master corpus', () => {
+  const entry = readFileSync(AI_ENTRY, 'utf8');
+  const largestModule = Math.max(...REQUIRED.map(name => read(name).length));
+  assert.ok(entry.length > 20_000, `AI_KNOWLEDGE is too small: ${entry.length}`);
+  assert.ok(entry.length > largestModule, 'AI_KNOWLEDGE must be more comprehensive than any single modular chapter');
+  assert.match(entry, /canonical single-file offline knowledge source/i);
+  assert.match(entry, /physical item is the atomic unit/i);
+  assert.match(entry, /Green Thumb/i);
+  assert.match(entry, /Helianthus/i);
+  assert.match(entry, /Overbloom/i);
+  assert.match(entry, /Jacob's Farming Contest/i);
+  assert.match(entry, /API, NBT, lore, OCR/i);
+  assert.match(entry, /Best-next-upgrade algorithm/i);
   assert.match(entry, /Unknown is not zero/i);
 });
