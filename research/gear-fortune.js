@@ -30,6 +30,13 @@ export const GEAR_FORTUNE_FACTS = Object.freeze([
     note: 'Pesterminator VI grants +12 Farming Fortune per armor piece; four pieces total +48.',
   }),
   Object.freeze({
+    id: 'equipment-blossom-set-base-stats',
+    stepGain: 28,
+    source: 'https://hypixelskyblock.minecraft.wiki/w/Blossom_Set',
+    lastVerified: GEAR_FORTUNE_VERIFIED,
+    note: 'Each Blossom equipment piece has +7 base Farming Fortune. Four pieces therefore total +28 before Florist, reforges or enchants.',
+  }),
+  Object.freeze({
     id: 'equipment-blossom-set-visitor-bonus',
     stepGain: 90,
     source: 'https://hypixelskyblock.minecraft.wiki/w/Blossom_Set',
@@ -38,12 +45,4 @@ export const GEAR_FORTUNE_FACTS = Object.freeze([
   }),
 ]);
 
-export const VERIFIED_GEAR_MODEL_GAPS = Object.freeze([
-  Object.freeze({
-    id: 'equipment-blossom-set-base-stats',
-    missingFortune: 28,
-    source: 'https://hypixelskyblock.minecraft.wiki/w/Blossom_Set',
-    lastVerified: GEAR_FORTUNE_VERIFIED,
-    reason: 'The four Blossom pieces have +7 base Farming Fortune each in addition to Florist. src/data.js currently models the +90 Florist maximum but has no separate +28 base-stat entry.',
-  }),
-]);
+export const VERIFIED_GEAR_MODEL_GAPS = Object.freeze([]);

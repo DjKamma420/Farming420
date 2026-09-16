@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
+import '../src/runtime-data-patches.js';
 import { UPGRADES } from '../src/data.js';
 import {
   GEAR_FORTUNE_FACTS,
@@ -16,11 +17,11 @@ test('verified farming gear facts are dated after the 2026 farming changes', () 
 });
 
 test('verified gear values still match the runtime data', () => {
-  assert.equal(GEAR_FORTUNE_FACTS.length, 5);
+  assert.equal(GEAR_FORTUNE_FACTS.length, 6);
 
   for (const fact of GEAR_FORTUNE_FACTS) {
     const upgrade = byId.get(fact.id);
-    assert.ok(upgrade, `verified gear upgrade is missing from src/data.js: ${fact.id}`);
+    assert.ok(upgrade, `verified gear upgrade is missing from runtime data: ${fact.id}`);
     assert.equal(upgrade.status, 'ACTIVE', `${fact.id} is no longer active`);
     assert.equal(upgrade.stepGain, fact.stepGain, `${fact.id} drifted from the verified Fortune value`);
     assert.ok(fact.source.startsWith('https://hypixelskyblock.minecraft.wiki/'));
@@ -28,10 +29,15 @@ test('verified gear values still match the runtime data', () => {
   }
 });
 
-test('the Blossom base-stat omission remains explicit until the runtime model is fixed', () => {
-  assert.equal(VERIFIED_GEAR_MODEL_GAPS.length, 1);
-  const gap = VERIFIED_GEAR_MODEL_GAPS[0];
-  assert.equal(gap.id, 'equipment-blossom-set-base-stats');
-  assert.equal(gap.missingFortune, 28);
-  assert.equal(byId.has(gap.id), false, 'remove this gap record after adding the separate +28 Blossom base-stat runtime entry');
+test('Blossom base Fortune is modeled separately from the Florist visitor bonus', () => {
+  const base = byId.get('equipment-blossom-set-base-stats');
+  const florist = byId.get('equipment-blossom-set-visitor-bonus');
+  assert.equal(base.stepGain, 28);
+  assert.equal(florist.stepGain, 90);
+  assert.notEqual(base.id, florist.id);
+  assert.match(base.notes, /separate from the Florist visitor bonus/i);
+});
+
+test('there are no remaining verified gear model gaps in this research slice', () => {
+  assert.deepEqual(VERIFIED_GEAR_MODEL_GAPS, []);
 });
