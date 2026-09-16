@@ -39,6 +39,7 @@ export const VERIFIED_FARMING_ENCHANT_MAX = Object.freeze(Object.fromEntries(
 /** Current removed farming enchantments that may still exist in old data. */
 export const LEGACY_FARMING_ENCHANT_META = Object.freeze({
   sunder: Object.freeze({
+    status: 'removed',
     removedAt: '2026-04-28',
     source: ENCHANTMENTS_SOURCE,
     lastVerified: VERIFIED_AT,
@@ -80,7 +81,9 @@ export function enchantMetadata(enchantId) {
 export function enchantPresentation(enchantId, rawLevel) {
   const id = canonicalEnchantId(enchantId);
   const level = Math.max(0, Number(rawLevel) || 0);
-  if (LEGACY_FARMING_ENCHANT_META[id]) return { id, level, maxLevel: null, state: 'legacy' };
+  // Removed/legacy values are deliberately neutral: they must never receive
+  // current-max chroma or be treated as a recommended current enchant.
+  if (LEGACY_FARMING_ENCHANT_META[id]) return { id, level, maxLevel: null, state: 'unverified' };
   const enchantMeta = VERIFIED_FARMING_ENCHANT_META[id] ?? null;
   const maxLevel = enchantMeta?.maxLevel ?? null;
   if (maxLevel === null) return { id, level, maxLevel: null, state: 'unverified' };
