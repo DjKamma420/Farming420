@@ -1273,3 +1273,24 @@ variants: empty desktop, desktop with a filled profile at tool tier 3, and a
 All 16 areas pass in all three variants. Identical click counts across desktop
 and phone are the evidence that navigation actually happened -- when they
 diverged, the phone run was doing nothing.
+
+
+## 0.26.2 -- the tool icon painted over the topbar
+
+Reported from a phone: an overlay on the Tools page "liegt doppelt". Scrolled,
+the tool art was drawn on top of the sticky header bar.
+
+`.sb-pack-icon` carries `z-index: 2` to sit above the letter fallback behind it.
+`.topbar` also carries `z-index: 2`. Equal values are decided by document order,
+and the icon comes later, so it won. The icon's number was never the problem:
+`.sb-tool-art` is `position: relative` with no z-index and so creates no
+stacking context, which let a value meant for a 52x52 box compete with the page.
+
+`isolation: isolate` on `.sb-tool-art`, `.sb-reforge-art` and `.item-portrait`
+(tier badge, z-index 4). No layout change, no number changed.
+
+Verified by hit test rather than by reading properties: scroll until icon and
+bar overlap, then `elementFromPoint` on the overlapping strip. 8 of 8 samples
+had the icon on top before, 0 of 8 after. `tests/stacking-isolation.test.js`
+pins the containment and was itself checked by removing the fix and watching it
+fail.

@@ -43,6 +43,9 @@
 .slot-portrait,
 .item-portrait {
   position: relative;
+  /* Contains the tier badge (z-index 4) and the art layers, so none of them
+     can escape and paint over the sticky topbar. */
+  isolation: isolate;
   display: grid;
   place-items: center;
   flex: none;

@@ -265,6 +265,17 @@
 .skyblock-redesign .sb-tool-art { width: 52px; height: 52px; }
 .skyblock-redesign .sb-reforge-art { width: 56px; height: 56px; }
 
+/*
+ * The art box stacks a pack icon over a letter fallback. `position: relative`
+ * alone does NOT create a stacking context, so those inner z-indexes compete
+ * with the whole page: the icon's z-index 2 tied with the sticky topbar's, lost
+ * the tie on document order, and painted the tool over the header bar while
+ * scrolling. `isolation` gives the box its own context so the inner layering
+ * stays inside it.
+ */
+.skyblock-redesign .sb-tool-art,
+.skyblock-redesign .sb-reforge-art { isolation: isolate; }
+
 .skyblock-redesign .sb-pack-icon {
   position: relative;
   z-index: 2;
