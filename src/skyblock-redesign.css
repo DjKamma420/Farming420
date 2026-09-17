@@ -585,6 +585,17 @@
     width: auto;
     height: 4px;
   }
+  /*
+   * enhancements.js wraps the nav in four titled groups. As a side rail those
+   * titles are useful; in the bottom bar they are laid out as four columns,
+   * each a heading stacked over its buttons, which needs two rows in a bar
+   * 68px tall -- so the bar showed "PROGRESS", "LOADOUT" and a clipped second
+   * row of icons instead of one row of destinations. `display: contents` drops
+   * the group boxes out of the layout so the buttons become direct children of
+   * the nav's flex row, without changing the DOM that the grouping module owns.
+   */
+  .skyblock-redesign .sb-rail .nav-group-addon { display: contents; }
+  .skyblock-redesign .sb-rail .nav-group-title-addon { display: none; }
   .skyblock-redesign .sb-nav-label { display: none !important; }
   .skyblock-redesign .content { padding: 18px 14px 88px; }
   .skyblock-redesign .sb-tool-grid,

@@ -1347,3 +1347,44 @@ and 7 Python tests pass.
 
 The crop selector still sits in the topbar. Moving it into the planner is the
 other half of the request and is not in this change.
+
+
+## 0.27.1 -- the taskbar showed two rows
+
+Reported: "Sie ist doppelt." The bottom bar was rendering group headings
+("PROGRESS", "LOADOUT", a clipped "SPE...") interleaved with icons across two
+rows in a bar 68px tall.
+
+`enhancements.js` wraps the nav in four titled groups. As a side rail that
+reads well. In the bottom bar the nav is a flex row, so those four groups
+became four columns, each a heading stacked over its buttons -- two rows of
+content in a one-row bar, clipped.
+
+`display: contents` on `.nav-group-addon` below 650px drops the group boxes out
+of the layout, so the buttons become direct children of the nav's flex row.
+The titles are hidden there. No DOM change: the grouping module keeps owning
+the structure it built.
+
+### The order was wrong too
+
+`groupSidebar` appends its groups after everything it did not move, so a page
+missing from GROUPS is not dropped -- it is left sitting in front of them.
+`setups`, `guide` and `setup` were missing, so the rail opened with an item and
+two bare letters before Dashboard. All sixteen pages are grouped now, with
+`setups` in Loadout and a new "Getting started" group holding `guide` and
+`setup` at the end. `tests/nav-groups.test.js` fails if a page is missing,
+unknown or listed twice.
+
+### Correction to the 0.27.0 notes
+
+Those notes said the crop selector was still in the topbar and that moving it
+was outstanding. That was wrong. It is already hidden there
+(`workspace-hidden-crop-switch`), and the planner already carries its own
+chooser with **Global** as the first option followed by all 13 crops, under an
+"Evaluation scope" heading. That half of the request was done before this
+change.
+
+### Verified
+
+412px screenshots of Dashboard, Tools and Planner: one row of icons, Dashboard
+first, no group titles, no dropdown. 426 node tests and 7 Python tests pass.
