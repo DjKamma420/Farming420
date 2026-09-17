@@ -4,9 +4,10 @@
     "asOf": "2026-09-17",
     "currency": "coins",
     "market": "Hypixel SkyBlock Auction House",
-    "scope": "All farming equipment currently admitted by Farming420's equipment catalog filters: LOTUS/Peony, Blossom, Pesthunter, Pest Vest, and Zorro's Cape.",
+    "scope": "Farming equipment families represented by Farming420 research/catalog rules: LOTUS/Peony, Blossom, Pesthunter, Pest Vest, and Zorro's Cape.",
     "costType": "acquisition_average_auction_price",
     "primaryMetric": "Source-reported average Auction House sale price",
+    "schemaInvariant": "Every equipment record must contain averageCostCoins. If a future item cannot be priced reliably, keep averageCostCoins as null and add an explicit uncertainty/status note; never silently substitute zero.",
     "usage": "Research fallback for upgrade economics. A live market-price service should override this snapshot when fresh data is available. Do not treat acquisition cost as resale value.",
     "completeness": {
       "expectedItems": 14,
@@ -143,7 +144,7 @@
     {
       "skyblockId": "PEST_VEST",
       "name": "Pest Vest",
-      "slot": "FARMING_EQUIPMENT",
+      "slot": "CLOAK",
       "averageCostCoins": 5600000,
       "source": "https://skyah.net/item/PEST_VEST",
       "sourceMetric": "SkyAH reported average price",
