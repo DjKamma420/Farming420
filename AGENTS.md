@@ -87,6 +87,8 @@ Before changing runtime DOM enhancers, render hooks, `MutationObserver`, `queueM
 
 The mandatory invariant is: **applying the same UI state twice must converge to a no-op.** Code that observes a DOM subtree must not unconditionally mutate that same subtree. Any freeze or runaway-render regression must be recorded in the incident log in `docs/RENDER_FREEZE_SAFETY.md` and receive a regression test before merge.
 
+Any change that can affect browser startup or runtime DOM behavior must also pass `scripts/browser-startup-smoke.sh` in CI. Syntax checks and unit tests are not sufficient evidence that the application boots; the headless-browser smoke test must reach the Dashboard render without timing out.
+
 ## Merge policy
 
 The repository owner has given a standing instruction: **merge a pull request as
