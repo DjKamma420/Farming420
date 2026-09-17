@@ -1,0 +1,11 @@
+# Farming armor picker scope
+
+The setup armor picker is intentionally not a generic SkyBlock wardrobe.
+
+Current farming progression follows Hypixel SkyBlock 0.26.1:
+
+Farmhand -> Haymaker -> Sprout -> Tater -> Cropie -> Squash -> Fermento -> Helianthus.
+
+The picker also keeps Rancher's Boots, Farmer Boots, and the Pufferfish helmet/hat exception used by this app's farming loadouts. Legacy pre-0.26.1 ids remain accepted so restored profiles do not lose their selected armor.
+
+Combat armor and Rabbit Armor are excluded from the picker. Equipment remains separately filtered by its own slot categories.

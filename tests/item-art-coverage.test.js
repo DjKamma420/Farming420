@@ -78,8 +78,6 @@ test('abstract stat cards do not steal vaguely similar item art', () => {
   });
   assert.equal(abstract, null);
 
-  // This is the historical failure mode: searching "blessed" by substring
-  // could pick Blessed Bait. No physical card named only "Blessed" may do that.
   const blessed = catalogItemForUpgrade(catalog, {
     id: 'tool-reforge-blessed-reforge',
     name: 'Blessed reforge',
@@ -93,10 +91,11 @@ test('name normalization is deterministic without fuzzy substring guessing', () 
   assert.equal(normalizeItemName("Farmer’s Boots"), 'farmers boots');
 });
 
-test('chip/card art stays adjacent to its title and status badge', () => {
+test('chip/card art is pinned directly beside its title even under redesign specificity', () => {
   const css = readFileSync(new URL('../src/item-art-coverage.css', import.meta.url), 'utf8');
-  assert.match(css, /\.item-card \.card-head\s*\{[\s\S]*?justify-content:\s*flex-start/);
-  assert.match(css, /\.item-card \.card-head > div\s*\{[\s\S]*?flex:\s*1 1 auto/);
-  assert.match(css, /\.item-card \.card-head > \.badge\s*\{[\s\S]*?margin-left:\s*auto/);
-  assert.match(css, /\.item-card \.card-portrait\s*\{[\s\S]*?width:\s*42px/);
+  assert.match(css, /\.skyblock-redesign \.item-card \.card-head[\s\S]*?display:\s*flex\s*!important/);
+  assert.match(css, /\.skyblock-redesign \.item-card \.card-head[\s\S]*?justify-content:\s*flex-start\s*!important/);
+  assert.match(css, /\.skyblock-redesign \.item-card \.card-head > div[\s\S]*?flex:\s*0 1 auto\s*!important/);
+  assert.match(css, /\.item-card \.card-head > \.badge:first-of-type[\s\S]*?margin-left:\s*auto\s*!important/);
+  assert.match(css, /\.skyblock-redesign \.item-card \.card-portrait[\s\S]*?width:\s*42px\s*!important/);
 });
