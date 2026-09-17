@@ -1,20 +1,24 @@
 export const GEMSTONE_SLOTS_VERIFIED = '2026-09-17';
-export const TOOL_GEMSTONE_SOURCE = 'https://hypixel-skyblock.fandom.com/wiki/Euclid%27s_Wheat_Hoe';
+export const TOOL_GEMSTONE_SOURCE = 'https://hypixel-skyblock.fandom.com/wiki/Module%3AItem/ApiData';
 export const PERIDOT_VALUES_SOURCE = 'https://hypixel.net/threads/list-of-item-in-skyblock-major-update.6123513/';
 
 export const GEMSTONE_QUALITIES = Object.freeze(['ROUGH', 'FLAWED', 'FINE', 'FLAWLESS', 'PERFECT']);
 export const TOOL_GEMSTONE_TYPES = Object.freeze(['PERIDOT']);
 export const TOOL_GEMSTONE_SLOT_COUNT = 4;
-export const TOOL_GEMSTONE_LEVEL_THRESHOLDS = Object.freeze([1, 15, 25, 50]);
-export const TOOL_GEMSTONE_MAX_BY_TIER = Object.freeze({ 1: 1, 2: 3, 3: 4 });
+// The official item resource stores the socket requirements as levelable_lvl
+// 5 / 15 / 25 / 50. Runtime exact-item data remains authoritative; these are
+// only the offline fallback used when the resource cannot be loaded.
+export const TOOL_GEMSTONE_LEVEL_THRESHOLDS = Object.freeze([5, 15, 25, 50]);
+// Current Mk. I item data already carries the first two physical sockets, Mk. II
+// the first three, and Mk. III all four. Requirements still gate whether a
+// physical socket is active at the current tool level.
+export const TOOL_GEMSTONE_MAX_BY_TIER = Object.freeze({ 1: 2, 2: 3, 3: 4 });
 export const GEMSTONE_RARITIES = Object.freeze(['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY', 'MYTHIC']);
 
 /**
- * Current specialised Farming Tool progression exposes one Peridot socket from
- * tool level 1, a second at 15, a third at 25, and the fourth at 50.
- * Mk. I physically supports only the first socket, Mk. II supports the first
- * three, and Mk. III supports all four. A socket is usable only when both its
- * level requirement and the current physical Mk tier allow it.
+ * Offline fallback for specialised Farming Tool sockets. The live official
+ * item resource is preferred and evaluated by `availableOfficialGemstoneSlots`.
+ * It currently exposes Peridot requirements at levelable_lvl 5, 15, 25 and 50.
  */
 export function toolGemstoneSlotCountForLevel(level) {
   const value = Math.max(0, Math.min(50, Math.floor(Number(level) || 0)));

@@ -12,6 +12,7 @@ const catalog = [
   { id: 'SQUASH_HELMET', name: 'Squash Helmet', category: 'HELMET' },
   { id: 'FERMENTO_HELMET', name: 'Fermento Helmet', category: 'HELMET' },
   { id: 'HELIANTHUS_HELMET', name: 'Helianthus Helmet', category: 'HELMET' },
+  { id: 'ENCHANTED_JACK_O_LANTERN', name: 'Lantern Helmet', category: 'HELMET' },
   { id: 'RANCHERS_BOOTS', name: "Rancher's Boots", category: 'BOOTS' },
   { id: 'FARMER_BOOTS', name: 'Farmer Boots', category: 'BOOTS' },
   { id: 'PUFFERFISH_HAT', name: 'Pufferfish Hat', category: 'HELMET' },
@@ -21,12 +22,13 @@ const catalog = [
   { id: 'LOTUS_BRACELET', name: 'Lotus Bracelet', category: 'BRACELET' },
 ];
 
-test('armor slots only expose farming armor and the Pufferfish helmet exception', () => {
+test('armor slots expose farming armor and farming-relevant standalone helmets/boots', () => {
   assert.deepEqual(itemsForSlot(catalog, 'helmet').map(item => item.id), [
     'CROPIE_HELMET',
     'FARMHAND_HELMET',
     'FERMENTO_HELMET',
     'HELIANTHUS_HELMET',
+    'ENCHANTED_JACK_O_LANTERN',
     'PUFFERFISH_HAT',
     'SQUASH_HELMET',
   ]);
@@ -35,6 +37,10 @@ test('armor slots only expose farming armor and the Pufferfish helmet exception'
     'RANCHERS_BOOTS',
     'TATER_BOOTS',
   ]);
+});
+
+test('Lantern Helmet is kept because it is farming-relevant and has two Peridot sockets', () => {
+  assert.equal(isFarmingArmorCatalogItem({ id: 'ENCHANTED_JACK_O_LANTERN', name: 'Lantern Helmet' }), true);
 });
 
 test('combat and Rabbit armor are excluded from the farming picker', () => {
