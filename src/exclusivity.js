@@ -1,3 +1,4 @@
+import { FARMING_TOOL_REFORGES } from './farming-reforges.js';
 import { SLOT_IDS } from './setups.js';
 
 /**
@@ -13,10 +14,7 @@ export const EXCLUSIVE_ENTRY_GROUPS = Object.freeze([
     label: 'Farming tool reforge',
     itemClass: 'farming-tool',
     maxActive: 1,
-    members: Object.freeze([
-      'tool-reforge-blessed-reforge',
-      'tool-reforge-bountiful-reforge',
-    ]),
+    members: Object.freeze(FARMING_TOOL_REFORGES.map(reforge => `tool-reforge-${reforge.id}-reforge`)),
   }),
 ]);
 
