@@ -4,10 +4,20 @@ import {
   overbloomToFortuneEquivalent,
   paybackHours,
 } from './effective-gain.js';
+import {
+  INTERNET_FARMING_TIME_VALUE_COINS_PER_HOUR,
+  earnedNetCost,
+} from './upgrade-economics.js';
 
 function finiteNonNegative(value) {
   const number = Number(value);
   return Number.isFinite(number) ? Math.max(0, number) : 0;
+}
+
+function knownNonNegative(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const number = Number(value);
+  return Number.isFinite(number) && number >= 0 ? number : null;
 }
 
 export function statDeltas(item, gain) {
@@ -27,8 +37,15 @@ export function evaluateUpgrade({
   item,
   gain = 0,
   costCoins = 0,
+  acquisitionMode = 'BUYABLE',
+  directCoinCost = 0,
+  activeGrindHours = null,
+  timeValueCoinsPerHour = INTERNET_FARMING_TIME_VALUE_COINS_PER_HOUR,
+  timeValueSource = 'internet_benchmark',
+  incidentalGrindProfitCoinsPerHour = 0,
   currentFortune = 0,
   currentOverbloom = 0,
+  fortuneBase = 100,
   normalCropCoinsPerHour = 0,
   rareCropCoinsPerHour = 0,
 } = {}) {
@@ -36,13 +53,36 @@ export function evaluateUpgrade({
   const normal = finiteNonNegative(normalCropCoinsPerHour);
   const rare = finiteNonNegative(rareCropCoinsPerHour);
   const economicsReady = normal > 0 || rare > 0;
-  const cost = finiteNonNegative(costCoins);
+  const route = acquisitionMode === 'EARNED'
+    ? 'EARNED'
+    : acquisitionMode === 'UNKNOWN' ? 'UNKNOWN' : 'BUYABLE';
+
+  let cost = 0;
+  let costKnown = false;
+  let grindHours = null;
+  if (route === 'BUYABLE') {
+    const buyCost = knownNonNegative(costCoins);
+    costKnown = buyCost !== null && buyCost > 0;
+    cost = costKnown ? buyCost : 0;
+  } else if (route === 'EARNED') {
+    grindHours = knownNonNegative(activeGrindHours);
+    if (grindHours !== null) {
+      costKnown = true;
+      cost = earnedNetCost({
+        directCoinCost,
+        activeGrindHours: grindHours,
+        timeValueCoinsPerHour,
+        incidentalGrindProfitCoinsPerHour,
+      });
+    }
+  }
 
   const marginalCoinsHour = deltas.modeled && economicsReady
     ? marginalCoinsPerHour({
         ...deltas,
         currentFortune,
         currentOverbloom,
+        fortuneBase,
         normalCropCoinsPerHour: normal,
         rareCropCoinsPerHour: rare,
       })
@@ -53,6 +93,7 @@ export function evaluateUpgrade({
         deltaOverbloom: deltas.deltaOverbloom,
         currentFortune,
         currentOverbloom,
+        fortuneBase,
         normalCropCoinsPerHour: normal,
         rareCropCoinsPerHour: rare,
       })
@@ -62,14 +103,21 @@ export function evaluateUpgrade({
   return {
     ...deltas,
     gain: finiteNonNegative(gain),
+    acquisitionMode: route,
     cost,
+    costKnown,
+    activeGrindHours: grindHours,
+    directCoinCost: finiteNonNegative(directCoinCost),
+    timeValueCoinsPerHour: route === 'EARNED' ? finiteNonNegative(timeValueCoinsPerHour) : null,
+    timeValueSource: route === 'EARNED' ? timeValueSource : null,
+    fortuneBase: finiteNonNegative(fortuneBase) || 100,
     economicsReady,
     marginalCoinsHour,
     fortuneEquivalent,
-    payback: cost > 0 && marginalCoinsHour !== null
+    payback: costKnown && marginalCoinsHour !== null
       ? paybackHours({ costCoins: cost, marginalCoinsHour })
       : null,
-    coinsPerEffectiveFortune: cost > 0
+    coinsPerEffectiveFortune: costKnown
       ? coinsPerEffectiveFortune({ costCoins: cost, deltaFortuneEquivalent: fortuneEquivalent })
       : null,
   };
@@ -89,9 +137,9 @@ export function rankEvaluatedUpgrades(rows) {
 
     // No baseline means no payback and no marginal profit, but the researched
     // cost table still answers "what do I pay per point of Farming Fortune",
-    // and that question needs no Coins/h at all. A row without a researched
-    // cost is not cheap, it is unknown, so it sorts behind every priced row
-    // instead of ahead of them.
+    // and that question needs no Coins/h at all. A row without a resolved
+    // acquisition cost is not cheap, it is unknown, so it sorts behind every
+    // costed BUYABLE or EARNED row instead of ahead of them.
     const aPerFortune = Number.isFinite(a.coinsPerEffectiveFortune) && a.coinsPerEffectiveFortune > 0
       ? a.coinsPerEffectiveFortune : null;
     const bPerFortune = Number.isFinite(b.coinsPerEffectiveFortune) && b.coinsPerEffectiveFortune > 0

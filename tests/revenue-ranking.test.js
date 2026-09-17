@@ -37,6 +37,20 @@ test('Overbloom value depends on the rare crop revenue stream', () => {
   assert.ok(richRareRevenue.marginalCoinsHour > noRareRevenue.marginalCoinsHour);
 });
 
+test('Pest activity base reduces Fortune marginal value compared with Farm at the same displayed Fortune', () => {
+  const common = {
+    item: { metric: 'Crop Yield' },
+    gain: 10,
+    currentFortune: 900,
+    normalCropCoinsPerHour: 20_000_000,
+  };
+  const farm = evaluateUpgrade({ ...common, fortuneBase: 100 });
+  const pest = evaluateUpgrade({ ...common, fortuneBase: 600 });
+  assert.equal(farm.marginalCoinsHour, 200_000);
+  assert.ok(pest.marginalCoinsHour < farm.marginalCoinsHour);
+  assert.equal(pest.fortuneBase, 600);
+});
+
 test('known-cost upgrades rank by shortest payback before unknown-cost rows', () => {
   const rows = rankEvaluatedUpgrades([
     { item: { name: 'Unknown cost' }, payback: null, marginalCoinsHour: 2_000_000, fortuneEquivalent: 20 },
@@ -57,4 +71,52 @@ test('without economics the model does not fabricate marginal coins', () => {
   assert.equal(row.marginalCoinsHour, null);
   assert.equal(row.payback, null);
   assert.equal(row.fortuneEquivalent, 5);
+});
+
+test('EARNED route stays unknown until active grind time is explicitly entered', () => {
+  const row = evaluateUpgrade({
+    item: { metric: 'Crop Yield' },
+    gain: 10,
+    acquisitionMode: 'EARNED',
+    normalCropCoinsPerHour: 10_000_000,
+  });
+  assert.equal(row.acquisitionMode, 'EARNED');
+  assert.equal(row.costKnown, false);
+  assert.equal(row.cost, 0);
+  assert.equal(row.activeGrindHours, null);
+  assert.equal(row.payback, null);
+  assert.equal(row.coinsPerEffectiveFortune, null);
+});
+
+test('EARNED route converts entered active time into opportunity cost', () => {
+  const row = evaluateUpgrade({
+    item: { metric: 'Crop Yield' },
+    gain: 100,
+    acquisitionMode: 'EARNED',
+    activeGrindHours: 2,
+    timeValueCoinsPerHour: 20_000_000,
+    timeValueSource: 'internet_benchmark',
+    normalCropCoinsPerHour: 1_000_000,
+  });
+  assert.equal(row.costKnown, true);
+  assert.equal(row.cost, 40_000_000);
+  assert.equal(row.marginalCoinsHour, 1_000_000);
+  assert.equal(row.payback, 40);
+  assert.equal(row.timeValueSource, 'internet_benchmark');
+});
+
+test('player-specific time value changes EARNED ranking cost without changing the stat gain', () => {
+  const common = {
+    item: { metric: 'Crop Yield' },
+    gain: 10,
+    acquisitionMode: 'EARNED',
+    activeGrindHours: 2,
+    normalCropCoinsPerHour: 20_000_000,
+  };
+  const fallback = evaluateUpgrade({ ...common, timeValueCoinsPerHour: 20_000_000 });
+  const measured = evaluateUpgrade({ ...common, timeValueCoinsPerHour: 30_000_000, timeValueSource: 'player_baseline' });
+  assert.equal(fallback.fortuneEquivalent, measured.fortuneEquivalent);
+  assert.equal(fallback.cost, 40_000_000);
+  assert.equal(measured.cost, 60_000_000);
+  assert.ok(measured.payback > fallback.payback);
 });

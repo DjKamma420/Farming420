@@ -7,11 +7,12 @@
   "scripts": {
     "serve": "python3 -m http.server 4173",
     "sync:pack": "python3 scripts/sync-hypixel-pack.py",
+    "audit:farming-models": "node scripts/audit-farming-models.js",
     "test": "npm run test:node && npm run test:python",
     "test:node": "node --test tests/*.test.js",
     "test:python": "python3 -m unittest discover -s tests -p \"test_*.py\"",
     "sweep": "bash scripts/sweep-all.sh",
     "audit:overlay": "node scripts/overlay-audit.mjs",
-    "build:costs": "python3 scripts/build-upgrade-costs.py"
+    "build:costs": "python3 scripts/build-upgrade-costs.py && python3 scripts/build-upgrade-step-costs.py"
   }
 }

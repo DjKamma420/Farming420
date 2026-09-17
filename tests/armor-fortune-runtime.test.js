@@ -50,7 +50,7 @@ test('Feast stays separate from base stats and follows the verified tiered piece
   assert.equal(helianthusFeastFortune(all), 75);
 });
 
-test('Mossy is summed per equipped piece and rarity', () => {
+test('Mossy is summed per equipped piece and effective rarity', () => {
   const pieces = [
     piece('Helianthus Helmet', { rarity: 'LEGENDARY', reforge: 'mossy' }),
     piece('Helianthus Chestplate', { rarity: 'MYTHIC', reforge: 'mossy' }),
@@ -58,6 +58,11 @@ test('Mossy is summed per equipped piece and rarity', () => {
   ];
   assert.equal(mossyPieceCount(pieces), 2);
   assert.equal(mossyFortuneForPieces(pieces), 55);
+  assert.equal(
+    mossyFortuneForPieces([piece('Helianthus Helmet', { rarity: 'LEGENDARY', reforge: 'mossy', recombobulated: true })]),
+    30,
+    'base Legendary + Recombobulator scales Mossy as Mythic',
+  );
 });
 
 test('Pesterminator levels are summed per piece rather than requiring a full matching set', () => {
@@ -76,11 +81,22 @@ test('Sunset is tracked as per-piece levels without turning it into Farming Fort
   ]), 7);
 });
 
-test('Perfect Peridot is counted per gemstone slot and scales with host item rarity', () => {
+test('Perfect Peridot is counted per gemstone slot and scales with effective host rarity', () => {
   const pieces = [
     piece('Helianthus Helmet', { rarity: 'LEGENDARY', gems: { PERIDOT_0: 'PERFECT', PERIDOT_1: 'PERFECT' } }),
     piece('Helianthus Chestplate', { rarity: 'MYTHIC', gems: ['PERFECT PERIDOT'] }),
   ];
   assert.equal(perfectPeridotCountOnArmor(pieces), 3);
   assert.equal(perfectPeridotFortuneOnArmor(pieces), 26);
+  assert.equal(
+    perfectPeridotFortuneOnArmor([
+      piece('Helianthus Helmet', {
+        rarity: 'LEGENDARY',
+        recombobulated: true,
+        gems: { PERIDOT_0: 'PERFECT', PERIDOT_1: 'PERFECT' },
+      }),
+    ]),
+    20,
+    'two Perfect Peridots on base Legendary + Recombobulator use Mythic value',
+  );
 });

@@ -58,3 +58,34 @@ test('the optional converter stays a working <details>', () => {
   assert.match(css, /\.pest-philip-head \{[^}]*display: flex/);
   assert.doesNotMatch(css, /\.pest-philip\s*>\s*summary \{[^}]*display: flex/);
 });
+
+test('the page answers the render-freeze checklist', () => {
+  // docs/RENDER_FREEZE_SAFETY.md, rules 1-3 and 8. This module observes the
+  // same subtree it writes into, which is the shape that froze the app in
+  // PR #90.
+  const page = read('pests-page.js');
+
+  // What wakes it up, and what makes the second pass a no-op.
+  assert.match(page, /new MutationObserver\(\(\) => queueMicrotask\(applyPestsPage\)\)/);
+  assert.match(page, /content\.querySelector\('\.pest-explainer'\)\) return;/);
+
+  // Text inside the observed subtree goes through the shared guard rather than
+  // being assigned unconditionally -- assigning the same string still replaces
+  // the text node and emits another childList mutation.
+  assert.match(page, /import \{ setTextIfChanged \} from '\.\/setup-selection-ui\.js'/);
+  assert.doesNotMatch(page, /\.textContent\s*=/);
+
+  // Rule 5: no storage write and no state-changed dispatch at all, so the
+  // observer cannot cause a render.
+  assert.doesNotMatch(page, /localStorage\.setItem|farming420:state-changed/);
+
+  // Rule 6: nothing interactive is cloned.
+  assert.doesNotMatch(page, /cloneNode/);
+});
+
+test('one writer per concern: nothing else builds this panel', () => {
+  // Rule 7. The planner page already had three modules writing one list.
+  const owners = ['pests-page.js', 'skyblock-redesign.js', 'ux-simplify.js', 'activity-mode-ui.js']
+    .filter(name => /pest-page-addon|pest-explainer/.test(read(name)));
+  assert.deepEqual(owners, ['pests-page.js']);
+});

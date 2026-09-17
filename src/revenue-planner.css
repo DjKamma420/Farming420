@@ -54,7 +54,8 @@
   font-weight: 800;
 }
 
-.skyblock-redesign .revenue-inputs input {
+.skyblock-redesign .revenue-inputs input,
+.skyblock-redesign .earned-route-row input {
   width: 100%;
   min-width: 0;
   border: 1px solid #3c5142;
@@ -67,6 +68,37 @@
 
 .skyblock-redesign .revenue-help {
   margin: 10px 0 0;
+}
+
+.skyblock-redesign .earned-route-list {
+  display: grid;
+  gap: 8px;
+}
+
+.skyblock-redesign .earned-route-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) 130px;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(125, 160, 134, .14);
+}
+
+.skyblock-redesign .earned-route-row:last-child {
+  border-bottom: 0;
+}
+
+.skyblock-redesign .earned-route-row > span {
+  display: grid;
+  gap: 3px;
+}
+
+.skyblock-redesign .earned-route-row strong {
+  color: #edf7ef;
+}
+
+.skyblock-redesign .earned-route-row small {
+  color: #8fa294;
 }
 
 .skyblock-redesign .revenue-list .planner-row {
@@ -99,6 +131,10 @@
   .skyblock-redesign .revenue-note {
     display: block;
     margin-top: 6px;
+  }
+
+  .skyblock-redesign .earned-route-row {
+    grid-template-columns: 1fr;
   }
 }
 

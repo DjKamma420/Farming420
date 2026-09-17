@@ -5,6 +5,7 @@ import { toolKeyForCropId } from './migrations.js';
 import { mooshroomCowContribution } from './mooshroom-cow.js';
 import { VACUUM_REFORGE_EFFECT_ENTRY_IDS, selectedVacuumReforge } from './item-capabilities.js';
 import { vacuumPeridotFortune } from './vacuum-state.js';
+import { TOOL_GEM_ENTRY_ID, toolGemstoneContribution } from './tool-gemstone-contribution.js';
 import {
   ACTIVITY_MODE,
   activityModeForState,
@@ -88,6 +89,12 @@ function contributionFor(state, item, cropId, mode = null) {
 
   if (mode && axis !== STAT_AXIS.BONUS_PEST_CHANCE && !itemAppliesToActivity(item, mode)) return null;
 
+  // The old single Perfect-Peridot row was only a placeholder. The physical
+  // tool editor now stores every socket separately, including quality, unlock
+  // state and rarity scaling; counting this row as well would double-count and
+  // would keep the obsolete fixed +30 assumption alive.
+  if (item.id === TOOL_GEM_ENTRY_ID) return null;
+
   const level = configuredLevel(profile, item, cropId);
   if (level <= 0) return null;
 
@@ -151,15 +158,19 @@ export function computeTotalsFromEntries(state, entries, cropId = state?.selecte
   return totals;
 }
 
-function applyDerivedMechanics(state, totals, mode) {
+function applyDerivedMechanics(state, totals, mode, cropId) {
   const cow = mooshroomCowContribution(state);
   const vacuumPeridot = mode === ACTIVITY_MODE.PEST
     ? vacuumPeridotFortune(state?.profile?.vacuumProgress || {})
     : 0;
+  const toolPeridot = mode === ACTIVITY_MODE.FARM
+    ? toolGemstoneContribution(state, cropId)
+    : { active: false, value: 0, incomplete: false, filled: 0, available: 0 };
   totals.derived = {
     strength: state?.profile?.inputs?.strength ?? null,
     mooshroomCow: cow,
     vacuumPeridotFortune: vacuumPeridot,
+    toolPeridotFortune: toolPeridot,
   };
 
   if (cow.active) {
@@ -174,12 +185,25 @@ function applyDerivedMechanics(state, totals, mode) {
 
   if (vacuumPeridot > 0) totals.pestFortune += vacuumPeridot;
 
+  // A Farming Tool belongs to one crop/tool bucket. Peridot is technically
+  // Farming Fortune, but its contribution is active only while that physical
+  // crop tool is selected, so it lives on this crop's effective Fortune axis.
+  if (toolPeridot.active) {
+    totals.cropFortune += toolPeridot.value;
+    if (toolPeridot.incomplete) {
+      totals.incomplete.cropFortune.push({
+        id: TOOL_GEM_ENTRY_ID,
+        reason: toolPeridot.reason,
+      });
+    }
+  }
+
   totals.effectiveFortune = totals.globalFortune + totals.cropFortune + totals.pestFortune;
   return totals;
 }
 
 export function computeStatTotals(state, cropId = state?.selectedCrop || 'melon', mode = activityModeForState(state)) {
-  return applyDerivedMechanics(state, computeTotalsFromEntries(state, UPGRADES, cropId, mode), mode);
+  return applyDerivedMechanics(state, computeTotalsFromEntries(state, UPGRADES, cropId, mode), mode, cropId);
 }
 
 export function computedStatsSnapshot(state, mode = activityModeForState(state)) {

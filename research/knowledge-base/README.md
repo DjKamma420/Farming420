@@ -38,6 +38,13 @@ The closed former official wiki must not be used as a current mechanics source. 
 - `20-items-armor-equipment-tools.md`: item-local mechanics, Helianthus, Blossom, reforges, gemstones, tool progression, enchant rules.
 - `30-strategy-and-economics.md`: progression logic, marginal upgrade ranking, coins/hour, time costs, contest/pest preparation, common traps.
 - `40-calculator-model-strategy-gap-audit.md`: implementation-vs-research audit, generic profit/Pest EV model, strategy contexts, item-model coverage, and the exact remaining calculator inputs.
+- `41-active-farming-drop-models.md`: current crop-output boundaries, Harvest Feast RARE CROP formulas, Pest spawn/drop semantics, and Vacuum tiers.
+- `42-chips-temporary-buffs-shards-2026-09-17.md`: current Chips, temporary Farming buffs, Crop Fever, and shard boundaries.
+- `43-profile-farming-autodetection-2026-09-17.md`: API/profile auto-detection rules, source provenance, active-vs-owned separation, and hidden-state handling.
+- `44-jacob-contest-model-2026-09-17.md`: Jacob Contest scoring model, percentile/medal boundaries, Personal Best Crop Fortune, and no-fake-threshold rules.
+- `45-greenhouse-live-model-2026-09-17.md`: current Greenhouse passive-economics boundary, complete Aug-20 multiplier table, 72h base-crop decay, and planned-vs-live separation.
+- `46-live-price-model-2026-09-17.md`: official Bazaar/NPC price plumbing, direction-aware quotes, freshness/cache rules, and unresolved AH/BIN boundaries.
+- `47-item-model-audit-and-structural-gaps-2026-09-17.md`: sync-time Farming model coverage, head/non-pack model provenance, unresolved-model gate, and complete Farming-tool reforge exclusivity.
 - `SOURCES.md`: source index and verification notes.
 
 Existing specialized research files remain authoritative for their narrow verified slices when newer than a chapter here, including `core-fortune.js`, `gear-fortune.js`, `equipment-fortune.js`, `pet-switching.js`, and the runtime verification tests.
@@ -64,6 +71,8 @@ Source: https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune
 Last verified: 2026-09-16
 
 The implementation audit in `40-calculator-model-strategy-gap-audit.md` was refreshed on 2026-09-17 against the Greenhouse, Harvest Feast, May 5, and May 14 Hypixel staff posts. It is the first place to check whether a researched mechanic is actually represented in the calculator runtime.
+
+`41-active-farming-drop-models.md` is the runtime-facing source for normal crop, Harvest Feast, Pest, and Vacuum drop semantics. It deliberately preserves unresolved base quantities and new-Pest divisors as `VERIFY` rather than importing assumptions.
 
 ## Definition of completeness
 

@@ -1,0 +1,51 @@
+.slot-grid > .sb-docked-setup-editor {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin: 0 0 8px;
+}
+
+.sb-selection-picker {
+  margin-top: 14px;
+}
+
+.sb-selection-picker .settings-field,
+.sb-closed-item-field {
+  min-width: 0;
+}
+
+.sb-selection-picker select,
+.sb-closed-item-field select {
+  width: 100%;
+}
+
+.sb-picker-status {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* Pets and pet items are closed choices, not generic reforgable/gemmed gear.
+   Their dedicated selectors own the whole slot configuration. */
+.sb-pet-editor > .item-editor-grid:not(.sb-pet-picker),
+.sb-pet-editor > .item-editor-row,
+.sb-pet-editor > .item-editor-section,
+.sb-pet-editor > p.hint,
+.sb-pet-item-editor > .item-editor-row,
+.sb-pet-item-editor > .item-editor-section,
+.sb-pet-item-editor > p.hint,
+.sb-pet-item-editor > .item-editor-grid > .settings-field:not(.sb-closed-item-field) {
+  display: none;
+}
+
+/* The item selector itself stays visible for a Pet Item, while every free-text
+   fallback is removed from the interaction model. */
+.sb-pet-item-editor > .item-editor-grid {
+  grid-template-columns: minmax(240px, 1fr);
+}
+
+@media (max-width: 780px) {
+  .slot-grid > .sb-docked-setup-editor {
+    grid-column: 1;
+  }
+}

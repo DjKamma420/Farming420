@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Farming420 Setups smoke</title></head>
+<body>
+<script type="module">
+  import { DATA_SCHEMA_VERSION, STORAGE_KEY } from '../src/config.js';
+  import { CATALOG_STORAGE_KEY } from '../src/item-catalog.js';
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    schemaVersion: DATA_SCHEMA_VERSION,
+    page: 'setups',
+    setupSlot: 'pet',
+    selectedCrop: 'melon',
+    search: '',
+    drawer: null,
+    profile: {
+      name: 'Browser smoke',
+      globalFortune: 0,
+      cropFortune: {},
+      cropProgress: {},
+      toolProgress: {},
+      levels: {},
+      owned: {},
+      costs: {},
+      manualGain: {},
+    },
+  }));
+
+  // Keep this test deterministic and offline. An empty but fresh catalog keeps
+  // the app from reaching out to Hypixel while the Pet selector is exercised.
+  localStorage.setItem(CATALOG_STORAGE_KEY, JSON.stringify({
+    fetchedAt: new Date().toISOString(),
+    items: [],
+  }));
+
+  location.replace('../');
+</script>
+</body>
+</html>

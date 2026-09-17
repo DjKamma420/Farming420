@@ -2000,3 +2000,23 @@ Farm Suit, Melon and Rabbit armour turned out **not to be entries in this app
 at all**. They exist only in the live setup catalogue, where the head-texture
 and vanilla-material rungs already cover them. Inventing pack stand-ins for
 items the repo does not contain would have been fabricating coverage.
+
+### 0.35.0 addendum -- freeze safety
+
+`main` gained `docs/RENDER_FREEZE_SAFETY.md` while this branch was open, after a
+`MutationObserver` froze the app in PR #90. The Pests page is exactly the shape
+that incident describes -- it observes the subtree it writes into -- so it was
+walked against the checklist rather than assumed safe:
+
+- **What wakes it up:** a `MutationObserver` on `#app`, because the core
+  rewrites `#app` wholesale and the panel has to be rebuilt after each render.
+- **What makes the second pass a no-op:** the panel's own presence.
+- **Text writes** go through the shared `setTextIfChanged`, not a second copy of
+  it. Assigning the same string still replaces the text node and emits another
+  `childList` mutation, which is precisely how PR #90 looped.
+- **No storage write and no `state-changed` dispatch at all**, so the observer
+  cannot cause a render.
+
+Measured in a real browser rather than argued: 12 forced re-renders produced 12
+inserts -- one each, no amplification, one panel at the end -- and five
+identical inputs produced two writes in total, from the first one only.

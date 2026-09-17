@@ -21,6 +21,7 @@ import {
   SPAWN_PIPELINE,
   philipFortuneFor,
 } from './pest-model.js';
+import { setTextIfChanged } from './setup-selection-ui.js';
 import { cropArtUrl } from './skyblock-redesign.js';
 
 function esc(value = '') {
@@ -156,10 +157,14 @@ function applyPestsPage() {
     const note = host.querySelector('[data-pest-philip-note]');
     if (!out || !note) return;
     // A bad input is not zero Fortune: it is no answer, and says so.
-    out.textContent = result ? `+${result.fortune.toLocaleString('en-US')} Farming Fortune` : '—';
-    note.textContent = result
+    // Written through `setTextIfChanged` because these nodes sit inside the
+    // observed subtree: assigning the same string still replaces the text node
+    // and emits another childList mutation. That is rule 2 of
+    // docs/RENDER_FREEZE_SAFETY.md and the exact shape of the PR #90 freeze.
+    setTextIfChanged(out, result ? `+${result.fortune.toLocaleString('en-US')} Farming Fortune` : '—');
+    setTextIfChanged(note, result
       ? `${result.spent.toLocaleString('en-US')} pests for ${PESTHUNTER_PHILIP.durationMinutes} minutes${result.capped ? ` · capped at ${PESTHUNTER_PHILIP.pestCap}` : ''}`
-      : 'Enter a pest count';
+      : 'Enter a pest count');
   });
 }
 

@@ -1,0 +1,35 @@
+/*
+ * Rarity is a property of the physical SkyBlock item, so the same effective
+ * rarity colors every surface that represents that item. The class and color
+ * variables themselves come from item-editor.css; this file only turns that
+ * color into a restrained background instead of letting the redesign's generic
+ * green panel hide it.
+ */
+.skyblock-redesign .rarity-surface {
+  --rarity-tone: var(--rarity, #6d7d73);
+  background: #111b15;
+  background:
+    radial-gradient(110% 120% at 0% 0%, color-mix(in srgb, var(--rarity-tone) 22%, transparent), transparent 58%),
+    linear-gradient(145deg,
+      color-mix(in srgb, var(--rarity-tone) 16%, #17231c),
+      color-mix(in srgb, var(--rarity-tone) 5%, #0c130f));
+  border-color: color-mix(in srgb, var(--rarity-tone) 52%, #34483a);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--rarity-tone) 18%, transparent),
+    0 10px 24px rgba(0, 0, 0, .18);
+}
+
+.skyblock-redesign .slot-card.rarity-surface.filled strong,
+.skyblock-redesign .rarity-surface .item-title {
+  color: var(--rarity-tone);
+}
+
+.skyblock-redesign .slot-card.rarity-surface.open,
+.skyblock-redesign .sb-tool-card.rarity-surface.selected {
+  outline: 2px solid color-mix(in srgb, var(--rarity-tone) 72%, #ffffff);
+  outline-offset: 1px;
+}
+
+.skyblock-redesign .rarity-surface.rarity-unknown {
+  --rarity-tone: #6d7d73;
+}
