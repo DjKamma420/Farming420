@@ -207,9 +207,9 @@ export function calculateObservedBaselineProfit(input = {}) {
   return Object.freeze({
     mode: PLANNER_PROFIT_MODE.OBSERVED_CALIBRATED,
     ready: built.ready,
-    complete: built.ready && missing.length === 0 && result.complete,
     calibrationOnly: true,
     ...result,
+    complete: built.ready && missing.length === 0 && result.complete,
     missing: Object.freeze(missing),
     netCoinsPerHour: built.ready && missing.length === 0 ? result.netCoinsPerHour : null,
   });
