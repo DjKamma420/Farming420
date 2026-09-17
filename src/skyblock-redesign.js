@@ -1,6 +1,7 @@
 import { CROPS } from './data.js';
 import { STORAGE_KEY } from './config.js';
 import { toolKeyForCropId } from './migrations.js';
+import { TOOL_TIER_CHAIN, highestChainTier } from './progression-chains.js';
 import { ITEM_ASSET_BASE_URL, loadItemAssetManifest } from './item-assets.js';
 
 const GOAL_KEY = 'farming420-reforge-goal-v1';
@@ -41,21 +42,53 @@ const NAV_ART = Object.freeze({
   coming: ['clock', 'barrier'],
 });
 
-const TOOL_ART = Object.freeze({
-  wheat: ['theoretical_hoe_wheat_3', 'theoretical_hoe_wheat_1'],
-  carrot: ['theoretical_hoe_carrot_3', 'theoretical_hoe_carrot_1'],
-  potato: ['theoretical_hoe_potato_3', 'theoretical_hoe_potato_1'],
-  pumpkin: ['pumpkin_dicer_3', 'pumpkin_dicer'],
-  melon: ['melon_dicer_3', 'melon_dicer'],
-  mushroom: ['fungi_cutter'],
-  cactus: ['cactus_knife'],
-  'sugar-cane': ['theoretical_hoe_cane_3', 'theoretical_hoe_cane_1'],
-  'cocoa-beans': ['cocoa_chopper'],
-  'nether-wart': ['theoretical_hoe_warts_3', 'theoretical_hoe_warts_1'],
-  sunflower: ['theoretical_hoe_sunflower_3', 'theoretical_hoe_sunflower_1'],
-  moonflower: ['theoretical_hoe_sunflower_3', 'theoretical_hoe_sunflower_1'],
-  'wild-rose': ['theoretical_hoe_wild_rose_3', 'theoretical_hoe_wild_rose_1'],
+/**
+ * The pack key for each tool, per tier, in the order Mk. I, Mk. II, Mk. III.
+ *
+ * Every key below was checked against `assets/hypixel-pack/manifest.json`. The
+ * table used to list only `_3` first and fall back to `_1`, so every tool was
+ * drawn as its fully upgraded model no matter what the player owned. Sunflower,
+ * Moonflower and Wild Rose have a single art entry each because the pack ships
+ * no tiered variant for them.
+ */
+const TOOL_TIER_ART = Object.freeze({
+  wheat: ['theoretical_hoe_wheat_1', 'theoretical_hoe_wheat_2', 'theoretical_hoe_wheat_3'],
+  carrot: ['theoretical_hoe_carrot_1', 'theoretical_hoe_carrot_2', 'theoretical_hoe_carrot_3'],
+  potato: ['theoretical_hoe_potato_1', 'theoretical_hoe_potato_2', 'theoretical_hoe_potato_3'],
+  pumpkin: ['pumpkin_dicer', 'pumpkin_dicer_2', 'pumpkin_dicer_3'],
+  melon: ['melon_dicer', 'melon_dicer_2', 'melon_dicer_3'],
+  mushroom: ['fungi_cutter', 'fungi_cutter_2', 'fungi_cutter_3'],
+  cactus: ['cactus_knife', 'cactus_knife_2', 'cactus_knife_3'],
+  'sugar-cane': ['theoretical_hoe_cane_1', 'theoretical_hoe_cane_2', 'theoretical_hoe_cane_3'],
+  // coco_chopper, not cocoa_chopper. The old spelling matched nothing, which is
+  // why the Cocoa Chopper was the one tool showing a bare letter placeholder.
+  'cocoa-beans': ['coco_chopper', 'coco_chopper_2', 'coco_chopper_3'],
+  'nether-wart': ['theoretical_hoe_warts_1', 'theoretical_hoe_warts_2', 'theoretical_hoe_warts_3'],
+  sunflower: ['theoretical_hoe_sunflower_1'],
+  moonflower: ['theoretical_hoe_sunflower_1'],
+  'wild-rose': ['theoretical_hoe_wild_rose_1'],
 });
+
+/** Mk. I when nothing is recorded: an unset tool is the base model, not a blank. */
+function toolTierFor(state, cropId) {
+  const bucket = state?.profile?.toolProgress?.[toolKeyForCropId(cropId)] || {};
+  return highestChainTier(bucket, TOOL_TIER_CHAIN);
+}
+
+function tierLabel(tier) {
+  return TOOL_TIER_CHAIN.options.find(option => option.value === Number(tier))?.label
+    || TOOL_TIER_CHAIN.options[0].label;
+}
+
+/** The art for the tier the player actually has, falling back to Mk. I. */
+function toolArtForTier(cropId, tier) {
+  const byTier = TOOL_TIER_ART[cropId];
+  if (!byTier?.length) return [];
+  const index = Math.max(1, Math.min(byTier.length, Math.floor(Number(tier) || 1))) - 1;
+  // The lower tiers are the fallbacks, so a missing variant degrades downwards
+  // rather than jumping to a model the player has not built.
+  return byTier.slice(0, index + 1).reverse();
+}
 
 let manifest = null;
 let applying = false;
@@ -196,26 +229,36 @@ function decorateNavigation() {
 function toolPicker() {
   if (pageId() !== 'tools') return;
   const content = document.querySelector('.content');
-  if (!content || content.querySelector('.sb-tool-picker')) return;
+  if (!content) return;
   const head = content.querySelector('.page-head');
   if (!head) return;
   content.querySelector('.tool-context-addon')?.classList.add('sb-hidden-context');
 
   const cropId = activeCropId();
+  const state = readState();
   const selectedKey = toolKeyForCropId(cropId);
   const section = document.createElement('section');
   section.className = 'sb-tool-picker';
   section.innerHTML = `<div class="sb-block-title"><div><span class="eyebrow">Farming Toolkit</span><h2>Choose a physical tool</h2></div><span class="sb-hint">No global crop dropdown. The selected tool defines the crop context.</span></div>
     <div class="sb-tool-grid">${uniqueTools().map(tool => {
       const firstCrop = tool.crops[0];
-      const iconUrl = assetByCandidates(TOOL_ART[firstCrop.id] || []);
+      const tier = toolTierFor(state, firstCrop.id);
+      const iconUrl = assetByCandidates(toolArtForTier(firstCrop.id, tier));
       return `<button class="sb-tool-card ${tool.key === selectedKey ? 'selected' : ''}" data-sb-tool-crop="${firstCrop.id}">
-        <span class="sb-tool-art">${img(iconUrl, tool.name)}<span class="sb-tool-fallback">${firstCrop.icon}</span></span>
+        <span class="sb-tool-art">${img(iconUrl, `${tool.name} ${tierLabel(tier)}`)}<span class="sb-tool-fallback">${firstCrop.icon}</span></span>
         <span class="sb-tool-copy"><strong>${tool.name}</strong><small>${tool.crops.map(crop => crop.name).join(' / ')}</small></span>
+        <span class="sb-tool-tier">${tierLabel(tier)}</span>
         <span class="sb-state-dot" aria-hidden="true"></span>
       </button>`;
     }).join('')}</div>`;
-  head.insertAdjacentElement('afterend', section);
+  // Rebuilt only when the selection or a tier actually changed. Rebuilding on
+  // every pass would feed the observer that calls this and wedge the page.
+  const signature = `${selectedKey}|${uniqueTools().map(tool => toolTierFor(state, tool.crops[0].id)).join(',')}`;
+  const existing = content.querySelector('.sb-tool-picker');
+  if (existing?.dataset.sbSignature === signature) return;
+  section.dataset.sbSignature = signature;
+  if (existing) existing.replaceWith(section);
+  else head.insertAdjacentElement('afterend', section);
   section.querySelectorAll('[data-sb-tool-crop]').forEach(button => button.addEventListener('click', () => setCrop(button.dataset.sbToolCrop)));
 }
 
@@ -263,11 +306,19 @@ function reforgePanel() {
 function toolPortrait() {
   if (pageId() !== 'tools') return;
   const portrait = document.querySelector('[data-tool-editor] .item-portrait');
-  if (!portrait || portrait.querySelector('.sb-pack-icon')) return;
+  if (!portrait) return;
   const cropId = activeCropId();
-  const url = assetByCandidates(TOOL_ART[cropId] || []);
+  const tier = toolTierFor(readState(), cropId);
+  const url = assetByCandidates(toolArtForTier(cropId, tier));
   if (!url) return;
-  portrait.insertAdjacentHTML('afterbegin', img(url, CROPS.find(crop => crop.id === cropId)?.tool || 'Farming tool'));
+  // Keyed by tool and tier, so the portrait follows an upgrade instead of
+  // keeping whatever was painted first, and repainting the same thing is a
+  // no-op rather than a mutation the observer would come back for.
+  const signature = `${cropId}:${tier}`;
+  if (portrait.dataset.sbToolArt === signature) return;
+  portrait.querySelector('.sb-pack-icon')?.remove();
+  portrait.dataset.sbToolArt = signature;
+  portrait.insertAdjacentHTML('afterbegin', img(url, `${CROPS.find(crop => crop.id === cropId)?.tool || 'Farming tool'} ${tierLabel(tier)}`));
 }
 
 function restyleCards() {

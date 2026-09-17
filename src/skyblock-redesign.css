@@ -569,3 +569,22 @@
   .skyblock-redesign .sb-reforge-grid { grid-template-columns: 1fr; }
   .skyblock-redesign .sb-reforge-card { min-height: 100px; }
 }
+
+/* The tier a tool is actually at, on its card in the picker. */
+.sb-tool-tier {
+  margin-left: auto;
+  align-self: center;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.sb-tool-card.selected .sb-tool-tier {
+  border-color: #2f7f59;
+  color: var(--accent2);
+}

@@ -58,7 +58,7 @@ export function listProfiles(profilesPayload) {
 }
 
 /**
- * @param {{playerUuid: string, playerName?: string, apiKey?: string, proxyUrl?: string,
+ * @param {{playerUuid: string, playerName?: string, apiKey?: string,
  *          profileId?: string, fetchImpl?: typeof fetch, baseUrl?: string,
  *          signal?: AbortSignal}} options
  */
@@ -69,7 +69,7 @@ export async function syncProfile(options = {}) {
   // Checked before anything else, so an unconfigured sync says what is missing
   // instead of failing later inside a request.
   if (client.mode === 'none') {
-    throw new Error('No Hypixel access is configured. Add your own API key, or a proxy URL, in Settings.');
+    throw new Error('No Hypixel access is configured. Add your own API key in Settings.');
   }
 
   // 1. Identity.

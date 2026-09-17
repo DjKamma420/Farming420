@@ -45,7 +45,6 @@ Read these files before changing progression or calculation logic:
 - synced values written straight onto the cards and marked as `synced`
 - item-centric **Setups**: pick the piece, its reforge, enchantments,
   recombobulator state and gemstones, per wearable configuration
-- an optional server-side proxy so the key can stay off the client
 - current `pets_data.pets` import with hidden-data semantics instead of treating missing data as no pets
 - normalized profile snapshots with explicit provenance and unknown/hidden states
 - profile and Garden imports merge into one stable internal model instead of exposing raw API field names to future calculators
@@ -181,8 +180,6 @@ zero. `docs/PROFILE_DATA_MATRIX.md` lists exactly what is mapped and what is not
 
 ### Without a key
 
-- **A proxy** keeps the key on a server instead: deploy `proxy/` and put its URL
-  into Settings. See [`proxy/README.md`](proxy/README.md). A proxy URL overrides
   any stored key.
 - **Raw JSON import** needs no key at all and still works entirely offline.
 
@@ -197,14 +194,12 @@ Farming420 PWA / GitHub Pages
             |
             | player/profile request
             v
-small server-side/serverless proxy
             |
             | private Hypixel API key
             v
 Hypixel Public API
 ```
 
-The proxy now exists in [`proxy/`](proxy/README.md) and is optional: by default
 each visitor supplies their own key, which keeps Farming420 a pure static site
 with nothing else to deploy. Raw JSON import remains available and needs no key
 at all. Public resource endpoints are always called directly.
@@ -339,7 +334,6 @@ Normal crop drops, RNG drops, pest expected value, downtime, contest rewards and
 ## Development order
 
 1. ~~Finish English-only runtime, versioned persistence, Settings and PWA/update safety.~~ Done.
-2. **Expand raw Hypixel adapters and normalized profile coverage; build the production API proxy.** In progress; profile, Garden, pets and core item/NBT import are implemented.
 3. **Turn normalized items/pets into mutually exclusive farming setup candidates and verify every mechanic in `src/data.js`.** Next correctness block.
 4. Add Bazaar and auction valuation services with timestamps and confidence.
 5. Build and test the crop/profit calculation engine.

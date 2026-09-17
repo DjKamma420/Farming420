@@ -33,7 +33,6 @@ The primary optimization target is long-term coin profit. Progression gates, unl
 
 - Frontend: installable offline-capable PWA, suitable for GitHub Pages.
 - Persistent data: local-first, versioned browser storage with JSON backup/restore.
-- Hypixel integration: use a small server-side/serverless proxy for production API access so a Hypixel API key is never embedded in client code.
 - Static fallback: support importing raw Hypixel JSON responses for development and privacy-first/manual workflows.
 - Market data: cache Bazaar and auction-derived prices with timestamps and source metadata.
 - Calculation engine: pure functions separated from UI so formulas can be unit tested.
@@ -107,7 +106,6 @@ rules above to get a check green.
 
 1. Establish versioned persistence, settings, backup/restore, PWA/update safety and English-only UI.
 2. Build a documented profile-data adapter layer and raw JSON import.
-3. Add production Hypixel proxy integration.
 4. Normalize items, tools, pets, gear and progression states from API data.
 5. Build price service and source/timestamp handling.
 6. Build mathematically tested profit engine.

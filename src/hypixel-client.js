@@ -1,16 +1,15 @@
 /**
  * Thin transport for the Hypixel Public API.
  *
- * Two modes, same call sites:
+ * The browser calls Hypixel directly with the user's OWN key, read from local
+ * storage, so the app works as a plain static GitHub Pages site with nothing
+ * else deployed. A personal key held in the user's own browser is not the
+ * shared production key baked into a public bundle that the architecture rule
+ * forbids.
  *
- * - **Proxy mode** (`proxyUrl` set): requests go to a server-side proxy that
- *   holds the key. This is the architecture `AGENTS.md` prescribes, and no
- *   secret ever reaches the browser.
- * - **Direct mode** (`apiKey` set): the browser calls Hypixel with the user's
- *   OWN key, read from local storage. This exists so the app works as a plain
- *   static GitHub Pages site with nothing else deployed. A personal key held in
- *   the user's own browser is not the shared production key baked into a public
- *   bundle that the architecture rule forbids.
+ * A server-side proxy mode existed alongside this and was removed: it was never
+ * reachable without also editing the shipped `connect-src` list by hand, which
+ * made it a setting nobody could actually use.
  *
  * Endpoints and their key requirements follow `docs/PROFILE_DATA_MATRIX.md`.
  */
@@ -59,43 +58,34 @@ export class HypixelApiError extends Error {
 }
 
 /**
- * @param {{apiKey?: string, proxyUrl?: string, fetchImpl?: typeof fetch, baseUrl?: string}} options
+ * @param {{apiKey?: string, fetchImpl?: typeof fetch, baseUrl?: string}} options
  */
 export function createHypixelClient(options = {}) {
   const apiKey = String(options.apiKey || '').trim();
-  const proxyUrl = String(options.proxyUrl || '').trim();
   const baseUrl = options.baseUrl || HYPIXEL_API_BASE;
   const fetchImpl = options.fetchImpl || globalThis.fetch;
   if (typeof fetchImpl !== 'function') throw new Error('This browser provides no fetch implementation.');
 
-  const mode = proxyUrl ? 'proxy' : (apiKey ? 'direct' : 'none');
+  const mode = apiKey ? 'direct' : 'none';
 
   async function request(path, params, { keyless = false } = {}) {
     if (!keyless && mode === 'none') {
       throw new HypixelApiError(
-        'No Hypixel access is configured. Add your own API key, or a proxy URL, in Settings.',
+        'No Hypixel access is configured. Add your own API key in Settings.',
         { endpoint: path },
       );
     }
 
-    const useProxy = !keyless && mode === 'proxy';
-    const url = buildUrl(useProxy ? proxyUrl : baseUrl, path, params);
+    const url = buildUrl(baseUrl, path, params);
     const headers = { accept: 'application/json' };
-    // The key is only ever sent to Hypixel itself, never to the proxy: in proxy
-    // mode the server holds its own key.
     if (!keyless && mode === 'direct') headers['API-Key'] = apiKey;
 
     let response;
     try {
       response = await fetchImpl(url, { headers, signal: options.signal });
     } catch (error) {
-      // A CSP `connect-src` violation also lands here as an opaque TypeError,
-      // and a proxy origin cannot be in the shipped allow-list, so say so.
-      const hint = useProxy
-        ? ' Deploying a proxy also requires adding its origin to the connect-src list in index.html.'
-        : '';
       throw new HypixelApiError(
-        `Could not reach ${useProxy ? 'the configured proxy' : 'the Hypixel API'}: ${error.message}.${hint}`,
+        `Could not reach the Hypixel API: ${error.message}.`,
         { endpoint: path },
       );
     }
