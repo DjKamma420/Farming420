@@ -3,7 +3,7 @@ import { CROPS } from './data.js';
 import { rarityClass, RARITY_COLORS } from './item-editor.js';
 import { normalizeSetups } from './setups.js';
 import { effectiveSetupItemRarity, normalizeRarity } from './setup-rarity.js';
-import { readCachedCatalog } from './item-catalog.js';
+import { loadItemCatalog, readCachedCatalog } from './item-catalog.js';
 import { canRecombobulateItem, catalogItemForSetupItem } from './item-capabilities.js';
 import { toolKeyForCropId } from './migrations.js';
 import { TOOL_TIER_CHAIN, highestChainTier } from './progression-chains.js';
@@ -58,8 +58,8 @@ function applySetupRarity(root, state, catalog) {
     const { rarity, catalogItem } = setupItemRarity(item, catalog);
     if (!rarity) continue;
 
-    const card = root.querySelector(`.slot-card[data-slot="${CSS.escape(slotId)}"]`);
-    const editor = root.querySelector(`[data-item-editor="${CSS.escape(slotId)}"]`);
+    const card = root.querySelector(`.slot-card[data-slot="${slotId}"]`);
+    const editor = root.querySelector(`[data-item-editor="${slotId}"]`);
     applyRarityClass(card, rarity);
     applyRarityClass(editor, rarity);
 
@@ -125,6 +125,8 @@ export function applyRarityBackgrounds(root = document) {
 }
 
 let queued = false;
+let catalogRequested = false;
+
 function schedule() {
   if (queued) return;
   queued = true;
@@ -132,6 +134,16 @@ function schedule() {
     queued = false;
     applyRarityBackgrounds();
   });
+}
+
+async function ensureCatalog() {
+  if (catalogRequested || readCachedCatalog()?.items?.length) return;
+  catalogRequested = true;
+  try {
+    await loadItemCatalog();
+  } finally {
+    schedule();
+  }
 }
 
 function mutationNeedsRarity(mutations) {
@@ -143,6 +155,7 @@ function mutationNeedsRarity(mutations) {
 
 function boot() {
   schedule();
+  ensureCatalog();
   window.addEventListener('farming420:state-changed', schedule);
   document.addEventListener('click', schedule);
   document.addEventListener('change', schedule);
