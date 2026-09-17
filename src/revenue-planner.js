@@ -1,9 +1,16 @@
 import { CROPS, UPGRADES } from './data.js';
 import { STORAGE_KEY } from './config.js';
-import { toolKeyForCropId } from './migrations.js';
+import { ACTIVITY_MODE, activityLabel, activityModeForState } from './activity-mode.js';
 import { evaluateUpgrade, rankEvaluatedUpgrades } from './revenue-ranking.js';
 import { costOriginNote, resolveUpgradeCost } from './upgrade-cost-resolution.js';
 import { INTERNET_FARMING_TIME_VALUE_COINS_PER_HOUR } from './upgrade-economics.js';
+import {
+  plannerActivityContext,
+  plannerEconomicsBucket,
+  plannerItemApplies,
+  plannerProgressBucket,
+  setPlannerEconomicsValue,
+} from './planner-activity-context.js';
 
 function esc(value = '') {
   return String(value).replace(/[&<>'"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#039;', '"':'&quot;' }[c]));
@@ -26,42 +33,8 @@ function cropFor(raw) {
   return CROPS.find(crop => crop.id === id) || CROPS[0];
 }
 
-function ensureProfile(raw) {
-  raw.profile ||= {};
-  raw.profile.levels ||= {};
-  raw.profile.owned ||= {};
-  raw.profile.costs ||= {};
-  raw.profile.grindHours ||= {};
-  raw.profile.manualGain ||= {};
-  raw.profile.cropFortune ||= {};
-  raw.profile.cropProgress ||= {};
-  raw.profile.toolProgress ||= {};
-  raw.profile.plannerEconomics ||= {};
-  return raw.profile;
-}
-
-function ensureBucketShape(bucket) {
-  bucket.levels ||= {};
-  bucket.owned ||= {};
-  bucket.costs ||= {};
-  bucket.grindHours ||= {};
-  bucket.manualGain ||= {};
-  return bucket;
-}
-
 function progressBucket(raw, item) {
-  const profile = ensureProfile(raw);
-  const cropId = selectedCropId(raw);
-  if (item.section === 'crops') {
-    profile.cropProgress[cropId] ||= {};
-    return ensureBucketShape(profile.cropProgress[cropId]);
-  }
-  if (item.section === 'tools') {
-    const key = toolKeyForCropId(cropId);
-    profile.toolProgress[key] ||= {};
-    return ensureBucketShape(profile.toolProgress[key]);
-  }
-  return ensureBucketShape(profile);
+  return plannerProgressBucket(raw, item, selectedCropId(raw));
 }
 
 function level(raw, item) {
@@ -73,11 +46,6 @@ function maxed(raw, item) {
   return level(raw, item) >= Math.max(1, Number(item.max || 1));
 }
 
-function appliesToCrop(raw, item) {
-  const current = cropFor(raw);
-  return item.cropScope === 'Any' || item.cropScope === current?.name;
-}
-
 function gain(raw, item) {
   const manual = progressBucket(raw, item).manualGain?.[item.id];
   if (manual !== undefined && manual !== '' && Number.isFinite(Number(manual))) return Number(manual);
@@ -85,14 +53,8 @@ function gain(raw, item) {
 }
 
 function economics(raw) {
-  const profile = ensureProfile(raw);
   const cropId = selectedCropId(raw);
-  profile.plannerEconomics[cropId] ||= {
-    normalCropCoinsPerHour: 0,
-    rareCropCoinsPerHour: 0,
-    overbloom: 0,
-  };
-  return profile.plannerEconomics[cropId];
+  return plannerEconomicsBucket(raw, cropId, activityModeForState(raw));
 }
 
 function timeValueFor(raw) {
@@ -107,9 +69,10 @@ function timeValueFor(raw) {
 }
 
 function earnedRouteRows(raw) {
+  const cropId = selectedCropId(raw);
   return UPGRADES
     .filter(item => item.status === 'ACTIVE')
-    .filter(item => appliesToCrop(raw, item))
+    .filter(item => plannerItemApplies(raw, item, cropId))
     .filter(item => !maxed(raw, item))
     .map(item => {
       const store = progressBucket(raw, item);
@@ -120,13 +83,14 @@ function earnedRouteRows(raw) {
 }
 
 function evaluatedRows(raw) {
-  const profile = ensureProfile(raw);
+  const cropId = selectedCropId(raw);
   const econ = economics(raw);
   const timeValue = timeValueFor(raw);
-  const currentFortune = Number(profile.globalFortune || 0) + Number(profile.cropFortune?.[selectedCropId(raw)] || 0);
+  const context = plannerActivityContext(raw, cropId);
+
   return rankEvaluatedUpgrades(UPGRADES
     .filter(item => item.status === 'ACTIVE')
-    .filter(item => appliesToCrop(raw, item))
+    .filter(item => plannerItemApplies(raw, item, cropId))
     .filter(item => !maxed(raw, item))
     .map(item => {
       const itemGain = gain(raw, item);
@@ -145,11 +109,13 @@ function evaluatedRows(raw) {
           activeGrindHours,
           timeValueCoinsPerHour: timeValue.coinsPerHour,
           timeValueSource: timeValue.source,
-          currentFortune,
-          currentOverbloom: Number(econ.overbloom || 0),
+          currentFortune: context.currentFortune,
+          currentOverbloom: context.currentOverbloom,
+          fortuneBase: context.fortuneBase,
           normalCropCoinsPerHour: Number(econ.normalCropCoinsPerHour || 0),
           rareCropCoinsPerHour: Number(econ.rareCropCoinsPerHour || 0),
         }),
+        activityMode: context.mode,
         costSource,
       };
     })
@@ -187,20 +153,24 @@ function openItem(itemId) {
 
 function economicsPanel(raw) {
   const crop = cropFor(raw);
+  const cropId = selectedCropId(raw);
+  const mode = activityModeForState(raw);
+  const context = plannerActivityContext(raw, cropId);
   const econ = economics(raw);
+  const fortuneStreamLabel = mode === ACTIVITY_MODE.PEST ? 'Pest/Vacuum Coins/h' : 'Normal crop Coins/h';
   return `<details class="revenue-panel revenue-economics">
     <summary class="revenue-summary">
       <div class="revenue-panel-head">
-        <div><div class="eyebrow">${esc(crop?.name || 'Crop')} economics</div><h2>Profit baseline</h2></div>
+        <div><div class="eyebrow">${esc(crop?.name || 'Crop')} · ${esc(activityLabel(mode))}</div><h2>Profit baseline</h2></div>
         <span class="revenue-note">Optional. Sharpens profit, payback and earned-time value.</span>
       </div>
     </summary>
     <div class="revenue-inputs">
-      <label><span>Normal crop Coins/h</span><input data-revenue-input="normalCropCoinsPerHour" type="number" min="0" step="1000" value="${Number(econ.normalCropCoinsPerHour || 0)}"></label>
+      <label><span>${fortuneStreamLabel}</span><input data-revenue-input="normalCropCoinsPerHour" type="number" min="0" step="1000" value="${Number(econ.normalCropCoinsPerHour || 0)}"></label>
       <label><span>RARE CROP Coins/h</span><input data-revenue-input="rareCropCoinsPerHour" type="number" min="0" step="1000" value="${Number(econ.rareCropCoinsPerHour || 0)}"></label>
-      <label><span>Current Overbloom</span><input data-revenue-input="overbloom" type="number" min="0" step="0.1" value="${Number(econ.overbloom || 0)}"></label>
+      <label><span>Computed Overbloom</span><input type="number" readonly value="${Number(context.currentOverbloom || 0)}"></label>
     </div>
-    <p class="revenue-help">Overbloom is valued from the actual RARE-CROP stream. When Coins/h is entered, the total measured baseline also becomes the opportunity cost of active EARNED grind time.</p>
+    <p class="revenue-help">Farm and Pest keep separate Coins/h baselines. Fortune and Overbloom are read from the active ${esc(activityLabel(mode))}; switching sets no longer reuses the other set's economics.</p>
   </details>`;
 }
 
@@ -208,11 +178,12 @@ function earnedAssumptionsPanel(raw) {
   const rows = earnedRouteRows(raw);
   if (!rows.length) return '';
   const timeValue = timeValueFor(raw);
-  const sourceLabel = timeValue.source === 'player_baseline' ? 'your measured farming baseline' : 'Internet fallback';
+  const mode = activityModeForState(raw);
+  const sourceLabel = timeValue.source === 'player_baseline' ? 'your measured activity baseline' : 'Internet fallback';
   return `<details class="revenue-panel revenue-economics earned-routes">
     <summary class="revenue-summary">
       <div class="revenue-panel-head">
-        <div><div class="eyebrow">Acquisition routes</div><h2>Earned upgrade time</h2></div>
+        <div><div class="eyebrow">${esc(activityLabel(mode))} acquisition routes</div><h2>Earned upgrade time</h2></div>
         <span class="revenue-note">${compactCoins(timeValue.coinsPerHour)} Coins/h · ${esc(sourceLabel)}</span>
       </div>
     </summary>
@@ -231,7 +202,7 @@ function earnedAssumptionsPanel(raw) {
 }
 
 function rankingMarkup(rows, ready) {
-  if (!rows.length) return '<div class="empty">No modeled Fortune/Overbloom upgrades for the current state.</div>';
+  if (!rows.length) return '<div class="empty">No modeled Fortune/Overbloom upgrades for the current set.</div>';
   return rows.slice(0, 30).map((row, index) => {
     const costKnown = row.costKnown === true;
     const marginalKnown = Number.isFinite(row.marginalCoinsHour);
@@ -267,6 +238,7 @@ function enhancePlanner() {
   content.dataset.revenuePlannerReady = '1';
 
   const raw = load();
+  const mode = activityModeForState(raw);
   const econ = economics(raw);
   const ready = Number(econ.normalCropCoinsPerHour || 0) > 0 || Number(econ.rareCropCoinsPerHour || 0) > 0;
   const rows = evaluatedRows(raw);
@@ -276,14 +248,15 @@ function enhancePlanner() {
   panel.className = 'revenue-planner-v2';
   panel.innerHTML = `${economicsPanel(raw)}
     ${earnedAssumptionsPanel(raw)}
-    <div class="section-row revenue-ranking-head"><div><h2>${ready ? 'Best value now' : 'Best value per Coin'}</h2><p>${ready ? 'Resolved BUYABLE and EARNED costs are ordered by shortest payback; unresolved acquisition costs follow.' : 'BUYABLE costs use recorded/researched Coins. EARNED time is converted at your baseline or the 20m/h fallback; empty grind time remains unknown.'}</p></div></div>
+    <div class="section-row revenue-ranking-head"><div><h2>${ready ? `Best value now · ${esc(activityLabel(mode))}` : `Best value per Coin · ${esc(activityLabel(mode))}`}</h2><p>${ready ? 'Resolved BUYABLE and EARNED costs are ordered by shortest payback inside the active set; upgrades from the other activity are excluded.' : 'BUYABLE costs use recorded/researched Coins. EARNED time is converted at this set’s baseline or the 20m/h fallback; empty grind time remains unknown.'}</p></div></div>
     <div class="planner-list revenue-list">${rankingMarkup(rows, ready)}</div>`;
   original.before(panel);
 
   panel.querySelectorAll('[data-revenue-input]').forEach(input => input.addEventListener('change', event => {
     const next = load();
-    const bucket = economics(next);
-    bucket[event.target.dataset.revenueInput] = Math.max(0, Number(event.target.value || 0));
+    const cropId = selectedCropId(next);
+    const nextMode = activityModeForState(next);
+    setPlannerEconomicsValue(next, cropId, nextMode, event.target.dataset.revenueInput, event.target.value);
     save(next);
     window.dispatchEvent(new Event('farming420:state-changed'));
   }));
@@ -292,7 +265,7 @@ function enhancePlanner() {
     const next = load();
     const item = UPGRADES.find(entry => entry.id === event.target.dataset.earnedHours);
     if (!item) return;
-    const store = progressBucket(next, item);
+    const store = plannerProgressBucket(next, item, selectedCropId(next));
     const rawValue = String(event.target.value || '').trim();
     if (!rawValue) delete store.grindHours[item.id];
     else store.grindHours[item.id] = Math.max(0, Number(rawValue) || 0);
@@ -307,15 +280,16 @@ function enhanceDashboard() {
   const hero = document.querySelector('.hero-card.primary');
   if (!hero || hero.dataset.revenueHeroReady === '1') return;
   const raw = load();
+  const mode = activityModeForState(raw);
   const econ = economics(raw);
   const ready = Number(econ.normalCropCoinsPerHour || 0) > 0 || Number(econ.rareCropCoinsPerHour || 0) > 0;
   if (!ready) return;
   const best = evaluatedRows(raw)[0];
   if (!best || best.payback === null) return;
   hero.dataset.revenueHeroReady = '1';
-  hero.innerHTML = `<div class="eyebrow">Next upgrade by payback</div>
+  hero.innerHTML = `<div class="eyebrow">Next upgrade by payback · ${esc(activityLabel(mode))}</div>
     <h2>${esc(best.item.name)}</h2>
-    <p>+${compactCoins(best.marginalCoinsHour)}/h marginal profit · ${formatPayback(best.payback)} payback at the current ${esc(cropFor(raw)?.name || '')} baseline.</p>
+    <p>+${compactCoins(best.marginalCoinsHour)}/h marginal profit · ${formatPayback(best.payback)} payback at the current ${esc(cropFor(raw)?.name || '')} ${esc(activityLabel(mode))} baseline.</p>
     <button class="primary-btn" data-revenue-hero-open="${esc(best.item.id)}">Open details</button>`;
   hero.querySelector('[data-revenue-hero-open]')?.addEventListener('click', () => openItem(best.item.id));
 }

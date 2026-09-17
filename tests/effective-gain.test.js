@@ -14,6 +14,25 @@ test('fortune and overbloom use their own current-stat denominator', () => {
   assert.equal(relativeOverbloomGain(10, 100), 0.05);
 });
 
+test('Pest/Vacuum Fortune uses the activity calculator 600-point base', () => {
+  assert.equal(relativeFortuneGain(10, 900, 600), 10 / 1500);
+
+  const farm = marginalCoinsPerHour({
+    deltaFortune: 10,
+    currentFortune: 900,
+    fortuneBase: 100,
+    normalCropCoinsPerHour: 20_000_000,
+  });
+  const pest = marginalCoinsPerHour({
+    deltaFortune: 10,
+    currentFortune: 900,
+    fortuneBase: 600,
+    normalCropCoinsPerHour: 20_000_000,
+  });
+  assert.equal(farm, 200_000);
+  assert.ok(pest < farm);
+});
+
 test('marginal coins combines normal and rare revenue streams', () => {
   const gain = marginalCoinsPerHour({
     deltaFortune: 10,
@@ -44,6 +63,16 @@ test('overbloom FF equivalent is revenue-aware instead of fixed', () => {
     rareCropCoinsPerHour: 10_000_000,
   });
   assert.equal(rareHeavy, 5);
+
+  const pestEquivalent = overbloomToFortuneEquivalent({
+    deltaOverbloom: 1,
+    currentFortune: 900,
+    currentOverbloom: 100,
+    fortuneBase: 600,
+    normalCropCoinsPerHour: 20_000_000,
+    rareCropCoinsPerHour: 4_000_000,
+  });
+  assert.equal(pestEquivalent, 1.5);
 });
 
 test('undefined FF equivalent is represented as null with no normal revenue', () => {
