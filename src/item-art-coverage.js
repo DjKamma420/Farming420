@@ -2,6 +2,7 @@ import { STORAGE_KEY } from './config.js';
 import { UPGRADES } from './data.js';
 import { itemForSetupSlot } from './item-art-ui.js';
 import { loadItemCatalog } from './item-catalog.js';
+import { packArtNodeFor } from './pack-item-art.js';
 
 export const REFORGE_ITEM_IDS = Object.freeze({
   bountiful: 'GOLDEN_BALL',
@@ -176,6 +177,9 @@ export function itemArtNode(item, label = '') {
     span.setAttribute('aria-label', `${label || item.name || 'SkyBlock item'} texture`);
     return span;
   }
+  // Real set art from the shipped pack, before the hand-drawn outline.
+  const packNode = packArtNodeFor(item, label);
+  if (packNode) return packNode;
   return genericMaterialSvg(item, label);
 }
 

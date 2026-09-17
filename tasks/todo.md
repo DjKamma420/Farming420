@@ -1523,3 +1523,53 @@ show letters. The shipped pack does carry the set items (`helianthus`,
 `fermento`, `cropie`, `squash`), which would read far better than a grey
 T-shirt. That file belongs to the other agent's current work, so it is not
 touched here.
+
+
+## 0.28.0 -- set art instead of silhouettes
+
+The gear grid drew a hand-made outline filled with one flat colour for armour,
+and for equipment nothing at all, so those slots showed a two-letter badge.
+That is what the reported screenshots were: a grey T-shirt for the Mossy
+Helianthus Chestplate and "CLTB" for the Thorny Blossom Cloak.
+
+The pack ships no armour or equipment pieces, but it ships the item each set is
+built from, and those read instantly: a Helianthus flower for Helianthus
+armour, the Fermento fruit for Fermento, Cropie, Squash, and the four Lotus
+flowers for the four Lotus equipment tiers. One icon serves a whole set, which
+costs nothing here because the slot already prints HELMET, CHESTPLATE or CLOAK
+beside it.
+
+`BLOSSOM` is marked a stand-in in the table itself: the set has no item of its
+own in the pack, and `bachelors_rose` is a real blossom from the Garden's own
+wild-rose line. Its proper picture is the item's head texture, and that path
+still takes precedence whenever the sync supplies one.
+
+### Kept out of the way
+
+`src/pack-item-art.js` is new and holds the table, the lookup and the node. The
+change to `item-art-coverage.js` -- the other agent's current file -- is one
+import and three lines inside `itemArtNode`, placed between the head-texture
+branch and the outline it already drew. Nothing was removed or rewritten there.
+
+### The one-shot adoption
+
+The coverage layer stamps a container with the identity of the art it placed
+and will not replace art of the same identity. Since the pack manifest arrives
+asynchronously, a plain second pass would leave the outline drawn before it
+landed. So the stamp is cleared exactly once, after the manifest resolves, and
+then a re-render is requested. Once, deliberately: repeating it per mutation
+would be two modules taking turns rebuilding one node, which is the hang this
+project has already paid for twice.
+
+### Verified
+
+End to end with a seeded catalogue, because `api.hypixel.net` is unreachable
+here: all eight armour and equipment slots render pack art, no outline and no
+visible letter badge. 514 node tests and 7 Python tests pass, the overlay audit
+reports nothing, and the setups sweep is clean in all three variants.
+
+### Still on a letter
+
+Pets and pet items, which have no pack item and rely on their head texture, and
+any farming set the pack does not carry -- Farm Suit, Melon, Rabbit. Those keep
+the existing fallback.
