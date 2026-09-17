@@ -53,6 +53,38 @@ const NAV_ART = Object.freeze({
 });
 
 /**
+ * Art for each crop, in preference order.
+ *
+ * Thirteen crop tiles were drawing bare letters -- W, C, P, Pu, Mu, WR and the
+ * rest. The pack ships SkyBlock's own items only, so there is no plain wheat,
+ * melon or cocoa texture in it; what it does have is each crop's own SkyBlock
+ * produce, and those are used wherever one exists.
+ *
+ * Wheat, potato, melon, sugar cane and cocoa have no produce texture at all, so
+ * they fall back to that crop's Mk. I tool. That is a deliberate second choice:
+ * it repeats the art the Tools page uses, but the crop tile names the tool
+ * directly beside it, and a recognisable tool beats a letter.
+ *
+ * Every key is checked against the shipped manifest by `tests/crop-art.test.js`,
+ * because a name that matches nothing degrades silently back to the letter.
+ */
+const CROP_ART = Object.freeze({
+  wheat: ['theoretical_hoe_wheat_1'],
+  carrot: ['carrot_bait'],
+  potato: ['theoretical_hoe_potato_1'],
+  pumpkin: ['polished_pumpkin'],
+  melon: ['melon_dicer'],
+  mushroom: ['glowing_mushroom'],
+  cactus: ['potted_cactus'],
+  'sugar-cane': ['theoretical_hoe_cane_1'],
+  'cocoa-beans': ['coco_chopper'],
+  'nether-wart': ['mutant_nether_wart'],
+  sunflower: ['compacted_sunflower'],
+  moonflower: ['compacted_moonflower'],
+  'wild-rose': ['compacted_wild_rose'],
+});
+
+/**
  * The pack key for each tool, per tier, in the order Mk. I, Mk. II, Mk. III.
  *
  * Every key below was checked against `assets/hypixel-pack/manifest.json`. The
@@ -238,6 +270,40 @@ function decorateNavigation() {
   });
 }
 
+/**
+ * Fills the crop tiles with pack art.
+ *
+ * The tile carries its crop in `data-crop` on the card; the dashboard's single
+ * focus tile has no card, so it reads the selected crop from stored state. The
+ * letter stays in the DOM as the fallback and is only hidden, so nothing is
+ * removed that the re-rendering core will put back.
+ *
+ * Writes only when the icon is missing: this module re-enters through a
+ * MutationObserver on the same subtree it writes into.
+ */
+function decorateCropIcons() {
+  for (const icon of document.querySelectorAll('.crop-icon')) {
+    if (icon.querySelector('.sb-crop-art')) continue;
+    const cropId = icon.closest('[data-crop]')?.dataset.crop || activeCropId();
+    const url = assetByCandidates(CROP_ART[cropId] || []);
+    if (!url) continue;
+
+    const letter = document.createElement('span');
+    letter.className = 'sb-crop-letter';
+    letter.textContent = icon.textContent.trim();
+
+    const image = document.createElement('img');
+    image.className = 'sb-crop-art';
+    image.src = url;
+    image.alt = '';
+    image.loading = 'lazy';
+
+    icon.textContent = '';
+    icon.append(letter, image);
+  }
+}
+
+
 function toolPicker() {
   if (pageId() !== 'tools') return;
   const content = document.querySelector('.content');
@@ -360,6 +426,7 @@ function apply() {
   applying = true;
   try {
     decorateNavigation();
+    decorateCropIcons();
     toolPicker();
     reforgePanel();
     toolPortrait();

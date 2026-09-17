@@ -1,6 +1,6 @@
 {
   "name": "farming420",
-  "version": "0.27.1",
+  "version": "0.27.2",
   "private": true,
   "type": "module",
   "description": "Profile-aware Hypixel SkyBlock farming progression and profit planner",
@@ -10,6 +10,7 @@
     "test": "npm run test:node && npm run test:python",
     "test:node": "node --test tests/*.test.js",
     "test:python": "python3 -m unittest discover -s tests -p \"test_*.py\"",
-    "sweep": "bash scripts/sweep-all.sh"
+    "sweep": "bash scripts/sweep-all.sh",
+    "audit:overlay": "node scripts/overlay-audit.mjs"
   }
 }
