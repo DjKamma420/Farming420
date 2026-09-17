@@ -58,3 +58,51 @@ test('without economics the model does not fabricate marginal coins', () => {
   assert.equal(row.payback, null);
   assert.equal(row.fortuneEquivalent, 5);
 });
+
+test('EARNED route stays unknown until active grind time is explicitly entered', () => {
+  const row = evaluateUpgrade({
+    item: { metric: 'Crop Yield' },
+    gain: 10,
+    acquisitionMode: 'EARNED',
+    normalCropCoinsPerHour: 10_000_000,
+  });
+  assert.equal(row.acquisitionMode, 'EARNED');
+  assert.equal(row.costKnown, false);
+  assert.equal(row.cost, 0);
+  assert.equal(row.activeGrindHours, null);
+  assert.equal(row.payback, null);
+  assert.equal(row.coinsPerEffectiveFortune, null);
+});
+
+test('EARNED route converts entered active time into opportunity cost', () => {
+  const row = evaluateUpgrade({
+    item: { metric: 'Crop Yield' },
+    gain: 100,
+    acquisitionMode: 'EARNED',
+    activeGrindHours: 2,
+    timeValueCoinsPerHour: 20_000_000,
+    timeValueSource: 'internet_benchmark',
+    normalCropCoinsPerHour: 1_000_000,
+  });
+  assert.equal(row.costKnown, true);
+  assert.equal(row.cost, 40_000_000);
+  assert.equal(row.marginalCoinsHour, 1_000_000);
+  assert.equal(row.payback, 40);
+  assert.equal(row.timeValueSource, 'internet_benchmark');
+});
+
+test('player-specific time value changes EARNED ranking cost without changing the stat gain', () => {
+  const common = {
+    item: { metric: 'Crop Yield' },
+    gain: 10,
+    acquisitionMode: 'EARNED',
+    activeGrindHours: 2,
+    normalCropCoinsPerHour: 20_000_000,
+  };
+  const fallback = evaluateUpgrade({ ...common, timeValueCoinsPerHour: 20_000_000 });
+  const measured = evaluateUpgrade({ ...common, timeValueCoinsPerHour: 30_000_000, timeValueSource: 'player_baseline' });
+  assert.equal(fallback.fortuneEquivalent, measured.fortuneEquivalent);
+  assert.equal(fallback.cost, 40_000_000);
+  assert.equal(measured.cost, 60_000_000);
+  assert.ok(measured.payback > fallback.payback);
+});
