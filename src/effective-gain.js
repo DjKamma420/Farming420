@@ -1,22 +1,24 @@
 // Revenue-aware comparison helpers for Farming Fortune and Overbloom.
 //
-// Both stats are multiplicative relative to their own base stream:
-//   normal crop output multiplier = (100 + effective Fortune) / 100
-//   RARE CROP drop-rate multiplier = (100 + Overbloom) / 100
+// Both stats are multiplicative relative to their own base stream. Normal crop
+// farming uses a 100-point Fortune base, while Pest/Vacuum drop scaling uses
+// the 600-point base already used by the activity-mode calculator. Overbloom
+// keeps its own 100-point base.
 //
 // Therefore there is deliberately no universal fixed "1 Overbloom = X FF".
-// The coin-equivalent value depends on the current stat levels and how much of
-// the player's revenue comes from each stream.
+// The coin-equivalent value depends on activity mode, current stat levels and
+// how much of the player's revenue comes from each stream.
 
 function finiteNonNegative(value) {
   const number = Number(value);
   return Number.isFinite(number) ? Math.max(0, number) : 0;
 }
 
-export function relativeFortuneGain(deltaFortune, currentFortune) {
+export function relativeFortuneGain(deltaFortune, currentFortune, fortuneBase = 100) {
   const delta = finiteNonNegative(deltaFortune);
   const current = finiteNonNegative(currentFortune);
-  return delta / (100 + current);
+  const base = finiteNonNegative(fortuneBase) || 100;
+  return delta / (base + current);
 }
 
 export function relativeOverbloomGain(deltaOverbloom, currentOverbloom) {
@@ -30,26 +32,28 @@ export function marginalCoinsPerHour({
   deltaOverbloom = 0,
   currentFortune = 0,
   currentOverbloom = 0,
+  fortuneBase = 100,
   normalCropCoinsPerHour = 0,
   rareCropCoinsPerHour = 0,
 } = {}) {
   const normal = finiteNonNegative(normalCropCoinsPerHour);
   const rare = finiteNonNegative(rareCropCoinsPerHour);
-  return normal * relativeFortuneGain(deltaFortune, currentFortune)
+  return normal * relativeFortuneGain(deltaFortune, currentFortune, fortuneBase)
     + rare * relativeOverbloomGain(deltaOverbloom, currentOverbloom);
 }
 
 /**
  * Express an Overbloom increase as the amount of Farming Fortune that would
- * produce the same marginal coins/hour in the supplied setup.
+ * produce the same marginal coins/hour in the supplied activity/loadout.
  *
- * Returns null when the normal-crop revenue stream is zero because an FF
+ * Returns null when the Fortune-sensitive revenue stream is zero because an FF
  * equivalent is then undefined rather than infinite/useful.
  */
 export function overbloomToFortuneEquivalent({
   deltaOverbloom = 1,
   currentFortune = 0,
   currentOverbloom = 0,
+  fortuneBase = 100,
   normalCropCoinsPerHour = 0,
   rareCropCoinsPerHour = 0,
 } = {}) {
@@ -57,9 +61,10 @@ export function overbloomToFortuneEquivalent({
   if (normal <= 0) return null;
   const rare = finiteNonNegative(rareCropCoinsPerHour);
   const delta = finiteNonNegative(deltaOverbloom);
+  const base = finiteNonNegative(fortuneBase) || 100;
   return delta
     * (rare / normal)
-    * ((100 + finiteNonNegative(currentFortune)) / (100 + finiteNonNegative(currentOverbloom)));
+    * ((base + finiteNonNegative(currentFortune)) / (100 + finiteNonNegative(currentOverbloom)));
 }
 
 export function coinsPerEffectiveFortune({ costCoins = 0, deltaFortuneEquivalent = 0 } = {}) {
