@@ -1,29 +1,43 @@
-/* Progression cards: art, title and status are one compact row. The previous
-   space-between layout treated the portrait as a third column and pushed chip
-   titles away from their pictures on mobile. */
-.item-card .card-head {
-  justify-content: flex-start;
-  align-items: flex-start;
+/* Progression cards: portrait + copy are one left-aligned visual unit. The
+   redesign stylesheet has several more-specific card rules, so this layer pins
+   the final flex behavior explicitly instead of relying on source order alone. */
+.item-card .card-head,
+.skyblock-redesign .item-card .card-head {
+  display: flex !important;
+  justify-content: flex-start !important;
+  align-items: flex-start !important;
+  gap: 10px !important;
 }
 
-.item-card .card-head > div {
-  flex: 1 1 auto;
+.item-card .card-head > div,
+.skyblock-redesign .item-card .card-head > div {
+  flex: 0 1 auto !important;
   min-width: 0;
 }
 
-.item-card .card-head > .badge {
+/* Status belongs on the far right; additional badges sit next to it instead of
+   introducing another auto-spaced column between the art and the title. */
+.item-card .card-head > .badge,
+.skyblock-redesign .item-card .card-head > .badge {
   flex: none;
-  margin-left: auto;
+  margin-left: 0 !important;
 }
 
-.item-card .card-portrait {
-  flex: 0 0 42px;
-  width: 42px;
-  height: 42px;
-  margin: 0;
+.item-card .card-head > .badge:first-of-type,
+.skyblock-redesign .item-card .card-head > .badge:first-of-type {
+  margin-left: auto !important;
 }
 
-.item-card .card-portrait + div {
+.item-card .card-portrait,
+.skyblock-redesign .item-card .card-portrait {
+  flex: 0 0 42px !important;
+  width: 42px !important;
+  height: 42px !important;
+  margin: 0 !important;
+}
+
+.item-card .card-portrait + div,
+.skyblock-redesign .item-card .card-portrait + div {
   padding-top: 1px;
 }
 
@@ -94,13 +108,15 @@
 }
 
 @media (max-width: 700px) {
-  .item-card .card-portrait {
-    flex-basis: 40px;
-    width: 40px;
-    height: 40px;
+  .item-card .card-portrait,
+  .skyblock-redesign .item-card .card-portrait {
+    flex-basis: 40px !important;
+    width: 40px !important;
+    height: 40px !important;
   }
 
-  .item-card .card-head {
-    gap: 10px;
+  .item-card .card-head,
+  .skyblock-redesign .item-card .card-head {
+    gap: 9px !important;
   }
 }
