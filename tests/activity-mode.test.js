@@ -8,7 +8,7 @@ import {
   setActivityModeOnState,
 } from '../src/activity-mode.js';
 import { computeTotalsFromEntries } from '../src/computed-stats.js';
-import { activeMooshroomCow } from '../src/mooshroom-cow.js';
+import { activeMooshroomCow, mooshroomCowContribution } from '../src/mooshroom-cow.js';
 
 function progressBucket() {
   return { levels: {}, owned: {}, costs: {}, manualGain: {} };
@@ -24,6 +24,7 @@ function baseState() {
       manualGain: {},
       cropProgress: { melon: progressBucket() },
       toolProgress: { 'melon-dicer': progressBucket() },
+      vacuumProgress: progressBucket(),
       autoApplied: {},
       setups: {
         modelVersion: 1,
@@ -74,14 +75,14 @@ test('Farm uses farming tools while Pest uses vacuum and pest-only effects', () 
   assert.equal(itemAppliesToActivity(feast, ACTIVITY_MODE.PEST), false);
 });
 
-test('computed totals keep pest Fortune and pest Overbloom out of the Farm Set', () => {
+test('computed totals use crop tool for Farm, Vacuum for Pest, and show BPC in both sets', () => {
   const state = baseState();
   state.profile.levels.global = 1;
   state.profile.levels.commonOb = 1;
   state.profile.levels.pestOb = 1;
   state.profile.levels.bpc = 1;
   state.profile.toolProgress['melon-dicer'].levels.farmTool = 1;
-  state.profile.toolProgress['melon-dicer'].levels.vacuum = 1;
+  state.profile.vacuumProgress.levels.vacuum = 1;
 
   const entries = [
     { id: 'global', section: 'account', metric: 'Crop Yield', modeScope: 'Any', cropScope: 'Any', status: 'ACTIVE', max: 1, stepGain: 10 },
@@ -98,7 +99,7 @@ test('computed totals keep pest Fortune and pest Overbloom out of the Farm Set',
   assert.equal(farm.pestFortune, 0);
   assert.equal(farm.effectiveFortune, 30);
   assert.equal(farm.overbloom, 5);
-  assert.equal(farm.bonusPestChance, 0);
+  assert.equal(farm.bonusPestChance, 3);
 
   const pest = computeTotalsFromEntries(state, entries, 'melon', ACTIVITY_MODE.PEST);
   assert.equal(pest.globalFortune, 10);
@@ -126,4 +127,24 @@ test('the selected setup pet overrides the pet that happened to be active at las
   const cow = activeMooshroomCow(state);
   assert.equal(cow.type, 'MOOSHROOM_COW');
   assert.equal(cow.source, 'setup+profile');
+});
+
+test('manual pet level and rarity drive Mooshroom Cow perk values', () => {
+  const state = baseState();
+  state.profile.inputs = { strength: 2000 };
+  state.profile.normalizedSnapshot = { pets: [] };
+  state.profile.setups.list[0].slots.pet = {
+    skyblockId: 'MOOSHROOM_COW',
+    displayName: 'Mooshroom Cow',
+    rarity: 'LEGENDARY',
+    petLevel: 50,
+  };
+
+  const contribution = mooshroomCowContribution(state);
+  assert.equal(contribution.active, true);
+  assert.equal(contribution.level, 50);
+  assert.equal(contribution.rarity, 'LEGENDARY');
+  assert.equal(contribution.baseFortune, 50);
+  assert.ok(contribution.strengthFortune > 0);
+  assert.equal(contribution.incomplete, false);
 });
