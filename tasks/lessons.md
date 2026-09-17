@@ -231,3 +231,33 @@ Two rules, and the second matters more:
 
 The symptom to recognise: a waiter that outlives the thing it waits for, with
 its target nowhere in the process list.
+
+
+## position: relative is not a stacking context (0.26.2)
+
+The tool icon painted over the sticky topbar while scrolling the Tools page.
+The icon had `z-index: 2` and the topbar had `z-index: 2`; on a tie, document
+order decides, and the icon comes later.
+
+The tempting read is "the icon's z-index is too high". It is not. The real
+fault is one box up: `.sb-tool-art` is `position: relative` with no `z-index`,
+which does **not** create a stacking context. Its children's z-indexes therefore
+compete against the entire page instead of against each other. The icon's 2 was
+only ever meant to beat the letter fallback's 1 inside that 52x52 box.
+
+Fix the container, not the number: `isolation: isolate` on the art box and on
+`.item-portrait` (which holds a tier badge at z-index 4). The inner layering
+keeps working and can no longer reach the page.
+
+Rule: any box whose children use z-index must establish a stacking context --
+`isolation: isolate` is the cheapest way and does not change layout. Tuning the
+child's number instead only moves the collision to whatever chrome sits at the
+next value up.
+
+Verifying this needs a hit test, not a property read: scroll until the two
+overlap and call `elementFromPoint` on the overlapping strip. Reading the
+element's own z-index tells you nothing once a stacking context exists -- my
+first check reported the bug as still present after it was fixed, because it
+was looking at the number rather than at what actually paints on top. Prove the
+check fails without the fix before trusting it: 8 of 8 samples wrong before,
+0 of 8 after.
