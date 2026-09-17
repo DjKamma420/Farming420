@@ -44,6 +44,7 @@ The closed former official wiki must not be used as a current mechanics source. 
 - `44-jacob-contest-model-2026-09-17.md`: Jacob Contest scoring model, percentile/medal boundaries, Personal Best Crop Fortune, and no-fake-threshold rules.
 - `45-greenhouse-live-model-2026-09-17.md`: current Greenhouse passive-economics boundary, complete Aug-20 multiplier table, 72h base-crop decay, and planned-vs-live separation.
 - `46-live-price-model-2026-09-17.md`: official Bazaar/NPC price plumbing, direction-aware quotes, freshness/cache rules, and unresolved AH/BIN boundaries.
+- `47-item-model-audit-and-structural-gaps-2026-09-17.md`: sync-time Farming model coverage, head/non-pack model provenance, unresolved-model gate, and complete Farming-tool reforge exclusivity.
 - `SOURCES.md`: source index and verification notes.
 
 Existing specialized research files remain authoritative for their narrow verified slices when newer than a chapter here, including `core-fortune.js`, `gear-fortune.js`, `equipment-fortune.js`, `pet-switching.js`, and the runtime verification tests.
