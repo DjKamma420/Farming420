@@ -129,7 +129,8 @@ test('the active pet and its held item fill the pet slots', () => {
     ],
   };
   const { setup } = prefillSetupFromSnapshot(createSetup('a', 'A'), snapshot);
-  assert.match(setup.slots.pet.displayName, /MOOSHROOM_COW/);
+  assert.equal(setup.slots.pet.displayName, 'Mooshroom Cow Pet');
+  assert.equal(setup.slots.pet.skyblockId, 'MOOSHROOM_COW');
   assert.equal(setup.slots.petItem.skyblockId, 'GREEN_BANDANA');
 });
 
