@@ -1,0 +1,200 @@
+{
+  "meta": {
+    "title": "Armor Reforge Selection Research",
+    "as_of": "2026-09-17",
+    "status": "ACTIVE_WITH_EXPLICIT_VERIFY_FIELDS",
+    "scope": "farming-relevant armor reforges",
+    "precedence": "Newer narrow research overrides older broad summaries when source verification is newer."
+  },
+  "invariants": {
+    "one_reforge_per_physical_piece": true,
+    "calculate_per_piece": true,
+    "mixed_reforges_allowed_in_model": true,
+    "never_add_mutually_exclusive_reforges": true,
+    "recommendation_basis": "complete legal before/after state",
+    "fixed_mossy_mantid_bpc_breakpoint": null,
+    "fixed_breakpoint_reason": "No current source establishes a universal threshold; the economic result depends on crop throughput, Pest spawning, Pest value, loadout and prices."
+  },
+  "armor_reforges": {
+    "bustling": {
+      "stone": "SkyMart Brochure",
+      "use_requirement": "Mining IX",
+      "acquisition": "100 Copper from SkyMart",
+      "primary_role": "budget/progression Farming Fortune",
+      "rarity_stats": {
+        "COMMON": {"farming_fortune": 1, "apply_coins": 1000},
+        "UNCOMMON": {"farming_fortune": 2, "apply_coins": 2000},
+        "RARE": {"farming_fortune": 4, "apply_coins": 3000},
+        "EPIC": {"farming_fortune": 6, "apply_coins": 6000},
+        "LEGENDARY": {"farming_fortune": 8, "apply_coins": 10000},
+        "MYTHIC": {"farming_fortune": 10, "apply_coins": 15000}
+      },
+      "recommended_when": [
+        "normal crop Farming Fortune is desired",
+        "Mossy acquisition/opportunity cost is not yet justified",
+        "budget or progression state"
+      ],
+      "not_default_for": ["endgame normal-crop optimization", "dedicated Pest spawning"],
+      "source": "https://hypixelskyblock.minecraft.wiki/w/SkyMart_Brochure",
+      "last_verified": "2026-09-17",
+      "status": "ACTIVE"
+    },
+    "mossy": {
+      "stone": "Overgrown Grass",
+      "use_requirement": "Mining XXIII",
+      "primary_role": "normal crop / direct Farming Fortune",
+      "rarity_stats": {
+        "COMMON": {"speed": 3, "farming_fortune": 5, "apply_coins": 20000},
+        "UNCOMMON": {"speed": 3, "farming_fortune": 10, "apply_coins": 40000},
+        "RARE": {"speed": 5, "farming_fortune": 15, "apply_coins": 80000},
+        "EPIC": {"speed": 5, "farming_fortune": 20, "apply_coins": 150000},
+        "LEGENDARY": {"speed": 7, "farming_fortune": 25, "apply_coins": 300000},
+        "MYTHIC": {"speed": 7, "farming_fortune": 30, "apply_coins": 600000}
+      },
+      "recommended_when": [
+        "normal crop profit",
+        "Farming Fortune",
+        "collection or Crop Milestone output",
+        "crop contest output when Fortune is the relevant marginal stat",
+        "Pest kill/loot/vacuum phase after Pest spawning"
+      ],
+      "not_default_for": ["dedicated Pest spawning"],
+      "notes": [
+        "Highest direct Farming Fortune of Bustling/Mossy/Mantid at every shared rarity.",
+        "Speed must affect measured valid-break throughput before it receives a coin value."
+      ],
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Overgrown_Grass",
+      "last_verified": "2026-09-17",
+      "status": "ACTIVE"
+    },
+    "mantid": {
+      "stone": "Mantid Claw",
+      "use_requirement": "Mining XXII",
+      "primary_role": "Pest spawning / Bonus Pest Chance",
+      "rarity_stats": {
+        "COMMON": {"farming_fortune": 2, "bonus_pest_chance": 0.5, "apply_coins": 7500},
+        "UNCOMMON": {"farming_fortune": 4, "bonus_pest_chance": 0.5, "apply_coins": 15000},
+        "RARE": {"farming_fortune": 6, "bonus_pest_chance": 1.0, "apply_coins": 30000},
+        "EPIC": {"farming_fortune": 8, "bonus_pest_chance": 1.5, "apply_coins": 75000},
+        "LEGENDARY": {"farming_fortune": 10, "bonus_pest_chance": 2.0, "apply_coins": 150000},
+        "MYTHIC": {"farming_fortune": 12, "bonus_pest_chance": 2.5, "apply_coins": 150000}
+      },
+      "conditional_bonus": {
+        "name": "Mantid Bonus",
+        "bonus_pest_chance_per_pest_killed": 0.25,
+        "duration_minutes": 10,
+        "cap_bonus_pest_chance": 5,
+        "multi_piece_stacking": null,
+        "multi_piece_stacking_status": "VERIFY",
+        "rule": "Do not multiply the +5 cap by the number of Mantid pieces until current live behavior or an explicit source confirms stacking."
+      },
+      "recommended_when": [
+        "Pest spawn phase",
+        "Bonus Pest Chance is the active objective",
+        "a complete expected-value comparison values additional Pests more than the lost crop output"
+      ],
+      "not_default_for": ["normal crop profit", "Pest kill/loot phase"],
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Mantid_Claw",
+      "last_verified": "2026-09-17",
+      "status": "ACTIVE_EXCEPT_MULTI_PIECE_CONDITIONAL_STACKING"
+    }
+  },
+  "mythic_static_comparison_per_piece": {
+    "bustling": {"farming_fortune": 10, "speed": 0, "bonus_pest_chance": 0},
+    "mossy": {"farming_fortune": 30, "speed": 7, "bonus_pest_chance": 0},
+    "mantid": {"farming_fortune": 12, "speed": 0, "bonus_pest_chance": 2.5},
+    "mossy_minus_mantid": {"farming_fortune": 18, "speed": 7, "bonus_pest_chance": -2.5},
+    "mossy_minus_bustling": {"farming_fortune": 20, "speed": 7, "bonus_pest_chance": 0}
+  },
+  "four_piece_mythic_static_totals": {
+    "bustling": {"farming_fortune": 40},
+    "mossy": {"farming_fortune": 120, "speed": 28},
+    "mantid": {"farming_fortune": 48, "bonus_pest_chance": 10},
+    "mantid_conditional_bonus_included": false
+  },
+  "objective_mapping": {
+    "budget_farming_fortune": ["bustling"],
+    "normal_crop_profit": ["mossy"],
+    "farming_fortune": ["mossy", "bustling"],
+    "collection": ["mossy"],
+    "crop_milestone": ["mossy"],
+    "crop_contest": ["mossy"],
+    "pest_spawn": ["mantid"],
+    "bonus_pest_chance": ["mantid"],
+    "pest_kill": ["mossy"],
+    "pest_loot": ["mossy"]
+  },
+  "setup_baselines": {
+    "farm_set": "mossy",
+    "budget_farm_set": "bustling",
+    "pest_set_spawn_phase": "mantid",
+    "pest_set_kill_loot_phase": "compare switching to farm_set/mossy",
+    "user_override_required": true
+  },
+  "strategy_evidence": {
+    "source": "https://wiki.eliteskyblock.com/Introduction_to_Pest_Farming",
+    "source_last_updated": "2025-12-28",
+    "last_verified": "2026-09-17",
+    "status": "SPECIALIST_STRATEGY",
+    "findings": [
+      "A Mossy Helianthus set is the primary general Farming/Pest set in the guide.",
+      "A second Mantid Helianthus set is presented as optional Pest-spawn optimization.",
+      "Normal Farming gear is used for Pest vacuum/loot-oriented phases in the guide.",
+      "Do not hard-code the guide's example payback or BPC figures as timeless game mechanics."
+    ]
+  },
+  "optimizer_rule": {
+    "required_comparison": "value(candidate_complete_legal_state, context) - value(current_complete_legal_state, context)",
+    "required_inputs": [
+      "objective",
+      "crop",
+      "valid_breaks_per_second",
+      "current_farming_fortune",
+      "current_bonus_pest_chance",
+      "pest_spawn_state_and_cooldown",
+      "pest_value",
+      "overbloom_and_pest_overbloom",
+      "spawn_vs_vacuum_time_split",
+      "actual_armor_piece_rarities",
+      "actual_current_reforges",
+      "reforge_stone_acquisition_cost",
+      "reforge_apply_cost",
+      "switching_friction"
+    ],
+    "unknown_policy": "Unknown is not zero. Do not fabricate a Mantid-vs-Mossy breakpoint."
+  },
+  "cost_rule": {
+    "track": [
+      "stone acquisition coin cost",
+      "non-coin opportunity cost such as Copper",
+      "rarity-scaled application coin cost",
+      "lost old-reforge effect",
+      "resale implications where relevant",
+      "self-acquisition time"
+    ],
+    "static_market_price": null,
+    "market_rule": "Use fresh price service or user-supplied price at recommendation time."
+  },
+  "sources": [
+    {
+      "kind": "mechanic",
+      "url": "https://hypixelskyblock.minecraft.wiki/w/SkyMart_Brochure",
+      "last_verified": "2026-09-17"
+    },
+    {
+      "kind": "mechanic",
+      "url": "https://hypixelskyblock.minecraft.wiki/w/Overgrown_Grass",
+      "last_verified": "2026-09-17"
+    },
+    {
+      "kind": "mechanic",
+      "url": "https://hypixelskyblock.minecraft.wiki/w/Mantid_Claw",
+      "last_verified": "2026-09-17"
+    },
+    {
+      "kind": "specialist_strategy",
+      "url": "https://wiki.eliteskyblock.com/Introduction_to_Pest_Farming",
+      "last_verified": "2026-09-17"
+    }
+  ]
+}
