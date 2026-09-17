@@ -59,7 +59,19 @@ function cropKey(value) {
     .replace(/-+/g, '-');
 }
 
+/**
+ * A non-negative number, or null for anything that is not one.
+ *
+ * The absent check comes first and is the whole point. `Number(null)`,
+ * `Number(undefined)` and `Number('')` are 0, 0 is a valid non-negative
+ * number, and so every absent input here used to pass as a measured zero:
+ * a missing `breaksPerSecond` made the estimate *complete*, with a collection
+ * of 0 and participation not reached. That is a confident wrong answer instead
+ * of a question, and `unknown != 0` is a repository invariant.
+ * `profit-engine.js` has always guarded this; this model did not.
+ */
 function finiteNonNegative(value) {
+  if (value === null || value === undefined || value === '') return null;
   const number = Number(value);
   return Number.isFinite(number) && number >= 0 ? number : null;
 }
@@ -131,7 +143,9 @@ export function estimateJacobContestScore(input = {}) {
     const farmingFortune = finiteNonNegative(direct.farmingFortune);
     const cropFortune = finiteNonNegative(direct.cropFortune);
     const contestCropFortune = finiteNonNegative(direct.contestCropFortune);
-    const uptimeRatio = Number(direct.uptimeRatio);
+    // `?? NaN` so the range check below rejects an absent ratio rather than
+    // reading it as 0% uptime.
+    const uptimeRatio = finiteNonNegative(direct.uptimeRatio) ?? NaN;
     const durationSeconds = finiteNonNegative(input.durationSeconds ?? JACOB_CONTEST_DURATION_SECONDS);
 
     if (breaksPerSecond == null) missing.push('directFarming.breaksPerSecond');
