@@ -21,7 +21,9 @@ export const OPTION_SOURCE = Object.freeze({
   MANUAL: 'manual',
 });
 
-export const CATALOG_STORAGE_KEY = 'farming420-item-catalog';
+// v2 keeps the official material/skin/color fields used by the art layer. A new
+// key deliberately invalidates old cached rows that only contained picker text.
+export const CATALOG_STORAGE_KEY = 'farming420-item-catalog-v2';
 /** The resource is static reference data; a day-old copy is fine. */
 export const CATALOG_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
@@ -45,12 +47,11 @@ function stringOrNull(value) {
 }
 
 /**
- * Reduces the official resource to what the picker needs.
+ * Reduces the official resource to what the picker and item-art layer need.
  *
- * The exact response shape cannot be verified from this repository's test
- * environment, so parsing is tolerant: an entry without a usable id and name is
- * skipped rather than guessed at, and an unrecognised payload yields an empty
- * catalogue, which makes the editor fall back to free text instead of breaking.
+ * `skin` is the textures.minecraft.net hash for SKULL_ITEM entries. `material`
+ * and `color` let the UI draw honest material silhouettes for dyed armour when
+ * a head texture does not exist. Unknown fields remain ignored.
  */
 export function reduceItemResource(payload) {
   const items = Array.isArray(payload?.items) ? payload.items : [];
@@ -64,6 +65,9 @@ export function reduceItemResource(payload) {
       name,
       category: stringOrNull(item?.category)?.toUpperCase() || null,
       tier: stringOrNull(item?.tier)?.toUpperCase() || null,
+      material: stringOrNull(item?.material)?.toUpperCase() || null,
+      skin: stringOrNull(item?.skin)?.toLowerCase() || null,
+      color: stringOrNull(item?.color) || null,
     });
   }
   return reduced;
