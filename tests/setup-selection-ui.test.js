@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFileSync } from 'node:fs';
 
-import { effectiveItemRarity } from '../src/setup-selection-ui.js';
+import { effectiveItemRarity, setTextIfChanged } from '../src/setup-selection-ui.js';
 
 const root = new URL('../', import.meta.url);
 const read = path => readFileSync(new URL(path, root), 'utf8');
@@ -35,6 +35,27 @@ test('recombobulation changes displayed effective rarity without overwriting the
   assert.equal(effectiveItemRarity({ rarity: 'EPIC', recombobulated: false }), 'EPIC');
   assert.equal(effectiveItemRarity({ rarity: 'MYTHIC', recombobulated: true }), 'DIVINE');
   assert.equal(effectiveItemRarity({ rarity: null, recombobulated: true }), null);
+});
+
+test('observed rarity text is idempotent so the MutationObserver cannot trigger itself forever', () => {
+  let writes = 0;
+  let value = 'MYTHIC';
+  const node = {};
+  Object.defineProperty(node, 'textContent', {
+    get: () => value,
+    set: next => { writes += 1; value = next; },
+  });
+
+  assert.equal(setTextIfChanged(node, 'MYTHIC'), false);
+  assert.equal(writes, 0, 'same text must not write into the observed subtree');
+  assert.equal(setTextIfChanged(node, 'DIVINE'), true);
+  assert.equal(writes, 1);
+  assert.equal(setTextIfChanged(node, 'DIVINE'), false);
+  assert.equal(writes, 1, 're-applying the same UI state must stay mutation-free');
+
+  const source = read('src/setup-selection-ui.js');
+  assert.match(source, /setTextIfChanged\(rarity, rarityText\)/);
+  assert.doesNotMatch(source, /rarity\.textContent\s*=/);
 });
 
 test('index loads the setup selection module and stylesheet', () => {

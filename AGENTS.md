@@ -81,6 +81,12 @@ Use `DjKamma420/StundenplanNothing` as a structural quality reference, not as a 
 
 Keep the Farming420 interface layered and concise. The user should see the next useful decision, not every underlying data point at once.
 
+## Runtime render safety
+
+Before changing runtime DOM enhancers, render hooks, `MutationObserver`, `queueMicrotask`, repeated timers, post-render patches, or custom state-change events, read `docs/RENDER_FREEZE_SAFETY.md`.
+
+The mandatory invariant is: **applying the same UI state twice must converge to a no-op.** Code that observes a DOM subtree must not unconditionally mutate that same subtree. Any freeze or runaway-render regression must be recorded in the incident log in `docs/RENDER_FREEZE_SAFETY.md` and receive a regression test before merge.
+
 ## Merge policy
 
 The repository owner has given a standing instruction: **merge a pull request as
