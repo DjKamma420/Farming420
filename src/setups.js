@@ -53,6 +53,7 @@ export function createEmptyItem() {
     skyblockId: null,
     displayName: '',
     rarity: null,
+    petLevel: null,
     reforge: null,
     enchantments: {},
     gems: [],
@@ -122,6 +123,12 @@ function cleanName(value) {
   return String(value ?? '').replace(/§[0-9a-fk-or]/gi, '').trim();
 }
 
+function readablePetName(value) {
+  const words = String(value || '').trim().toLowerCase().split('_').filter(Boolean);
+  if (!words.length) return '';
+  return `${words.map(word => word[0].toUpperCase() + word.slice(1)).join(' ')} Pet`;
+}
+
 function gemListFrom(gems) {
   if (!gems || typeof gems !== 'object') return [];
   return Object.entries(gems)
@@ -188,11 +195,13 @@ export function prefillSetupFromSnapshot(setup, snapshot, { overwrite = false } 
 
   const activePet = pets.find(pet => pet.active === true);
   if (activePet) {
+    const rawLevel = Number(activePet.level);
     assign('pet', {
       ...createEmptyItem(),
       skyblockId: activePet.type ?? null,
-      displayName: [activePet.rarity, activePet.type].filter(Boolean).join(' ') || String(activePet.type || ''),
-      rarity: activePet.rarity ?? null,
+      displayName: readablePetName(activePet.type) || String(activePet.type || ''),
+      rarity: activePet.rarity ?? activePet.tier ?? null,
+      petLevel: Number.isFinite(rawLevel) ? rawLevel : null,
       source: ITEM_SOURCE.SYNC,
     });
     if (activePet.heldItem) {
