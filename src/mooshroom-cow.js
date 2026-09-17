@@ -29,6 +29,7 @@ function finiteNonNegative(value) {
 }
 
 function explicitPetLevel(value) {
+  if (value === null || value === undefined || value === '') return null;
   const number = Number(value);
   if (!Number.isFinite(number)) return null;
   return Math.max(1, Math.min(100, Math.floor(number)));
@@ -83,10 +84,6 @@ export function activeMooshroomCow(state) {
     ? state.profile.normalizedSnapshot.pets
     : [];
 
-  // A selected Farm/Pest setup is an explicit hypothetical loadout and
-  // therefore overrides the pet that happened to be active at the last sync.
-  // Pet level and rarity are properties of the pet itself, so manual values on
-  // the setup override synced values when present.
   const selected = selectedSetupPet(state);
   if (selected) {
     if (!itemIsCow(selected)) return null;
