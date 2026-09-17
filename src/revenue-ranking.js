@@ -45,6 +45,7 @@ export function evaluateUpgrade({
   incidentalGrindProfitCoinsPerHour = 0,
   currentFortune = 0,
   currentOverbloom = 0,
+  fortuneBase = 100,
   normalCropCoinsPerHour = 0,
   rareCropCoinsPerHour = 0,
 } = {}) {
@@ -81,6 +82,7 @@ export function evaluateUpgrade({
         ...deltas,
         currentFortune,
         currentOverbloom,
+        fortuneBase,
         normalCropCoinsPerHour: normal,
         rareCropCoinsPerHour: rare,
       })
@@ -91,6 +93,7 @@ export function evaluateUpgrade({
         deltaOverbloom: deltas.deltaOverbloom,
         currentFortune,
         currentOverbloom,
+        fortuneBase,
         normalCropCoinsPerHour: normal,
         rareCropCoinsPerHour: rare,
       })
@@ -107,6 +110,7 @@ export function evaluateUpgrade({
     directCoinCost: finiteNonNegative(directCoinCost),
     timeValueCoinsPerHour: route === 'EARNED' ? finiteNonNegative(timeValueCoinsPerHour) : null,
     timeValueSource: route === 'EARNED' ? timeValueSource : null,
+    fortuneBase: finiteNonNegative(fortuneBase) || 100,
     economicsReady,
     marginalCoinsHour,
     fortuneEquivalent,
