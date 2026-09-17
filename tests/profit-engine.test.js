@@ -25,6 +25,23 @@ test('normal crop stream applies combined Farming and Crop Fortune', () => {
   assert.equal(result.netCoinsPerHour, 180_000);
 });
 
+test('missing Fortune is unknown rather than silently treated as zero', () => {
+  const result = calculateFarmingProfit({
+    throughput: { breaksPerSecond: 10, baseFarmingUptimeRatio: 1 },
+    stats: { cropFortune: 50 },
+    normalDrops: [{
+      id: 'crop',
+      baseUnitsPerBreak: 1,
+      unitValueCoins: 2,
+      scaling: DROP_SCALING.COMBINED_FORTUNE,
+    }],
+  });
+
+  assert.equal(result.complete, false);
+  assert.equal(result.netCoinsPerHour, null);
+  assert.ok(result.missing.some(entry => entry.path === 'stats.farmingFortune'));
+});
+
 test('rare crop stream applies Overbloom only to its explicit probability stream', () => {
   const result = calculateFarmingProfit({
     throughput: { breaksPerSecond: 5, baseFarmingUptimeRatio: 1 },
@@ -48,7 +65,6 @@ test('rare crop stream applies Overbloom only to its explicit probability stream
 test('per-break pest spawns feed back into farming uptime instead of becoming free extra loot', () => {
   const result = calculateFarmingProfit({
     throughput: { breaksPerSecond: 10, baseFarmingUptimeRatio: 1 },
-    stats: {},
     pest: {
       expectedPestsPerBreak: 0.001,
       handlingSecondsPerPest: 20,
@@ -78,7 +94,7 @@ test('per-break pest spawns feed back into farming uptime instead of becoming fr
   );
 });
 
-test('May-2026 style pest RNG can use pest Overbloom while base pest output uses Pest Fortune', () => {
+test('Pest Fortune scales explicit base-drop quantity while Pest Overbloom scales RNG probability', () => {
   const result = calculateFarmingProfit({
     throughput: { breaksPerSecond: 10, baseFarmingUptimeRatio: 1 },
     stats: { pestFortune: 100, overbloom: 50, pestOverbloom: 50 },
@@ -88,7 +104,7 @@ test('May-2026 style pest RNG can use pest Overbloom while base pest output uses
       drops: [
         {
           id: 'base',
-          baseProbability: 0.1,
+          baseProbability: 1,
           rollsPerPest: 1,
           expectedQuantity: 1,
           unitValueCoins: 100,
@@ -107,8 +123,12 @@ test('May-2026 style pest RNG can use pest Overbloom while base pest output uses
   });
 
   assert.equal(result.complete, true);
-  assert.equal(result.streams.find(row => row.id === 'base').effectiveProbability, 0.2);
-  assert.equal(result.streams.find(row => row.id === 'rng').effectiveProbability, 0.2);
+  const base = result.streams.find(row => row.id === 'base');
+  const rng = result.streams.find(row => row.id === 'rng');
+  assert.equal(base.effectiveProbability, 1);
+  assert.equal(base.expectedQuantityPerSuccessfulRoll, 2);
+  assert.equal(rng.effectiveProbability, 0.2);
+  assert.equal(rng.expectedQuantityPerSuccessfulRoll, 1);
 });
 
 test('missing mechanics stay incomplete instead of silently becoming zero', () => {
