@@ -43,6 +43,19 @@ export function effectiveItemRarity(item) {
   return RARITY_UPGRADE[base] || base;
 }
 
+/**
+ * Observed DOM must only be mutated when the value actually changes.
+ * Unconditional textContent writes inside a MutationObserver callback can
+ * create an endless childList -> observer -> childList microtask loop.
+ */
+export function setTextIfChanged(node, value) {
+  if (!node) return false;
+  const next = String(value ?? '');
+  if (node.textContent === next) return false;
+  node.textContent = next;
+  return true;
+}
+
 function readState() {
   try {
     const raw = globalThis.localStorage?.getItem(STORAGE_KEY);
@@ -250,9 +263,10 @@ function applyRarityPresentation(root, setup) {
     if (rarity) {
       const base = normalizedRarity(item.rarity);
       const source = item.source === ITEM_SOURCE.SYNC ? ' · synced' : '';
-      rarity.textContent = item.recombobulated && base !== effective
+      const rarityText = item.recombobulated && base !== effective
         ? `${effective} · base ${base} + Recombobulator${source}`
         : `${effective}${source}`;
+      setTextIfChanged(rarity, rarityText);
     }
   }
 }
