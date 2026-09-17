@@ -509,3 +509,32 @@ simply counted as unlinked, which is indistinguishable from honest absence.
 The generator now refuses to build if the table names an unknown id. Any
 hand-written mapping into another data set wants that check, because a typo in
 a mapping is silent by nature.
+
+## A shared container has an owner (0.34.0)
+
+`activity-mode-ui.js` did `document.querySelector('.planner-list')` and wrote
+its own rows into it. That was correct until `revenue-planner.js` inserted a
+second `.planner-list` *before* the first one. From then on the bare selector
+matched the newer list, the later-loading module overwrote it, and the revenue
+ranking was never once visible -- with no error, no duplicate node and nothing
+in any log.
+
+Rule: a selector that names only a class names whatever comes first in document
+order. When several modules render into one page, each write says which element
+it means -- `:not(.revenue-list)`, a data attribute, or an owner class -- and a
+test pins that the qualifier is there. I also checked `ux-simplify.js` in the
+same pass rather than fixing only the one that showed.
+
+The general form: **the same mistake usually lives in more than one file.** Grep
+for the pattern, not for the symptom.
+
+## `hidden` is not a guarantee (0.34.0)
+
+`planner-mode-ui.js` set `revenue.hidden = true` and the panel stayed on screen,
+because `[hidden] { display: none }` is a UA rule and `.revenue-planner-v2
+{ display: grid }` is an author rule with a class. The author rule wins every
+time.
+
+Rule: any component whose stylesheet sets `display` needs its own
+`[hidden] { display: none }`, or `hidden` is decoration. And "I set hidden" is
+not verification -- `checkVisibility()` is.

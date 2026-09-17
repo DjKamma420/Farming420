@@ -87,6 +87,19 @@ export function rankEvaluatedUpgrades(rows) {
     const bMarginal = Number.isFinite(b.marginalCoinsHour) ? b.marginalCoinsHour : -1;
     if (aMarginal !== bMarginal) return bMarginal - aMarginal;
 
+    // No baseline means no payback and no marginal profit, but the researched
+    // cost table still answers "what do I pay per point of Farming Fortune",
+    // and that question needs no Coins/h at all. A row without a researched
+    // cost is not cheap, it is unknown, so it sorts behind every priced row
+    // instead of ahead of them.
+    const aPerFortune = Number.isFinite(a.coinsPerEffectiveFortune) && a.coinsPerEffectiveFortune > 0
+      ? a.coinsPerEffectiveFortune : null;
+    const bPerFortune = Number.isFinite(b.coinsPerEffectiveFortune) && b.coinsPerEffectiveFortune > 0
+      ? b.coinsPerEffectiveFortune : null;
+    if (aPerFortune !== null && bPerFortune !== null && aPerFortune !== bPerFortune) return aPerFortune - bPerFortune;
+    if (aPerFortune !== null && bPerFortune === null) return -1;
+    if (bPerFortune !== null && aPerFortune === null) return 1;
+
     if (a.fortuneEquivalent !== b.fortuneEquivalent) return b.fortuneEquivalent - a.fortuneEquivalent;
     return String(a.item?.name || '').localeCompare(String(b.item?.name || ''));
   });
