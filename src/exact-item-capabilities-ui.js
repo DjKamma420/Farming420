@@ -23,10 +23,6 @@ function esc(value = '') {
     '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#039;', '"':'&quot;',
   }[character]));
 }
-function sameArray(a, b) {
-  if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
-  return a.every((value, index) => value === b[index]);
-}
 function patchSlot(raw, slotId, changes) {
   const setup = activeSetup(raw);
   if (!setup) return;
@@ -47,7 +43,7 @@ function sanitizeGems(item, slots) {
   });
 }
 
-function replaceReforgeControl(raw, slotId, editor, item, capabilities) {
+function replaceReforgeControl(slotId, editor, item, capabilities) {
   const existing = editor.querySelector(`[data-slot-reforge="${slotId}"]`);
   const field = existing?.closest('.settings-field');
   if (!field) return;
@@ -81,30 +77,21 @@ function replaceReforgeControl(raw, slotId, editor, item, capabilities) {
   }, { once: true });
 }
 
-function configureRecomb(raw, slotId, editor, item, capabilities) {
+function configureRecomb(slotId, editor, capabilities) {
   const checkbox = editor.querySelector(`[data-slot-recomb="${slotId}"]`);
   const row = checkbox?.closest('.item-editor-row');
-  if (!row) return false;
-  const allowed = capabilities.known && capabilities.canRecombobulate;
-  setHidden(row, !allowed);
-  if (!allowed && item?.recombobulated) {
-    patchSlot(raw, slotId, { recombobulated: false });
-    return true;
-  }
-  return false;
+  if (!row) return;
+  setHidden(row, !(capabilities.known && capabilities.canRecombobulate));
 }
 
-function replaceGemstoneControls(raw, slotId, editor, item, capabilities) {
+function replaceGemstoneControls(slotId, editor, item, capabilities) {
   const section = editor.querySelector('.gem-grid')?.closest('.item-editor-section');
-  if (!section) return false;
+  if (!section) return;
   const slots = capabilities.known ? capabilities.gemstoneSlots : [];
   setHidden(section, slots.length === 0);
+  if (!slots.length) return;
 
   const sanitized = sanitizeGems(item, slots);
-  let changed = !sameArray(Array.isArray(item?.gems) ? item.gems : [], sanitized);
-  if (changed) patchSlot(raw, slotId, { gems: sanitized });
-  if (!slots.length) return changed;
-
   section.dataset.exactGemstones = '1';
   const heading = section.querySelector('h3');
   const note = section.querySelector('.section-row p');
@@ -112,8 +99,9 @@ function replaceGemstoneControls(raw, slotId, editor, item, capabilities) {
   if (note) note.textContent = `${slots.length} official socket${slots.length === 1 ? '' : 's'} on this item. Only legal gemstone types are offered.`;
 
   const grid = section.querySelector('.gem-grid');
+  if (!grid) return;
   const signature = slots.map((slot, index) => `${slot.slotType}:${sanitized[index] || ''}`).join('|');
-  if (grid?.dataset.signature !== signature) {
+  if (grid.dataset.signature !== signature) {
     grid.dataset.signature = signature;
     grid.innerHTML = slots.map((slot, index) => {
       const values = gemValuesForSlotType(slot.slotType);
@@ -138,20 +126,19 @@ function replaceGemstoneControls(raw, slotId, editor, item, capabilities) {
       window.location.reload();
     }));
   }
-  return changed;
 }
 
 function decorateSlot(raw, slotId, catalog) {
   const editor = document.querySelector(`[data-item-editor="${slotId}"]`);
-  if (!editor) return false;
+  if (!editor) return;
   const item = activeSetup(raw)?.slots?.[slotId];
-  if (!item?.displayName && !item?.skyblockId) return false;
+  if (!item?.displayName && !item?.skyblockId) return;
   const capabilities = itemCapabilities(slotId, item, catalog);
   editor.dataset.capabilityKnown = capabilities.known ? '1' : '0';
 
-  replaceReforgeControl(raw, slotId, editor, item, capabilities);
-  let changed = configureRecomb(raw, slotId, editor, item, capabilities);
-  changed = replaceGemstoneControls(raw, slotId, editor, item, capabilities) || changed;
+  replaceReforgeControl(slotId, editor, item, capabilities);
+  configureRecomb(slotId, editor, capabilities);
+  replaceGemstoneControls(slotId, editor, item, capabilities);
 
   let note = editor.querySelector('[data-capability-note]');
   if (!capabilities.known) {
@@ -165,7 +152,6 @@ function decorateSlot(raw, slotId, catalog) {
   } else {
     note?.remove();
   }
-  return changed;
 }
 
 function apply() {
@@ -174,13 +160,7 @@ function apply() {
   try {
     const raw = load();
     const catalog = readCachedCatalog()?.items || [];
-    let changed = false;
-    for (const slotId of MANAGED_SLOTS) changed = decorateSlot(raw, slotId, catalog) || changed;
-    if (changed) {
-      save(raw);
-      // Rebuild computed setup-derived stats from the cleaned item state once.
-      window.location.reload();
-    }
+    for (const slotId of MANAGED_SLOTS) decorateSlot(raw, slotId, catalog);
   } finally { applying = false; }
 }
 
