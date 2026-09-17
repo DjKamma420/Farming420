@@ -70,15 +70,23 @@
 }
 
 .card-portrait > .coverage-item-art,
-.sb-reforge-art > .coverage-item-art {
+.sb-reforge-art > .coverage-item-art,
+.slot-portrait > .coverage-item-art,
+.item-portrait > .coverage-item-art {
   margin: auto;
 }
 
+/* item-art-ui uses .item-art-fallback for setup tiles. The older selector used
+   .item-portrait-fallback, which left the HEMH/LEMH/BOMH letters visible behind
+   official/catalog-backed art. When resolved art exists, all fallback variants
+   must be hidden. */
 .card-portrait.has-coverage-item-art > .item-art-fallback,
 .sb-reforge-art.has-coverage-item-art > .sb-reforge-fallback,
+.slot-portrait.has-coverage-item-art > .item-art-fallback,
 .slot-portrait.has-coverage-item-art > .item-portrait-fallback,
+.item-portrait.has-coverage-item-art > .item-art-fallback,
 .item-portrait.has-coverage-item-art > .item-portrait-fallback {
-  display: none;
+  display: none !important;
 }
 
 /* A physical consumable/tool-upgrade icon belongs beside its own label, not as

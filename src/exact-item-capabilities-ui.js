@@ -47,7 +47,7 @@ function sanitizeGems(item, slots) {
   });
 }
 
-function replaceReforgeControl(raw, slotId, editor, item, capabilities) {
+function replaceReforgeControl(slotId, editor, item, capabilities) {
   const existing = editor.querySelector(`[data-slot-reforge="${slotId}"]`);
   const field = existing?.closest('.settings-field');
   if (!field) return;
@@ -101,7 +101,7 @@ function replaceGemstoneControls(raw, slotId, editor, item, capabilities) {
   setHidden(section, slots.length === 0);
 
   const sanitized = sanitizeGems(item, slots);
-  let changed = !sameArray(Array.isArray(item?.gems) ? item.gems : [], sanitized);
+  const changed = !sameArray(Array.isArray(item?.gems) ? item.gems : [], sanitized);
   if (changed) patchSlot(raw, slotId, { gems: sanitized });
   if (!slots.length) return changed;
 
@@ -149,7 +149,7 @@ function decorateSlot(raw, slotId, catalog) {
   const capabilities = itemCapabilities(slotId, item, catalog);
   editor.dataset.capabilityKnown = capabilities.known ? '1' : '0';
 
-  replaceReforgeControl(raw, slotId, editor, item, capabilities);
+  replaceReforgeControl(slotId, editor, item, capabilities);
   let changed = configureRecomb(raw, slotId, editor, item, capabilities);
   changed = replaceGemstoneControls(raw, slotId, editor, item, capabilities) || changed;
 
@@ -176,11 +176,10 @@ function apply() {
     const catalog = readCachedCatalog()?.items || [];
     let changed = false;
     for (const slotId of MANAGED_SLOTS) changed = decorateSlot(raw, slotId, catalog) || changed;
-    if (changed) {
-      save(raw);
-      // Rebuild computed setup-derived stats from the cleaned item state once.
-      window.location.reload();
-    }
+    // Cleanup is persisted without navigation. The previous implementation
+    // reloaded here, which could repeat during startup and keep the app from
+    // ever settling on profiles containing stale generic gem/recomb states.
+    if (changed) save(raw);
   } finally { applying = false; }
 }
 
@@ -189,11 +188,21 @@ function schedule() {
   scheduled = true;
   queueMicrotask(() => { scheduled = false; apply(); });
 }
+
+export function mutationNeedsCapabilityApply(mutations) {
+  return mutations.some(mutation => [...mutation.addedNodes].some(node => {
+    if (!(node instanceof Element)) return false;
+    return node.matches?.('[data-item-editor]') || Boolean(node.querySelector?.('[data-item-editor]'));
+  }));
+}
+
 function boot() {
   apply();
   const app = document.getElementById('app');
   if (app && typeof MutationObserver !== 'undefined') {
-    new MutationObserver(schedule).observe(app, { childList: true, subtree: true });
+    new MutationObserver(mutations => {
+      if (mutationNeedsCapabilityApply(mutations)) schedule();
+    }).observe(app, { childList: true, subtree: true });
   }
 }
 
