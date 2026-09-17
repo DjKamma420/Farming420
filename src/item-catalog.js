@@ -26,6 +26,7 @@ const SLOT_CATEGORIES = Object.freeze({
 });
 
 const ARMOR_SLOT_IDS = new Set(['helmet', 'chestplate', 'leggings', 'boots']);
+const EQUIPMENT_SLOT_IDS = new Set(['equipment1', 'equipment2', 'equipment3', 'equipment4']);
 const FARMING_ARMOR_PREFIXES = Object.freeze([
   'FARMHAND_', 'HAYMAKER_', 'SPROUT_', 'TATER_', 'CROPIE_', 'SQUASH_', 'FERMENTO_', 'HELIANTHUS_',
   // Legacy names/ids are kept so restored pre-0.26.1 profiles still resolve.
@@ -39,6 +40,19 @@ const FARMING_STANDALONE_ARMOR_IDS = new Set([
   'RANCHERS_BOOTS', 'FARMER_BOOTS', 'PUFFERFISH_HAT', 'PUFFERFISH_HELMET',
 ]);
 
+const FARMING_EQUIPMENT_PREFIXES = Object.freeze([
+  'LOTUS_', 'BLOSSOM_', 'PESTHUNTER_',
+]);
+const FARMING_EQUIPMENT_NAME_PREFIXES = Object.freeze([
+  'lotus ', 'blossom ', 'pesthunter',
+]);
+const FARMING_STANDALONE_EQUIPMENT_IDS = new Set([
+  'PEST_VEST', 'ZORRO_CAPE',
+]);
+const FARMING_STANDALONE_EQUIPMENT_NAMES = new Set([
+  'pest vest', "zorro's cape", 'zorros cape',
+]);
+
 export function isFarmingArmorCatalogItem(item) {
   if (!item || typeof item !== 'object') return false;
   const id = String(item.id || '').trim().toUpperCase();
@@ -46,6 +60,17 @@ export function isFarmingArmorCatalogItem(item) {
   if (FARMING_STANDALONE_ARMOR_IDS.has(id)) return true;
   if (FARMING_ARMOR_PREFIXES.some(prefix => id.startsWith(prefix))) return true;
   return FARMING_ARMOR_NAME_PREFIXES.some(prefix => name.startsWith(prefix));
+}
+
+export function isFarmingEquipmentCatalogItem(item) {
+  if (!item || typeof item !== 'object') return false;
+  const id = String(item.id || '').trim().toUpperCase();
+  const name = String(item.name || '').trim().toLowerCase();
+  const normalizedName = name.replace(/[’']/g, '');
+  if (FARMING_STANDALONE_EQUIPMENT_IDS.has(id)) return true;
+  if (FARMING_EQUIPMENT_PREFIXES.some(prefix => id.startsWith(prefix))) return true;
+  if (FARMING_STANDALONE_EQUIPMENT_NAMES.has(name) || FARMING_STANDALONE_EQUIPMENT_NAMES.has(normalizedName)) return true;
+  return FARMING_EQUIPMENT_NAME_PREFIXES.some(prefix => name.startsWith(prefix));
 }
 
 function stringOrNull(value) {
@@ -101,6 +126,7 @@ export function itemsForSlot(catalog, slotId) {
   return catalog
     .filter(item => item.category && wanted.has(item.category))
     .filter(item => !ARMOR_SLOT_IDS.has(slotId) || isFarmingArmorCatalogItem(item))
+    .filter(item => !EQUIPMENT_SLOT_IDS.has(slotId) || isFarmingEquipmentCatalogItem(item))
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
