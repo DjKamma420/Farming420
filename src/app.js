@@ -501,7 +501,7 @@ function bindToolPanel() {
 function genericSectionPage(section, kicker, title, text) {
   const items = visibleUpgrades(section);
   return `${pageHeader(kicker,title,text)}
-    <div class="filter-line">${badge(`${items.length} entries`,'soft')} ${section==='tools'?badge(crop().tool,'soft'):''}</div>
+    <div class="filter-line">${badge(`${items.length} entries`,'soft')}</div>
     ${section === 'tools' && !state.search.trim() ? toolItemPanel() : ''}
     ${section === 'tools' ? '<div class="section-row"><div><h2>Every scored tool entry</h2><p>The same values, with the Fortune each one contributes and the source behind it.</p></div></div>' : ''}
     <div class="card-grid">${items.map(x=>card(x)).join('') || '<div class="empty">No matches.</div>'}</div>`;
@@ -1071,7 +1071,9 @@ function render() {
     case 'dashboard': content = dashboard(); break;
     case 'account': content = accountPage(); break;
     case 'crops': content = cropsPage(); break;
-    case 'tools': content = genericSectionPage('tools','Tools',`${crop().tool} & Tool Upgrades`,'Physical tool progression: enchantments, reforge, gemstone, Farming for Dummies, counters and tool levels.'); break;
+    // The heading says what the page is; the picker and the editor below both
+    // name the selected tool, so repeating it a third time here added nothing.
+    case 'tools': content = genericSectionPage('tools','Tools','Farming tools','Pick the tool, then set what is actually on it: reforge, enchantments, gemstones, counters and tier.'); break;
     case 'gear': content = genericSectionPage('gear','Gear','Armor & Equipment','Armor, equipment, reforges, gemstones and enchantments remain a separate setup layer.'); break;
     case 'pets': content = genericSectionPage('pets','Pets','Pets & Pet Items','Pets are mutually exclusive setup choices and are never added together.'); break;
     case 'chips': content = genericSectionPage('chips','Garden Chips','Garden Chips','Each chip has its own level path and activation conditions.'); break;

@@ -172,12 +172,14 @@ function selectedReforge(state, toolKey) {
 }
 
 function storeReforge(reforgeId) {
+  // An empty id is the explicit "no reforge" answer, not a missing value.
   const state = readState();
   const cropId = activeCropId();
   const key = toolKeyForCropId(cropId);
   state.profile ||= {};
   state.profile.toolReforges ||= {};
-  state.profile.toolReforges[key] = reforgeId;
+  if (reforgeId) state.profile.toolReforges[key] = reforgeId;
+  else delete state.profile.toolReforges[key];
   state.profile.toolProgress ||= {};
   state.profile.toolProgress[key] ||= { levels: {}, owned: {}, costs: {}, manualGain: {} };
   const bucket = state.profile.toolProgress[key];
@@ -232,6 +234,9 @@ function toolPicker() {
   if (!content) return;
   const head = content.querySelector('.page-head');
   if (!head) return;
+  // Hidden, never removed. enhancements.js recreates this strip whenever it is
+  // missing, so removing it starts a fight between two observers that rebuild
+  // and delete the same node until the tab dies.
   content.querySelector('.tool-context-addon')?.classList.add('sb-hidden-context');
 
   const cropId = activeCropId();
@@ -265,10 +270,13 @@ function toolPicker() {
 function reforgePanel() {
   if (pageId() !== 'tools') return;
   const editor = document.querySelector('[data-tool-editor]');
-  if (!editor || editor.querySelector('.sb-reforge-panel')) return;
-  const firstSection = editor.querySelector('.item-editor-section');
-  if (!firstSection) return;
-  firstSection.classList.add('sb-native-reforge-section');
+  if (!editor) return;
+  // Replace the panel when one is already there. Taking the first section that
+  // is *not* the panel picks Enchantments once the panel exists, and each pass
+  // would then eat another section of the editor.
+  const existingPanel = editor.querySelector('.sb-reforge-panel');
+  const target = existingPanel || editor.querySelector('.item-editor-section');
+  if (!target) return;
 
   const cropId = activeCropId();
   const crop = CROPS.find(entry => entry.id === cropId) || CROPS[0];
@@ -283,9 +291,15 @@ function reforgePanel() {
   panel.innerHTML = `<div class="sb-block-title"><div><span class="eyebrow">Reforge</span><h3>Pick what is actually on the tool</h3><p>Every current Farming Tool reforge stays selectable. The recommendation changes by goal instead of hiding non-meta choices.</p></div></div>
     <div class="sb-goal-tabs" role="group" aria-label="Reforge recommendation goal">${GOALS.map(([id, label]) => `<button class="${goal === id ? 'active' : ''}" data-sb-goal="${id}">${label}</button>`).join('')}</div>
     <div class="sb-recommendation">Recommended for <strong>${crop.name}</strong> · <strong>${GOALS.find(([id]) => id === goal)?.[1] || 'Coins'}</strong>: <span>${REFORGES.find(reforge => reforge.id === recommended)?.label}</span></div>
-    <div class="sb-reforge-grid">${REFORGES.map(reforge => {
+    <div class="sb-reforge-grid" role="radiogroup" aria-label="Reforge on this tool">
+      <button class="sb-reforge-card sb-reforge-none ${chosen ? '' : 'selected'}" role="radio" aria-checked="${chosen ? 'false' : 'true'}" data-sb-reforge="">
+        <span class="sb-reforge-art"><span class="sb-reforge-fallback">&ndash;</span></span>
+        <span class="sb-reforge-copy"><strong>No reforge</strong><small>Nothing on it</small><span>Pick this when the tool carries no reforge yet. It is a real answer, not a blank.</span></span>
+        <span class="sb-state-dot" aria-hidden="true"></span>
+      </button>
+      ${REFORGES.map(reforge => {
       const iconUrl = assetByCandidates([reforge.item, reforge.id.replace('-', '_')]);
-      return `<button class="sb-reforge-card ${chosen === reforge.id ? 'selected' : ''} ${recommended === reforge.id ? 'recommended' : ''}" data-sb-reforge="${reforge.id}">
+      return `<button class="sb-reforge-card ${chosen === reforge.id ? 'selected' : ''} ${recommended === reforge.id ? 'recommended' : ''}" role="radio" aria-checked="${chosen === reforge.id ? 'true' : 'false'}" data-sb-reforge="${reforge.id}">
         <span class="sb-reforge-art">${img(iconUrl, reforge.label)}<span class="sb-reforge-fallback">${reforge.label.slice(0, 1)}</span></span>
         <span class="sb-reforge-copy"><strong>${reforge.label}</strong><small>${reforge.purpose}</small><span>${reforge.detail}</span></span>
         ${recommended === reforge.id ? '<em>Recommended</em>' : ''}
@@ -293,12 +307,17 @@ function reforgePanel() {
       </button>`;
     }).join('')}</div>
     <p class="sb-research-note">Recommendation basis updated 2026-09-16: Bountiful for direct crop coins; Blessed for Farming XP and most collection targets; Earthy for Sowdust; Overpriced for Overbloom/Rare Crops and Melon collection; Deep Fried for Harvest Feast Seasoning.</p>`;
-  firstSection.replaceWith(panel);
+  // Keyed by everything the panel shows, so an unchanged panel is left alone.
+  // It is rebuilt by a MutationObserver, and replacing it unconditionally is
+  // what wedged the page before.
+  const signature = `${cropId}|${chosen || 'none'}|${goal}`;
+  if (existingPanel?.dataset.sbSignature === signature) return;
+  panel.dataset.sbSignature = signature;
+  target.replaceWith(panel);
 
   panel.querySelectorAll('[data-sb-reforge]').forEach(button => button.addEventListener('click', () => storeReforge(button.dataset.sbReforge)));
   panel.querySelectorAll('[data-sb-goal]').forEach(button => button.addEventListener('click', () => {
     localStorage.setItem(GOAL_KEY, button.dataset.sbGoal);
-    panel.remove();
     reforgePanel();
   }));
 }

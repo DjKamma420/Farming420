@@ -588,3 +588,13 @@
   border-color: #2f7f59;
   color: var(--accent2);
 }
+
+/* "No reforge" is a real answer and reads like one, not like a blank card. */
+.sb-reforge-card.sb-reforge-none .sb-reforge-fallback {
+  font-size: 20px;
+  opacity: .6;
+}
+
+.sb-reforge-card.sb-reforge-none:not(.selected) {
+  opacity: .8;
+}

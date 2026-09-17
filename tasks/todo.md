@@ -1191,3 +1191,45 @@ matching. Two attempts raised false alarms on correct code, and a check that
 fires on correct code teaches people to ignore it. The other twelve observer
 modules were audited by hand instead; the result and the rule are in
 `tasks/lessons.md`.
+
+
+## 0.26.0 -- Tools page dedupe and exclusive controls
+
+### What the page looked like before
+
+Three tool selectors stacked on one page: the `.sb-tool-picker` cards, the
+native `#workspaceToolSelect`, and a lever list built on top of that select.
+The tool's name appeared **six times** on a 420px screen.
+
+### Changes
+
+- `workspace-direct-picker.js` no longer builds a parallel lever list. It hides
+  `#workspaceToolSelect` with a class and leaves it in the DOM, because the
+  workspace listens to its `change` event -- removing it would have broken
+  selection silently.
+- The reforge chooser is a `role="radiogroup"` with **No reforge** as the first
+  option, so "this item has no reforge" is selectable instead of implied.
+- The reforge panel replaces itself on re-render, keyed by a
+  `crop|reforge|goal` signature, and re-entry with unchanged inputs touches
+  nothing.
+- `.tool-context-addon` is hidden rather than removed; `enhancements.js` owns
+  that node.
+- Tool art follows the owned tier: Mk1/Mk2/Mk3 art for the highest tier the
+  profile actually has, degrading downwards when a tier has no art in the pack.
+
+### Verification
+
+- 414 node tests + 7 Python tests pass.
+- Measured in a real 420px viewport: tool pickers `cards=12, lever list=0,
+  native select hidden`; tool name occurrences `3` (was 6); reforge options
+  `No reforge, Bountiful, Blessed, Earthy, Deep Fried, Overpriced` with
+  `radiogroup` semantics; picking Bountiful then No reforge round-trips and
+  clears the stored value; page still responsive after idle.
+- `tests/tools-page-dedupe.test.js` pins four invariants: the physical tool is
+  chosen in exactly one place, the reforge set is single-choice with an
+  explicit none, the panel replaces itself and not its neighbour, and nothing
+  removes a node another module recreates.
+
+### Still open
+
+Condensing beyond the Tools page, and the navigation taskbar.
