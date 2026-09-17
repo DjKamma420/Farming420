@@ -202,3 +202,32 @@ Rule: only click elements with a layout box (`boundingBox()` with non-zero
 width and height), and assert the state you expected to reach. An identical
 click count across viewports is a smell, not a reassurance -- it usually means
 navigation silently did nothing.
+
+
+## pgrep -f finds the process that is running pgrep (0.26.1)
+
+Four background waiters sat at 16+ minutes each, and there was nothing left to
+wait for -- the sweeps they watched had finished long before. The loop was:
+
+    until [ "$(pgrep -c -f sweep-area.mjs)" -eq 0 ]; do sleep 5; done
+
+`pgrep -f` matches against the full command line of every process, and the
+waiting shell's own command line contains the string `sweep-area.mjs`. So it
+counts itself, the count never reaches zero, and the loop runs until something
+kills it. The condition is unsatisfiable by construction.
+
+Two rules, and the second matters more:
+
+1. If a self-matching pattern is unavoidable, break it so the literal does not
+   appear in the command line: `pgrep -f "[s]weep-area.mjs"`. Better, match on
+   something the watcher cannot contain, or use `pgrep -x node` plus a check of
+   the actual argv.
+2. **Do not write the watcher at all.** A backgrounded command already reports
+   its own completion; polling for it adds a second process that can fail on
+   its own, and this one did. The results were sitting in the finished runner's
+   output the whole time. Reach for a poll loop only for state nothing reports
+   -- an external CI run, a remote queue -- never for a local job already being
+   tracked.
+
+The symptom to recognise: a waiter that outlives the thing it waits for, with
+its target nowhere in the process list.
