@@ -1,0 +1,27 @@
+.slot-grid > .sb-docked-setup-editor {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin: 0 0 8px;
+}
+
+.sb-pet-picker {
+  margin-top: 14px;
+}
+
+/* A pet is not a normal reforgable/gemmed item. The dedicated picker owns
+   species, rarity and level; the generic physical-item controls stay hidden. */
+.sb-pet-editor > .item-editor-grid:not(.sb-pet-picker),
+.sb-pet-editor > .item-editor-row,
+.sb-pet-editor > .item-editor-section,
+.sb-pet-editor > p.hint {
+  display: none;
+}
+
+.sb-pet-picker .settings-field {
+  min-width: 0;
+}
+
+.sb-pet-picker select,
+.sb-pet-picker input {
+  width: 100%;
+}
