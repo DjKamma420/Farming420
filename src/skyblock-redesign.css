@@ -653,3 +653,14 @@
      clipping it replaced. Two-word labels still wrap between the words. */
   overflow-wrap: normal;
 }
+
+/* Set art standing in for gear the official item resource cannot picture. The
+   coverage layer already sizes and centres `.coverage-item-art`; this only
+   keeps the pixel art crisp and inside its box. */
+.pack-set-art {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(2px 3px 0 rgba(0,0,0,.32));
+}

@@ -372,3 +372,16 @@ Rules:
 3. Say what the fix does not establish. The API is unreachable from here, so
    whether this is the cause of the reported screenshots is still unverified,
    and claiming otherwise would just be a guess wearing a commit message.
+
+
+## Hook, do not rewrite, another agent's file (0.28.0)
+
+The fallback art had to sit inside `itemArtNode`, in a file another agent was
+actively editing. Rather than reworking that function, the whole table, lookup
+and node went into a new file and the edit there became one import plus three
+lines at the single decision point. Four added lines, nothing removed, so a
+merge has almost no surface to conflict on.
+
+The general shape: find the one function where the decision is made, put the
+new behaviour behind a call, and keep every line of logic in a file you own.
+It also makes the change trivially reviewable by whoever owns the other side.
