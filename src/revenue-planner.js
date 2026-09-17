@@ -2,6 +2,7 @@ import { CROPS, UPGRADES } from './data.js';
 import { STORAGE_KEY } from './config.js';
 import { toolKeyForCropId } from './migrations.js';
 import { evaluateUpgrade, rankEvaluatedUpgrades } from './revenue-ranking.js';
+import { costOriginNote, resolveUpgradeCost } from './upgrade-cost-resolution.js';
 
 function esc(value = '') {
   return String(value).replace(/[&<>'"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#039;', '"':'&quot;' }[c]));
@@ -98,17 +99,21 @@ function evaluatedRows(raw) {
     .map(item => {
       const itemGain = gain(raw, item);
       const store = progressBucket(raw, item);
+      const costSource = resolveUpgradeCost(store, item.id);
       return {
         item,
+        // After the spread: `evaluateUpgrade` returns its own numeric `cost`,
+        // and this must not be the field it overwrites.
         ...evaluateUpgrade({
           item,
           gain: itemGain,
-          costCoins: Number(store.costs?.[item.id] || 0),
+          costCoins: costSource.coins,
           currentFortune,
           currentOverbloom: Number(econ.overbloom || 0),
           normalCropCoinsPerHour: Number(econ.normalCropCoinsPerHour || 0),
           rareCropCoinsPerHour: Number(econ.rareCropCoinsPerHour || 0),
         }),
+        costSource,
       };
     })
     .filter(row => row.modeled && row.gain > 0));
@@ -176,7 +181,7 @@ function rankingMarkup(rows, ready) {
       <div class="planner-main"><strong>${esc(row.item.name)}</strong><span>${esc(row.item.category)} · ${esc(row.modeled === 'overbloom' ? 'Overbloom' : 'Farming Fortune')}</span></div>
       <div class="planner-number"><strong>${valueLabel}</strong><span>${equivalent}</span></div>
       <div class="planner-number"><strong>${marginalKnown ? `+${compactCoins(row.marginalCoinsHour)}/h` : '—'}</strong><span>${ready ? 'marginal profit' : 'enter baseline'}</span></div>
-      <div class="planner-number"><strong>${costKnown ? `${compactCoins(row.cost)} Coins` : '—'}</strong><span>${costKnown && row.coinsPerEffectiveFortune ? `${compactCoins(row.coinsPerEffectiveFortune)} / FF eq.` : 'Cost missing'}</span></div>
+      <div class="planner-number"><strong>${costKnown ? `${compactCoins(row.cost)} Coins` : '—'}</strong><span>${esc(costKnown && row.coinsPerEffectiveFortune ? `${compactCoins(row.coinsPerEffectiveFortune)} / FF eq. · ${costOriginNote(row.costSource)}` : costOriginNote(row.costSource))}</span></div>
       <div class="planner-number"><strong>${costKnown && row.payback !== null ? formatPayback(row.payback) : '—'}</strong><span>payback</span></div>
     </button>`;
   }).join('');
@@ -197,7 +202,7 @@ function enhancePlanner() {
   const panel = document.createElement('div');
   panel.className = 'revenue-planner-v2';
   panel.innerHTML = `${economicsPanel(raw)}
-    <div class="section-row revenue-ranking-head"><div><h2>${ready ? 'Best value now' : 'Stat ranking until profit baseline is entered'}</h2><p>${ready ? 'Known-cost upgrades are ordered by shortest payback; missing-cost upgrades follow by marginal profit.' : 'Without Coins/h, Farming Fortune and Overbloom stay separate and are not given a fake universal exchange rate.'}</p></div></div>
+    <div class="section-row revenue-ranking-head"><div><h2>${ready ? 'Best value now' : 'Best value per Coin'}</h2><p>${ready ? 'Known-cost upgrades are ordered by shortest payback; missing-cost upgrades follow by marginal profit.' : 'Ordered by researched cost per point of Farming Fortune. Enter Coins/h above to rank by payback instead; without it Fortune and Overbloom stay separate rather than sharing a fake exchange rate.'}</p></div></div>
     <div class="planner-list revenue-list">${rankingMarkup(rows, ready)}</div>`;
   original.before(panel);
 

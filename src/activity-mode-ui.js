@@ -231,8 +231,21 @@ function renderDashboardCandidate(raw) {
   hero.querySelector('[data-mode-open]')?.addEventListener('click', event => openDrawer(event.currentTarget.dataset.modeOpen));
 }
 
+/**
+ * The core planner list from `app.js` -- never one an enhancement built.
+ *
+ * `revenue-planner.js` inserts its own `.planner-list.revenue-list` *before*
+ * the core list, so a bare `.planner-list` lookup matched the revenue ranking
+ * and this module overwrote it wholesale. Both lists are planner rankings, and
+ * the later module simply won; the visible cost/payback column was replaced by
+ * these rows without anything reporting a conflict.
+ */
+function corePlannerList() {
+  return document.querySelector('.planner-list:not(.revenue-list):not(.planner-mode-list)');
+}
+
 function renderPlanner(raw) {
-  const list = document.querySelector('.planner-list');
+  const list = corePlannerList();
   if (!list) return;
   const mode = activityModeForState(raw);
   const cropId = selectedCropId(raw);

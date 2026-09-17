@@ -1861,3 +1861,64 @@ building twice produces byte-identical files.
 It does not make the planner use the costs yet, and the figures are research
 snapshots rather than live prices -- the research states that policy itself:
 refresh live Bazaar prices before showing a player-facing recommendation.
+
+## 0.34.0 -- the planner reads the table
+
+- [x] Resolve every planner row's cost through the generated table
+- [x] Say where each cost came from, per row
+- [x] Rank by cost per Fortune when no profit baseline exists
+- [x] Fix the two container collisions this exposed
+
+### Review
+
+The cost precedence lives in `src/upgrade-cost-resolution.js`, apart from the
+DOM module so it can be tested by running it rather than by reading it:
+
+    recorded price  >  research snapshot  >  unknown
+
+A price the player typed in wins, because they paid it and the table holds an
+average. Neither existing leaves the cost unknown -- `coins: 0` with
+`origin: 'unknown'` and the reason the generator recorded -- and the row prints
+that reason where the number would be. Zero is never presented as a cost: a
+free-looking upgrade takes first place in every ranking sorted by value for
+money, which is the one thing this ranking must not get wrong.
+
+Each row now names its own source under the figure: `your recorded price`,
+`research, high confidence`, `research snapshot, stale`, or the reason there is
+none. A stale Bazaar snapshot is visibly a stale snapshot.
+
+### Reading the table changed the ranking
+
+Payback needs Coins/h. Cost per point of Farming Fortune does not, so the
+ranking is now useful before the player has measured anything: without a
+baseline the rows are ordered by researched cost per FF equivalent, and the
+heading says `Best value per Coin` instead of claiming it is waiting for input.
+Rows with no researched cost sort *behind* the priced ones -- unknown is not
+cheap -- and they are still listed, with their reason.
+
+### Two collisions the verification exposed
+
+Neither was caused by this change; both were found by looking at the page
+instead of at the diff.
+
+**The revenue ranking was never on screen.** Three modules render into the
+planner page and all three reached for `.planner-list` by bare class name.
+`revenue-planner.js` inserts its own list *before* the core one, so
+`querySelector('.planner-list')` stopped meaning "the core list" the moment the
+revenue ranking existed -- and `activity-mode-ui.js`, which loads later,
+overwrote it wholesale. No error, no duplicate, just the wrong list: the whole
+cost and payback column was replaced by rows that have neither. Whoever writes
+into the core list now says which list it means.
+
+**A goal mode showed two rankings.** `planner-mode-ui.js` sets `hidden` on the
+revenue panel, but `.revenue-planner-v2 { display: grid }` outranks the UA
+`[hidden] { display: none }`, so the coin ranking stayed above the goal list.
+One rule fixed it. `hidden` is not a guarantee once a class sets `display`.
+
+### Verified
+
+591 node + 7 python tests, `npm run audit:overlay` at 0 findings, the planner
+sweep clean on desktop-empty, desktop-filled and phone-filled, and the three
+planner states read back out of a real browser: no baseline ranks by cost per
+Fortune, a baseline ranks by payback, and a goal mode leaves exactly one
+ranking on the page.

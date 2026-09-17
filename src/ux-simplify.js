@@ -145,7 +145,9 @@ function enhancePlanner(force = false) {
     empty.className = 'empty planner-global-empty-addon';
     empty.hidden = true;
     empty.textContent = 'No calculated global upgrades for the current state.';
-    content.querySelector('.planner-list')?.appendChild(empty);
+    // The core list only: `globalPlannerFilter` reads `.planner-row[data-open]`,
+    // which exists nowhere else, and an enhancement list is inserted ahead of it.
+    content.querySelector('.planner-list:not(.revenue-list):not(.planner-mode-list)')?.appendChild(empty);
   }
 }
 

@@ -7,6 +7,14 @@
   gap: 18px;
 }
 
+/* `planner-mode-ui.js` sets `hidden` on this panel in a goal mode, where coin
+   payback is deliberately not the ranking. A class rule with `display` beats
+   the UA `[hidden] { display: none }`, so the revenue ranking stayed on screen
+   above the goal list and the page showed two rankings at once. */
+.skyblock-redesign .revenue-planner-v2[hidden] {
+  display: none;
+}
+
 .skyblock-redesign .revenue-panel {
   border: 1px solid rgba(125, 160, 134, .28);
   background: rgba(10, 18, 13, .76);
