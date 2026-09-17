@@ -1,19 +1,31 @@
 export const GEMSTONE_SLOTS_VERIFIED = '2026-09-17';
-export const TOOL_GEMSTONE_SOURCE = 'https://hypixel.net/threads/farming-tools-upgrade-milestones.6032473/';
+export const TOOL_GEMSTONE_SOURCE = 'https://hypixel-skyblock.fandom.com/wiki/Module:Item/ApiData';
 export const PERIDOT_VALUES_SOURCE = 'https://hypixel.net/threads/list-of-item-in-skyblock-major-update.6123513/';
 
 export const GEMSTONE_QUALITIES = Object.freeze(['ROUGH', 'FLAWED', 'FINE', 'FLAWLESS', 'PERFECT']);
 export const TOOL_GEMSTONE_TYPES = Object.freeze(['PERIDOT']);
 export const TOOL_GEMSTONE_SLOT_COUNT = 4;
+export const TOOL_GEMSTONE_LEVEL_THRESHOLDS = Object.freeze([5, 15, 25, 50]);
+export const TOOL_GEMSTONE_MAX_BY_TIER = Object.freeze({ 1: 2, 2: 3, 3: 4 });
 export const GEMSTONE_RARITIES = Object.freeze(['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY', 'MYTHIC']);
 
-/** Current Greenhouse tool progression: 1 slot at level 1, 2 at 15, 3 at 25, 4 at 50. */
+/**
+ * Official item definitions gate Peridot sockets at tool levels 5/15/25/50.
+ * Mk. I defines only the first two sockets, Mk. II the first three and Mk. III
+ * all four. A socket is usable only when both its level requirement and tool
+ * tier exist.
+ */
 export function toolGemstoneSlotCountForLevel(level) {
-  const value = Math.max(1, Math.min(50, Math.floor(Number(level) || 1)));
-  if (value >= 50) return 4;
-  if (value >= 25) return 3;
-  if (value >= 15) return 2;
-  return 1;
+  const value = Math.max(0, Math.min(50, Math.floor(Number(level) || 0)));
+  return TOOL_GEMSTONE_LEVEL_THRESHOLDS.filter(required => value >= required).length;
+}
+
+export function toolGemstoneSlotCount(level, tier = 3) {
+  const normalizedTier = Math.max(1, Math.min(3, Math.floor(Number(tier) || 1)));
+  return Math.min(
+    toolGemstoneSlotCountForLevel(level),
+    TOOL_GEMSTONE_MAX_BY_TIER[normalizedTier] || 0,
+  );
 }
 
 export const PERIDOT_FORTUNE = Object.freeze({
