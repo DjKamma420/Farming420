@@ -1,0 +1,54 @@
+@media (max-width: 650px) {
+  .skyblock-redesign .sidebar.sb-rail {
+    height: 56px;
+    padding: 4px 6px;
+  }
+
+  .skyblock-redesign .sb-rail nav {
+    gap: 2px;
+    align-items: center;
+  }
+
+  /* Flatten desktop navigation groups into one compact horizontal taskbar. */
+  .skyblock-redesign .sb-rail .nav-group-addon {
+    display: contents;
+  }
+
+  .skyblock-redesign .sb-rail .nav-group-title-addon {
+    display: none !important;
+  }
+
+  /* "What to enter" is not useful as a permanent mobile taskbar destination. */
+  .skyblock-redesign .sb-rail .nav-link[data-page="setup"] {
+    display: none !important;
+  }
+
+  .skyblock-redesign .sb-rail .nav-link {
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    padding: 3px;
+  }
+
+  .skyblock-redesign .sb-nav-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 15px;
+  }
+
+  .skyblock-redesign .sb-nav-icon img {
+    width: 27px;
+    height: 27px;
+  }
+
+  .skyblock-redesign .sb-rail .nav-link.active::before {
+    left: 8px;
+    right: 8px;
+    bottom: -5px;
+    height: 3px;
+  }
+
+  .skyblock-redesign .content {
+    padding-bottom: 72px;
+  }
+}
