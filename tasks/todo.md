@@ -1573,3 +1573,34 @@ reports nothing, and the setups sweep is clean in all three variants.
 Pets and pet items, which have no pack item and rely on their head texture, and
 any farming set the pack does not carry -- Farm Suit, Melon, Rabbit. Those keep
 the existing fallback.
+
+
+## 0.28.1 -- two tools in one portrait
+
+Reported from a zoomed screenshot, and read correctly on sight: a Mk. I Melon
+Dicer sitting behind the Mk. III, slightly offset.
+
+Measured, the portrait held three layers:
+
+| layer | source | picture | box |
+|---|---|---|---|
+| front | `img.sb-pack-icon` | `melon_dicer_3.png` (right) | 50x50 at +11,+11 |
+| behind | `img.official-item-art` | `melon_dicer.png` (Mk. I) | 60x60 at +6,+6 |
+| badge | `span.workspace-tier-badge` | Mk. III | reaches +77 inside a 72px box |
+
+The five pixels of offset are exactly +11 against +6. `item-art-ui` resolves
+the tool's *base* item id, and the base id's texture is always Mk. I; the
+redesign draws the tier the profile actually owns. Both were painting.
+
+The tier-correct picture wins; the other is hidden where a tier icon exists,
+and only there, so portraits that rely on `.official-item-art` alone keep their
+art. Hidden, never removed -- the module that creates it puts it back
+immediately, and that fight is a hang this project has already paid for twice.
+
+The badge was being sliced by `overflow: hidden` on the portrait: it sits at
+`right: -7px; bottom: -7px` and is 21px tall in a 72px box, so its rounded
+corner died against the frame. It breaks out of the square now, which is the
+intended look and what was asked for.
+
+`tests/portrait-single-layer.test.js` pins all three points and was checked by
+removing each fix and watching it fail.
