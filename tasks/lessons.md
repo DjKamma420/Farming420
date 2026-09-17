@@ -448,3 +448,20 @@ When research states a rule with a condition attached, the condition is part of
 the rule. And check whether the codebase already answers it: the per-item gate
 existed in the same file, used two lines away to decide whether to show the
 checkbox.
+
+
+## Read the property that decides, not one that correlates (0.31.0)
+
+Third time in this session. A box height does not decide whether something is
+painted; a z-index does not decide what is on top once a stacking context
+exists; an element's own class does not decide whether its parent collapsed.
+
+Each time the measurement looked authoritative and was answering a different
+question, and each time it cost a round trip -- once reporting a fixed bug as
+still broken, once reporting a working collapse as broken.
+
+The habit to keep: name the question first ("is this painted?"), then find the
+API that answers exactly that (`checkVisibility`, `elementFromPoint`), rather
+than reaching for the property that happens to be nearby. And prove the check
+can fail: a check that cannot distinguish the broken state from the fixed one
+is not a check.

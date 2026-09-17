@@ -93,3 +93,25 @@
     margin-top: 6px;
   }
 }
+
+/* Money is available, not in the way: closed by default, and the summary row
+   keeps the same shape it had as a heading. */
+/* A <summary> must stay block-level. Given `display: flex` it stops counting as
+   the disclosure summary in Chromium, the <details> is left without one, and
+   every child renders as if the panel were permanently open -- which is
+   exactly what happened here first. The flex row lives on an inner div. */
+.revenue-economics > summary {
+  cursor: pointer;
+  list-style: none;
+}
+.revenue-economics > summary::-webkit-details-marker { display: none; }
+.revenue-economics > summary .revenue-panel-head { margin-bottom: 0; }
+.revenue-economics > summary .revenue-panel-head::after {
+  content: '▸';
+  align-self: center;
+  color: #7fbf96;
+  font-size: .8rem;
+}
+.revenue-economics[open] > summary .revenue-panel-head { margin-bottom: 12px; }
+.revenue-economics[open] > summary .revenue-panel-head::after { content: '▾'; }
+.revenue-economics:not([open]) { padding-bottom: 0; }
