@@ -13,6 +13,6 @@
     "test:python": "python3 -m unittest discover -s tests -p \"test_*.py\"",
     "sweep": "bash scripts/sweep-all.sh",
     "audit:overlay": "node scripts/overlay-audit.mjs",
-    "build:costs": "python3 scripts/build-upgrade-costs.py"
+    "build:costs": "python3 scripts/build-upgrade-costs.py && python3 scripts/build-upgrade-step-costs.py"
   }
 }
