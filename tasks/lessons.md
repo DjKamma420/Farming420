@@ -127,3 +127,38 @@ unreferenced -- Settings, the API sync, the scanner and all item art among them.
 Bisect forward from the minimal core instead: add one module, run the click
 sweep, repeat. The ninth addition crashed the renderer and named the culprit,
 and the module the hotfixes had blamed passed cleanly at step eight.
+
+
+## Two observers fighting over the same node (0.26.0)
+
+A variant of the feedback loop above that idempotent writes do **not** cover.
+`skyblock-redesign.js` removed `.tool-context-addon` because its own panel
+replaced it; `enhancements.js` owns that node and recreates it whenever it is
+missing. Neither module wrote a duplicate value, so the "compare before you
+write" rule was satisfied -- and the page still hung, because one module's
+create was the other's mutation record forever.
+
+Rules:
+1. Never remove a node another module creates. Hide it (`display:none` via a
+   class) and leave it in the DOM. Removal is a write that the owner is
+   guaranteed to undo.
+2. A panel that replaces something must replace **itself** on re-entry. Find
+   the existing panel first and only fall back to the neighbour when there is
+   none -- `querySelector('.item-editor-section:not(.sb-reforge-panel)')` looks
+   like it does that and does not: once the panel exists, the selector picks
+   the *next* section and starts eating the editor.
+3. A signature on the node (`dataset.sbSignature`) makes re-entry cheap and
+   provable: same inputs, no DOM touch at all.
+
+Both bugs were found by the verification run hanging, not by a test. The test
+that exists now pins the two invariants: the panel replaces itself, and nothing
+removes a node another module recreates.
+
+## Exclusive choices are not levers
+
+Levers (on/off toggles) are right for things that stack -- enchantments, gems,
+recombobulated. They are wrong for a set where picking one unpicks the others:
+a reforge, a tool tier. Those need a radiogroup with an explicit "none" option
+first, so "no reforge" is a state the user can select rather than the absence
+of any selection. A lever list for an exclusive set also invites the duplicate
+that started this: the same choice offered twice, in two shapes, on one page.

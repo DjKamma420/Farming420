@@ -12,3 +12,17 @@
 .workspace-tool-button-copy small{font-size:.68rem;color:#8fa69a}
 .workspace-tool-button.selected .workspace-tool-button-copy small{color:#64e5ad}
 @media(max-width:700px){.workspace-direct-tool-picker{grid-template-columns:1fr}}
+
+/* The tool is chosen in the card grid above, which also shows art and tier.
+   The native select stays in the DOM because the workspace listens to it. */
+.workspace-tool-picker-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
