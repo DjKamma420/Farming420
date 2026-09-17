@@ -36,6 +36,6 @@ test('the rarity presentation is loaded after the redesign styles and item UI sc
   const rarityCss = indexSource.indexOf('src/rarity-background-ui.css');
   const capabilityScript = indexSource.indexOf('src/exact-item-capabilities-ui.js');
   const rarityScript = indexSource.indexOf('src/rarity-background-ui.js');
-  assert.ok(designCss >= 0 && rarityCss > redesignCss, 'rarity CSS must override the generic redesign card background');
+  assert.ok(redesignCss >= 0 && rarityCss > redesignCss, 'rarity CSS must override the generic redesign card background');
   assert.ok(capabilityScript >= 0 && rarityScript > capabilityScript, 'rarity JS runs after the physical item editors');
 });
