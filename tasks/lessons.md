@@ -385,3 +385,22 @@ merge has almost no surface to conflict on.
 The general shape: find the one function where the decision is made, put the
 new behaviour behind a call, and keep every line of logic in a file you own.
 It also makes the change trivially reviewable by whoever owns the other side.
+
+
+## Two renderers, one box (0.28.1)
+
+Two modules drew a tool picture into the same portrait. Neither was broken on
+its own: one resolved the item's base id, the other the tier the profile owns.
+Both were correct answers to different questions, painted on top of each other
+five pixels apart.
+
+The overlay audit did not catch it. It looks for a child escaping its parent or
+text being clipped, and two images stacked inside their box violate neither.
+What found it was a person looking at a zoomed screenshot and saying "there are
+two". Worth remembering when a detector reports zero.
+
+The rule that generalises: when more than one module can draw into a container,
+one of them has to be authoritative and the others must stand aside by class,
+not by removal. `:has(> .the-authoritative-one)` expresses exactly that and
+costs no JavaScript -- and it must be scoped to where the authority actually
+exists, or containers that legitimately rely on the other renderer go blank.

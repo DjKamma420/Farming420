@@ -664,3 +664,21 @@
   image-rendering: pixelated;
   filter: drop-shadow(2px 3px 0 rgba(0,0,0,.32));
 }
+
+/*
+ * One tool picture per portrait.
+ *
+ * Two renderers draw into the tool editor's portrait. `item-art-ui` resolves
+ * the tool's base item id, which is always the Mk. I texture, and places it
+ * absolutely at 60x60; this stylesheet's own icon is the tier the profile
+ * actually owns, at 50x50, five pixels further in. Both were painting, so a
+ * Mk. III tool showed a Mk. I underneath it, offset by those five pixels.
+ *
+ * The tier-correct picture wins. The other is hidden, never removed: the
+ * module that creates it re-creates it whenever it is missing, and removing a
+ * node another module owns is how this project has hung itself before.
+ */
+.skyblock-redesign [data-tool-editor="1"] .item-portrait:has(> .sb-pack-icon) > .official-item-art,
+.skyblock-redesign .sb-tool-art:has(> .sb-pack-icon) > .official-item-art {
+  display: none;
+}

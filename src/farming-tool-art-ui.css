@@ -29,7 +29,11 @@
 
 .skyblock-redesign [data-tool-editor="1"] .item-portrait {
   position: relative;
-  overflow: hidden;
+  /* The tier badge sits on the corner at right:-7px bottom:-7px and is 21px
+     tall in a 72px box, so `overflow: hidden` sliced its rounded edge off
+     against the frame. Letting it break out of the square is the intended
+     look; nothing else in this portrait is larger than the box. */
+  overflow: visible;
 }
 
 @media (max-width: 650px) {
