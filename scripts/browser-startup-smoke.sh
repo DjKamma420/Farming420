@@ -5,7 +5,8 @@ PORT="${FARMING420_SMOKE_PORT:-4173}"
 BASE_URL="http://127.0.0.1:${PORT}/"
 HTTP_LOG="${RUNNER_TEMP:-/tmp}/farming420-http.log"
 CHROME_LOG="${RUNNER_TEMP:-/tmp}/farming420-chrome.log"
-DOM_OUT="${RUNNER_TEMP:-/tmp}/farming420-dom.html"
+DASHBOARD_DOM="${RUNNER_TEMP:-/tmp}/farming420-dashboard-dom.html"
+SETUPS_DOM="${RUNNER_TEMP:-/tmp}/farming420-setups-dom.html"
 
 if ! command -v google-chrome >/dev/null 2>&1; then
   echo "google-chrome is required for the browser startup smoke test" >&2
@@ -32,51 +33,80 @@ if ! curl --fail --silent --show-error "$BASE_URL" >/dev/null; then
   exit 1
 fi
 
-set +e
-timeout 20s google-chrome \
-  --headless=new \
-  --no-sandbox \
-  --disable-gpu \
-  --disable-dev-shm-usage \
-  --disable-background-networking \
-  --disable-component-update \
-  --disable-default-apps \
-  --disable-extensions \
-  --disable-sync \
-  --metrics-recording-only \
-  --no-first-run \
-  --virtual-time-budget=5000 \
-  --enable-logging=stderr \
-  --log-level=0 \
-  --dump-dom "$BASE_URL" >"$DOM_OUT" 2>"$CHROME_LOG"
-CHROME_STATUS=$?
-set -e
+run_chrome_dump() {
+  local url="$1"
+  local output="$2"
+  : >"$CHROME_LOG"
+  set +e
+  timeout 20s google-chrome \
+    --headless=new \
+    --no-sandbox \
+    --disable-gpu \
+    --disable-dev-shm-usage \
+    --disable-background-networking \
+    --disable-component-update \
+    --disable-default-apps \
+    --disable-extensions \
+    --disable-sync \
+    --metrics-recording-only \
+    --no-first-run \
+    --virtual-time-budget=5000 \
+    --enable-logging=stderr \
+    --log-level=0 \
+    --dump-dom "$url" >"$output" 2>"$CHROME_LOG"
+  local status=$?
+  set -e
 
-if [[ "$CHROME_STATUS" -eq 124 ]]; then
-  echo "Browser startup smoke test timed out; the app may be stuck in a render/event-loop freeze" >&2
-  cat "$CHROME_LOG" >&2 || true
-  exit 1
-fi
+  if [[ "$status" -eq 124 ]]; then
+    echo "Browser smoke test timed out for $url; the app may be stuck in a render/event-loop freeze" >&2
+    cat "$CHROME_LOG" >&2 || true
+    exit 1
+  fi
+  if [[ "$status" -ne 0 ]]; then
+    echo "Headless Chrome exited with status $status for $url" >&2
+    cat "$CHROME_LOG" >&2 || true
+    exit "$status"
+  fi
+}
 
-if [[ "$CHROME_STATUS" -ne 0 ]]; then
-  echo "Headless Chrome exited with status $CHROME_STATUS" >&2
-  cat "$CHROME_LOG" >&2 || true
-  exit "$CHROME_STATUS"
-fi
+run_chrome_dump "$BASE_URL" "$DASHBOARD_DOM"
 
-if ! grep -q 'class="app-shell"' "$DOM_OUT"; then
+if ! grep -q 'class="app-shell"' "$DASHBOARD_DOM"; then
   echo "The page loaded, but Farming420 never reached its first app-shell render" >&2
-  echo "--- Chrome log ---" >&2
   cat "$CHROME_LOG" >&2 || true
-  echo "--- Rendered DOM (first 120 lines) ---" >&2
-  sed -n '1,120p' "$DOM_OUT" >&2 || true
+  sed -n '1,120p' "$DASHBOARD_DOM" >&2 || true
   exit 1
 fi
 
-if ! grep -q 'Your Farming Progress' "$DOM_OUT"; then
+if ! grep -q 'Your Farming Progress' "$DASHBOARD_DOM"; then
   echo "The app shell rendered, but the default Dashboard content is missing" >&2
-  sed -n '1,160p' "$DOM_OUT" >&2 || true
+  sed -n '1,160p' "$DASHBOARD_DOM" >&2 || true
   exit 1
 fi
 
-echo "Browser startup smoke test passed: Farming420 reached the Dashboard render in headless Chrome."
+run_chrome_dump "${BASE_URL}scripts/browser-setups-smoke.html" "$SETUPS_DOM"
+
+if ! grep -q 'Your gear, item by item' "$SETUPS_DOM"; then
+  echo "The Setups smoke harness did not reach the Setups page" >&2
+  sed -n '1,220p' "$SETUPS_DOM" >&2 || true
+  exit 1
+fi
+
+if ! grep -q 'data-farming-pet-picker="1"' "$SETUPS_DOM"; then
+  echo "The Setups page rendered, but the closed Pet picker is missing" >&2
+  sed -n '1,260p' "$SETUPS_DOM" >&2 || true
+  exit 1
+fi
+
+if ! grep -q 'sb-docked-setup-editor' "$SETUPS_DOM"; then
+  echo "The Pet editor exists, but it was not docked below its selected slot" >&2
+  sed -n '1,260p' "$SETUPS_DOM" >&2 || true
+  exit 1
+fi
+
+if grep -q 'MutationObserver' "$SETUPS_DOM"; then
+  echo "Unexpected MutationObserver text leaked into the Setups render" >&2
+  exit 1
+fi
+
+echo "Browser smoke test passed: Dashboard and tool-style Setups picker both render in headless Chrome."
