@@ -1,7 +1,7 @@
 # Farming420 Offline Knowledge Base
 
 Status: ACTIVE research corpus
-As of: 2026-09-16
+As of: 2026-09-17
 Primary reader: AI agents with no Internet access and no prior Hypixel SkyBlock knowledge
 
 This directory is the long-form companion to `research/hypixel_farming_master_ai_2026-09-16.json`. Read this file first, then the chapters below, then the machine-oriented JSON. The goal is not brevity. The goal is to preserve enough definitions, rules, context, caveats, and source provenance that an offline AI can reason about current Farming without silently filling gaps from memory.
@@ -37,6 +37,7 @@ The closed former official wiki must not be used as a current mechanics source. 
 - `10-core-farming-and-garden.md`: Farming, Fortune, Crop Fortune, Garden, plots, milestones, visitors, contests, and basic progression.
 - `20-items-armor-equipment-tools.md`: item-local mechanics, Helianthus, Blossom, reforges, gemstones, tool progression, enchant rules.
 - `30-strategy-and-economics.md`: progression logic, marginal upgrade ranking, coins/hour, time costs, contest/pest preparation, common traps.
+- `40-calculator-model-strategy-gap-audit.md`: implementation-vs-research audit, generic profit/Pest EV model, strategy contexts, item-model coverage, and the exact remaining calculator inputs.
 - `SOURCES.md`: source index and verification notes.
 
 Existing specialized research files remain authoritative for their narrow verified slices when newer than a chapter here, including `core-fortune.js`, `gear-fortune.js`, `equipment-fortune.js`, `pet-switching.js`, and the runtime verification tests.
@@ -61,6 +62,8 @@ The maintained community-wiki `Farming Fortune` page was edited on 2026-09-14 bu
 
 Source: https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune
 Last verified: 2026-09-16
+
+The implementation audit in `40-calculator-model-strategy-gap-audit.md` was refreshed on 2026-09-17 against the Greenhouse, Harvest Feast, May 5, and May 14 Hypixel staff posts. It is the first place to check whether a researched mechanic is actually represented in the calculator runtime.
 
 ## Definition of completeness
 
