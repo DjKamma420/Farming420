@@ -73,3 +73,57 @@ test('the gemstone fortune uses the derived rarity, not the recorded one', () =>
   assert.match(src, /toolGemstoneFortune\(bucket\.gemSlots, effectiveRarity, count\)/);
   assert.match(src, /const effectiveRarity = deriveRarity\(/);
 });
+
+/**
+ * The step is per item, not class-wide. The research says the Recombobulator is
+ * "+1 item rarity tier where applicable" and "do not assign a fixed Farming
+ * Fortune delta globally"
+ * (research/special-farming-item-costs-2026-09-17.json, entry 3).
+ */
+
+test('an item that cannot be recombobulated keeps its own rarity', () => {
+  assert.equal(
+    deriveRarity({ base: 'EPIC', recombobulated: true, canRecombobulate: false }),
+    'EPIC',
+    'applying the step here would invent a rarity the game never shows, and every '
+      + 'rarity-scaled reforge and gemstone value would be wrong with it',
+  );
+});
+
+test('the blocked case explains itself rather than looking like a bug', () => {
+  assert.deepEqual(
+    describeRarity({ base: 'EPIC', recombobulated: true, canRecombobulate: false }),
+    { rarity: 'EPIC', note: 'this item cannot be recombobulated, so it stays EPIC' },
+  );
+});
+
+test('an eligible item still takes the step', () => {
+  assert.equal(deriveRarity({ base: 'RARE', recombobulated: true, canRecombobulate: true }), 'EPIC');
+  assert.deepEqual(
+    describeRarity({ base: 'RARE', recombobulated: true, canRecombobulate: true }),
+    { rarity: 'EPIC', note: 'recombobulated from RARE' },
+  );
+});
+
+test('eligibility only matters once the item is recombobulated', () => {
+  for (const canRecombobulate of [true, false, null, undefined]) {
+    assert.equal(
+      deriveRarity({ base: 'LEGENDARY', recombobulated: false, canRecombobulate }),
+      'LEGENDARY',
+    );
+  }
+});
+
+test('the editor passes the per-item gate, not a constant', () => {
+  const src = readFileSync(new URL('../src/workspace-ui.js', import.meta.url), 'utf8');
+  assert.match(
+    src,
+    /rarityRow\(bucket, catalogItem, entryLevel\(bucket, RECOMB_ID\) > 0, canRecomb\)/,
+    'the row must receive this item\'s eligibility',
+  );
+  assert.match(
+    src,
+    /canRecombobulate: canRecombobulateItem\('tool', catalogItem\)/,
+    'the gemstone Fortune must use the same per-item gate',
+  );
+});

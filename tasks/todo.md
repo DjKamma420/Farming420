@@ -1681,3 +1681,29 @@ tests and 7 Python tests pass, audit clean, tools sweep clean.
 catalogue cannot load in this sandbox, so every local run takes the fallback
 branch. The logic is covered by unit tests and the fallback was observed
 directly; the derived branch needs a browser with API access to see.
+
+
+## 0.30.1 -- the rarity step is per item, not class-wide
+
+0.30.0 raised rarity one rung whenever the Recombobulator box was ticked. The
+research is explicit that this is wrong as a blanket rule:
+
+> `per_unit`: "+1 item rarity tier **where applicable**"
+> `stat_model_rule`: "Value is contextual because rarity can increase
+> reforge/gemstone/other rarity-scaled effects. **Do not assign a fixed Farming
+> Fortune delta globally.**"
+> -- research/special-farming-item-costs-2026-09-17.json, tool_and_vacuum_modifiers[3]
+
+The base rung was already per item, taken from that item's own rarity in the
+official resource. The step now is too: it is gated on
+`canRecombobulateItem('tool', catalogItem)`, which was already in the file for
+deciding whether to offer the checkbox at all. It answers per item, using the
+official `can_recombobulate` flag when present and the item family only when
+that flag is silent.
+
+An item that cannot take the step keeps its own rarity and the row says so --
+"this item cannot be recombobulated, so it stays EPIC" -- rather than showing an
+unchanged number that reads like a bug. The gemstone Fortune uses the same gate,
+so a rarity the item cannot reach can no longer inflate Peridot values.
+
+Five more unit tests, fourteen in total on this derivation.
