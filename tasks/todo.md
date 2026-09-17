@@ -1707,3 +1707,34 @@ unchanged number that reads like a bug. The gemstone Fortune uses the same gate,
 so a rarity the item cannot reach can no longer inflate Peridot values.
 
 Five more unit tests, fourteen in total on this derivation.
+
+
+## 0.31.0 -- money moves into the background
+
+The planner opened by asking for "Normal crop Coins/h", "RARE CROP Coins/h" and
+Overbloom before it would answer anything. The page's job is to say what to
+upgrade next; coin figures are an input to that ranking, not something the
+reader has to hold in their head.
+
+Those inputs live behind a disclosure now, closed on arrival, labelled
+"Optional. Only sharpens coin and payback ranking." Nothing was deleted -- the
+prices are still in the app and still feed the ranking, and rows without a
+recorded cost already said so. Measured: closed, 0 of 2 inputs painted and none
+hit-testable; open, both appear. Page height 3062 against 3320.
+
+The Tools page also printed "N Coins in recorded unlock costs" beside the
+gemstone Fortune, which read "0 Coins" until costs happened to be recorded. The
+Fortune is the answer there; the coin total is gone and the per-slot cost inputs
+stay.
+
+### Two traps on the way
+
+A `<summary>` given `display: flex` stops counting as the disclosure summary in
+Chromium. The `<details>` is then left without one and every child renders as if
+the panel were permanently open. The flex row moved to an inner div.
+
+And my first two readings of "is it collapsed" were wrong, not the collapse: I
+checked `getBoundingClientRect().height`, but modern Chromium collapses
+`<details>` with `content-visibility: hidden`, under which descendants keep a
+box while not being painted. `Element.checkVisibility({ contentVisibilityAuto:
+true })` is the question that actually gets asked.

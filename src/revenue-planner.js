@@ -140,18 +140,24 @@ function openItem(itemId) {
 function economicsPanel(raw) {
   const crop = cropFor(raw);
   const econ = economics(raw);
-  return `<section class="revenue-panel">
-    <div class="revenue-panel-head">
-      <div><div class="eyebrow">${esc(crop?.name || 'Crop')} economics</div><h2>Profit baseline</h2></div>
-      <span class="revenue-note">Only needed for coin/payback ranking</span>
-    </div>
+  // Money is kept, not shown. The question this page answers is "what should I
+  // upgrade next", and coin figures are an input to that ranking rather than
+  // something the reader has to hold in their head. Closed by default; the
+  // ranking works without any of it and says which rows lack a cost.
+  return `<details class="revenue-panel revenue-economics">
+    <summary class="revenue-summary">
+      <div class="revenue-panel-head">
+        <div><div class="eyebrow">${esc(crop?.name || 'Crop')} economics</div><h2>Profit baseline</h2></div>
+        <span class="revenue-note">Optional. Only sharpens coin and payback ranking.</span>
+      </div>
+    </summary>
     <div class="revenue-inputs">
       <label><span>Normal crop Coins/h</span><input data-revenue-input="normalCropCoinsPerHour" type="number" min="0" step="1000" value="${Number(econ.normalCropCoinsPerHour || 0)}"></label>
       <label><span>RARE CROP Coins/h</span><input data-revenue-input="rareCropCoinsPerHour" type="number" min="0" step="1000" value="${Number(econ.rareCropCoinsPerHour || 0)}"></label>
       <label><span>Current Overbloom</span><input data-revenue-input="overbloom" type="number" min="0" step="0.1" value="${Number(econ.overbloom || 0)}"></label>
     </div>
     <p class="revenue-help">Overbloom is valued from the actual RARE-CROP revenue stream instead of a fixed global FF conversion.</p>
-  </section>`;
+  </details>`;
 }
 
 function rankingMarkup(rows, ready) {
