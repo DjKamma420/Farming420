@@ -118,7 +118,9 @@ export function setPlannerEconomicsValue(state, cropId, mode, key, value) {
   root.byActivity[normalized][key] = number;
 
   // Keep the flat fields as a compatibility mirror for modules/backups from
-  // the pre-activity-aware planner. They represent the currently edited mode.
-  root[key] = number;
+  // the pre-activity-aware planner. They always mirror one complete mode so a
+  // legacy reader cannot combine Farm revenue with Pest revenue.
+  root.normalCropCoinsPerHour = root.byActivity[normalized].normalCropCoinsPerHour;
+  root.rareCropCoinsPerHour = root.byActivity[normalized].rareCropCoinsPerHour;
   root.activityMode = normalized;
 }
