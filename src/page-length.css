@@ -1,0 +1,94 @@
+/* Two pages were walls of prose roughly four times taller than any other: the
+   Mechanics page with thirty-six rules at four paragraphs each, and the
+   "what to enter" page showing every manual entry at once. Both now open to
+   something readable and fold the rest away rather than cutting it.
+
+   A <summary> must stay block-level. Given `display: flex` it stops counting as
+   the disclosure summary in Chromium, the <details> is left without one, and
+   every child renders as if it were permanently open -- which is the exact
+   regression this replaces. The flex row lives on an inner div. */
+
+.research-card > summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.research-card > summary::-webkit-details-marker {
+  display: none;
+}
+
+.research-head::after {
+  content: '\25b8';
+  align-self: center;
+  color: var(--accent2);
+  font-size: .8rem;
+}
+
+.research-card[open] .research-head::after {
+  content: '\25be';
+}
+
+/* The effect line is what the page is scanned for, so it stays in the summary.
+   `.research-card h3` already carries a 12px bottom margin from the base
+   sheet; inside a summary the effect line sits directly under it. */
+.research-card > summary .research-effect {
+  margin: 0;
+}
+
+.research-card > summary h3 {
+  margin-bottom: 6px;
+}
+
+.research-body {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.research-body p:first-child {
+  margin-top: 0;
+}
+
+.find-rest {
+  margin-top: 14px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.find-rest > summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.find-rest > summary::-webkit-details-marker {
+  display: none;
+}
+
+.find-rest-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.find-rest-head span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.find-rest-head::after {
+  content: '\25b8';
+  margin-left: auto;
+  color: var(--accent2);
+  font-size: .8rem;
+}
+
+.find-rest[open] .find-rest-head::after {
+  content: '\25be';
+}
+
+.find-rest > .find-list {
+  margin-top: 14px;
+}

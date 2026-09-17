@@ -2020,3 +2020,55 @@ walked against the checklist rather than assumed safe:
 Measured in a real browser rather than argued: 12 forced re-renders produced 12
 inserts -- one each, no amplification, one panel at the end -- and five
 identical inputs produced two writes in total, from the first one only.
+
+## 0.36.0 -- two walls of prose, and a page with no way in
+
+- [x] Fold the Mechanics page
+- [x] Fold the "what to enter" tail, keep its top open
+- [x] Make "what to enter" reachable on a phone
+- [x] Stop tracking Python bytecode
+
+### Review
+
+Measured at 1280px before: **setup 12,715px**, **research 10,887px**, against
+3,290px for the next tallest page. Each buried its own headline.
+
+After: **setup 2,374px (-81%)**, **research 5,652px (-48%)**.
+
+**Mechanics.** Thirty-six rules at four paragraphs each. The name, status and
+effect are what the page is scanned for and stay in the `<summary>`; why a rule
+is modeled separately and what the app does about it move into the body. The
+three rules marked VERIFY open themselves -- folding away the only entries that
+want a human to look at them would have been the wrong saving.
+
+**What to enter.** Ordered most-valuable-first and rendering all 75 entries at
+once. The top twelve stay *fully* open -- notes and in-game location included,
+because "where do I find this" is the question the page exists to answer -- and
+the remaining 63 fold away behind a labelled count rather than being cut. A
+search shows every match, since a search has already narrowed the set.
+
+Both use `<details>`, and both keep the flex row on an inner div: a `<summary>`
+given `display: flex` stops counting as the disclosure summary in Chromium and
+every card renders permanently open. That has already cost this repo one round
+on the planner panel, so a test now asserts it for both.
+
+### The bug the sweep had been reporting all along
+
+`[setup] phone-filled UNREACHABLE: page exists but no visible way to open it`.
+
+`mobile-taskbar.css` hid the nav link with the comment *"'What to enter' is not
+useful as a permanent mobile taskbar destination"* -- and nothing else in the
+app links to that page. So on a phone it had no entry point at all: 75
+interactive elements and 63 folded entries, unreachable.
+
+The taskbar already scrolls horizontally. Twelve 44px slots overflow a 412px
+phone as it is, so the slot the rule was saving did not exist. Unhidden, the
+nav scrolls itself (596px of content in a 400px box) with no sideways page
+scroll, all thirteen links painted, and the sweep goes from 0 clicks to 75.
+
+Verified on `main` first, by stashing: **identical there**, so this was not
+caused by the folding work in the same release.
+
+A test now walks every stylesheet and fails on any rule that hides a nav link
+for a specific page. A page may be de-emphasised, reordered or put behind a
+scroll; it may not be the one page with no way in.
