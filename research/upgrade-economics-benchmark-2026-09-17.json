@@ -1,0 +1,99 @@
+{
+  "meta": {
+    "title": "Farming opportunity-cost fallback benchmark",
+    "as_of": "2026-09-17",
+    "purpose": "Fallback coin value for active grind time when a reliable player-specific or modeled sustainable farming rate is unavailable.",
+    "status": "ACTIVE_FALLBACK",
+    "confidence": "medium-low",
+    "not_a_server_average": true,
+    "refresh_policy": "Re-research after any material Farming economy patch and at least every 30 days while used by the live planner."
+  },
+  "benchmark": {
+    "coins_per_hour": 20000000,
+    "method": "Median of eight recent public community observations/expectations selected from March-July 2026. Values intentionally span normal and pest farming and different progression states so this remains a broad fallback rather than a maxed-setup target.",
+    "sample_size": 8,
+    "selected_rates_coins_per_hour": [10500000, 15000000, 12000000, 25000000, 19000000, 21000000, 24000000, 33000000],
+    "median_coins_per_hour": 20000000,
+    "minimum_selected_rate": 10500000,
+    "maximum_selected_rate": 33000000
+  },
+  "observations": [
+    {
+      "coins_per_hour": 10500000,
+      "activity": "normal melon farming",
+      "date": "2026-06-06",
+      "note": "Player reported 10-11m/h at 1101 Farming Fortune and 188 Melon Fortune; midpoint used.",
+      "source": "https://www.reddit.com/r/HypixelSkyblock/comments/1tyupxz/farming_setup_only_making_10mhr/"
+    },
+    {
+      "coins_per_hour": 15000000,
+      "activity": "normal melon farming",
+      "date": "2026-06-06",
+      "note": "Community response in the same discussion described roughly 15m/h as the expected 20-block/s target for that stage/setup class.",
+      "source": "https://www.reddit.com/r/HypixelSkyblock/comments/1tyupxz/farming_setup_only_making_10mhr/"
+    },
+    {
+      "coins_per_hour": 12000000,
+      "activity": "normal melon farming",
+      "date": "2026-07-18",
+      "note": "Player reported about 12m/h with roughly 1500 Farming Fortune and incomplete upgrades.",
+      "source": "https://www.reddit.com/r/HypixelSkyblock/comments/1v08vbs/does_farming_still_make_money/"
+    },
+    {
+      "coins_per_hour": 25000000,
+      "activity": "normal farming",
+      "date": "2026-07-18",
+      "note": "Community response stated normal farming reaches about 25m/h at high setup quality; used as an upper normal-farming reference, not a guaranteed rate.",
+      "source": "https://www.reddit.com/r/HypixelSkyblock/comments/1v08vbs/does_farming_still_make_money/"
+    },
+    {
+      "coins_per_hour": 19000000,
+      "activity": "normal melon farming",
+      "date": "2026-03-19",
+      "note": "Community rule-of-thumb tied roughly 1900 Fortune to about 19m/h including common extra drops.",
+      "source": "https://www.reddit.com/r/HypixelSkyblock/comments/1rxmcum/how_much_money_per_hour_does_each_farming_fortune/"
+    },
+    {
+      "coins_per_hour": 21000000,
+      "activity": "pest farming",
+      "date": "2026-07-30",
+      "note": "Near-endgame player reported about 21m/h in a 10-minute test despite expecting higher rates.",
+      "source": "https://www.reddit.com/r/HypixelSkyblock/comments/1vb21xy/why_am_i_making_so_little_money_farming/"
+    },
+    {
+      "coins_per_hour": 24000000,
+      "activity": "wheat farming",
+      "date": "2026-04-15",
+      "note": "Community reply reported about 24m/h at roughly 2300 Farming Fortune.",
+      "source": "https://www.reddit.com/r/HypixelSkyblock/comments/1smhcb6/about_to_start_farming_for_money_any_last_upgrades/"
+    },
+    {
+      "coins_per_hour": 33000000,
+      "activity": "wheat farming with multiple bonus streams",
+      "date": "2026-04-15",
+      "note": "Another player in the same discussion reported about 33m/h with around 2000 regular Fortune plus crop Fortune and multiple sellable bonus drops.",
+      "source": "https://www.reddit.com/r/HypixelSkyblock/comments/1smhcb6/about_to_start_farming_for_money_any_last_upgrades/"
+    }
+  ],
+  "official_context": [
+    {
+      "date": "2026-08-20",
+      "note": "Official patch changed most Greenhouse crop/mutation multipliers and added 72h base-crop decay, making older Greenhouse income benchmarks stale.",
+      "source": "https://hypixel.net/threads/august-20-skyblock-patch-notes.6141710/"
+    },
+    {
+      "date": "2026-09-01",
+      "note": "Official 0.27.1 notes reported that active Farming generated 36.94% of all generated coins in Aug 21-27 and described further Greenhouse changes as planned, not yet live.",
+      "source": "https://hypixel.net/threads/hypixel-skyblock-0-27-1-chocolate-factory-improvements-qol-changes-and-more.6147732/"
+    }
+  ],
+  "usage_rule": {
+    "priority": [
+      "representative player-measured sustainable farming rate",
+      "verified modeled sustainable rate for current player/setup",
+      "this Internet fallback"
+    ],
+    "earned_cost_formula": "direct_coin_cost + consumed_tradeable_input_market_value + active_grind_hours * max(0, time_value_coins_per_hour - incidental_grind_profit_per_hour)",
+    "required_ui_label": "EARNED — time converted to coins"
+  }
+}
