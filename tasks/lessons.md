@@ -538,3 +538,31 @@ time.
 Rule: any component whose stylesheet sets `display` needs its own
 `[hidden] { display: none }`, or `hidden` is decoration. And "I set hidden" is
 not verification -- `checkVisibility()` is.
+
+## Grep the repo before writing the module (0.37.0)
+
+I wrote `src/pest-model.js` with a thirteen-row pest/crop table, and
+`src/measured-baseline.js` with a hand-rolled profit-engine input. Both already
+existed:
+
+- `src/pest-mechanics-data.js` had every pest with its crop, its guaranteed
+  drop item, that drop's base quantity and the Fortune each extra unit costs.
+- `src/planner-profit-adapter.js` had `sourceDrivenCropInput`, which builds the
+  same engine input *and* takes the crop's drop count from
+  `farming-mechanics-data.js` together with the status of that figure.
+
+That is the **third and fourth** duplicate of this kind after two rarity ladders
+and two taskbar rules. What found them was not a search: it was listing every
+module nothing imports, while waiting for CI. If I had run that list first I
+would have found both before writing a line.
+
+Rule: before creating a module, list what the repo already has on that subject.
+`ls src/` is twelve seconds. Grepping for the name I have in mind is not
+enough -- I searched for `RARITY_LADDER` and missed `RARITY_ORDER`, and here I
+would have searched for "pest model" and missed "pest mechanics data". Read the
+*file names* on the subject, then their exports.
+
+Deduplicating both made the work better, not just smaller: the pests page gained
+a guaranteed-drop column it did not have, and the measured panel lost a field
+because the crop's drop count is data, not a measurement. A duplicate is not
+only waste; it is a worse version of something that already works.

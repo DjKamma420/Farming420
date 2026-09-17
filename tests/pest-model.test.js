@@ -2,8 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { CROPS } from '../src/data.js';
+import { PESTS } from '../src/pest-mechanics-data.js';
 import {
   GARDEN_PESTS,
+  UNMODELLED_PESTS,
+  guaranteedDropText,
   LOOT_PIPELINE,
   PESTHUNTER_PHILIP,
   PEST_HEALTH,
@@ -16,25 +19,61 @@ import {
 
 const read = name => readFileSync(new URL(`../src/${name}`, import.meta.url), 'utf8');
 
-test('the mapping is the researched thirteen, and no invented rows', () => {
-  // The research table closes with "do not invent Stereo mappings for special
-  // Pest types that are not part of this standard mapping".
-  assert.equal(GARDEN_PESTS.length, 13);
-  assert.equal(new Set(GARDEN_PESTS.map(pest => pest.id)).size, 13);
-  assert.equal(new Set(GARDEN_PESTS.map(pest => pest.cropId)).size, 13);
-  assert.equal(new Set(GARDEN_PESTS.map(pest => pest.vinyl)).size, 13);
+test('the pest table is joined from the shared data, not copied', () => {
+  // src/pest-mechanics-data.js already holds every pest with its crop, its
+  // guaranteed drop and that drop's Fortune scaling. A second pest/crop table
+  // here would have been the third duplicate of its kind in this repo, after
+  // two rarity ladders and two taskbar rules -- and the first draft of this
+  // module was exactly that.
+  assert.match(read('pest-model.js'), /import \{ PESTS \} from '\.\/pest-mechanics-data\.js'/);
+  assert.doesNotMatch(read('pest-model.js'), /cropId: 'wheat'/);
+
+  const withCrops = Object.values(PESTS).filter(record => record.cropId).length;
+  assert.equal(GARDEN_PESTS.length, withCrops);
   for (const pest of GARDEN_PESTS) {
-    assert.ok(pest.name && pest.crop && pest.vinyl, pest.id);
+    assert.equal(pest.cropId, PESTS[pest.id].cropId, pest.id);
+    assert.equal(pest.guaranteedDropId, PESTS[pest.id].baseItemId, pest.id);
   }
 });
 
-test('every pest points at a crop the app actually has', () => {
-  // The rows borrow their crop's art, so a crop id that does not exist means a
-  // row with a letter placeholder and nobody noticing.
-  const known = new Set(CROPS.map(crop => crop.id));
-  for (const pest of GARDEN_PESTS) {
-    assert.ok(known.has(pest.cropId), `${pest.id} points at unknown crop ${pest.cropId}`);
+test('every listed pest has a vinyl, and no invented ones exist', () => {
+  // The research closes its mapping with "do not invent Stereo mappings for
+  // special Pest types that are not part of this standard mapping".
+  assert.equal(GARDEN_PESTS.length, 13);
+  assert.equal(new Set(GARDEN_PESTS.map(pest => pest.vinyl)).size, 13);
+  for (const pest of GARDEN_PESTS) assert.ok(pest.vinyl, `${pest.id} has no vinyl`);
+});
+
+test('a pest with no crop is recorded, not listed', () => {
+  // Field Mouse hits a random crop, and the research says not to model it as a
+  // normal crop-specific pest. A row of blanks would be worse than no row.
+  assert.ok(UNMODELLED_PESTS.length > 0);
+  for (const pest of UNMODELLED_PESTS) {
+    assert.ok(!GARDEN_PESTS.some(listed => listed.id === pest.id), pest.id);
+    assert.ok(!PESTS[pest.id].cropId, pest.id);
   }
+  assert.match(read('pests-page.js'), /UNMODELLED_PESTS/);
+});
+
+test('an unverified Fortune divisor stays null, never zero', () => {
+  // The three Greenhouse pests have no current scaling table. Zero would read
+  // as "one extra unit per zero Fortune", which is free infinity.
+  const unverified = GARDEN_PESTS.filter(pest => pest.status !== 'VERIFIED');
+  assert.ok(unverified.length > 0);
+  for (const pest of unverified) {
+    assert.equal(pest.fortunePerExtraUnit, null, pest.id);
+    assert.equal(guaranteedDropText(pest) === null, pest.guaranteedDropId == null);
+  }
+  for (const pest of GARDEN_PESTS.filter(row => row.status === 'VERIFIED')) {
+    assert.ok(pest.fortunePerExtraUnit > 0, pest.id);
+  }
+});
+
+test('a guaranteed drop reads as an item, not an id', () => {
+  const earthworm = GARDEN_PESTS.find(pest => pest.id === 'earthworm');
+  assert.equal(guaranteedDropText(earthworm), '5\u00d7 enchanted melon');
+  assert.equal(guaranteedDropText(null), null);
+  assert.equal(guaranteedDropText({ guaranteedDropId: 'X', guaranteedQuantity: null }), null);
 });
 
 test('a crop resolves to its pest, and an unknown crop to nothing', () => {

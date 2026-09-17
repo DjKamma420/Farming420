@@ -32,8 +32,12 @@ test('typing recomputes without dispatching a render', () => {
 test('applying is a click, and that is where the render belongs', () => {
   const apply = planner.match(/\[data-measured-apply\]'\)\?\.addEventListener\('click'[\s\S]*?\n  \}\);/)[0];
   assert.match(apply, /setPlannerEconomicsValue\(next, cropId, nextMode, 'normalCropCoinsPerHour'/);
+  // Coins are whole. Unrounded, a float artifact lands in storage and is shown
+  // back in the baseline input as 3060000.0000000005.
+  assert.match(apply, /Math\.round\(result\.normalCropCoinsPerHour\)/);
+  assert.match(apply, /Math\.round\(result\.rareCropCoinsPerHour\)/);
   assert.match(apply, /farming420:state-changed/);
-  // A rare stream that was never measured must not be written as a zero.
+  // A Feast stream that was never switched on must not be written as a zero.
   assert.match(apply, /if \(result\.rareCropCoinsPerHour != null\) \{/);
   // And an incomplete measurement cannot be applied at all.
   assert.match(apply, /if \(result\.normalCropCoinsPerHour == null\) return;/);
@@ -69,9 +73,18 @@ test('the summary is not given display: flex', () => {
   assert.match(planner, /<summary>\s*<div class="revenue-measured-head">/);
 });
 
-test('the optional pair is marked optional on screen too', () => {
+test('the optional Feast inputs are marked optional on screen too', () => {
   assert.match(planner, /field\.optional \? 'revenue-measured-optional' : ''/);
   assert.match(css, /\.revenue-measured-optional/);
+  // The toggle refreshes with the rest rather than needing its own render.
+  assert.match(planner, /feastToggle\?\.addEventListener\('change', refreshMeasured\)/);
+  assert.match(planner, /if \(feastToggle\?\.checked\) values\[MEASURED_FEAST_KEY\] = true;/);
+  assert.match(planner, /else delete values\[MEASURED_FEAST_KEY\];/);
+});
+
+test('an unverified crop drop count is said, not hidden behind the number', () => {
+  assert.match(planner, /result\.cropDataStatus !== 'VERIFIED'/);
+  assert.match(planner, /drops per break are/);
 });
 
 test('the panel fits a phone', () => {

@@ -276,3 +276,43 @@
   .pest-philip-body { grid-template-columns: 1fr; }
   .pest-philip-head { display: block; }
 }
+
+/* A third column: the guaranteed drop, which is the one place Farming Fortune
+   does work on pest loot. It earns its place next to the vinyl because it is
+   the answer to "so what does Pest Fortune actually buy me". */
+.pest-row {
+  grid-template-columns: 34px minmax(0, 1.2fr) minmax(0, 1.1fr) minmax(0, .9fr);
+}
+
+.pest-drop {
+  min-width: 0;
+}
+
+.pest-drop strong {
+  display: block;
+  font-size: 13px;
+  color: #edf7ef;
+  overflow-wrap: anywhere;
+}
+
+.pest-drop span {
+  display: block;
+  color: #8fa294;
+  font-size: 11px;
+}
+
+/* The three Greenhouse pests have no verified scaling divisor yet. */
+.pest-row-unverified {
+  border-left: 2px solid #4a3f18;
+}
+
+@media (max-width: 980px) {
+  .pest-row { grid-template-columns: 34px minmax(0, 1fr) minmax(0, 1fr); }
+  .pest-vinyl { grid-column: 2 / -1; text-align: left; }
+}
+
+@media (max-width: 650px) {
+  .pest-row { grid-template-columns: 30px minmax(0, 1fr); }
+  .pest-drop,
+  .pest-vinyl { grid-column: 2; text-align: left; }
+}

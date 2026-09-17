@@ -1,3 +1,5 @@
+import { PESTS } from './pest-mechanics-data.js';
+
 /**
  * The Garden's pests, and which side of the pest loop each stat acts on.
  *
@@ -15,28 +17,72 @@
  */
 
 /**
- * The standard pest/crop/vinyl mapping, verbatim from the research table.
+ * Vinyl per pest, from the research's standard mapping.
  *
- * The research closes that table with "do not invent Stereo mappings for
- * special Pest types that are not part of this standard mapping", so this list
- * is exactly thirteen rows and gains none by guesswork. `cropId` matches the
- * app's own crop ids, which is what lets each row borrow its crop's art.
+ * This is the *only* part of that table this module owns.
+ * `src/pest-mechanics-data.js` already holds every pest with its crop, its
+ * guaranteed drop item, that drop's base quantity and the Fortune each extra
+ * unit costs -- so a second pest/crop table here would have been the third
+ * duplicate of its kind in this repo after two rarity ladders and two taskbar
+ * rules. The first draft of this file was exactly that, and it is why the
+ * guaranteed-drop column now exists on the page at all: deduplicating it
+ * surfaced data the page had been missing.
+ *
+ * The research closes its table with "do not invent Stereo mappings for special
+ * Pest types that are not part of this standard mapping", so `field-mouse`,
+ * which `PESTS` carries as SPECIAL with no crop, deliberately has no vinyl here.
  */
-export const GARDEN_PESTS = Object.freeze([
-  Object.freeze({ id: 'fly', name: 'Fly', cropId: 'wheat', crop: 'Wheat', vinyl: 'Pretty Fly' }),
-  Object.freeze({ id: 'cricket', name: 'Cricket', cropId: 'carrot', crop: 'Carrot', vinyl: 'Cricket Choir' }),
-  Object.freeze({ id: 'locust', name: 'Locust', cropId: 'potato', crop: 'Potato', vinyl: 'Cicada Symphony' }),
-  Object.freeze({ id: 'rat', name: 'Rat', cropId: 'pumpkin', crop: 'Pumpkin', vinyl: 'Rodent Revolution' }),
-  Object.freeze({ id: 'mosquito', name: 'Mosquito', cropId: 'sugar-cane', crop: 'Sugar Cane', vinyl: "Buzzin' Beats" }),
-  Object.freeze({ id: 'earthworm', name: 'Earthworm', cropId: 'melon', crop: 'Melon', vinyl: 'Earthworm Ensemble' }),
-  Object.freeze({ id: 'mite', name: 'Mite', cropId: 'cactus', crop: 'Cactus', vinyl: 'DynaMITES' }),
-  Object.freeze({ id: 'moth', name: 'Moth', cropId: 'cocoa-beans', crop: 'Cocoa Beans', vinyl: 'Wings of Harmony' }),
-  Object.freeze({ id: 'slug', name: 'Slug', cropId: 'mushroom', crop: 'Mushroom', vinyl: 'Slow and Groovy' }),
-  Object.freeze({ id: 'beetle', name: 'Beetle', cropId: 'nether-wart', crop: 'Nether Wart', vinyl: 'Not Just a Pest' }),
-  Object.freeze({ id: 'dragonfly', name: 'Dragonfly', cropId: 'sunflower', crop: 'Sunflower', vinyl: 'Imagine Dragonflies' }),
-  Object.freeze({ id: 'firefly', name: 'Firefly', cropId: 'moonflower', crop: 'Moonflower', vinyl: 'Firefly in the Hole' }),
-  Object.freeze({ id: 'praying-mantis', name: 'Praying Mantis', cropId: 'wild-rose', crop: 'Wild Rose', vinyl: 'Pray For Me' }),
-]);
+const PEST_VINYL = Object.freeze({
+  fly: 'Pretty Fly',
+  cricket: 'Cricket Choir',
+  locust: 'Cicada Symphony',
+  rat: 'Rodent Revolution',
+  mosquito: "Buzzin' Beats",
+  earthworm: 'Earthworm Ensemble',
+  mite: 'DynaMITES',
+  moth: 'Wings of Harmony',
+  slug: 'Slow and Groovy',
+  beetle: 'Not Just a Pest',
+  dragonfly: 'Imagine Dragonflies',
+  firefly: 'Firefly in the Hole',
+  'praying-mantis': 'Pray For Me',
+});
+
+function titleCase(id) {
+  return String(id).split('-').map(part => part.slice(0, 1).toUpperCase() + part.slice(1)).join(' ');
+}
+
+/**
+ * The standard pests, joined from the shared data.
+ *
+ * Only pests with a crop appear: `field-mouse` hits a random crop and the
+ * research says not to model it as a normal crop-specific pest, so it has no
+ * row here rather than a row with blanks in it.
+ */
+export const GARDEN_PESTS = Object.freeze(
+  Object.entries(PESTS)
+    .filter(([, record]) => record.cropId)
+    .map(([id, record]) => Object.freeze({
+      id,
+      name: titleCase(id),
+      cropId: record.cropId,
+      vinyl: PEST_VINYL[id] || null,
+      guaranteedDropId: record.baseItemId || null,
+      guaranteedQuantity: record.baseQuantity ?? null,
+      // Null, not zero: for the three Greenhouse pests the research records
+      // that the exact live scaling divisor still needs a current table.
+      fortunePerExtraUnit: record.fortunePerExtraUnit ?? null,
+      status: record.status,
+      notes: record.notes || null,
+    })),
+);
+
+/** Pests the shared data carries but this page deliberately does not list. */
+export const UNMODELLED_PESTS = Object.freeze(
+  Object.entries(PESTS)
+    .filter(([, record]) => !record.cropId)
+    .map(([id, record]) => Object.freeze({ id, name: titleCase(id), notes: record.notes || null })),
+);
 
 /** Pest health, and the one documented case that changes it. */
 export const PEST_HEALTH = Object.freeze({
@@ -136,4 +182,11 @@ export const PEST_STAT_SIDES = Object.freeze({
 export function pestForCrop(cropId) {
   const key = String(cropId || '').trim().toLowerCase();
   return GARDEN_PESTS.find(pest => pest.cropId === key) || null;
+}
+
+/** How many of a pest's guaranteed drop it gives, or null when unmodelled. */
+export function guaranteedDropText(pest) {
+  if (!pest?.guaranteedDropId || pest.guaranteedQuantity == null) return null;
+  const item = String(pest.guaranteedDropId).replace(/^ENCHANTED_/, '').replace(/_/g, ' ').toLowerCase();
+  return `${pest.guaranteedQuantity}\u00d7 enchanted ${item}`;
 }
