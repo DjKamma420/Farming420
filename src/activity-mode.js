@@ -43,11 +43,15 @@ export function setActivityModeOnState(state, mode) {
   return normalized;
 }
 
-export function isPestVacuumEntry(item) {
+export function isVacuumItemEntry(item) {
   const id = String(item?.id || '').toLowerCase();
   const category = String(item?.category || '').toLowerCase();
+  return id.startsWith('vacuum-') || category.includes('vacuum');
+}
+
+export function isPestVacuumEntry(item) {
   const scope = String(item?.modeScope || 'Any');
-  return scope === 'Pest Vacuum Drops' || id.startsWith('vacuum-') || category.includes('vacuum');
+  return scope === 'Pest Vacuum Drops' || isVacuumItemEntry(item);
 }
 
 export function itemAppliesToActivity(item, mode) {
@@ -62,6 +66,6 @@ export function itemAppliesToActivity(item, mode) {
   // The Pest Set uses the vacuum instead of a crop farming tool. General
   // account/gear effects can still apply, while event/contest-only states stay
   // out until those contexts receive their own explicit activity mode.
-  if (item?.section === 'tools' && !isPestVacuumEntry(item)) return false;
+  if (item?.section === 'tools' && !isVacuumItemEntry(item)) return false;
   return scope === 'Any' || scope === 'Pest Spawning' || scope === 'Pest Vacuum Drops';
 }

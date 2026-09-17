@@ -7,6 +7,7 @@ import {
   ACTIVITY_MODE,
   activityLabel,
   activityModeForState,
+  isVacuumItemEntry,
   itemAppliesToActivity,
   normalizeActivityMode,
   setActivityModeOnState,
@@ -39,6 +40,7 @@ function cropName(cropId) {
 
 function progressBucket(raw, item, cropId) {
   const profile = raw.profile || {};
+  if (isVacuumItemEntry(item)) return profile.vacuumProgress || {};
   if (item.section === 'crops') return profile.cropProgress?.[cropId] || {};
   if (item.section === 'tools') return profile.toolProgress?.[toolKeyForCropId(cropId)] || {};
   return profile;
@@ -176,15 +178,15 @@ function renderStatsStrip(raw) {
     <div class="computed-stat" title="Fortune from the active ${esc(activityLabel(mode))}">
       <span>${mode === ACTIVITY_MODE.PEST ? 'Pest FF' : 'Farm FF'}</span><strong>${Number(stats.effectiveFortune || 0).toLocaleString('en-US')}</strong>${unresolvedFortune ? '<em>~</em>' : ''}
     </div>
-    ${mode === ACTIVITY_MODE.PEST ? `<div class="computed-stat" title="Pest/Vacuum-only Farming Fortune. This is excluded from Farm Set totals.">
-      <span>Pest only</span><strong>${Number(stats.pestFortune || 0).toLocaleString('en-US')}</strong>${stats.incomplete.pestFortune.length ? '<em>~</em>' : ''}
+    ${mode === ACTIVITY_MODE.PEST ? `<div class="computed-stat" title="Farming Fortune that applies to Pest/Vacuum drops only. It is separate from normal crop Fortune.">
+      <span>Pest Drop FF</span><strong>${Number(stats.pestFortune || 0).toLocaleString('en-US')}</strong>${stats.incomplete.pestFortune.length ? '<em>~</em>' : ''}
     </div>` : ''}
     <div class="computed-stat" title="Overbloom for the active set. Pest-only Overbloom is excluded from Farm Set totals.">
       <span>OB</span><strong>${Number(stats.overbloom || 0).toLocaleString('en-US')}</strong>${stats.incomplete.overbloom.length ? '<em>~</em>' : ''}
     </div>
-    ${mode === ACTIVITY_MODE.PEST ? `<div class="computed-stat" title="Bonus Pest Chance for the active Pest Set">
+    <div class="computed-stat" title="Bonus Pest Chance produced by the currently selected Farm or Pest loadout.">
       <span>BPC</span><strong>${Number(stats.bonusPestChance || 0).toLocaleString('en-US')}</strong>${stats.incomplete.bonusPestChance.length ? '<em>~</em>' : ''}
-    </div>` : ''}`;
+    </div>`;
 }
 
 function simplifySetupEditor(raw) {
@@ -221,7 +223,7 @@ function renderDashboardCandidate(raw) {
     <h2>${esc(candidate.item.name)}</h2>
     <p>+${candidate.gain.toLocaleString('en-US')} marginal stat · about ${candidate.rel.toFixed(2)}% relative gain in the current ${esc(cropName(cropId))} ${esc(activityLabel(mode))}.</p>
     <button class="primary-btn" data-mode-open="${esc(candidate.item.id)}">Open details</button>
-    <div class="planner-mode-note">Farm uses farming tools. Pest uses Pest/Vacuum effects. Armor, equipment and pet come from the selected set.</div>` : `
+    <div class="planner-mode-note">Farm uses the crop farming tool. Pest uses the Vacuum instead. Armor, equipment and pet come from the selected set.</div>` : `
     <div class="eyebrow">Next upgrade · ${esc(activityLabel(mode))}</div>
     <h2>No calculated upgrade</h2>
     <p>No active upgrade with a calculated marginal gain is available for this crop and set.</p>`;

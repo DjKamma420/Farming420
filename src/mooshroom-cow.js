@@ -28,6 +28,13 @@ function finiteNonNegative(value) {
   return Number.isFinite(number) && number >= 0 ? number : null;
 }
 
+function explicitPetLevel(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const number = Number(value);
+  if (!Number.isFinite(number)) return null;
+  return Math.max(1, Math.min(100, Math.floor(number)));
+}
+
 export function petLevelFromExperience(experience, rarity = 'COMMON') {
   let remaining = finiteNonNegative(experience);
   if (remaining === null) return null;
@@ -77,8 +84,6 @@ export function activeMooshroomCow(state) {
     ? state.profile.normalizedSnapshot.pets
     : [];
 
-  // A manually selected Farm/Pest setup is an explicit hypothetical loadout and
-  // therefore overrides the pet that happened to be active at the last sync.
   const selected = selectedSetupPet(state);
   if (selected) {
     if (!itemIsCow(selected)) return null;
@@ -88,17 +93,19 @@ export function activeMooshroomCow(state) {
           ...syncedCow,
           source: 'setup+profile',
           rarity: selected?.rarity || syncedCow.rarity,
+          petLevel: explicitPetLevel(selected?.petLevel),
         }
       : {
           type: 'MOOSHROOM_COW',
           source: 'setup',
           rarity: selected?.rarity || null,
+          petLevel: explicitPetLevel(selected?.petLevel),
           experience: null,
         };
   }
 
   const active = pets.find(pet => cowType(pet?.type) && pet?.active === true);
-  return active ? { ...active, source: 'profile' } : null;
+  return active ? { ...active, source: 'profile', petLevel: null } : null;
 }
 
 export function mooshroomCowContribution(state) {
@@ -106,7 +113,7 @@ export function mooshroomCowContribution(state) {
   if (!cow) return { active: false, value: 0, incomplete: false, reasons: [] };
 
   const rarity = String(cow.rarity || '').toUpperCase() || null;
-  const level = petLevelFromExperience(cow.experience, rarity || 'COMMON');
+  const level = explicitPetLevel(cow.petLevel) ?? petLevelFromExperience(cow.experience, rarity || 'COMMON');
   const strength = finiteNonNegative(state?.profile?.inputs?.strength);
   const reasons = [];
 
