@@ -1738,3 +1738,63 @@ checked `getBoundingClientRect().height`, but modern Chromium collapses
 `<details>` with `content-visibility: hidden`, under which descendants keep a
 box while not being painted. `Element.checkVisibility({ contentVisibilityAuto:
 true })` is the question that actually gets asked.
+
+
+## 0.32.0 -- coverage made measurable, and the calculator core found orphaned
+
+### The calculator core is not wired to anything
+
+Looking for the calculator design, `research/knowledge-base/40-calculator-model-strategy-gap-audit.md`
+turns out to be exactly it: the live Farming baseline with sources, what the old
+planner did, the generic profit engine, the `unknown != 0` rule, the strategy
+contexts, item-model coverage, and a priority order for the next data pass.
+
+Checking what of it runs:
+
+| module | imported by source | reachable at runtime | tests |
+|---|---|---|---|
+| `profit-engine.js` | only `strategy-model.js` | **no** | 2 |
+| `strategy-model.js` | nobody | **no** | 1 |
+| `item-model-coverage.js` | nobody | **no** | 1 |
+| `revenue-ranking.js` | `revenue-planner.js` | yes | 1 |
+
+The engine, the strategy layer and the coverage auditor are tested but on no
+runtime path, and none is referenced from `index.html`. The planner still uses
+the older manual-baseline ranking. The audit document warned about a research
+document being mistaken for implemented coverage; the same is now true of the
+code.
+
+### Item model coverage, measured
+
+`item-model-coverage.js` exists so a missing model is "a measurable coverage
+failure rather than an invisible generic badge fallback". Nothing measured it.
+`tests/item-model-coverage-audit.test.js` now audits every id the app knows
+offline -- twelve tools at three tiers plus five Garden vacuums, 41 in total --
+against the shipped pack.
+
+Result: **41 of 41 resolve to their own exact pack texture.** None unresolved,
+none dropping to a vanilla material. The official-skin path cannot be exercised
+in CI, so this is the pack-only view: the weaker of the two, which makes it the
+useful one to pin. One test proves the audit can fail, on a made-up id.
+
+### Item prices: the gap is the link, not the research
+
+`docs/ITEM_PRICE_COVERAGE.md` is generated from `src/data.js` and the shipped
+price research. Six research files carry 76 named cost records. Of the 85
+entries the planner can rank, **7** have a cost a machine can reach.
+
+The reason is structural: the entries carry no cost field. Their fields are
+`category, cropScope, hypercharge, id, manualDefault, max, metric, modeScope,
+name, notes, rawMarginal, section, source, status, stepGain, workbookRank` --
+no `cost`, no `price`, no `timeToObtain`. Price research and ranked entries are
+two disconnected data sets, which is why the planner asks for Coins/h by hand.
+
+The document says plainly what its matching can and cannot show: normalised
+name overlap produces false negatives, so a line there means "no link exists",
+not "no research exists". Entries that are earned rather than bought are marked
+`time` instead of `coins`, since one number mixing both would be the fake
+universal conversion the scoring model already refuses.
+
+`tests/item-price-coverage.test.js` recomputes the figure, fails if the document
+drifts from the data, fails if coverage drops below the current 7, and fails if
+the document lists an entry that no longer exists.
