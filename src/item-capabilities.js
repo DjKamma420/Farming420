@@ -70,6 +70,16 @@ export function applyVacuumReforge(bucket, requested) {
 
 const ARMOR_SLOTS = new Set(['helmet', 'chestplate', 'leggings', 'boots']);
 const EQUIPMENT_SLOTS = new Set(['equipment1', 'equipment2', 'equipment3', 'equipment4']);
+const CATEGORY_BY_FAMILY = Object.freeze({
+  armor: new Set(['HELMET', 'CHESTPLATE', 'LEGGINGS', 'BOOTS']),
+  equipment: new Set(['NECKLACE', 'CLOAK', 'BELT', 'GLOVES', 'BRACELET']),
+  // The official resource historically used HOE/AXE for some of these before
+  // the FARMING_TOOL category was rolled out. Keep those exact categories as a
+  // compatibility bridge for cached/current-resource transitions.
+  'farming-tool': new Set(['FARMING_TOOL', 'HOE', 'AXE']),
+  vacuum: new Set(['VACUUM']),
+  none: new Set(),
+});
 
 export function capabilityFamilyForSlot(slotId) {
   if (ARMOR_SLOTS.has(slotId)) return 'armor';
@@ -77,6 +87,13 @@ export function capabilityFamilyForSlot(slotId) {
   if (slotId === 'tool') return 'farming-tool';
   if (slotId === 'vacuum') return 'vacuum';
   return 'none';
+}
+
+export function catalogItemMatchesFamily(slotId, catalogItem) {
+  if (!catalogItem) return false;
+  const family = capabilityFamilyForSlot(slotId);
+  const allowed = CATEGORY_BY_FAMILY[family];
+  return Boolean(allowed?.has(String(catalogItem.category || '').trim().toUpperCase()));
 }
 
 function normalize(value) {
@@ -103,7 +120,7 @@ export function catalogItemForSetupItem(catalog, item) {
 }
 
 export function reforgeOptionsForItem(slotId, catalogItem, currentReforge = null) {
-  if (!catalogItem || catalogItem.cannotReforge === true) return [];
+  if (!catalogItem || catalogItem.cannotReforge === true || !catalogItemMatchesFamily(slotId, catalogItem)) return [];
   const family = capabilityFamilyForSlot(slotId);
   const base = [...(FARMING_REFORGES_BY_FAMILY[family] || [])];
   const current = normalize(currentReforge).replace(/\s+/g, '-');
@@ -116,16 +133,15 @@ export function reforgeOptionsForItem(slotId, catalogItem, currentReforge = null
 }
 
 /**
- * `can_recombobulate=false` is authoritative. Most ordinary armor/equipment
- * items omit the true field because recombobulation is the default, so known
- * armor/equipment categories use that default unless the API explicitly says no.
+ * `can_recombobulate=false` is authoritative. Ordinary compatible gear omits
+ * the true field because recombobulation is the default, so all four physical
+ * farming families use that default only when the official category matches.
  */
 export function canRecombobulateItem(slotId, catalogItem) {
-  if (!catalogItem) return false;
+  if (!catalogItem || !catalogItemMatchesFamily(slotId, catalogItem)) return false;
   if (catalogItem.canRecombobulate === false) return false;
   if (catalogItem.canRecombobulate === true) return true;
-  const family = capabilityFamilyForSlot(slotId);
-  return family === 'armor' || family === 'equipment';
+  return ['armor', 'equipment', 'farming-tool', 'vacuum'].includes(capabilityFamilyForSlot(slotId));
 }
 
 export function gemstoneSlotsForItem(catalogItem) {
@@ -156,25 +172,28 @@ export function gemValuesForSlotType(slotType) {
 
 export function itemCapabilities(slotId, item, catalog) {
   const catalogItem = catalogItemForSetupItem(catalog, item);
+  const family = capabilityFamilyForSlot(slotId);
   if (!catalogItem) {
     return {
       known: false,
       catalogItem: null,
-      family: capabilityFamilyForSlot(slotId),
+      family,
       reforges: [],
       canReforge: false,
       canRecombobulate: false,
       gemstoneSlots: [],
     };
   }
-  const reforges = reforgeOptionsForItem(slotId, catalogItem, item?.reforge);
+  const applicable = catalogItemMatchesFamily(slotId, catalogItem);
+  const reforges = applicable ? reforgeOptionsForItem(slotId, catalogItem, item?.reforge) : [];
   return {
     known: true,
+    applicable,
     catalogItem,
-    family: capabilityFamilyForSlot(slotId),
+    family,
     reforges,
-    canReforge: reforges.length > 0 && catalogItem.cannotReforge !== true,
-    canRecombobulate: canRecombobulateItem(slotId, catalogItem),
-    gemstoneSlots: gemstoneSlotsForItem(catalogItem),
+    canReforge: applicable && reforges.length > 0 && catalogItem.cannotReforge !== true,
+    canRecombobulate: applicable && canRecombobulateItem(slotId, catalogItem),
+    gemstoneSlots: applicable ? gemstoneSlotsForItem(catalogItem) : [],
   };
 }

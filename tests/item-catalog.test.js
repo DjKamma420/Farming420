@@ -20,7 +20,14 @@ const RESOURCE = {
   items: [
     {
       id: 'HELIANTHUS_HELMET', name: 'Helianthus Helmet', category: 'HELMET', tier: 'MYTHIC', material: 'SKULL_ITEM',
-      skin: 'ABCDEF'.repeat(10) + 'ABCD', gemstone_slots: [{ slot_type: 'PERIDOT' }, { slot_type: 'PERIDOT' }],
+      skin: 'ABCDEF'.repeat(10) + 'ABCD', gemstone_slots: [
+        { slot_type: 'PERIDOT' },
+        {
+          slot_type: 'PERIDOT',
+          requirements: [{ type: 'ITEM_DATA', data_key: 'levelable_lvl', operator: 'GREATER_THAN_OR_EQUALS', value: 15 }],
+          costs: [{ type: 'COINS', coins: 250000 }, { type: 'ITEM', item_id: 'FINE_PERIDOT_GEM', amount: 2 }],
+        },
+      ],
       can_recombobulate: true,
     },
     {
@@ -48,7 +55,15 @@ test('the official resource keeps art and exact upgrade capability metadata', ()
     material: 'SKULL_ITEM',
     skin: ('ABCDEF'.repeat(10) + 'ABCD').toLowerCase(),
     color: null,
-    gemstoneSlots: [{ index: 0, slotType: 'PERIDOT' }, { index: 1, slotType: 'PERIDOT' }],
+    gemstoneSlots: [
+      { index: 0, slotType: 'PERIDOT', requirements: [], costs: [] },
+      {
+        index: 1,
+        slotType: 'PERIDOT',
+        requirements: [{ type: 'ITEM_DATA', dataKey: 'levelable_lvl', operator: 'GREATER_THAN_OR_EQUALS', value: '15' }],
+        costs: [{ type: 'COINS', coins: 250000 }, { type: 'ITEM', itemId: 'FINE_PERIDOT_GEM', amount: 2 }],
+      },
+    ],
     cannotReforge: false,
     canRecombobulate: true,
   });
