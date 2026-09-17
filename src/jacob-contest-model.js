@@ -115,7 +115,8 @@ function sumExplicitCollectionStreams(streams, missing) {
  * collection streams (for example pre-spawned Pest drops or Greenhouse harvest).
  *
  * All quantities are expectations. Missing direct-farm inputs make the result
- * incomplete; extra streams are never fabricated.
+ * incomplete; extra streams are never fabricated. Callers must pass explicit
+ * zeroes for known-absent contest Fortune and known full uptime.
  */
 export function estimateJacobContestScore(input = {}) {
   const missing = [];
@@ -129,8 +130,8 @@ export function estimateJacobContestScore(input = {}) {
     const baseUnitsPerBreak = finiteNonNegative(direct.baseUnitsPerBreak);
     const farmingFortune = finiteNonNegative(direct.farmingFortune);
     const cropFortune = finiteNonNegative(direct.cropFortune);
-    const contestCropFortune = finiteNonNegative(direct.contestCropFortune ?? 0);
-    const uptimeRatio = Number(direct.uptimeRatio ?? 1);
+    const contestCropFortune = finiteNonNegative(direct.contestCropFortune);
+    const uptimeRatio = Number(direct.uptimeRatio);
     const durationSeconds = finiteNonNegative(input.durationSeconds ?? JACOB_CONTEST_DURATION_SECONDS);
 
     if (breaksPerSecond == null) missing.push('directFarming.breaksPerSecond');
