@@ -1128,3 +1128,66 @@ run rather than trusted.
 - Rendered in a browser against a stand-in pack at the real path: all ten cards
   show their picture, the images actually load, and a second observer pass adds
   nothing — the container guard holds.
+
+## The click freeze (0.24.0)
+
+### What it was
+
+`src/tool-presentation-ui.js` observes `#app` with `{childList: true, subtree:
+true}` and its callback wrote into that same subtree on every run:
+
+    goals.innerHTML = markup;      // every call, even when markup was identical
+    badge.textContent = label;     // every call
+
+Both replace the child nodes even when the value is unchanged, so each write
+produced a mutation, which produced another callback, which wrote again. The tab
+wedged. It stayed invisible on load because the function returns early unless
+the active page is Tools, so the first click that rendered Tools started it.
+
+### How it was found
+
+Bisect forward from the minimal core: add one module, run a click sweep, repeat.
+Modules one to eight passed. The ninth, `tool-presentation-ui`, crashed the
+renderer process outright. Notably `farming-tool-art-ui` -- the module the hotfix
+series had blamed and disabled -- passed cleanly at step eight. It was never the
+cause.
+
+Two earlier hypotheses were tested and **withdrawn**, both because a local test
+server returned 304 Not Modified on files whose timestamps had not moved:
+"a stale service worker pins the browser to the old build" and "the tombstone
+worker never activates". With the timestamps corrected, a stuck browser recovers
+within about three reloads on its own. Neither belonged in the diagnosis.
+
+### The fix
+
+Idempotent writes first: nothing is assigned unless the value actually changed.
+Then the structural guard, because idempotence relies on every future writer
+remembering: the observer is disconnected around the writes, `takeRecords()`
+drops whatever queued, and it is reattached afterwards.
+
+### The other half of the problem
+
+The hotfix series had cut `index.html` down to a core of three modules, leaving
+**39 of 56 unreferenced** -- Settings, the whole API sync, the screenshot
+scanner and every item-art layer among them. That is why so much of the app did
+nothing when clicked: it was not loaded. All of it is referenced again.
+
+`scripts/check-sw-manifest.js` now accepts a worker that precaches nothing,
+since the deployed worker exists only to remove its predecessor.
+
+### Verification
+
+- 420 tests pass.
+- Full click sweep with every module enabled: 161 clicks on desktop with empty
+  state, 161 with a filled profile at tool tier 3, 84 on a 390px phone
+  viewport. No freeze, no renderer crash, no console errors.
+- A test pins the exact lines that mattered, and a second one fails if
+  `index.html` ever references a file that does not exist.
+
+### Deliberately not tested
+
+Whether a module "guards against re-entering itself" is not checkable by pattern
+matching. Two attempts raised false alarms on correct code, and a check that
+fires on correct code teaches people to ignore it. The other twelve observer
+modules were audited by hand instead; the result and the rule are in
+`tasks/lessons.md`.

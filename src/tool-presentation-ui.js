@@ -53,22 +53,63 @@ function esc(value='') { return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;
 function renderRecommendations(root,crop,state) {
   const goals=root.querySelector('.workspace-recommendations .workspace-goals'); if(!goals)return;
   const active=selectedReforge(state,crop.id);
-  goals.innerHTML=recommendationRows(crop.id).map(row=>`<span class="workspace-goal ${row.reforge===active?'active':''}"><b>${esc(row.label)}</b>${esc(reforgeById(row.reforge)?.name || row.reforge)}${row.note?`<small>${esc(row.note)}</small>`:''}</span>`).join('');
+  const markup=recommendationRows(crop.id).map(row=>`<span class="workspace-goal ${row.reforge===active?'active':''}"><b>${esc(row.label)}</b>${esc(reforgeById(row.reforge)?.name || row.reforge)}${row.note?`<small>${esc(row.note)}</small>`:''}</span>`).join('');
+  // Only write when the markup actually changed. Assigning identical innerHTML
+  // still replaces the children, and a MutationObserver cannot tell the
+  // difference: it reports a mutation either way and calls this again.
+  if (goals.innerHTML !== markup) goals.innerHTML = markup;
 }
 function renderTier(root,crop,state) {
   const editor=root.querySelector('[data-tool-editor="1"]'); if(!editor)return;
   const tier=selectedToolTier(state,crop.id), label=toolTierLabel(tier), asset=toolAssetForTier(crop.id,tier);
   const portrait=editor.querySelector('.item-portrait');
-  if(portrait){ if(asset)portrait.dataset.packAsset=asset; else delete portrait.dataset.packAsset; let badge=portrait.querySelector('.workspace-tier-badge'); if(!badge){badge=document.createElement('span');badge.className='workspace-tier-badge';portrait.append(badge);} badge.textContent=label; }
+  if(portrait){
+    if(asset){ if(portrait.dataset.packAsset!==asset) portrait.dataset.packAsset=asset; }
+    else if('packAsset' in portrait.dataset) delete portrait.dataset.packAsset;
+    let badge=portrait.querySelector('.workspace-tier-badge');
+    if(!badge){ badge=document.createElement('span'); badge.className='workspace-tier-badge'; portrait.append(badge); }
+    // Setting textContent replaces the text node even when the string is
+    // identical, which is a mutation, which re-enters this function.
+    if(badge.textContent!==label) badge.textContent=label;
+  }
   const status=editor.querySelector('.item-rarity'); if(status && !status.textContent.includes(label)) status.textContent=`${label} · ${status.textContent}`;
 }
+/**
+ * Every write below lands in the subtree the observer watches, so the writes
+ * are paused while they happen. The idempotence checks in the two render
+ * functions are the first line of defence; this is the structural one, so a
+ * future unconditional write cannot wedge the page again.
+ */
+let observer = null;
+let observedRoot = null;
+
+function withObserverPaused(run) {
+  if (!observer) { run(); return; }
+  observer.disconnect();
+  try {
+    run();
+  } finally {
+    // Drops anything queued while we were writing, so our own mutations do not
+    // come back as a fresh callback the moment we reconnect.
+    observer.takeRecords();
+    if (observedRoot) observer.observe(observedRoot, { childList: true, subtree: true });
+  }
+}
+
 export function applyToolPresentation(root=document,state=readState()) {
   if(!root?.querySelector || !state)return;
   if(root.querySelector('.sidebar .nav-link.active')?.dataset.page !== 'tools')return;
-  const crop=cropForState(state); renderTier(root,crop,state); renderRecommendations(root,crop,state);
+  const crop=cropForState(state);
+  withObserverPaused(() => { renderTier(root,crop,state); renderRecommendations(root,crop,state); });
 }
+
 if(typeof document!=='undefined'){
+  const app=document.getElementById('app');
+  if(app&&typeof MutationObserver!=='undefined'){
+    observedRoot = app;
+    observer = new MutationObserver(()=>applyToolPresentation(document));
+    observer.observe(app,{childList:true,subtree:true});
+  }
   applyToolPresentation(document);
-  const app=document.getElementById('app'); if(app&&typeof MutationObserver!=='undefined')new MutationObserver(()=>applyToolPresentation(document)).observe(app,{childList:true,subtree:true});
   if(typeof window!=='undefined')window.addEventListener('farming420:state-changed',()=>applyToolPresentation(document));
 }
