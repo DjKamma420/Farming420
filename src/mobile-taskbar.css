@@ -18,10 +18,12 @@
     display: none !important;
   }
 
-  /* "What to enter" is not useful as a permanent mobile taskbar destination. */
-  .skyblock-redesign .sb-rail .nav-link[data-page="setup"] {
-    display: none !important;
-  }
+  /* "What to enter" was hidden here as not worth a permanent taskbar slot, and
+     that made the page unreachable on a phone: nothing else in the app links
+     to it, so 75 interactive elements and 63 folded entries had no entry point
+     at all. The taskbar already scrolls horizontally -- twelve 44px slots
+     overflow a 412px phone as it is -- so the slot it was saving did not
+     exist. It scrolls with the rest instead. */
 
   .skyblock-redesign .sb-rail .nav-link {
     flex: 0 0 44px;
