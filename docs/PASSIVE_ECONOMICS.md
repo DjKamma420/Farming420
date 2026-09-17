@@ -135,18 +135,17 @@ The same disc can have different value depending on:
 
 ## 6. Mosquito Pet trap interaction
 
-Current maintained item data describes Legendary Mosquito's `Bloodsucker's Betrayal` as:
+Official 0.23.5 notes replaced the Mosquito Pet's old third perk with `Bloodsucker's Betrayal`, making Pest Traps work 0.2-20% faster depending on pet level.
 
-```text
-When collected, Pest Traps will catch the next pest up to 20% faster.
-```
+Source:
+https://hypixel.net/threads/hypixel-skyblock-0-23-5-dungeonbreaker-pity-system-ironman-ws-and-more.5998589/
 
-This is not equivalent to permanently multiplying all trap production by 1.20. Model the accelerated next capture after collection as its own state transition.
+A follow-up bug-fix patch clarified offline catch-up simulation: when Pest Trap collection is simulated after the player has left the Garden for some time, the Mosquito time discount is applied to all rolled Pests.
 
-Current reference:
-https://wiki.hypixel.net/Mosquito_Pet
+Source:
+https://hypixel.net/threads/october-16-0-23-5-bug-fixes-changes.6001183/
 
-Because the old official wiki is no longer the canonical project source, this reference is supporting evidence only; newer live behavior or maintained community-wiki evidence overrides it.
+Model Mosquito inside `trap_capture_model`; do not value the perk as a generic +20% coin multiplier. Storage capacity, bait, collection interval, Pest-type distribution, and whether the faster cycles actually fit before the trap becomes full determine realized value.
 
 ## 7. Buzzybee's Fantabulous Disco Destination
 
