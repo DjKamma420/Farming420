@@ -1,0 +1,641 @@
+{
+  "meta": {
+    "title": "Farming armor and equipment average acquisition cost snapshot",
+    "asOf": "2026-09-17",
+    "currency": "coins",
+    "scope": "Current Farming armor progression plus Farmer's Boots, Rancher's Boots, and Farming equipment families used by Farming420.",
+    "costType": "market_average_acquisition_price",
+    "primaryUse": "Research input for upgrade economics. A fresh live market-price service should override this snapshot when available.",
+    "progressionSource": "https://hypixel.net/threads/hypixel-skyblock-0-26-1-new-player-improvements-harvest-feast-changes-healing-revamp-and-more.6127383/",
+    "progressionNote": "SkyBlock 0.26.1 unified the early Farming armor progression and renamed Farm Suit -> Farmhand, Farm Armor -> Haymaker, Pumpkin Armor -> Sprout, and Melon Armor -> Tater. Legacy internal item IDs are retained for parser/API compatibility.",
+    "marketPolicy": {
+      "preferred": "SkyAH reported Auction House average sale price, normally a 7-day snapshot",
+      "fallback": "SkyCofl/Coflnet reported 24-hour average when SkyAH did not expose a usable current numeric average",
+      "unknownRule": "If no sufficiently current/reliable average was available, averageCostCoins is null. Unknown is never silently replaced with zero.",
+      "modifierCaveat": "Public AH average-sale summaries can include reforged, enchanted, recombobulated, gemstone-upgraded, dyed, or otherwise modified copies. Treat these values as whole-item market acquisition proxies, not as guaranteed clean-base-item prices. Do not add separately priced modifiers on top without a clean-item price filter or item-level price breakdown."
+    },
+    "existingEquipmentDataset": "research/equipment-average-costs-2026-09-17.json",
+    "schemaInvariant": "Each physical piece is a separate record. averageCostCoins is the average acquisition proxy for that exact piece, never a full-set value."
+  },
+  "armorProgression": [
+    {
+      "tier": 1,
+      "set": "Farmhand Armor",
+      "legacyMarketName": "Farm Suit Armor",
+      "pieces": [
+        {
+          "skyblockId": "FARM_SUIT_HELMET",
+          "name": "Farmhand Helmet",
+          "slot": "HELMET",
+          "averageCostCoins": null,
+          "status": "NO_RELIABLE_CURRENT_AVERAGE",
+          "lastVerified": "2026-09-17",
+          "note": "Very low AH volume; no sufficiently reliable current numeric average was recovered."
+        },
+        {
+          "skyblockId": "FARM_SUIT_CHESTPLATE",
+          "name": "Farmhand Chestplate",
+          "slot": "CHESTPLATE",
+          "averageCostCoins": null,
+          "status": "NO_RELIABLE_CURRENT_AVERAGE",
+          "lastVerified": "2026-09-17",
+          "note": "Very low AH volume; no sufficiently reliable current numeric average was recovered."
+        },
+        {
+          "skyblockId": "FARM_SUIT_LEGGINGS",
+          "name": "Farmhand Leggings",
+          "slot": "LEGGINGS",
+          "averageCostCoins": 32,
+          "source": "https://skyah.net/item/FARM_SUIT_LEGGINGS",
+          "sourceMetric": "SkyAH reported 7-day average sale price",
+          "sales7d": 4,
+          "confidence": "LOW",
+          "lastVerified": "2026-09-17",
+          "note": "Source still displays the legacy Farm Suit name. Extremely low volume makes this a weak acquisition-cost signal."
+        },
+        {
+          "skyblockId": "FARM_SUIT_BOOTS",
+          "name": "Farmhand Boots",
+          "slot": "BOOTS",
+          "averageCostCoins": 20,
+          "source": "https://skyah.net/item/FARM_SUIT_BOOTS",
+          "sourceMetric": "SkyAH reported 7-day average sale price",
+          "sales7d": 2,
+          "confidence": "LOW",
+          "lastVerified": "2026-09-17",
+          "note": "Source still displays the legacy Farm Suit name. Extremely low volume makes this a weak acquisition-cost signal."
+        }
+      ]
+    },
+    {
+      "tier": 2,
+      "set": "Haymaker Armor",
+      "legacyMarketName": "Farm Armor",
+      "pieces": [
+        {
+          "skyblockId": "FARM_ARMOR_HELMET",
+          "name": "Haymaker Helmet",
+          "slot": "HELMET",
+          "averageCostCoins": 15000,
+          "source": "https://skyah.net/item/FARM_ARMOR_HELMET",
+          "sourceMetric": "SkyAH reported 7-day average sale price",
+          "sales7d": 11,
+          "confidence": "LOW",
+          "lastVerified": "2026-09-17",
+          "note": "Low volume and high day-to-day variance. Source still displays the legacy Farm Armor name."
+        },
+        {
+          "skyblockId": "FARM_ARMOR_CHESTPLATE",
+          "name": "Haymaker Chestplate",
+          "slot": "CHESTPLATE",
+          "averageCostCoins": 5200,
+          "source": "https://skyah.net/item/FARM_ARMOR_CHESTPLATE",
+          "sourceMetric": "SkyAH reported 7-day average sale price",
+          "sales7d": 5,
+          "confidence": "LOW",
+          "lastVerified": "2026-09-17",
+          "note": "Low volume. Source still displays the legacy Farm Armor name."
+        },
+        {
+          "skyblockId": "FARM_ARMOR_LEGGINGS",
+          "name": "Haymaker Leggings",
+          "slot": "LEGGINGS",
+          "averageCostCoins": 4500,
+          "source": "https://skyah.net/item/FARM_ARMOR_LEGGINGS",
+          "sourceMetric": "SkyAH reported 7-day average sale price",
+          "sales7d": 4,
+          "confidence": "LOW",
+          "lastVerified": "2026-09-17",
+          "note": "Low volume. Source still displays the legacy Farm Armor name."
+        },
+        {
+          "skyblockId": "FARM_ARMOR_BOOTS",
+          "name": "Haymaker Boots",
+          "slot": "BOOTS",
+          "averageCostCoins": null,
+          "status": "NO_RELIABLE_CURRENT_AVERAGE",
+          "lastVerified": "2026-09-17",
+          "note": "Current source discovery confirmed the item but did not expose a sufficiently reliable numeric average in the research pass."
+        }
+      ]
+    },
+    {
+      "tier": 3,
+      "set": "Sprout Armor",
+      "legacyMarketName": "Pumpkin Armor",
+      "pieces": [
+        {
+          "skyblockId": "PUMPKIN_HELMET",
+          "name": "Sprout Helmet",
+          "slot": "HELMET",
+          "averageCostCoins": 482500,
+          "source": "https://sky.coflnet.com/item/PUMPKIN_HELMET",
+          "sourceMetric": "SkyCofl reported 24-hour average price at crawl time",
+          "confidence": "MEDIUM_LOW",
+          "lastVerified": "2026-09-17",
+          "note": "The source snapshot was older than the preferred fresh-window sources; refresh before optimizer-critical use."
+        },
+        {
+          "skyblockId": "PUMPKIN_CHESTPLATE",
+          "name": "Sprout Chestplate",
+          "slot": "CHESTPLATE",
+          "averageCostCoins": 483917,
+          "source": "https://sky.coflnet.com/item/PUMPKIN_CHESTPLATE",
+          "sourceMetric": "SkyCofl reported 24-hour average price at crawl time",
+          "confidence": "MEDIUM_LOW",
+          "lastVerified": "2026-09-17",
+          "note": "The source snapshot was older than the preferred fresh-window sources; refresh before optimizer-critical use."
+        },
+        {
+          "skyblockId": "PUMPKIN_LEGGINGS",
+          "name": "Sprout Leggings",
+          "slot": "LEGGINGS",
+          "averageCostCoins": 595833,
+          "source": "https://sky.coflnet.com/item/PUMPKIN_LEGGINGS",
+          "sourceMetric": "SkyCofl reported 24-hour average price at crawl time",
+          "confidence": "MEDIUM_LOW",
+          "lastVerified": "2026-09-17",
+          "note": "The source snapshot was older than the preferred fresh-window sources; refresh before optimizer-critical use."
+        },
+        {
+          "skyblockId": "PUMPKIN_BOOTS",
+          "name": "Sprout Boots",
+          "slot": "BOOTS",
+          "averageCostCoins": null,
+          "status": "NO_RELIABLE_CURRENT_AVERAGE",
+          "lastVerified": "2026-09-17",
+          "note": "No sufficiently current numeric average was recovered in this pass."
+        }
+      ]
+    },
+    {
+      "tier": 4,
+      "set": "Tater Armor",
+      "legacyMarketName": "Melon Armor",
+      "pieces": [
+        {
+          "skyblockId": "MELON_HELMET",
+          "name": "Tater Helmet",
+          "slot": "HELMET",
+          "averageCostCoins": 657209,
+          "source": "https://sky.coflnet.com/item/MELON_HELMET",
+          "sourceMetric": "SkyCofl reported 24-hour average price",
+          "confidence": "MEDIUM",
+          "lastVerified": "2026-09-17"
+        },
+        {
+          "skyblockId": "MELON_CHESTPLATE",
+          "name": "Tater Chestplate",
+          "slot": "CHESTPLATE",
+          "averageCostCoins": 1096582,
+          "source": "https://sky.coflnet.com/item/MELON_CHESTPLATE",
+          "sourceMetric": "SkyCofl reported 24-hour average price",
+          "confidence": "MEDIUM",
+          "lastVerified": "2026-09-17"
+        },
+        {
+          "skyblockId": "MELON_LEGGINGS",
+          "name": "Tater Leggings",
+          "slot": "LEGGINGS",
+          "averageCostCoins": 820114,
+          "source": "https://sky.coflnet.com/item/MELON_LEGGINGS",
+          "sourceMetric": "SkyCofl reported 24-hour average price",
+          "confidence": "MEDIUM",
+          "lastVerified": "2026-09-17"
+        },
+        {
+          "skyblockId": "MELON_BOOTS",
+          "name": "Tater Boots",
+          "slot": "BOOTS",
+          "averageCostCoins": 626682,
+          "source": "https://sky.coflnet.com/item/MELON_BOOTS",
+          "sourceMetric": "SkyCofl reported 24-hour average price",
+          "confidence": "MEDIUM",
+          "lastVerified": "2026-09-17"
+        }
+      ]
+    },
+    {
+      "tier": 5,
+      "set": "Cropie Armor",
+      "pieces": [
+        {
+          "skyblockId": "CROPIE_HELMET",
+          "name": "Cropie Helmet",
+          "slot": "HELMET",
+          "averageCostCoins": 4440000,
+          "source": "https://skyah.net/item/CROPIE_HELMET",
+          "sourceMetric": "SkyAH reported average sale price",
+          "confidence": "HIGH",
+          "lastVerified": "2026-09-17"
+        },
+        {
+          "skyblockId": "CROPIE_CHESTPLATE",
+          "name": "Cropie Chestplate",
+          "slot": "CHESTPLATE",
+          "averageCostCoins": 7200000,
+          "source": "https://skyah.net/item/CROPIE_CHESTPLATE",
+          "sourceMetric": "SkyAH reported average sale price",
+          "confidence": "HIGH",
+          "lastVerified": "2026-09-17"
+        },
+        {
+          "skyblockId": "CROPIE_LEGGINGS",
+          "name": "Cropie Leggings",
+          "slot": "LEGGINGS",
+          "averageCostCoins": 6999999,
+          "source": "https://skyah.net/item/CROPIE_LEGGINGS",
+          "sourceMetric": "SkyAH reported average sale price",
+          "confidence": "HIGH",
+          "lastVerified": "2026-09-17"
+        },
+        {
+          "skyblockId": "CROPIE_BOOTS",
+          "name": "Cropie Boots",
+          "slot": "BOOTS",
+          "averageCostCoins": 5740352,
+          "source": "https://sky.coflnet.com/item/CROPIE_BOOTS",
+          "sourceMetric": "SkyCofl reported 24-hour average price",
+          "confidence": "HIGH",
+          "lastVerified": "2026-09-17"
+        }
+      ]
+    },
+    {
+      "tier": 6,
+      "set": "Squash Armor",
+      "pieces": [
+        {
+          "skyblockId": "SQUASH_HELMET",
+          "name": "Squash Helmet",
+          "slot": "HELMET",
+          "averageCostCoins": 8999999,
+          "source": "https://skyah.net/item/SQUASH_HELMET",
+          "sourceMetric": "SkyAH reported average sale price",
+          "confidence": "HIGH",
+          "lastVerified": "2026-09-17"
+        },
+        {
+          "skyblockId": "SQUASH_CHESTPLATE",
+          "name": "Squash Chestplate",
+          "slot": "CHESTPLATE",
+          "averageCostCoins": 14000000,
+          "source": "https://skyah.net/item/SQUASH_CHESTPLATE",
+          "sourceMetric": "SkyAH reported average sale price",
+          "confidence": "HIGH",
+          "lastVerified": "2026-09-17"
+        },
+        {
+          "skyblockId": "SQUASH_LEGGINGS",
+          "name": "Squash Leggings",
+          "slot": "LEGGINGS",
+          "averageCostCoins": 14000000,
+          "source": "https://skyah.net/item/SQUASH_LEGGINGS",
+          "sourceMetric": "SkyAH reported average sale price",
+          "confidence": "HIGH",
+          "lastVerified": "2026-09-17"
+        },
+        {
+          "skyblockId": "SQUASH_BOOTS",
+          "name": "Squash Boots",
+          "slot": "BOOTS",
+          "averageCostCoins": 11894999,
+          "source": "https://skyah.net/item/SQUASH_BOOTS",
+          "sourceMetric": "SkyAH reported average sale price",
+          "confidence": "HIGH",
+          "lastVerified": "2026-09-17"
+        }
+      ]
+    },
+    {
+      "tier": 7,
+      "set": "Fermento Armor",
+      "pieces": [
+        {
+          "skyblockId": "FERMENTO_HELMET",
+          "name": "Fermento Helmet",
+          "slot": "HELMET",
+          "averageCostCoins": 34000000,
+          "source": "https://skyah.net/item/FERMENTO_HELMET",
+          "sourceMetric": "SkyAH reported average sale price",
+          "confidence": "HIGH",
+          "lastVerified": "2026-09-17"
+        },
+        {
+          "skyblockId": "FERMENTO_CHESTPLATE",
+          "name": "Fermento Chestplate",
+          "slot": "CHESTPLATE",
+          "averageCostCoins": 44000000,
+          "source": "https://skyah.net/item/FERMENTO_CHESTPLATE",
+          "sourceMetric": "SkyAH reported average sale price",
+          "confidence": "HIGH",
+          "lastVerified": "2026-09-17"
+        },
+        {
+          "skyblockId": "FERMENTO_LEGGINGS",
+          "name": "Fermento Leggings",
+          "slot": "LEGGINGS",
+          "averageCostCoins": 42900000,
+          "source": "https://skyah.net/item/FERMENTO_LEGGINGS",
+          "sourceMetric": "SkyAH reported average sale price",
+          "confidence": "HIGH",
+          "lastVerified": "2026-09-17"
+        },
+        {
+          "skyblockId": "FERMENTO_BOOTS",
+          "name": "Fermento Boots",
+          "slot": "BOOTS",
+          "averageCostCoins": 24699990,
+          "source": "https://skyah.net/item/FERMENTO_BOOTS",
+          "sourceMetric": "SkyAH reported average sale price",
+          "confidence": "HIGH",
+          "lastVerified": "2026-09-17"
+        }
+      ]
+    },
+    {
+      "tier": 8,
+      "set": "Helianthus Armor",
+      "pieces": [
+        {
+          "skyblockId": "HELIANTHUS_HELMET",
+          "name": "Helianthus Helmet",
+          "slot": "HELMET",
+          "averageCostCoins": 72000000,
+          "source": "https://skyah.net/item/HELIANTHUS_HELMET",
+          "sourceMetric": "SkyAH reported 7-day average sale price",
+          "sales7d": 307,
+          "confidence": "HIGH",
+          "lastVerified": "2026-09-17"
+        },
+        {
+          "skyblockId": "HELIANTHUS_CHESTPLATE",
+          "name": "Helianthus Chestplate",
+          "slot": "CHESTPLATE",
+          "averageCostCoins": 83999000,
+          "source": "https://skyah.net/item/HELIANTHUS_CHESTPLATE",
+          "sourceMetric": "SkyAH reported 7-day average sale price",
+          "sales7d": 311,
+          "confidence": "HIGH",
+          "lastVerified": "2026-09-17"
+        },
+        {
+          "skyblockId": "HELIANTHUS_LEGGINGS",
+          "name": "Helianthus Leggings",
+          "slot": "LEGGINGS",
+          "averageCostCoins": 78440000,
+          "source": "https://skyah.net/item/HELIANTHUS_LEGGINGS",
+          "sourceMetric": "SkyAH reported 7-day average sale price",
+          "sales7d": 301,
+          "confidence": "HIGH",
+          "lastVerified": "2026-09-17"
+        },
+        {
+          "skyblockId": "HELIANTHUS_BOOTS",
+          "name": "Helianthus Boots",
+          "slot": "BOOTS",
+          "averageCostCoins": 49000000,
+          "source": "https://skyah.net/item/HELIANTHUS_BOOTS",
+          "sourceMetric": "SkyAH reported 7-day average sale price",
+          "sales7d": 412,
+          "confidence": "HIGH",
+          "lastVerified": "2026-09-17"
+        }
+      ]
+    }
+  ],
+  "armorSetSummaries": [
+    {
+      "set": "Farmhand Armor",
+      "pricedPieces": 2,
+      "expectedPieces": 4,
+      "setTotalAverageAcquisitionCoins": null,
+      "setAveragePieceCostCoins": null,
+      "status": "INCOMPLETE_MARKET_DATA"
+    },
+    {
+      "set": "Haymaker Armor",
+      "pricedPieces": 3,
+      "expectedPieces": 4,
+      "setTotalAverageAcquisitionCoins": null,
+      "setAveragePieceCostCoins": null,
+      "status": "INCOMPLETE_MARKET_DATA"
+    },
+    {
+      "set": "Sprout Armor",
+      "pricedPieces": 3,
+      "expectedPieces": 4,
+      "setTotalAverageAcquisitionCoins": null,
+      "setAveragePieceCostCoins": null,
+      "status": "INCOMPLETE_MARKET_DATA"
+    },
+    {
+      "set": "Tater Armor",
+      "pricedPieces": 4,
+      "expectedPieces": 4,
+      "setTotalAverageAcquisitionCoins": 3200587,
+      "setAveragePieceCostCoins": 800147,
+      "status": "COMPLETE"
+    },
+    {
+      "set": "Cropie Armor",
+      "pricedPieces": 4,
+      "expectedPieces": 4,
+      "setTotalAverageAcquisitionCoins": 24380351,
+      "setAveragePieceCostCoins": 6095088,
+      "status": "COMPLETE"
+    },
+    {
+      "set": "Squash Armor",
+      "pricedPieces": 4,
+      "expectedPieces": 4,
+      "setTotalAverageAcquisitionCoins": 48894998,
+      "setAveragePieceCostCoins": 12223750,
+      "status": "COMPLETE"
+    },
+    {
+      "set": "Fermento Armor",
+      "pricedPieces": 4,
+      "expectedPieces": 4,
+      "setTotalAverageAcquisitionCoins": 145599990,
+      "setAveragePieceCostCoins": 36399998,
+      "status": "COMPLETE"
+    },
+    {
+      "set": "Helianthus Armor",
+      "pricedPieces": 4,
+      "expectedPieces": 4,
+      "setTotalAverageAcquisitionCoins": 283439000,
+      "setAveragePieceCostCoins": 70859750,
+      "status": "COMPLETE"
+    }
+  ],
+  "standaloneFarmingArmor": [
+    {
+      "skyblockId": "FARMER_BOOTS",
+      "name": "Farmer Boots",
+      "slot": "BOOTS",
+      "averageCostCoins": 700000,
+      "source": "https://skyah.net/item/FARMER_BOOTS",
+      "sourceMetric": "SkyAH reported 7-day average sale price",
+      "sales7d": 314,
+      "confidence": "HIGH",
+      "lastVerified": "2026-09-17"
+    },
+    {
+      "skyblockId": "RANCHERS_BOOTS",
+      "name": "Rancher's Boots",
+      "slot": "BOOTS",
+      "averageCostCoins": 5400000,
+      "source": "https://skyah.net/item/RANCHERS_BOOTS",
+      "sourceMetric": "SkyAH reported 7-day average sale price",
+      "sales7d": 1430,
+      "confidence": "HIGH",
+      "lastVerified": "2026-09-17"
+    }
+  ],
+  "equipment": [
+    {
+      "skyblockId": "LOTUS_NECKLACE",
+      "name": "Peony Necklace",
+      "slot": "NECKLACE",
+      "averageCostCoins": 905000,
+      "source": "https://skyah.net/item/LOTUS_NECKLACE",
+      "sourceMetric": "SkyAH reported average price",
+      "confidence": "HIGH",
+      "lastVerified": "2026-09-17"
+    },
+    {
+      "skyblockId": "LOTUS_CLOAK",
+      "name": "Peony Cloak",
+      "slot": "CLOAK",
+      "averageCostCoins": 1600000,
+      "source": "https://skyah.net/item/LOTUS_CLOAK",
+      "sourceMetric": "SkyAH reported average price",
+      "confidence": "HIGH",
+      "lastVerified": "2026-09-17"
+    },
+    {
+      "skyblockId": "LOTUS_BELT",
+      "name": "Peony Belt",
+      "slot": "BELT",
+      "averageCostCoins": 549000,
+      "source": "https://skyah.net/item/LOTUS_BELT",
+      "sourceMetric": "SkyAH reported average price",
+      "confidence": "HIGH",
+      "lastVerified": "2026-09-17"
+    },
+    {
+      "skyblockId": "LOTUS_BRACELET",
+      "name": "Peony Bracelet",
+      "slot": "BRACELET",
+      "averageCostCoins": 350000,
+      "source": "https://skyah.net/item/LOTUS_BRACELET",
+      "sourceMetric": "SkyAH reported average price",
+      "confidence": "HIGH",
+      "lastVerified": "2026-09-17"
+    },
+    {
+      "skyblockId": "BLOSSOM_NECKLACE",
+      "name": "Blossom Necklace",
+      "slot": "NECKLACE",
+      "averageCostCoins": 14987994,
+      "source": "https://skyah.net/item/BLOSSOM_NECKLACE",
+      "sourceMetric": "SkyAH reported average price",
+      "confidence": "HIGH",
+      "lastVerified": "2026-09-17"
+    },
+    {
+      "skyblockId": "BLOSSOM_CLOAK",
+      "name": "Blossom Cloak",
+      "slot": "CLOAK",
+      "averageCostCoins": 17899998,
+      "source": "https://skyah.net/item/BLOSSOM_CLOAK",
+      "sourceMetric": "SkyAH reported average price",
+      "confidence": "HIGH",
+      "lastVerified": "2026-09-17"
+    },
+    {
+      "skyblockId": "BLOSSOM_BELT",
+      "name": "Blossom Belt",
+      "slot": "BELT",
+      "averageCostCoins": 9599998,
+      "source": "https://skyah.net/item/BLOSSOM_BELT",
+      "sourceMetric": "SkyAH reported average price",
+      "confidence": "HIGH",
+      "lastVerified": "2026-09-17"
+    },
+    {
+      "skyblockId": "BLOSSOM_BRACELET",
+      "name": "Blossom Bracelet",
+      "slot": "BRACELET",
+      "averageCostCoins": 8558666,
+      "source": "https://sky.coflnet.com/item/BLOSSOM_BRACELET",
+      "sourceMetric": "SkyCofl reported 24-hour average price",
+      "confidence": "HIGH",
+      "lastVerified": "2026-09-17"
+    },
+    {
+      "skyblockId": "PESTHUNTERS_NECKLACE",
+      "name": "Pesthunter's Necklace",
+      "slot": "NECKLACE",
+      "averageCostCoins": 700000,
+      "source": "https://skyah.net/item/PESTHUNTERS_NECKLACE",
+      "sourceMetric": "SkyAH reported average price",
+      "confidence": "HIGH",
+      "lastVerified": "2026-09-17"
+    },
+    {
+      "skyblockId": "PESTHUNTERS_CLOAK",
+      "name": "Pesthunter's Cloak",
+      "slot": "CLOAK",
+      "averageCostCoins": 660000,
+      "source": "https://skyah.net/item/PESTHUNTERS_CLOAK",
+      "sourceMetric": "SkyAH reported average price",
+      "confidence": "MEDIUM",
+      "lastVerified": "2026-09-17"
+    },
+    {
+      "skyblockId": "PESTHUNTERS_BELT",
+      "name": "Pesthunter's Belt",
+      "slot": "BELT",
+      "averageCostCoins": 740000,
+      "source": "https://skyah.net/item/PESTHUNTERS_BELT",
+      "sourceMetric": "SkyAH reported average price",
+      "confidence": "HIGH",
+      "lastVerified": "2026-09-17"
+    },
+    {
+      "skyblockId": "PESTHUNTERS_GLOVES",
+      "name": "Pesthunter's Gloves",
+      "slot": "GLOVES",
+      "averageCostCoins": 700000,
+      "source": "https://skyah.net/item/PESTHUNTERS_GLOVES",
+      "sourceMetric": "SkyAH reported average price",
+      "confidence": "HIGH",
+      "lastVerified": "2026-09-17"
+    },
+    {
+      "skyblockId": "PEST_VEST",
+      "name": "Pest Vest",
+      "slot": "CLOAK",
+      "averageCostCoins": 5600000,
+      "source": "https://skyah.net/item/PEST_VEST",
+      "sourceMetric": "SkyAH reported average price",
+      "confidence": "MEDIUM",
+      "lastVerified": "2026-09-17"
+    },
+    {
+      "skyblockId": "ZORROS_CAPE",
+      "parserAliases": ["ZORRO_CAPE"],
+      "name": "Zorro's Cape",
+      "slot": "CLOAK",
+      "averageCostCoins": 2400000,
+      "source": "https://skyah.net/item/ZORROS_CAPE",
+      "sourceMetric": "SkyAH reported average price",
+      "confidence": "HIGH",
+      "lastVerified": "2026-09-17",
+      "note": "ZORRO_CAPE is retained only as a parser compatibility alias."
+    }
+  ]
+}
