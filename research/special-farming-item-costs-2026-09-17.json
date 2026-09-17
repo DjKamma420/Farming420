@@ -1,0 +1,388 @@
+{
+  "meta": {
+    "title": "Special Farming Item Cost Baseline",
+    "as_of": "2026-09-17",
+    "target_reader": "AI/optimizer",
+    "status": "ACTIVE_MARKET_SNAPSHOT",
+    "purpose": "Machine-readable cost baseline for special Farming progression items that are not primarily enchantments, reforges, chips, base gear, or gemstones.",
+    "refresh_policy": "Refresh live Bazaar prices before producing a player-facing next-upgrade recommendation. This file is a dated fallback snapshot, not a permanent price table."
+  },
+  "market_method": {
+    "source": "SkyBlock Pulse Bazaar",
+    "source_url": "https://sbstats.live/skyblock-bazaar",
+    "column_meaning": {
+      "instant_sell_coins": "Coins received by instantly selling one unit.",
+      "instant_buy_coins": "Coins paid to instantly buy one unit; use this as the default buy-now acquisition cost.",
+      "midpoint_reference_coins": "(instant_sell + instant_buy) / 2. This is the requested average-style reference value, but it is a bid/ask midpoint, NOT a historical time-weighted average.",
+      "historical_rolling_average_coins": "Reserved for a real rolling historical average when a reliable history feed is integrated."
+    },
+    "optimizer_rule": "For immediate purchase recommendations use instant_buy_coins. For rough price/value comparisons use midpoint_reference_coins. Never present the midpoint as a 7d/30d historical average.",
+    "wide_spread_rule": "If spread_pct_of_midpoint >= 20, flag PRICE_VOLATILE and prefer live refresh/order pricing over the dated midpoint."
+  },
+  "tool_and_vacuum_modifiers": [
+    {
+      "item": "Farming for Dummies",
+      "market": "bazaar",
+      "instant_sell_coins": 154403.00,
+      "instant_buy_coins": 427999.97,
+      "midpoint_reference_coins": 291201.48,
+      "spread_pct_of_midpoint": 93.95,
+      "required_quantity": 5,
+      "midpoint_total_coins": 1456007.42,
+      "instant_buy_total_coins": 2139999.85,
+      "historical_rolling_average_coins": null,
+      "effect": {
+        "per_unit": "+1 Farming Fortune on a compatible target",
+        "max_per_target": 5,
+        "max_effect": "+5 Farming Fortune",
+        "scope": "compatible farming tools/vacuums",
+        "cost_per_plus_1_stat_midpoint_coins": 291201.48
+      }
+    },
+    {
+      "item": "Overclocker 3000",
+      "market": "bazaar",
+      "instant_sell_coins": 238969.92,
+      "instant_buy_coins": 249898.71,
+      "midpoint_reference_coins": 244434.32,
+      "spread_pct_of_midpoint": 4.47,
+      "required_quantity": 10,
+      "midpoint_total_coins": 2444343.15,
+      "instant_buy_total_coins": 2498987.10,
+      "historical_rolling_average_coins": null,
+      "effect": {
+        "per_unit": "Unlocks one additional Farming Tool level after level 40",
+        "max_per_target": 10,
+        "max_result": "tool level cap 50",
+        "scope": "Farming Tool",
+        "stat_model_rule": "Do not model as a flat stat item. Value each unlocked level from the target tool's level table, including Crop Fortune/Wisdom/rarity/gemstone thresholds."
+      }
+    },
+    {
+      "item": "Bookworm's Favorite Book",
+      "market": "bazaar",
+      "instant_sell_coins": 7059.75,
+      "instant_buy_coins": 11921.20,
+      "midpoint_reference_coins": 9490.48,
+      "spread_pct_of_midpoint": 51.22,
+      "required_quantity": 5,
+      "midpoint_total_coins": 47452.38,
+      "instant_buy_total_coins": 59606.00,
+      "historical_rolling_average_coins": null,
+      "effect": {
+        "per_unit": "+10 Vacuum Damage",
+        "max_per_target": 5,
+        "max_effect": "+50 Vacuum Damage",
+        "scope": "Vacuum",
+        "cost_per_plus_1_damage_midpoint_coins": 949.05
+      }
+    },
+    {
+      "item": "Recombobulator 3000",
+      "market": "bazaar",
+      "instant_sell_coins": 9841419.18,
+      "instant_buy_coins": 10326895.03,
+      "midpoint_reference_coins": 10084157.11,
+      "spread_pct_of_midpoint": 4.81,
+      "required_quantity": 1,
+      "midpoint_total_coins": 10084157.11,
+      "instant_buy_total_coins": 10326895.03,
+      "historical_rolling_average_coins": null,
+      "effect": {
+        "per_unit": "+1 item rarity tier where applicable",
+        "max_per_target": 1,
+        "scope": "generic modifier used by Farming gear/tools/vacuums",
+        "stat_model_rule": "Value is contextual because rarity can increase reforge/gemstone/other rarity-scaled effects. Do not assign a fixed Farming Fortune delta globally."
+      }
+    }
+  ],
+  "permanent_profile_consumables": [
+    {
+      "item": "Refined Dark Cacao Truffle",
+      "market": "bazaar",
+      "instant_sell_coins": 207564.90,
+      "instant_buy_coins": 420740.13,
+      "midpoint_reference_coins": 314152.52,
+      "spread_pct_of_midpoint": 67.86,
+      "required_quantity": 5,
+      "midpoint_total_coins": 1570762.58,
+      "instant_buy_total_coins": 2103700.65,
+      "historical_rolling_average_coins": null,
+      "effect": {
+        "per_unit": "+1 permanent Global Fortune",
+        "farming_component_per_unit": "+1 Farming Fortune",
+        "max_per_profile": 5,
+        "max_farming_component": "+5 Farming Fortune",
+        "temporary_on_consume": "+30 Global Fortune for 60m",
+        "cost_per_plus_1_farming_fortune_midpoint_coins": 314152.52
+      }
+    },
+    {
+      "item": "Filled Rosewater Flask",
+      "market": "bazaar",
+      "instant_sell_coins": 9047685.57,
+      "instant_buy_coins": 9964198.67,
+      "midpoint_reference_coins": 9505942.12,
+      "spread_pct_of_midpoint": 9.64,
+      "required_quantity": 5,
+      "midpoint_total_coins": 47529710.60,
+      "instant_buy_total_coins": 49820993.35,
+      "historical_rolling_average_coins": null,
+      "effect": {
+        "per_unit": "+1 permanent Farming Fortune",
+        "max_per_profile": 5,
+        "max_effect": "+5 Farming Fortune",
+        "greenhouse_effect": "Also advances Greenhouse crop Growth Stage when consumed; co-op cooldown applies.",
+        "cost_per_plus_1_farming_fortune_midpoint_coins": 9505942.12
+      }
+    },
+    {
+      "item": "Feast Burger with a Side of Deepfries",
+      "market": "bazaar",
+      "instant_sell_coins": 7857257.10,
+      "instant_buy_coins": 9659998.00,
+      "midpoint_reference_coins": 8758627.55,
+      "spread_pct_of_midpoint": 20.58,
+      "required_quantity": 5,
+      "midpoint_total_coins": 43793137.75,
+      "instant_buy_total_coins": 48299990.00,
+      "historical_rolling_average_coins": null,
+      "effect": {
+        "per_unit": "+1 permanent Overbloom",
+        "max_per_profile": 5,
+        "max_effect": "+5 Overbloom",
+        "cost_per_plus_1_overbloom_midpoint_coins": 8758627.55
+      }
+    },
+    {
+      "item": "Very Moldy Bread",
+      "market": "bazaar",
+      "instant_sell_coins": 13878314.40,
+      "instant_buy_coins": 18999989.90,
+      "midpoint_reference_coins": 16439152.15,
+      "spread_pct_of_midpoint": 31.15,
+      "required_quantity": 1,
+      "midpoint_total_coins": 16439152.15,
+      "instant_buy_total_coins": 18999989.90,
+      "historical_rolling_average_coins": null,
+      "effect": {
+        "per_unit": "+1 permanent Farming Wisdom",
+        "max_per_profile": 1,
+        "temporary_on_consume": "+30 Farming Wisdom for 60m",
+        "priority": "WISDOM_SECONDARY",
+        "cost_per_plus_1_farming_wisdom_midpoint_coins": 16439152.15
+      }
+    }
+  ],
+  "carrolyn_exportables": [
+    {
+      "item": "Fine Flour",
+      "crop": "Wheat",
+      "market": "bazaar",
+      "instant_sell_coins": 4298.36,
+      "instant_buy_coins": 6995.79,
+      "midpoint_reference_coins": 5647.08,
+      "spread_pct_of_midpoint": 47.77,
+      "required_quantity": 3000,
+      "midpoint_total_coins": 16941225.00,
+      "instant_buy_total_coins": 20987370.00,
+      "historical_rolling_average_coins": null,
+      "reward": "+12 Wheat Fortune +5 Health",
+      "coins_per_plus_1_crop_fortune_midpoint": 1411768.75
+    },
+    {
+      "item": "Exportable Carrots",
+      "crop": "Carrot",
+      "market": "bazaar",
+      "instant_sell_coins": 7501.73,
+      "instant_buy_coins": 9261.24,
+      "midpoint_reference_coins": 8381.49,
+      "spread_pct_of_midpoint": 20.99,
+      "required_quantity": 3000,
+      "midpoint_total_coins": 25144455.00,
+      "instant_buy_total_coins": 27783720.00,
+      "historical_rolling_average_coins": null,
+      "reward": "+12 Carrot Fortune +5 Health",
+      "coins_per_plus_1_crop_fortune_midpoint": 2095371.25
+    },
+    {
+      "item": "Expired Pumpkin",
+      "crop": "Pumpkin",
+      "market": "bazaar",
+      "instant_sell_coins": 5050.80,
+      "instant_buy_coins": 7498.70,
+      "midpoint_reference_coins": 6274.75,
+      "spread_pct_of_midpoint": 39.01,
+      "required_quantity": 3000,
+      "midpoint_total_coins": 18824250.00,
+      "instant_buy_total_coins": 22496100.00,
+      "historical_rolling_average_coins": null,
+      "reward": "+12 Pumpkin Fortune +5 Health",
+      "coins_per_plus_1_crop_fortune_midpoint": 1568687.50
+    },
+    {
+      "item": "Supreme Chocolate Bar",
+      "crop": "Cocoa Beans",
+      "market": "bazaar",
+      "instant_sell_coins": 430.51,
+      "instant_buy_coins": 1603.37,
+      "midpoint_reference_coins": 1016.94,
+      "spread_pct_of_midpoint": 115.33,
+      "required_quantity": 3000,
+      "midpoint_total_coins": 3050820.00,
+      "instant_buy_total_coins": 4810110.00,
+      "historical_rolling_average_coins": null,
+      "reward": "+12 Cocoa Beans Fortune +5 Health",
+      "coins_per_plus_1_crop_fortune_midpoint": 254235.00
+    },
+    {
+      "item": "Half-Eaten Mushroom",
+      "crop": "Mushroom",
+      "market": "bazaar",
+      "instant_sell_coins": 424.40,
+      "instant_buy_coins": 1603.54,
+      "midpoint_reference_coins": 1013.97,
+      "spread_pct_of_midpoint": 116.29,
+      "required_quantity": 3000,
+      "midpoint_total_coins": 3041910.00,
+      "instant_buy_total_coins": 4810620.00,
+      "historical_rolling_average_coins": null,
+      "reward": "+12 Mushroom Fortune +5 Health",
+      "coins_per_plus_1_crop_fortune_midpoint": 253492.50
+    },
+    {
+      "item": "Warty",
+      "crop": "Nether Wart",
+      "market": "bazaar",
+      "instant_sell_coins": 8925.37,
+      "instant_buy_coins": 17999.48,
+      "midpoint_reference_coins": 13462.43,
+      "spread_pct_of_midpoint": 67.40,
+      "required_quantity": 3000,
+      "midpoint_total_coins": 40387275.00,
+      "instant_buy_total_coins": 53998440.00,
+      "historical_rolling_average_coins": null,
+      "reward": "+12 Nether Wart Fortune +5 Health",
+      "coins_per_plus_1_crop_fortune_midpoint": 3365606.25
+    },
+    {
+      "item": "Prickly Kiss",
+      "crop": "Wild Rose",
+      "market": "bazaar",
+      "instant_sell_coins": 2879.69,
+      "instant_buy_coins": 5998.00,
+      "midpoint_reference_coins": 4438.85,
+      "spread_pct_of_midpoint": 70.25,
+      "required_quantity": 3000,
+      "midpoint_total_coins": 13316535.00,
+      "instant_buy_total_coins": 17994000.00,
+      "historical_rolling_average_coins": null,
+      "reward": "+12 Wild Rose Fortune +5 Health",
+      "coins_per_plus_1_crop_fortune_midpoint": 1109711.25
+    },
+    {
+      "item": "Potted Cactus",
+      "crop": "Cactus",
+      "market": "bazaar",
+      "instant_sell_coins": 13318.30,
+      "instant_buy_coins": 33684.88,
+      "midpoint_reference_coins": 23501.59,
+      "spread_pct_of_midpoint": 86.66,
+      "required_quantity": 3000,
+      "midpoint_total_coins": 70504770.00,
+      "instant_buy_total_coins": 101054640.00,
+      "historical_rolling_average_coins": null,
+      "reward": "+12 Cactus Fortune +5 Health",
+      "coins_per_plus_1_crop_fortune_midpoint": 5875397.50
+    }
+  ],
+  "carrolyn_group_summary": {
+    "all_listed_exportables_midpoint_total_coins": 191211240.00,
+    "all_listed_exportables_instant_buy_total_coins": 253935000.00,
+    "rule": "Each export is a one-time profile progression. Track delivered quantity 0..3000 so optimizer prices only the remaining quantity, not the full 3000 after partial progress."
+  },
+  "optimizer_integration": {
+    "ownership_state_fields": [
+      "consumed_count for profile consumables",
+      "applied_count per target item for Farming for Dummies / Overclocker / Bookworm",
+      "recombobulated boolean per item",
+      "Carrolyn delivered_count per exportable"
+    ],
+    "remaining_cost_formula": "max(0, required_quantity - owned_or_delivered_quantity) * selected_unit_price",
+    "selected_unit_price_priority": [
+      "live player acquisition quote/order price",
+      "live instant_buy",
+      "dated instant_buy from this file",
+      "midpoint reference only as a fallback benchmark"
+    ],
+    "do_not_double_count": [
+      "Do not add these items again inside enchantment costs.",
+      "Do not add reforge stone/application costs here.",
+      "Do not add chip costs here.",
+      "Recombobulator may already be included inside a complete gear-piece market price; when valuing a pre-upgraded item, subtract/avoid duplicate component cost."
+    ],
+    "stat_scope_rules": [
+      "Crop Fortune is crop-specific and has zero value for other crops.",
+      "Overbloom must be valued through eligible rare-drop/RNG pools, not converted to a fixed Farming Fortune number.",
+      "Farming Wisdom is secondary for profit once Farming skill progression is no longer relevant.",
+      "Overclocker must be valued through the exact next tool-level delta, not as a generic +Fortune item."
+    ]
+  },
+  "mechanics_sources": [
+    {
+      "topic": "Vacuum / Farming for Dummies / Bookworm's Favorite Book / Recombobulator",
+      "url": "https://wiki.hypixel.net/Vacuums",
+      "confidence": "official-high"
+    },
+    {
+      "topic": "Bookworm's Favorite Book drop/use",
+      "url": "https://wiki.hypixel.net/Earthworm",
+      "confidence": "official-high"
+    },
+    {
+      "topic": "Farming for Dummies source",
+      "url": "https://wiki.hypixel.net/Shiny_Orb",
+      "confidence": "official-high"
+    },
+    {
+      "topic": "Overclocker 3000 use and max 10",
+      "url": "https://hypixel-skyblock.fandom.com/wiki/Overclocker_3000",
+      "confidence": "community-medium-high"
+    },
+    {
+      "topic": "Feast Burger permanent Overbloom",
+      "url": "https://hypixel.net/threads/hypixel-skyblock-0-26-1-new-player-improvements-harvest-feast-changes-healing-revamp-and-more.6127383/",
+      "confidence": "official-high"
+    },
+    {
+      "topic": "Dark Cacao aging",
+      "url": "https://wiki.hypixel.net/Dark_Cacao_Truffle",
+      "confidence": "official-high"
+    },
+    {
+      "topic": "Refined Dark Cacao permanent effect",
+      "url": "https://hypixel-skyblock.fandom.com/wiki/Dark_Cacao_Truffle",
+      "confidence": "community-medium-high"
+    },
+    {
+      "topic": "Filled Rosewater Flask permanent Farming Fortune",
+      "url": "https://hypixel-skyblock.fandom.com/wiki/Rosewater_Flask",
+      "confidence": "community-medium-high"
+    },
+    {
+      "topic": "Very Moldy Bread permanent Farming Wisdom",
+      "url": "https://hypixel.net/threads/list-of-item-in-skyblock-update-1-74.6092272/",
+      "confidence": "community-forum-medium"
+    },
+    {
+      "topic": "Carrolyn exportables",
+      "url": "https://hypixel-skyblock.fandom.com/wiki/Carrolyn",
+      "confidence": "community-medium-high"
+    },
+    {
+      "topic": "Potted Cactus Carrolyn reward",
+      "url": "https://hypixel-skyblock.fandom.com/wiki/Potted_Cactus",
+      "confidence": "community-medium-high"
+    }
+  ]
+}
