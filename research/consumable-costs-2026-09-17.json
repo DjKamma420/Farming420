@@ -1,0 +1,192 @@
+{
+  "meta": {
+    "title": "Farming Consumable and One-Time Modifier Cost Baseline",
+    "as_of": "2026-09-17",
+    "target_reader": "AI/optimizer",
+    "status": "ACTIVE_MARKET_SNAPSHOT_WITH_VOLATILITY_GUARDS",
+    "purpose": "Machine-readable normal-cost reference for recurring consumables, temporary account buffs, and single-use modifiers that can affect Farming planning.",
+    "refresh_policy": "Refresh live Bazaar/Auction House data before any player-facing next-upgrade recommendation. Dated values below are fallbacks and comparison anchors, not permanent prices."
+  },
+  "pricing_rules": {
+    "bazaar": "Use current instant-buy for buy-now acquisition. Midpoint may be shown as a rough reference but is not a historical average.",
+    "auction_house": "Prefer current lowest sane BIN plus a recent median. Ignore obvious outliers. Do not use the arithmetic mean alone when the distribution is skewed.",
+    "non_coin_currency": "Keep Bits, Pelts, Copper, Gems and other currencies explicit. Convert them to coins only when a sourced/user-selected conversion policy exists.",
+    "recurring_cost": "Recurring consumables must be amortized over their real active duration. Do not charge the full item cost per farming hour.",
+    "stacking": "If a duration can stack, model remaining duration as state and only value the incremental duration purchased.",
+    "double_count_guard": "Do not add the same modifier twice when it is also present in a more specialized research snapshot."
+  },
+  "items": [
+    {
+      "item": "Recombobulator 3000",
+      "item_id": "RECOMBOBULATOR_3000",
+      "category": "single_use_item_modifier",
+      "market": "bazaar",
+      "repository_snapshot": {
+        "instant_sell_coins": 9841419.18,
+        "instant_buy_coins": 10326895.03,
+        "midpoint_reference_coins": 10084157.11,
+        "source_file": "research/special-farming-item-costs-2026-09-17.json"
+      },
+      "external_cross_check": {
+        "instant_sell_coins": 9590000,
+        "instant_buy_coins": 9860000,
+        "source": "https://skyblock.finance/items/RECOMBOBULATOR_3000",
+        "source_crawl_note": "Search index crawled about 6 days before 2026-09-17."
+      },
+      "normal_cost_rule": "Use live instant-buy. If live data is unavailable, prefer the repository snapshot because it is the project's same-date baseline; external pages only confirm the ~10m order of magnitude.",
+      "effect": "+1 rarity tier on most eligible items, once per item.",
+      "farming_value_rule": "No global fixed Farming Fortune delta. Recompute rarity-scaled reforge, gemstone, enchantment or item effects for the exact target item before scoring.",
+      "recoverable_value": "Potentially partly recoverable through resale of the modified tradeable item; do not assume 100% recovery."
+    },
+    {
+      "item": "God Potion",
+      "item_id": "GOD_POTION_2",
+      "category": "temporary_player_buff",
+      "market": "auction_house_or_bits_shop",
+      "bits_shop_cost": 1500,
+      "duration": {
+        "base_hours": 12,
+        "alchemy_scaling": "base duration gains up to +12 hours from Alchemy level; model the profile's actual duration",
+        "base_range_hours_without_other_duration_modifiers": [12, 24],
+        "offline_rule": "God Potion playtime does not tick down while the player is offline."
+      },
+      "market_reference": {
+        "last_24h_min_coins": 1531612,
+        "last_24h_max_coins": 6521808,
+        "last_24h_average_coins": 2168357,
+        "last_24h_median_coins": 1671849,
+        "preferred_fallback_reference_coins": 1671849,
+        "source": "https://sky.coflnet.com/item/GOD_POTION_2",
+        "outlier_note": "Use median rather than mean as the fallback because the 24h maximum is far above the lower cluster."
+      },
+      "effect": "Provides the supported positive potion effects at their God Potion tiers; exact Farming relevance depends on the active potion-effect set and any Mixins.",
+      "optimizer_rule": "Amortize market acquisition over actual online buff hours. Keep the 1,500 Bits route separate from coin purchase unless Bits have an explicit conversion value.",
+      "special_exclusion": "Douce Pluie de Stinky Cheese is not included in God Potion."
+    },
+    {
+      "item": "Booster Cookie",
+      "item_id": "BOOSTER_COOKIE",
+      "category": "temporary_account_buff",
+      "market": "bazaar",
+      "duration": {
+        "days": 4,
+        "hours": 96,
+        "offline_rule": "Duration is real-time and continues while offline.",
+        "stackable_duration": true
+      },
+      "market_reference": {
+        "source_a_instant_sell_coins": 11550000,
+        "source_a_instant_buy_coins": 12250000,
+        "source_a": "https://skyblock.finance/items/BOOSTER_COOKIE",
+        "source_b_instant_sell_coins": 13620916.7,
+        "source_b_instant_buy_coins": 13731771.2,
+        "source_b": "https://www.skyblock.bz/product/BOOSTER_COOKIE",
+        "observed_instant_buy_band_coins": [12250000, 13731771.2],
+        "fallback_mid_band_reference_coins": 12990885.6,
+        "confidence": "VOLATILE_CROSS_SOURCE"
+      },
+      "effect": "Cookie Buff for 4 real-life days; includes account/QoL benefits and stat effects such as Wisdom and Magic Find.",
+      "farming_value_rule": "Do not convert all Cookie benefits into Farming profit automatically. Model only verified Farming-relevant effects plus any explicit Bits/reward economics used by the planner.",
+      "optimizer_rule": "Always prefer a live Bazaar refresh. Same-week indexed sources differ materially, so a hard-coded single normal price is unsafe."
+    },
+    {
+      "item": "Douce Pluie de Stinky Cheese Potion",
+      "item_id": "POTION",
+      "category": "temporary_pest_buff",
+      "market": "talbot_pelt_shop",
+      "currency_cost": {
+        "pelts": 40
+      },
+      "availability": "Talbot during Finnegan's Pelt-pocalypse perk.",
+      "duration": {
+        "base_minutes": 60,
+        "duration_can_be_modified": true
+      },
+      "effect": {
+        "bonus_pest_chance": 20
+      },
+      "included_in_god_potion": false,
+      "sources": [
+        "https://hypixel.net/threads/hypixel-skyblock-patch-notes-0-20-3-better-mayors.5692280/",
+        "https://hypixel-skyblock.fandom.com/wiki/Douce_Pluie_de_Stinky_Cheese_Potion"
+      ],
+      "optimizer_rule": "Treat 40 Pelts as an earned-currency/time cost unless a sourced Pelt-to-coin opportunity-cost conversion is selected. Never call the potion free."
+    },
+    {
+      "item": "Sprayonator plot spray",
+      "category": "recurring_plot_effect",
+      "market": "spray_material_dependent",
+      "durable_item_consumed": false,
+      "duration_minutes": 30,
+      "effect": {
+        "bonus_pest_chance_on_sprayed_plot": 50
+      },
+      "sources": [
+        "https://wiki.eliteskyblock.com/Bonus_Pest_Chance",
+        "https://hypixel-skyblock.fandom.com/wiki/Bonus_Pest_Chance"
+      ],
+      "optimizer_rule": "The Sprayonator itself is durable. Charge the live cost of the chosen spray material and apply the +50 BPC only while farming on the sprayed plot for the active spray duration."
+    }
+  ],
+  "existing_special_consumables_cross_reference": {
+    "source_file": "research/special-farming-item-costs-2026-09-17.json",
+    "covered_there": [
+      "Farming for Dummies",
+      "Overclocker 3000",
+      "Bookworm's Favorite Book",
+      "Recombobulator 3000",
+      "Refined Dark Cacao Truffle",
+      "Filled Rosewater Flask",
+      "Feast Burger with a Side of Deepfries",
+      "Very Moldy Bread",
+      "Carrolyn exportables"
+    ],
+    "rule": "The specialized file remains authoritative for those same-date numeric snapshots. This consumable file supplies cross-category planning semantics and missing recurring/account consumables."
+  },
+  "calculator_integration": {
+    "required_fields_per_consumable": [
+      "acquisition route",
+      "live or fallback cost",
+      "currency type",
+      "duration",
+      "offline/online countdown rule",
+      "eligible context",
+      "stat/effect delta",
+      "stacking/exclusivity",
+      "recurring cost per hour"
+    ],
+    "recurring_coin_cost_formula": "coin_cost_per_active_hour = coin_purchase_cost / effective_active_duration_hours",
+    "non_coin_cost_formula": "keep source currency and grind time separate unless an explicit conversion policy exists",
+    "unknown_rule": "unknown != 0; missing current price or duration must mark the economic result incomplete"
+  },
+  "sources": [
+    {
+      "url": "https://skyblock.finance/items/RECOMBOBULATOR_3000",
+      "use": "Recombobulator market cross-check and one-rarity-tier description"
+    },
+    {
+      "url": "https://sky.coflnet.com/item/GOD_POTION_2",
+      "use": "God Potion recent AH distribution"
+    },
+    {
+      "url": "https://wiki.hypixel.net/SkyBlock_Version/3989053",
+      "use": "God Potion 12h base, up to +12h from Alchemy, 1,500 Bits"
+    },
+    {
+      "url": "https://skyblock.finance/items/BOOSTER_COOKIE",
+      "use": "Booster Cookie Bazaar snapshot and 4-day duration"
+    },
+    {
+      "url": "https://www.skyblock.bz/product/BOOSTER_COOKIE",
+      "use": "Booster Cookie second market snapshot showing current-source variance"
+    },
+    {
+      "url": "https://hypixel.net/threads/hypixel-skyblock-patch-notes-0-20-3-better-mayors.5692280/",
+      "use": "Douce Pluie cost, effect, and God Potion exclusion"
+    },
+    {
+      "url": "https://wiki.eliteskyblock.com/Bonus_Pest_Chance",
+      "use": "Sprayonator +50 BPC / 30m plot effect"
+    }
+  ]
+}
