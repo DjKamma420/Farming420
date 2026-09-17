@@ -1233,3 +1233,43 @@ The tool's name appeared **six times** on a 420px screen.
 ### Still open
 
 Condensing beyond the Tools page, and the navigation taskbar.
+
+
+## Click sweep harness (0.26.1)
+
+`npm run sweep` walks every page of a running build and reports which ones
+survive being clicked. It exists because the previous ad-hoc sweep could run
+past any patience: a single process walked every page, and a frozen renderer
+makes each Playwright call wait out its own timeout.
+
+    npm run serve      # in one shell, port 4173
+    npm run sweep      # in another
+
+Knobs: `SWEEP_URL` (default `http://127.0.0.1:4173`), `SWEEP_JOBS` (default 4),
+`VARIANT_BUDGET_MS` (default 35000), `SWEEP_OUT` (log directory),
+`PLAYWRIGHT_MODULE` for a non-default browser install.
+
+Each page is a separate process with its own deadline and its own `timeout`
+wrapper, so one hanging area cannot stall the run. Every area is swept in three
+variants: empty desktop, desktop with a filled profile at tool tier 3, and a
+390px phone.
+
+### What it caught
+
+- The planner's old list stays in the DOM as `.planner-v1-source` with
+  `display:none`. Twenty 0x0 nodes were eating 3s each in click timeouts while
+  the page's real UI -- 30 revenue rows and 7 mode tabs -- went untested. The
+  sweep now only clicks elements with a layout box.
+- Below 780px the sidebar is `display:none`, so clicking a nav button does
+  nothing at all. The earlier run reported a pass for every phone page while
+  never leaving the dashboard. It now navigates through
+  `.mobile-page-select-addon` and reads the stored page back to confirm it
+  arrived.
+- `gear` and `pets` are folded into `setups` by `navigation-dedupe.js`. That is
+  reported as "no such page", distinct from a page that exists with no way in.
+
+### Result on 0.26.1
+
+All 16 areas pass in all three variants. Identical click counts across desktop
+and phone are the evidence that navigation actually happened -- when they
+diverged, the phone run was doing nothing.
