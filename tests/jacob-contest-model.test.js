@@ -55,7 +55,7 @@ test('Diamond and Platinum reward the extra lower medal currencies', () => {
 test('personal best crop fortune uses crop-specific divisors and caps at 100', () => {
   assert.equal(personalBestCropFortune('Wheat', 1_000_000), 100);
   assert.equal(personalBestCropFortune('Carrot', 1_500_000), 50);
-  assert.equal(personalBestCropFortune('Melon', 1_904_500), 38.09);
+  assert.ok(Math.abs(personalBestCropFortune('Melon', 1_904_500) - 38.09) < 1e-9);
   assert.equal(personalBestCropFortune('Wild Rose', 2_000_000), 100);
   assert.equal(personalBestCropFortune('Moonflower', 4_000_000), 100);
   assert.equal(personalBestScoreForFortune('Sunflower', 100), 2_000_000);
