@@ -7,7 +7,7 @@ import {
   ACTIVITY_MODE,
   activityLabel,
   activityModeForState,
-  isPestVacuumEntry,
+  isVacuumItemEntry,
   itemAppliesToActivity,
   normalizeActivityMode,
   setActivityModeOnState,
@@ -40,7 +40,7 @@ function cropName(cropId) {
 
 function progressBucket(raw, item, cropId) {
   const profile = raw.profile || {};
-  if (isPestVacuumEntry(item)) return profile.vacuumProgress || {};
+  if (isVacuumItemEntry(item)) return profile.vacuumProgress || {};
   if (item.section === 'crops') return profile.cropProgress?.[cropId] || {};
   if (item.section === 'tools') return profile.toolProgress?.[toolKeyForCropId(cropId)] || {};
   return profile;
