@@ -1,10 +1,13 @@
 import { DROP_SCALING } from './profit-engine.js';
 
-export const FARMING_MECHANICS_DATA_VERSION = 1;
+export const FARMING_MECHANICS_DATA_VERSION = 2;
 
 const SOURCE = Object.freeze({
   farmingFortune: 'https://hypixel-skyblock.fandom.com/wiki/Farming_Fortune',
   greenhouseRelease: 'https://hypixel.net/threads/hypixel-skyblock-0-24-the-greenhouse.6027542/',
+  harvestFeast: 'https://hypixel.net/threads/hypixel-skyblock-0-24-4-harvest-feast-event-fossil-essence-shop-and-more.6089392/',
+  harvestFeastMay5: 'https://hypixel.net/threads/may-5-skyblock-patch-notes.6094300/',
+  harvestFeastMay14: 'https://hypixel.net/threads/may-14-harvest-feast-changes.6096831/',
   pumpkin: 'https://hypixel-skyblock.fandom.com/wiki/Pumpkin',
   melon: 'https://hypixel-skyblock.fandom.com/wiki/Melon',
   cactus: 'https://hypixel-skyblock.fandom.com/wiki/Cactus',
@@ -85,6 +88,66 @@ export const ACTIVE_CROP_MODELS = Object.freeze({
   }),
 });
 
+export const HARVEST_FEAST_RARE_CROPS = Object.freeze({
+  wheat: Object.freeze({ name: 'Cornucopia', itemId: 'CORNUCOPIA' }),
+  carrot: Object.freeze({ name: 'Carrot Zest', itemId: 'CARROT_ZEST' }),
+  potato: Object.freeze({ name: 'Deepfries', itemId: 'DEEPFRIES' }),
+  pumpkin: Object.freeze({ name: 'Aggourdian', itemId: 'AGGOURDIAN' }),
+  'sugar-cane': Object.freeze({ name: 'Cane Knot', itemId: 'CANE_KNOT' }),
+  melon: Object.freeze({ name: 'Melon Juice', itemId: 'MELON_JUICE' }),
+  cactus: Object.freeze({ name: 'Cactus Flower', itemId: 'CACTUS_FLOWER' }),
+  'cocoa-beans': Object.freeze({ name: 'Designer Coffee Beans', itemId: 'DESIGNER_COFFEE_BEANS' }),
+  mushroom: Object.freeze({ name: 'Feastfungus', itemId: 'FEASTFUNGUS' }),
+  'nether-wart': Object.freeze({ name: 'Botroot', itemId: 'BOTROOT' }),
+  sunflower: Object.freeze({ name: 'Salted Sunflower Seeds', itemId: 'SALTED_SUNFLOWER_SEEDS' }),
+  moonflower: Object.freeze({ name: 'Crystalized Moonlight', itemId: 'CRYSTALIZED_MOONLIGHT' }),
+  'wild-rose': Object.freeze({ name: 'Floral Gelatin', itemId: 'FLORAL_GELATIN' }),
+});
+
+/**
+ * Current Harvest Feast drop rules.
+ *
+ * Seasoning and the crop-specific material are RARE CROPS. Overbloom scales
+ * their base probability multiplicatively: P = base * (1 + Overbloom / 100).
+ * Seasoning has no market item because it is donated automatically.
+ */
+export const HARVEST_FEAST_MODEL = Object.freeze({
+  status: 'ACTIVE',
+  verified: '2026-09-17',
+  source: SOURCE.harvestFeast,
+  seasoning: Object.freeze({
+    id: 'harvest-feast-seasoning',
+    name: 'Seasoning',
+    baseProbability: 1 / 2250,
+    rollsPerBreak: 1,
+    expectedQuantity: 1,
+    scaling: DROP_SCALING.OVERBLOOM,
+    inSeasonOnly: true,
+    physicalItem: false,
+    automaticDonation: true,
+    grandFeastKernelPerDrop: 1,
+  }),
+  cropMaterial: Object.freeze({
+    baseProbability: 1 / 18000,
+    rollsPerBreak: 1,
+    expectedQuantity: 1,
+    scaling: DROP_SCALING.OVERBLOOM,
+    inSeasonOnly: true,
+    physicalItem: true,
+  }),
+  grandFeast: Object.freeze({
+    replacesHarvestFeast: true,
+    seasoningAlsoDropsKernel: true,
+  }),
+  modifiers: Object.freeze({
+    overbloomPerFeastEnchantLevel: 2,
+    luckyCloverOverbloom: 3,
+    poignantLuckyCloverOverbloom: 7,
+    freshlyBakedAccessoryOwnOverbloomDoubledDuringFeast: true,
+    may5Source: SOURCE.harvestFeastMay5,
+  }),
+});
+
 export function cropModel(cropId) {
   return ACTIVE_CROP_MODELS[cropId] || null;
 }
@@ -100,6 +163,39 @@ export function cropNormalDropInput(cropId, unitValueCoins) {
     dataStatus: model.baseDrop.status,
     source: model.baseDrop.source || null,
   };
+}
+
+export function harvestFeastRareCropInputs(cropId, options = {}) {
+  const crop = HARVEST_FEAST_RARE_CROPS[cropId];
+  if (!crop) return [];
+
+  const rows = [];
+  if (options.includeSeasoning !== false) {
+    rows.push({
+      ...HARVEST_FEAST_MODEL.seasoning,
+      unitValueCoins: options.seasoningValueCoins ?? null,
+      objective: 'donation-progression',
+      source: SOURCE.harvestFeast,
+    });
+  }
+
+  rows.push({
+    id: `harvest-feast-${cropId}`,
+    name: crop.name,
+    itemId: crop.itemId,
+    ...HARVEST_FEAST_MODEL.cropMaterial,
+    unitValueCoins: options.cropMaterialValueCoins ?? null,
+    objective: 'coins-or-crafting',
+    source: SOURCE.harvestFeast,
+  });
+  return rows;
+}
+
+export function expectedRareCropProbability(baseProbability, overbloom) {
+  const base = Number(baseProbability);
+  const stat = Number(overbloom);
+  if (!Number.isFinite(base) || base < 0 || base > 1 || !Number.isFinite(stat) || stat < 0) return null;
+  return base * (1 + stat / 100);
 }
 
 export function cropModelCoverage() {
