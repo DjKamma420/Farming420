@@ -85,6 +85,16 @@ test('a Peridot socket never offers unrelated gemstones', () => {
   assert.equal(values.some(value => value.includes('JASPER')), false);
 });
 
+test('current grouped sockets include Onyx and Opal where Hypixel allows them', () => {
+  const combat = gemValuesForSlotType('COMBAT');
+  const defensive = gemValuesForSlotType('DEFENSIVE');
+  assert.equal(combat.includes('PERFECT ONYX'), true);
+  assert.equal(combat.includes('PERFECT OPAL'), true);
+  assert.equal(defensive.includes('PERFECT OPAL'), true);
+  assert.equal(defensive.some(value => value.includes('ONYX')), false);
+  assert.equal(combat.some(value => value.includes('PERIDOT')), false);
+});
+
 test('unknown/manual item does not inherit generic upgrades', () => {
   const capabilities = itemCapabilities('helmet', { displayName: 'Something Typed By Hand' }, catalog);
   assert.equal(capabilities.known, false);
