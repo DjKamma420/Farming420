@@ -2205,3 +2205,68 @@ cache read saw no storage at all.
 774 node + 7 python tests, overlay audit at 0 findings, planner sweep clean on
 all three profiles, the startup smoke test passing on Chromium 141, and the
 panel driven in a browser with a seeded snapshot and without one.
+
+## 0.39.0 -- the orphan audit
+
+- [x] List every module nothing imports
+- [x] Delete the one that was a regression
+- [x] Make the contest mode a model rather than a keyword search
+- [x] Fix the unknown-as-zero bug that audit exposed
+
+### The audit
+
+Ten modules were reached by no runtime path. I had assumed they were all
+unfinished features. One was the opposite.
+
+**`workspace-capability-refresh.js` is deleted.** It rewrote the gemstone copy
+at runtime, turning "first at Farming Tool level 5" into "level 1". The
+verified value is 5: `gemstone-slots.js` sources it to the official item API
+data, carries a verification date, and `tool-gemstone-thresholds.test.js` pins
+it with ten assertions. So it was not a fix waiting to be wired but a wrong
+number waiting to be shipped -- adding its script tag would have made the app
+contradict its own tests. It also wrote `textContent` unconditionally from a
+`state-changed` handler, which is the PR #90 freeze shape.
+
+### The contest mode is now a model
+
+`jacob-contest-model.js` shipped with the medal brackets, the 20-minute
+duration, the personal-best Fortune table and Anita's accessory tiers, every
+one of them sourced -- and no caller. Meanwhile the planner's "Collection /
+Contest" mode ranked upgrades by a keyword match on the word "contest", which
+is a text search dressed as a model.
+
+`src/contest-estimate.js` feeds it the measurements the profit baseline already
+collects, so a player who measured their farm once gets a contest estimate for
+free: 346,800 melons in a 20-minute contest at 20 breaks/s, 85% uptime and 240
+Farming Fortune. The one input only the player has -- their personal best for
+this crop -- is the one thing asked for, because the sourced table turns it
+into contest-only Crop Fortune: 1,000,000 melons becomes +20, and the estimate
+rises to 367,200.
+
+**No medal is guessed.** The model states why, and its sentence is shown rather
+than paraphrased: a crop score cannot determine a percentile, because the
+bracket depends on everyone else's scores that hour. The brackets are shown as
+what they are -- the reward table.
+
+`wheat` has no source-verified drop count, so it reports that instead of a
+number. That is the whole point of the crop model carrying a status.
+
+### The bug the wiring exposed
+
+`jacob-contest-model.js` guarded its inputs with `Number(value)` before testing
+finiteness. `Number(null)`, `Number(undefined)` and `Number('')` are all 0, and
+0 is a finite non-negative number -- so **every absent input passed as a
+measured zero**. A contest estimate with no breaking speed came back
+`complete: true`, with a collection of 0 and participation not reached.
+
+`profit-engine.js` had it right all along: it rejects `null`, `undefined` and
+`''` before coercing. Two models, one convention, one of them wrong. Fixed in
+the shared helper, so the four inputs that used it are all covered at once.
+
+### Verified
+
+785 node + 7 python tests, overlay audit at 0 findings, full sweep clean, the
+startup smoke test passing, and the panel driven in a browser at 1280px and
+412px: 346,800 measured, an em-dash plus the missing list when unmeasured,
++20 after typing a personal best, the value stored per crop, and the revenue
+ranking correctly absent from the goal mode.

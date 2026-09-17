@@ -73,3 +73,120 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* The contest estimate.
+   `jacob-contest-model.js` shipped sourced and unused while this mode ranked
+   upgrades by a keyword match on the word "contest". */
+.contest-estimate {
+  border: 1px solid rgba(125, 160, 134, .28);
+  background: rgba(10, 18, 13, .76);
+  padding: 16px;
+  border-radius: 6px;
+  margin-bottom: 18px;
+}
+
+.contest-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 1.4fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.contest-figure {
+  border: 1px solid #23322a;
+  background: #0b130d;
+  border-radius: 4px;
+  padding: 12px;
+  min-width: 0;
+}
+
+.contest-figure strong {
+  display: block;
+  color: #edf7ef;
+  font-size: 20px;
+  overflow-wrap: anywhere;
+}
+
+.contest-figure span {
+  display: block;
+  color: #8fa294;
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+.contest-pb {
+  display: grid;
+  gap: 5px;
+  align-content: start;
+  color: #9fb0a3;
+  font-size: 12px;
+  font-weight: 800;
+  min-width: 0;
+}
+
+.contest-pb input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #3c5142;
+  background: #07100a;
+  color: #edf7ef;
+  padding: 9px 10px;
+  border-radius: 4px;
+  font: inherit;
+  font-weight: 400;
+}
+
+.contest-pb small {
+  color: #7d8f82;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+/* The model's own sentence about why a score cannot name a medal. */
+.contest-note {
+  margin: 14px 0 0;
+  color: #8fa294;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.contest-brackets {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #23322a;
+}
+
+.contest-bracket {
+  border: 1px solid #23322a;
+  background: #0b130d;
+  border-radius: 4px;
+  padding: 9px 10px;
+  min-width: 0;
+}
+
+.contest-bracket strong {
+  display: block;
+  color: #edf7ef;
+  font-size: 12px;
+}
+
+.contest-bracket span {
+  display: block;
+  color: #8fa294;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 980px) {
+  .contest-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .contest-brackets { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 650px) {
+  .contest-grid { grid-template-columns: 1fr; }
+  .contest-brackets { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

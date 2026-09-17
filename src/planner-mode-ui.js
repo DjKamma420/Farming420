@@ -1,7 +1,12 @@
 import { CROPS, UPGRADES } from './data.js';
 import { STORAGE_KEY } from './config.js';
 import { toolKeyForCropId } from './migrations.js';
+import { activityModeForState } from './activity-mode.js';
+import { contestEstimate } from './contest-estimate.js';
+import { JACOB_BRACKETS, JACOB_PARTICIPATION_REWARD } from './jacob-contest-model.js';
+import { plannerActivityContext } from './planner-activity-context.js';
 import { PLANNER_MODES, plannerModeById, relevanceScore } from './planner-modes.js';
+import { setTextIfChanged } from './set-text.js';
 
 function esc(value = '') {
   return String(value).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;' }[c]));
@@ -87,6 +92,114 @@ function openItem(id) {
   window.dispatchEvent(new Event('farming420:state-changed'));
 }
 
+/** The crop-and-activity key the measured-baseline panel already writes. */
+function measuredKey(raw) {
+  return `${cropId(raw)}:${activityModeForState(raw)}`;
+}
+
+function measuredFor(raw) {
+  return raw?.profile?.plannerMeasured?.[measuredKey(raw)] || {};
+}
+
+function personalBestFor(raw) {
+  const stored = raw?.profile?.contestPersonalBest?.[cropId(raw)];
+  return stored === undefined || stored === '' ? null : Number(stored);
+}
+
+function formatCollection(value) {
+  return Number.isFinite(value) ? value.toLocaleString('en-US') : '\u2014';
+}
+
+/**
+ * The contest panel.
+ *
+ * This mode used to rank upgrades by a keyword match on the word "contest",
+ * which is a text search dressed as a model. `src/jacob-contest-model.js`
+ * shipped with the brackets, the 20-minute duration, the personal-best Fortune
+ * table and Anita's accessory tiers, all sourced, and no caller.
+ *
+ * It needs the same measurements the profit baseline already collects, so a
+ * player who measured their farm once gets a contest estimate for free. The
+ * one thing only they know -- their personal best for this crop -- is the one
+ * input asked for here, because the sourced table turns it into contest-only
+ * Crop Fortune.
+ *
+ * No medal is guessed. The model says why itself, and that sentence is shown
+ * rather than paraphrased: a crop score cannot determine a percentile, because
+ * the bracket depends on everyone else's scores that hour.
+ */
+function contestPanelMarkup(raw) {
+  const context = plannerActivityContext(raw, cropId(raw));
+  const estimate = contestEstimate({
+    cropId: cropId(raw),
+    measured: measuredFor(raw),
+    stats: { farmingFortune: context.stats?.globalFortune, cropFortune: context.stats?.cropFortune },
+    personalBest: personalBestFor(raw),
+  });
+  const minutes = Math.round(estimate.durationSeconds / 60);
+  const pb = personalBestFor(raw);
+
+  const note = estimate.complete
+    ? estimate.bracketReason
+    : `Still needs ${estimate.missing.join(', ')}. Measure your farm in the profit baseline above and it fills in here.`;
+
+  return `<section class="contest-estimate">
+    <div class="section-row">
+      <div>
+        <h2>Estimated contest score</h2>
+        <p>A ${minutes}-minute contest at your measured breaking speed, from the ${esc(crop(raw)?.name || 'crop')} drop model.</p>
+      </div>
+    </div>
+    <div class="contest-grid">
+      <div class="contest-figure">
+        <strong data-contest-collection>${formatCollection(estimate.expectedCollection)}</strong>
+        <span>crops collected</span>
+      </div>
+      <div class="contest-figure">
+        <strong data-contest-participation>${estimate.participationReached === null ? '\u2014' : (estimate.participationReached ? 'Reached' : 'Not reached')}</strong>
+        <span>participation at ${estimate.participationThreshold}</span>
+      </div>
+      <div class="contest-figure">
+        <strong data-contest-bonus>+${estimate.contestCropFortune}</strong>
+        <span>contest-only Crop Fortune</span>
+      </div>
+      <label class="contest-pb">
+        <span>Your personal best for this crop</span>
+        <input data-contest-pb type="number" min="0" step="1000" value="${pb === null ? '' : esc(pb)}">
+        <small>Optional. Converted to contest-only Crop Fortune by the sourced table.</small>
+      </label>
+    </div>
+    <p class="contest-note" data-contest-note>${esc(note)}</p>
+    <div class="contest-brackets">
+      ${[...JACOB_BRACKETS, JACOB_PARTICIPATION_REWARD].map(bracket => `<div class="contest-bracket">
+        <strong>${esc(bracket.label)}</strong>
+        <span>top ${bracket.topPercent}%</span>
+        <span>${bracket.jacobTickets} tickets${bracket.turboBook ? ' \u00b7 Turbo book' : ''}</span>
+      </div>`).join('')}
+    </div>
+  </section>`;
+}
+
+/** Recompute in place. Storage is written; no render is dispatched. */
+function refreshContestPanel(host, raw) {
+  const context = plannerActivityContext(raw, cropId(raw));
+  const estimate = contestEstimate({
+    cropId: cropId(raw),
+    measured: measuredFor(raw),
+    stats: { farmingFortune: context.stats?.globalFortune, cropFortune: context.stats?.cropFortune },
+    personalBest: personalBestFor(raw),
+  });
+  setTextIfChanged(host.querySelector('[data-contest-collection]'), formatCollection(estimate.expectedCollection));
+  setTextIfChanged(
+    host.querySelector('[data-contest-participation]'),
+    estimate.participationReached === null ? '\u2014' : (estimate.participationReached ? 'Reached' : 'Not reached'),
+  );
+  setTextIfChanged(host.querySelector('[data-contest-bonus]'), `+${estimate.contestCropFortune}`);
+  setTextIfChanged(host.querySelector('[data-contest-note]'), estimate.complete
+    ? estimate.bracketReason
+    : `Still needs ${estimate.missing.join(', ')}. Measure your farm in the profit baseline above and it fills in here.`);
+}
+
 function applyModeUI() {
   const content = document.querySelector('.content');
   const revenue = content?.querySelector('.revenue-planner-v2');
@@ -111,6 +224,27 @@ function applyModeUI() {
       <div class="planner-list planner-mode-list">${rows.length ? rows.slice(0, 40).map(rowMarkup).join('') : '<div class="empty">No active unmatched upgrades for this goal in the current crop/setup.</div>'}</div>`;
     tabs.after(panel);
     panel.querySelectorAll('[data-mode-open]').forEach(button => button.addEventListener('click', () => openItem(button.dataset.modeOpen)));
+
+    if (active.id === 'collection') {
+      const contest = document.createElement('div');
+      contest.className = 'contest-estimate-host';
+      contest.innerHTML = contestPanelMarkup(raw);
+      panel.before(contest);
+      const input = contest.querySelector('[data-contest-pb]');
+      // Typing writes the stored personal best and recomputes in place. A
+      // render per keystroke would rebuild the panel under the cursor, which
+      // is the loop shape rule 5 of docs/RENDER_FREEZE_SAFETY.md prevents.
+      input?.addEventListener('input', () => {
+        const next = load();
+        ensureProfile(next);
+        next.profile.contestPersonalBest ||= {};
+        const typed = String(input.value || '').trim();
+        if (typed === '') delete next.profile.contestPersonalBest[cropId(next)];
+        else next.profile.contestPersonalBest[cropId(next)] = Math.max(0, Number(typed) || 0);
+        save(next);
+        refreshContestPanel(contest, next);
+      });
+    }
   }
 
   tabs.querySelectorAll('[data-planner-mode]').forEach(button => button.addEventListener('click', () => {

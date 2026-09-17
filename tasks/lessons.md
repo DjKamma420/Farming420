@@ -618,3 +618,45 @@ Two things this cost me on the way:
 
 Rule: sharing a function is good; sharing a module's boot order is not. Before
 importing from a module, look at what its body does when it is evaluated.
+
+## An unwired module can be a regression, not a feature (0.39.0)
+
+Listing modules nothing imports found ten. I assumed they were all unfinished
+features waiting to be connected. One was not.
+
+`workspace-capability-refresh.js` rewrote the gemstone copy at runtime, turning
+"first at Farming Tool level 5" into "level 1". The verified value is **5**:
+`gemstone-slots.js` sources it to the official item API data, records a
+verification date, and pins it with ten assertions in
+`tool-gemstone-thresholds.test.js`. So the module was not a fix waiting to be
+wired -- it was a wrong number waiting to be shipped, and adding its script tag
+would have made the app contradict its own test suite. It also wrote
+`textContent` unconditionally from a `state-changed` handler, which is the PR
+#90 freeze shape.
+
+Rule: before wiring an orphan, ask what it *asserts*, and check that against
+whatever the repo treats as the source of truth. "Someone wrote it" is not
+evidence. Delete is a legitimate outcome of an orphan audit.
+
+## `Number(null)` is 0, and that is how unknowns become answers (0.39.0)
+
+`jacob-contest-model.js` guarded its inputs with:
+
+```js
+const number = Number(value);
+return Number.isFinite(number) && number >= 0 ? number : null;
+```
+
+`Number(null)`, `Number(undefined)` and `Number('')` are all 0, and 0 is a
+finite non-negative number -- so every absent input passed as a measured zero.
+A contest estimate with no breaking speed came back **complete**, with a
+collection of 0 and participation not reached. A confident wrong answer, in the
+one place this repo has a written invariant against it.
+
+`profit-engine.js` had the guard right all along: it checks for `null`,
+`undefined` and `''` *before* calling `Number`. Two models, one convention,
+one of them wrong.
+
+Rule: a numeric guard must reject absence before it coerces. And when two
+modules in the same repo do the same check, diff them -- the correct one is
+already written.
