@@ -1,4 +1,4 @@
-export const GEMSTONE_SLOTS_VERIFIED = '2026-09-16';
+export const GEMSTONE_SLOTS_VERIFIED = '2026-09-17';
 export const TOOL_GEMSTONE_SOURCE = 'https://hypixel.net/threads/farming-tools-upgrade-milestones.6032473/';
 export const PERIDOT_VALUES_SOURCE = 'https://hypixel.net/threads/list-of-item-in-skyblock-major-update.6123513/';
 
@@ -6,6 +6,15 @@ export const GEMSTONE_QUALITIES = Object.freeze(['ROUGH', 'FLAWED', 'FINE', 'FLA
 export const TOOL_GEMSTONE_TYPES = Object.freeze(['PERIDOT']);
 export const TOOL_GEMSTONE_SLOT_COUNT = 4;
 export const GEMSTONE_RARITIES = Object.freeze(['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY', 'MYTHIC']);
+
+/** Current Greenhouse tool progression: 1 slot at level 1, 2 at 15, 3 at 25, 4 at 50. */
+export function toolGemstoneSlotCountForLevel(level) {
+  const value = Math.max(1, Math.min(50, Math.floor(Number(level) || 1)));
+  if (value >= 50) return 4;
+  if (value >= 25) return 3;
+  if (value >= 15) return 2;
+  return 1;
+}
 
 export const PERIDOT_FORTUNE = Object.freeze({
   ROUGH: Object.freeze([0.5, 1, 1.5, 2, 2.5, 3]),
@@ -28,7 +37,8 @@ export function normalizeGemstoneSlot(raw, index) {
 
 export function normalizeToolGemstoneSlots(raw, count = TOOL_GEMSTONE_SLOT_COUNT) {
   const source = Array.isArray(raw) ? raw : [];
-  return Array.from({ length: count }, (_, index) => normalizeGemstoneSlot(source[index], index));
+  const size = Math.max(0, Math.min(TOOL_GEMSTONE_SLOT_COUNT, Math.floor(Number(count) || 0)));
+  return Array.from({ length: size }, (_, index) => normalizeGemstoneSlot(source[index], index));
 }
 
 export function normalizeToolGem(value) {
@@ -49,9 +59,9 @@ export function peridotFortune(value, rarity) {
   return PERIDOT_FORTUNE[quality]?.[rarityIndex] ?? null;
 }
 
-export function toolGemstoneFortune(slots, rarity) {
+export function toolGemstoneFortune(slots, rarity, count = TOOL_GEMSTONE_SLOT_COUNT) {
   let total = 0;
-  for (const slot of normalizeToolGemstoneSlots(slots)) {
+  for (const slot of normalizeToolGemstoneSlots(slots, count)) {
     if (!slot.unlocked || !slot.gem) continue;
     const value = peridotFortune(slot.gem, rarity);
     if (value == null) return null;
@@ -60,43 +70,43 @@ export function toolGemstoneFortune(slots, rarity) {
   return total;
 }
 
-export function withGemstoneSlotUnlocked(slots, index, unlocked) {
-  const next = normalizeToolGemstoneSlots(slots);
+export function withGemstoneSlotUnlocked(slots, index, unlocked, count = TOOL_GEMSTONE_SLOT_COUNT) {
+  const next = normalizeToolGemstoneSlots(slots, count);
   const slot = { ...next[index] };
-  if (!slot) return next;
+  if (!slot?.id) return next;
   slot.unlocked = Boolean(unlocked);
   if (!slot.unlocked) slot.gem = null;
   next[index] = slot;
   return next;
 }
 
-export function withGemstoneSlotCost(slots, index, coins) {
-  const next = normalizeToolGemstoneSlots(slots);
+export function withGemstoneSlotCost(slots, index, coins, count = TOOL_GEMSTONE_SLOT_COUNT) {
+  const next = normalizeToolGemstoneSlots(slots, count);
   const slot = { ...next[index] };
-  if (!slot) return next;
+  if (!slot?.id) return next;
   slot.unlockCostCoins = coins === '' || coins == null ? null : Math.max(0, Number(coins) || 0);
   next[index] = slot;
   return next;
 }
 
-export function withGemstone(slots, index, gem) {
-  const next = normalizeToolGemstoneSlots(slots);
+export function withGemstone(slots, index, gem, count = TOOL_GEMSTONE_SLOT_COUNT) {
+  const next = normalizeToolGemstoneSlots(slots, count);
   const slot = { ...next[index] };
-  if (!slot) return next;
+  if (!slot?.id) return next;
   slot.gem = normalizeToolGem(gem);
   if (slot.gem) slot.unlocked = true;
   next[index] = slot;
   return next;
 }
 
-export function gemstoneUnlockCost(slots) {
-  return normalizeToolGemstoneSlots(slots).filter(slot => slot.unlocked).reduce((sum, slot) => sum + Number(slot.unlockCostCoins || 0), 0);
+export function gemstoneUnlockCost(slots, count = TOOL_GEMSTONE_SLOT_COUNT) {
+  return normalizeToolGemstoneSlots(slots, count).filter(slot => slot.unlocked).reduce((sum, slot) => sum + Number(slot.unlockCostCoins || 0), 0);
 }
 
-export function unlockedGemstoneSlots(slots) {
-  return normalizeToolGemstoneSlots(slots).filter(slot => slot.unlocked).length;
+export function unlockedGemstoneSlots(slots, count = TOOL_GEMSTONE_SLOT_COUNT) {
+  return normalizeToolGemstoneSlots(slots, count).filter(slot => slot.unlocked).length;
 }
 
-export function filledGemstoneSlots(slots) {
-  return normalizeToolGemstoneSlots(slots).filter(slot => slot.unlocked && slot.gem).length;
+export function filledGemstoneSlots(slots, count = TOOL_GEMSTONE_SLOT_COUNT) {
+  return normalizeToolGemstoneSlots(slots, count).filter(slot => slot.unlocked && slot.gem).length;
 }
