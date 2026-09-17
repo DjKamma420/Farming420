@@ -5,6 +5,7 @@ import { mooshroomCowContribution } from './mooshroom-cow.js';
 import {
   activityModeForState,
   isPestVacuumEntry,
+  isVacuumItemEntry,
   itemAppliesToActivity,
 } from './activity-mode.js';
 
@@ -32,14 +33,14 @@ function cropName(cropId) {
 }
 
 function progressBucket(profile, item, cropId) {
-  if (isPestVacuumEntry(item)) return profile.vacuumProgress || {};
+  if (isVacuumItemEntry(item)) return profile.vacuumProgress || {};
   if (item.section === 'crops') return profile.cropProgress?.[cropId] || {};
   if (item.section === 'tools') return profile.toolProgress?.[toolKeyForCropId(cropId)] || {};
   return profile;
 }
 
 function scopeKey(item, cropId) {
-  if (isPestVacuumEntry(item)) return 'vacuum';
+  if (isVacuumItemEntry(item)) return 'vacuum';
   if (item.section === 'crops') return `crop:${cropId}`;
   if (item.section === 'tools') return `tool:${toolKeyForCropId(cropId)}`;
   return 'account';
@@ -73,9 +74,6 @@ function contributionFor(state, item, cropId, mode = null) {
   const axis = statAxisFor(item);
   if (!axis) return null;
 
-  // BPC is shown for both Farm and Pest sets. It describes the spawn chance
-  // produced by the currently active loadout; it does not mean a BPC upgrade
-  // becomes a normal-farming planner candidate.
   if (mode && axis !== STAT_AXIS.BONUS_PEST_CHANCE && !itemAppliesToActivity(item, mode)) return null;
 
   const level = configuredLevel(profile, item, cropId);
