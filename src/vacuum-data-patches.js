@@ -46,5 +46,26 @@ export const VACUUM_BOOKWORM_BOOK = Object.freeze({
   workbookRank: null,
 });
 
+export const VACUUM_PERIDOT_FORTUNE = Object.freeze({
+  id: 'vacuum-peridot-gemstone-fortune',
+  category: 'Vacuum Gemstone',
+  section: 'tools',
+  name: 'Vacuum Peridot gemstone Fortune',
+  metric: 'Crop Yield',
+  modeScope: 'Pest Vacuum Drops',
+  cropScope: 'Any',
+  status: 'ACTIVE',
+  max: 20,
+  stepGain: 1,
+  manualDefault: null,
+  rawMarginal: 1,
+  hypercharge: false,
+  notes: 'Derived from the actual filled Peridot sockets and current host rarity of the selected Vacuum. The UI writes the exact derived total; this is not a user-entered level.',
+  source: 'https://hypixel-skyblock.fandom.com/wiki/Gemstone_Slot',
+  lastVerified: '2026-09-17',
+  workbookRank: null,
+});
+
 upsert(VACUUM_FARMING_FOR_DUMMIES);
 upsert(VACUUM_BOOKWORM_BOOK);
+upsert(VACUUM_PERIDOT_FORTUNE);
