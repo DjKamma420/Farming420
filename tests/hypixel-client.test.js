@@ -34,6 +34,20 @@ test('the keyless resource endpoint works without any credential', async () => {
   assert.equal(fetchImpl.calls[0].init.headers['API-Key'], undefined);
 });
 
+test('Bazaar and item resources are keyless live-price inputs', async () => {
+  const fetchImpl = recordingFetch(url => ok(url.includes('/bazaar')
+    ? { success: true, lastUpdated: 1, products: {} }
+    : { success: true, lastUpdated: 1, items: [] }));
+  const client = createHypixelClient({ fetchImpl });
+  await client.fetchBazaar();
+  await client.fetchItemResources();
+  assert.equal(fetchImpl.calls.length, 2);
+  assert.match(fetchImpl.calls[0].url, /\/v2\/skyblock\/bazaar$/);
+  assert.match(fetchImpl.calls[1].url, /\/v2\/resources\/skyblock\/items$/);
+  assert.equal(fetchImpl.calls[0].init.headers['API-Key'], undefined);
+  assert.equal(fetchImpl.calls[1].init.headers['API-Key'], undefined);
+});
+
 test('direct mode sends the key as an API-Key header to Hypixel', async () => {
   const fetchImpl = recordingFetch(ok({ success: true, profiles: [] }));
   const client = createHypixelClient({ apiKey: KEY, fetchImpl });
