@@ -1,0 +1,166 @@
+{
+  "meta": {
+    "title": "Farming equipment average acquisition cost snapshot",
+    "asOf": "2026-09-17",
+    "currency": "coins",
+    "market": "Hypixel SkyBlock Auction House",
+    "scope": "All farming equipment currently admitted by Farming420's equipment catalog filters: LOTUS/Peony, Blossom, Pesthunter, Pest Vest, and Zorro's Cape.",
+    "costType": "acquisition_average_auction_price",
+    "primaryMetric": "Source-reported average Auction House sale price",
+    "usage": "Research fallback for upgrade economics. A live market-price service should override this snapshot when fresh data is available. Do not treat acquisition cost as resale value.",
+    "completeness": {
+      "expectedItems": 14,
+      "itemsWithAverageCost": 14
+    },
+    "sourcePolicy": {
+      "primary": "SkyAH item-level reported average price",
+      "fallback": "Coflnet 24-hour average price when SkyAH did not expose a readable numeric average",
+      "uncertaintyRule": "Rounded source-title values are explicitly marked. No missing value was silently estimated."
+    }
+  },
+  "equipment": [
+    {
+      "skyblockId": "LOTUS_NECKLACE",
+      "name": "Peony Necklace",
+      "slot": "NECKLACE",
+      "averageCostCoins": 905000,
+      "source": "https://skyah.net/item/LOTUS_NECKLACE",
+      "sourceMetric": "SkyAH reported average price",
+      "precision": "exact_reported",
+      "lastVerified": "2026-09-17"
+    },
+    {
+      "skyblockId": "LOTUS_CLOAK",
+      "name": "Peony Cloak",
+      "slot": "CLOAK",
+      "averageCostCoins": 1600000,
+      "source": "https://skyah.net/item/LOTUS_CLOAK",
+      "sourceMetric": "SkyAH reported average price",
+      "precision": "exact_reported",
+      "lastVerified": "2026-09-17"
+    },
+    {
+      "skyblockId": "LOTUS_BELT",
+      "name": "Peony Belt",
+      "slot": "BELT",
+      "averageCostCoins": 549000,
+      "source": "https://skyah.net/item/LOTUS_BELT",
+      "sourceMetric": "SkyAH reported average price",
+      "precision": "exact_reported",
+      "lastVerified": "2026-09-17"
+    },
+    {
+      "skyblockId": "LOTUS_BRACELET",
+      "name": "Peony Bracelet",
+      "slot": "BRACELET",
+      "averageCostCoins": 350000,
+      "source": "https://skyah.net/item/LOTUS_BRACELET",
+      "sourceMetric": "SkyAH reported average price",
+      "precision": "exact_reported",
+      "lastVerified": "2026-09-17"
+    },
+    {
+      "skyblockId": "BLOSSOM_NECKLACE",
+      "name": "Blossom Necklace",
+      "slot": "NECKLACE",
+      "averageCostCoins": 14987994,
+      "source": "https://skyah.net/item/BLOSSOM_NECKLACE",
+      "sourceMetric": "SkyAH reported average price",
+      "precision": "exact_reported",
+      "lastVerified": "2026-09-17"
+    },
+    {
+      "skyblockId": "BLOSSOM_CLOAK",
+      "name": "Blossom Cloak",
+      "slot": "CLOAK",
+      "averageCostCoins": 17899998,
+      "source": "https://skyah.net/item/BLOSSOM_CLOAK",
+      "sourceMetric": "SkyAH reported average price",
+      "precision": "exact_reported",
+      "lastVerified": "2026-09-17"
+    },
+    {
+      "skyblockId": "BLOSSOM_BELT",
+      "name": "Blossom Belt",
+      "slot": "BELT",
+      "averageCostCoins": 9599998,
+      "source": "https://skyah.net/item/BLOSSOM_BELT",
+      "sourceMetric": "SkyAH reported average price",
+      "precision": "exact_reported",
+      "lastVerified": "2026-09-17"
+    },
+    {
+      "skyblockId": "BLOSSOM_BRACELET",
+      "name": "Blossom Bracelet",
+      "slot": "BRACELET",
+      "averageCostCoins": 8558666,
+      "source": "https://sky.coflnet.com/item/BLOSSOM_BRACELET",
+      "sourceMetric": "Coflnet reported 24-hour average price",
+      "precision": "exact_reported",
+      "lastVerified": "2026-09-17",
+      "note": "Fallback source: SkyAH did not expose a readable numeric average for this item during verification."
+    },
+    {
+      "skyblockId": "PESTHUNTERS_NECKLACE",
+      "name": "Pesthunter's Necklace",
+      "slot": "NECKLACE",
+      "averageCostCoins": 700000,
+      "source": "https://skyah.net/item/PESTHUNTERS_NECKLACE",
+      "sourceMetric": "SkyAH reported average price",
+      "precision": "exact_reported",
+      "lastVerified": "2026-09-17"
+    },
+    {
+      "skyblockId": "PESTHUNTERS_CLOAK",
+      "name": "Pesthunter's Cloak",
+      "slot": "CLOAK",
+      "averageCostCoins": 660000,
+      "source": "https://skyah.net/item/PESTHUNTERS_CLOAK",
+      "sourceMetric": "SkyAH reported average price",
+      "precision": "rounded_from_source_title",
+      "lastVerified": "2026-09-17"
+    },
+    {
+      "skyblockId": "PESTHUNTERS_BELT",
+      "name": "Pesthunter's Belt",
+      "slot": "BELT",
+      "averageCostCoins": 740000,
+      "source": "https://skyah.net/item/PESTHUNTERS_BELT",
+      "sourceMetric": "SkyAH reported average price",
+      "precision": "exact_reported",
+      "lastVerified": "2026-09-17"
+    },
+    {
+      "skyblockId": "PESTHUNTERS_GLOVES",
+      "name": "Pesthunter's Gloves",
+      "slot": "GLOVES",
+      "averageCostCoins": 700000,
+      "source": "https://skyah.net/item/PESTHUNTERS_GLOVES",
+      "sourceMetric": "SkyAH reported average price",
+      "precision": "exact_reported",
+      "lastVerified": "2026-09-17"
+    },
+    {
+      "skyblockId": "PEST_VEST",
+      "name": "Pest Vest",
+      "slot": "FARMING_EQUIPMENT",
+      "averageCostCoins": 5600000,
+      "source": "https://skyah.net/item/PEST_VEST",
+      "sourceMetric": "SkyAH reported average price",
+      "precision": "rounded_from_source_title",
+      "lastVerified": "2026-09-17"
+    },
+    {
+      "skyblockId": "ZORROS_CAPE",
+      "parserAliases": ["ZORRO_CAPE"],
+      "name": "Zorro's Cape",
+      "slot": "CLOAK",
+      "averageCostCoins": 2400000,
+      "source": "https://skyah.net/item/ZORROS_CAPE",
+      "sourceMetric": "SkyAH reported average price",
+      "precision": "exact_reported",
+      "lastVerified": "2026-09-17",
+      "note": "Current item ID is ZORROS_CAPE. Farming420 currently contains the legacy/incorrect alias ZORRO_CAPE in its catalog filter, so the alias is retained here for parser compatibility."
+    }
+  ]
+}
