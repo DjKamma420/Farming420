@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFileSync } from 'node:fs';
 
+import '../src/farming-reforge-patches.js';
 import {
   ENCHANT_LABELS,
   GEM_QUALITIES,
@@ -135,8 +136,8 @@ test('the collapsed card summarises the item without claiming an empty slot is f
 });
 
 test('the tool panel points only at entries that really exist', () => {
-  // The panel is a second view of stored progression, never a second copy. A
-  // renamed entry id would silently produce a lever that writes nowhere.
+  // The browser loads the verified reforge runtime additions before the app.
+  // Test the same runtime table so every visible reforge has a stored target.
   assert.equal(assertToolPanelEntries(UPGRADES.map(entry => entry.id)), true);
   assert.throws(() => assertToolPanelEntries(['something-else']), /unknown entries/);
 });

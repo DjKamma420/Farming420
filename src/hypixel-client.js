@@ -15,8 +15,12 @@
  */
 export const HYPIXEL_API_BASE = 'https://api.hypixel.net';
 
-/** Resource endpoints are documented as keyless and are always called directly. */
-export const KEYLESS_ENDPOINTS = Object.freeze(['/v2/resources/skyblock/skills']);
+/** Public endpoints documented without ApiKey authorization. */
+export const KEYLESS_ENDPOINTS = Object.freeze([
+  '/v2/resources/skyblock/skills',
+  '/v2/resources/skyblock/items',
+  '/v2/skyblock/bazaar',
+]);
 
 function buildUrl(base, path, params) {
   const url = new URL(path.replace(/^\//, ''), base.endsWith('/') ? base : `${base}/`);
@@ -115,5 +119,9 @@ export function createHypixelClient(options = {}) {
     fetchGarden: profileId => request('/v2/skyblock/garden', { profile: profileId }),
     /** Keyless: the official skill level table used to derive the Farming level. */
     fetchSkillResources: () => request('/v2/resources/skyblock/skills', {}, { keyless: true }),
+    /** Keyless: official SkyBlock item metadata, including npc_sell_price where present. */
+    fetchItemResources: () => request('/v2/resources/skyblock/items', {}, { keyless: true }),
+    /** Keyless: live Bazaar order summaries and quick_status market data. */
+    fetchBazaar: () => request('/v2/skyblock/bazaar', {}, { keyless: true }),
   };
 }

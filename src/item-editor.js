@@ -16,6 +16,7 @@ import {
   canonicalEnchantId,
   enchantPresentation,
 } from './enchant-presentation.js';
+import { FARMING_TOOL_REFORGES } from './farming-reforges.js';
 
 /**
  * Rarity colours are not a design choice: they are the colour codes the game
@@ -258,13 +259,17 @@ export function itemSummary(slotId, item) {
  * is renamed out from under it, the way `enchant-presentation.js` guards its
  * own runtime ids.
  */
+const FARMING_TOOL_REFORGE_ENTRY_IDS = Object.freeze(
+  FARMING_TOOL_REFORGES.map(reforge => `tool-reforge-${reforge.id}-reforge`),
+);
+
 export const TOOL_PANEL = Object.freeze([
   Object.freeze({
     id: 'reforge',
     title: 'Reforge',
-    note: 'A tool carries one reforge, so picking one clears the other.',
+    note: 'A tool carries exactly one reforge; choosing one replaces every other farming-tool reforge.',
     control: 'exclusive',
-    entries: Object.freeze(['tool-reforge-bountiful-reforge', 'tool-reforge-blessed-reforge']),
+    entries: FARMING_TOOL_REFORGE_ENTRY_IDS,
   }),
   Object.freeze({
     id: 'enchantments',
