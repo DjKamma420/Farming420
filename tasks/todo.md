@@ -1922,3 +1922,59 @@ sweep clean on desktop-empty, desktop-filled and phone-filled, and the three
 planner states read back out of a real browser: no baseline ranks by cost per
 Fortune, a baseline ranks by payback, and a goal mode leaves exactly one
 ranking on the page.
+
+## 0.35.0 -- the Pests page
+
+- [x] Teach the two pipelines and which stat acts on which
+- [x] The researched pest/crop/vinyl mapping, with art
+- [x] The Pesthunter Phillip conversion, cap and all
+- [x] Borrow the crop-art table instead of starting a second one
+
+### Review
+
+The page held one card, with no art, marked VERIFY -- on a page whose entire
+subject is that two pipelines take different stats. `src/pest-model.js` now
+holds the mechanics with their sources, and `src/pests-page.js` renders them.
+
+**Spawn, then loot, and they do not share a stat.** Bonus Pest Chance decides
+whether a pest appears. Overbloom decides what a dead one gives. Farming
+Fortune touches only the guaranteed drops in between. The page states the rule
+outright, because the number involved is large enough that nobody guesses it:
+since 2026-05-14 the listed non-guaranteed pest drops scale with Overbloom, so
+a +100 Pest Farming Fortune reforge changes the rare-drop chance by nothing.
+The four stat sides are colour-coded on the two that get confused -- green for
+the stat that works on the rare-drop roll, amber for the one that does not
+despite its size.
+
+**Thirteen pests, thirteen crops, thirteen vinyls**, verbatim from the research
+table, which closes with "do not invent Stereo mappings for special Pest types
+that are not part of this standard mapping" -- so the list gains no rows by
+guesswork, and a test pins the count and the three uniqueness constraints. Each
+row borrows its crop's art, which is what fixed "card without art": the app
+already had all thirteen crop textures.
+
+**The crop-art table is borrowed, not copied.** `CROP_ART` and a new
+`cropArtUrl()` are exported from `skyblock-redesign.js`. This repo has already
+shipped two rarity ladders and two taskbar rules; a second crop-art table would
+have been the third of that kind.
+
+### Where two sources disagreed
+
+Pesthunter Phillip converts pest currency into temporary Farming Fortune. Both
+sources agree on 5 Farming Fortune per pest and disagree on the ceiling: the
+master research file's `_0_27`-tagged values give 200 pests for +1,000, while
+`VACUUM_RESEARCH.md` records +200 at 40 pests. The version-tagged figure is the
+one used, and the older one stays on the page with its source, so a player
+seeing the smaller cap in game can tell which number is theirs. Inventing a
+single "correct" ceiling would have been the easy thing and the wrong one.
+
+A bad pest count returns `null`, not zero Fortune -- including `null` itself,
+which `Number()` would otherwise turn into a confident 0. An empty input field
+stays a real answer: spend nothing, get nothing.
+
+### Verified
+
+608 node + 7 python tests, overlay audit at 0 findings, pests sweep clean on
+all three profiles, and read back out of a real browser at 1280px and 412px:
+one panel (not one per mutation), 13 rows, 13 textures resolved, no sideways
+scroll, and the converter capping 500 pests to 200 for +1,000.

@@ -72,7 +72,7 @@ const NAV_ART = Object.freeze({
  * Every key is checked against the shipped manifest by `tests/crop-art.test.js`,
  * because a name that matches nothing degrades silently back to the letter.
  */
-const CROP_ART = Object.freeze({
+export const CROP_ART = Object.freeze({
   wheat: ['theoretical_hoe_wheat_1'],
   carrot: ['carrot_bait'],
   potato: ['theoretical_hoe_potato_1'],
@@ -158,6 +158,17 @@ function activeCropId() {
 
 function currentGoal() {
   return localStorage.getItem(GOAL_KEY) || 'coins';
+}
+
+/**
+ * The pack art for a crop, or null while the manifest is still loading.
+ *
+ * Exported so a page that needs a crop's picture borrows this table instead of
+ * starting a second one. The app has had two rarity ladders and two taskbar
+ * rules already; a second crop-art table would be the third of that kind.
+ */
+export function cropArtUrl(cropId) {
+  return assetByCandidates(CROP_ART[String(cropId || '').trim().toLowerCase()] || []);
 }
 
 function assetByCandidates(candidates = []) {
