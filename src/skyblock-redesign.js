@@ -23,23 +23,33 @@ const GOALS = Object.freeze([
   ['seasoning', 'Feast Seasoning'],
 ]);
 
+/**
+ * Nav art, by page, in preference order.
+ *
+ * Every key here was checked against `assets/hypixel-pack/manifest.json`; a
+ * name that matches nothing silently degrades to a bare letter, which is how
+ * twelve of sixteen entries ended up as letters (`garden`, `personal_bank`,
+ * `wardrobe`, `calculator` and friends are not in the pack at all). The pack
+ * ships SkyBlock's own items only -- there is no book, paper, clock or armour
+ * texture in it -- so the four pages with no honest match keep the letter
+ * rather than wear a misleading icon. `tests/nav-art.test.js` fails if a key
+ * stops resolving.
+ */
 const NAV_ART = Object.freeze({
-  dashboard: ['garden', 'farming'],
-  account: ['personal_bank', 'profile'],
-  crops: ['cropie', 'wheat'],
-  tools: ['farming_toolkit', 'theoretical_hoe_wheat_3', 'melon_dicer_3'],
-  setups: ['wardrobe', 'armor'],
-  gear: ['fermento', 'armor'],
-  pets: ['elephant', 'rabbit'],
+  dashboard: ['garden_scythe'],
+  account: ['visitors_gratitude'],
+  crops: ['cropie'],
+  tools: ['theoretical_hoe_wheat_3', 'melon_dicer_3'],
+  setups: ['fermento'],
+  gear: ['squash'],
+  pets: ['jolly_pink_rock'],
   chips: ['cropshot_chip', 'hypercharge_chip'],
-  shards: ['shard', 'attribute'],
-  buffs: ['booster_cookie', 'god_potion'],
-  pests: ['vacuum', 'pest'],
-  guide: ['book', 'guide'],
-  setup: ['paper', 'checklist'],
-  planner: ['calculator', 'abacus'],
-  research: ['enchanted_book', 'book'],
-  coming: ['clock', 'barrier'],
+  shards: ['earth_shard'],
+  buffs: ['goblin_omelette'],
+  pests: ['pest_trap', 'sprayonator'],
+  planner: ['wishing_compass'],
+  // No fitting art in the pack: guide, setup, research, coming. They keep the
+  // letter badge on purpose -- see LETTER_ONLY_PAGES in the test.
 });
 
 /**

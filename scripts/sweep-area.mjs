@@ -95,10 +95,13 @@ async function sweepVariant(browser, label, viewport, seed) {
     if (!await alive()) throw new Error('FROZE on load');
 
     /**
-     * Below 780px the sidebar is display:none and the only way to change page
-     * is the mobile select. Clicking the hidden nav button silently does
-     * nothing, which made an earlier run report every phone page as "ok" while
-     * it never left the dashboard -- so navigation is verified, not assumed.
+     * Navigation is verified, never assumed. An earlier run reported every
+     * phone page as "ok" while never leaving the dashboard, because below
+     * 780px the sidebar was display:none and clicking a hidden nav button does
+     * nothing at all. The icon rail is shown at every width now, so the button
+     * path is the normal one; the select branch stays as a fallback for a page
+     * served from an older cache, and the landing check below is what actually
+     * makes the difference between "no error" and "it worked".
      */
     const reached = await (async () => {
       const navButton = await p.$(`[data-page="${PAGE}"]`);

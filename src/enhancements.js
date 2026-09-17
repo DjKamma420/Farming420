@@ -44,26 +44,6 @@ function groupSidebar(root) {
   }
 }
 
-function addMobileNavigation(root) {
-  const topbar = root.querySelector('.topbar');
-  if (!topbar || topbar.querySelector('.mobile-page-select-addon')) return;
-
-  const select = document.createElement('select');
-  select.className = 'mobile-page-select-addon';
-  select.setAttribute('aria-label', 'Choose section');
-
-  const buttons = [...root.querySelectorAll('.sidebar [data-page]')];
-  for (const button of buttons) {
-    const option = document.createElement('option');
-    option.value = button.dataset.page;
-    option.textContent = button.textContent.trim();
-    option.selected = button.classList.contains('active');
-    select.appendChild(option);
-  }
-
-  select.addEventListener('change', () => clickPage(select.value));
-  topbar.prepend(select);
-}
 
 function simplifyDashboard(root) {
   const heading = root.querySelector('.page-head h1');
@@ -483,7 +463,6 @@ function enhance() {
   const root = document.querySelector('#app');
   if (!root) return;
   groupSidebar(root);
-  addMobileNavigation(root);
   simplifyDashboard(root);
   enhanceCropWorkspace(root);
   improveToolsPage(root);
