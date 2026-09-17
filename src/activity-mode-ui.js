@@ -150,6 +150,43 @@ function injectHeaderSwitch(raw) {
   }));
 }
 
+function renderStatsStrip(raw) {
+  const strip = document.querySelector('.computed-stats-strip');
+  if (!strip) return;
+  const mode = activityModeForState(raw);
+  const cropId = selectedCropId(raw);
+  const stats = computeStatTotals(raw, cropId, mode);
+  const unresolvedFortune = stats.incomplete.globalFortune.length
+    + stats.incomplete.cropFortune.length
+    + stats.incomplete.pestFortune.length;
+  const signature = [
+    mode,
+    stats.effectiveFortune,
+    stats.pestFortune,
+    stats.overbloom,
+    stats.bonusPestChance,
+    unresolvedFortune,
+    stats.incomplete.overbloom.length,
+    stats.incomplete.bonusPestChance.length,
+  ].join(':');
+  if (strip.dataset.activityStats === signature) return;
+  strip.dataset.activityStats = signature;
+
+  strip.innerHTML = `
+    <div class="computed-stat" title="Fortune from the active ${esc(activityLabel(mode))}">
+      <span>${mode === ACTIVITY_MODE.PEST ? 'Pest FF' : 'Farm FF'}</span><strong>${Number(stats.effectiveFortune || 0).toLocaleString('en-US')}</strong>${unresolvedFortune ? '<em>~</em>' : ''}
+    </div>
+    ${mode === ACTIVITY_MODE.PEST ? `<div class="computed-stat" title="Pest/Vacuum-only Farming Fortune. This is excluded from Farm Set totals.">
+      <span>Pest only</span><strong>${Number(stats.pestFortune || 0).toLocaleString('en-US')}</strong>${stats.incomplete.pestFortune.length ? '<em>~</em>' : ''}
+    </div>` : ''}
+    <div class="computed-stat" title="Overbloom for the active set. Pest-only Overbloom is excluded from Farm Set totals.">
+      <span>OB</span><strong>${Number(stats.overbloom || 0).toLocaleString('en-US')}</strong>${stats.incomplete.overbloom.length ? '<em>~</em>' : ''}
+    </div>
+    ${mode === ACTIVITY_MODE.PEST ? `<div class="computed-stat" title="Bonus Pest Chance for the active Pest Set">
+      <span>BPC</span><strong>${Number(stats.bonusPestChance || 0).toLocaleString('en-US')}</strong>${stats.incomplete.bonusPestChance.length ? '<em>~</em>' : ''}
+    </div>` : ''}`;
+}
+
 function simplifySetupEditor(raw) {
   const content = document.querySelector('.content');
   if (!content) return;
@@ -230,6 +267,7 @@ function apply() {
   try {
     const raw = load();
     injectHeaderSwitch(raw);
+    renderStatsStrip(raw);
     simplifySetupEditor(raw);
     renderDashboardCandidate(raw);
     renderPlanner(raw);
