@@ -59,28 +59,46 @@ function cowType(value) {
   return String(value || '').toUpperCase().replace(/[^A-Z0-9]+/g, '_') === 'MOOSHROOM_COW';
 }
 
-function setupCow(state) {
+function selectedSetupPet(state) {
   const setups = state?.profile?.setups;
   const list = Array.isArray(setups?.list) ? setups.list : [];
   const setup = list.find(entry => entry?.id === setups?.activeId) || list[0];
-  const pet = setup?.slots?.pet;
-  const name = String(pet?.displayName || pet?.name || '').toLowerCase();
-  return name.includes('mooshroom cow') ? pet : null;
+  return setup?.slots?.pet || null;
+}
+
+function itemIsCow(item) {
+  const id = String(item?.skyblockId || item?.type || '').toUpperCase();
+  const name = String(item?.displayName || item?.name || '').toLowerCase();
+  return cowType(id) || name.includes('mooshroom cow');
 }
 
 export function activeMooshroomCow(state) {
   const pets = Array.isArray(state?.profile?.normalizedSnapshot?.pets)
     ? state.profile.normalizedSnapshot.pets
     : [];
-  const active = pets.find(pet => cowType(pet?.type) && pet?.active === true);
-  if (active) return { ...active, source: 'profile' };
 
-  const selected = setupCow(state);
-  if (!selected) return null;
-  const syncedCow = pets.find(pet => cowType(pet?.type));
-  return syncedCow
-    ? { ...syncedCow, source: 'setup+profile' }
-    : { type: 'MOOSHROOM_COW', source: 'setup', rarity: selected?.rarity || null, experience: null };
+  // A manually selected Farm/Pest setup is an explicit hypothetical loadout and
+  // therefore overrides the pet that happened to be active at the last sync.
+  const selected = selectedSetupPet(state);
+  if (selected) {
+    if (!itemIsCow(selected)) return null;
+    const syncedCow = pets.find(pet => cowType(pet?.type));
+    return syncedCow
+      ? {
+          ...syncedCow,
+          source: 'setup+profile',
+          rarity: selected?.rarity || syncedCow.rarity,
+        }
+      : {
+          type: 'MOOSHROOM_COW',
+          source: 'setup',
+          rarity: selected?.rarity || null,
+          experience: null,
+        };
+  }
+
+  const active = pets.find(pet => cowType(pet?.type) && pet?.active === true);
+  return active ? { ...active, source: 'profile' } : null;
 }
 
 export function mooshroomCowContribution(state) {
