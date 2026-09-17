@@ -17,13 +17,17 @@ export const FARMING_TOOL_ITEM_IDS = Object.freeze({
   'Wild Rose Cutter': Object.freeze(['THEORETICAL_HOE_WILD_ROSE_1', 'THEORETICAL_HOE_WILD_ROSE_2', 'THEORETICAL_HOE_WILD_ROSE_3']),
 });
 
+// Peridot counts are verified offline fallbacks. The live UI prefers the exact
+// `gemstone_slots` array from Hypixel's item resource whenever it is available.
 export const GARDEN_VACUUM_ITEMS = Object.freeze([
-  Object.freeze({ id: 'SKYMART_VACUUM', name: 'SkyMart Vacuum', rarity: 'COMMON' }),
-  Object.freeze({ id: 'SKYMART_TURBO_VACUUM', name: 'SkyMart Turbo Vacuum', rarity: 'UNCOMMON' }),
-  Object.freeze({ id: 'SKYMART_HYPER_VACUUM', name: 'SkyMart Hyper Vacuum', rarity: 'RARE' }),
-  Object.freeze({ id: 'INFINI_VACUUM', name: 'InfiniVacuum™', rarity: 'EPIC' }),
-  Object.freeze({ id: 'INFINI_VACUUM_HOOVERIUS', name: 'InfiniVacuum™ Hooverius', rarity: 'LEGENDARY' }),
+  Object.freeze({ id: 'SKYMART_VACUUM', name: 'SkyMart Vacuum', rarity: 'COMMON', peridotSlots: 0 }),
+  Object.freeze({ id: 'SKYMART_TURBO_VACUUM', name: 'SkyMart Turbo Vacuum', rarity: 'UNCOMMON', peridotSlots: 0 }),
+  Object.freeze({ id: 'SKYMART_HYPER_VACUUM', name: 'SkyMart Hyper Vacuum', rarity: 'RARE', peridotSlots: 0 }),
+  Object.freeze({ id: 'INFINI_VACUUM', name: 'InfiniVacuum™', rarity: 'EPIC', peridotSlots: 1 }),
+  Object.freeze({ id: 'INFINI_VACUUM_HOOVERIUS', name: 'InfiniVacuum™ Hooverius', rarity: 'LEGENDARY', peridotSlots: 2 }),
 ]);
+
+const RARITY_ORDER = Object.freeze(['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY', 'MYTHIC']);
 
 export function farmingToolSkyblockId(toolName, tier = 1) {
   const chain = FARMING_TOOL_ITEM_IDS[toolName];
@@ -35,6 +39,18 @@ export function farmingToolSkyblockId(toolName, tier = 1) {
 export function vacuumRecordById(id) {
   const normalized = String(id || '').trim().toUpperCase();
   return GARDEN_VACUUM_ITEMS.find(item => item.id === normalized) || null;
+}
+
+export function vacuumEffectiveRarity(id, recombobulated = false) {
+  const record = vacuumRecordById(id);
+  if (!record) return null;
+  const index = RARITY_ORDER.indexOf(record.rarity);
+  if (index < 0) return null;
+  return RARITY_ORDER[Math.min(RARITY_ORDER.length - 1, index + (recombobulated ? 1 : 0))];
+}
+
+export function vacuumFallbackGemstoneSlotCount(id) {
+  return vacuumRecordById(id)?.peridotSlots || 0;
 }
 
 export function catalogItemByExactId(catalog, id) {
