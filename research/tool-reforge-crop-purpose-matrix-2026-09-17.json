@@ -1,0 +1,373 @@
+{
+  "meta": {
+    "title": "Farming Tool Reforge Selection by Crop and Purpose",
+    "schemaVersion": "1.0.0",
+    "asOf": "2026-09-17",
+    "status": "RESEARCH_DRAFT_FOR_ENGINE_INTEGRATION",
+    "target": "AI optimizer and future recommendation engine",
+    "rule": "Never store one global best Farming Tool reforge. Select by physical tool, crop, purpose, player state, event state and current prices.",
+    "notes": [
+      "This file is intentionally separate from UI code so the recommendation model can be changed without redesigning the interface.",
+      "Exact rarity-scaled reforge stat tables still need live tooltip/API verification before they are promoted to hard engine constants.",
+      "Any value marked VERIFY must not be auto-applied as exact game truth."
+    ]
+  },
+  "sources": [
+    {
+      "id": "hypixel_0244",
+      "type": "official_patch_notes",
+      "url": "https://hypixel.net/threads/hypixel-skyblock-0-24-4-harvest-feast-event-fossil-essence-shop-and-more.6089392/",
+      "lastVerified": "2026-09-17",
+      "supports": [
+        "All listed farming axes and hoes are now classified as Farming Tools and share Farming Tool reforges and enchantments.",
+        "Blessed received a new enchanted-crop drop bonus.",
+        "Large Walnut / Earthy applies to Farming Tools, was significantly buffed for Farming Fortune and grants +5% Sowdust while farming.",
+        "Overbloom increases RARE CROP drop rates by 1% relative per point.",
+        "Harvest Feast Seasoning and crop-specific Feast drops are RARE CROPS."
+      ]
+    },
+    {
+      "id": "hypixel_forum_reforge_math_2026_04",
+      "type": "community_math",
+      "url": "https://hypixel.net/threads/new-farming-reforges-introduction-and-blessed-vs-bountiful.6092239/",
+      "lastVerified": "2026-09-17",
+      "supports": [
+        "Blessed is Farming-XP oriented.",
+        "Bountiful coin value depends on crop unit value and effective Fortune.",
+        "Legendary community reference values after 0.24.4: Blessed +16 Farming Fortune, Bountiful +7 Farming Fortune.",
+        "Community reference for Blessed enchanted-crop proc: 0.22% chance for 160 crops; this needs live tooltip verification before exact use."
+      ]
+    },
+    {
+      "id": "hypixel_forum_bountiful_mechanic",
+      "type": "community_mechanic_with_historical_patch_quote",
+      "url": "https://hypixel.net/threads/guide-bountiful-is-better-than-blessed-after-bug-fix.4504829/",
+      "lastVerified": "2026-09-17",
+      "supports": [
+        "Bountiful grants 0.2 coins per crop item harvested/gained, not merely per block broken."
+      ]
+    },
+    {
+      "id": "reddit_reforge_roles_2026_06",
+      "type": "community_consensus",
+      "url": "https://www.reddit.com/r/HypixelSkyblock/comments/1ub1qpx/what_is_the_best_reforge_for_farming_tools_now/",
+      "lastVerified": "2026-09-17",
+      "supports": [
+        "Bountiful is commonly used for direct crop coin output.",
+        "Blessed is used for Farming XP.",
+        "Overpriced is used for Rare Crops and Greenhouse/armor rare-drop progression.",
+        "Deep Fried is used when targeting Seasoning during Harvest Feast.",
+        "Earthy is used for Sowdust.",
+        "Nether Wart can value Overpriced more highly when Warty-related effects are active."
+      ],
+      "confidence": "MEDIUM"
+    },
+    {
+      "id": "notenoughcoins_overpriced_reference",
+      "type": "community_guide",
+      "url": "https://notenoughcoins.net/guides/hypixel-skyblock-farming-trends-july-2026",
+      "lastVerified": "2026-09-17",
+      "supports": [
+        "Community reference: Overpriced provides +7 Overbloom and +25 Farming Fortune."
+      ],
+      "confidence": "MEDIUM"
+    }
+  ],
+  "engineContract": {
+    "selectionKey": [
+      "physicalToolId",
+      "cropId",
+      "purposeId",
+      "toolRarity",
+      "baseFarmingFortune",
+      "matchingCropFortune",
+      "overbloom",
+      "blocksPerSecond",
+      "marketPrices",
+      "harvestFeastState",
+      "greenhouseState",
+      "rareDropPools",
+      "ownedReforgesOrStones",
+      "ironmanState"
+    ],
+    "requiredOutput": {
+      "recommendedReforge": "reforge id or null when exact comparison is unavailable",
+      "rankedCandidates": "ordered candidates with value/hour deltas for the selected purpose",
+      "reasonCodes": "machine-readable explanation tags",
+      "confidence": "HIGH | MEDIUM | LOW | VERIFY",
+      "sourceIds": "source references used by the decision"
+    },
+    "mutualExclusion": "Exactly one Farming Tool reforge can be active on a physical tool at a time.",
+    "sharedToolRule": "If two crops share the same physical tool, their reforge choice is also shared unless the player owns duplicate tools. Do not pretend Sunflower and Moonflower can have independent reforges on one Eclipse tool."
+  },
+  "reforgeCatalog": {
+    "blessed": {
+      "name": "Blessed",
+      "stone": "Blessed Fruit",
+      "roles": ["farming_xp", "normal_crop_yield", "collection"],
+      "mechanics": ["Farming Fortune", "Farming Wisdom / XP-oriented bonus", "enchanted crop proc after 0.24.4"],
+      "exactStats": {
+        "status": "VERIFY_RARITY_TABLE",
+        "legendaryCommunityReferenceFarmingFortune": 16,
+        "enchantedCropProcCommunityReference": {
+          "chance": 0.0022,
+          "cropAmount": 160,
+          "status": "VERIFY_LIVE_TOOLTIP"
+        }
+      },
+      "sourceIds": ["hypixel_0244", "hypixel_forum_reforge_math_2026_04"]
+    },
+    "bountiful": {
+      "name": "Bountiful",
+      "stone": "Golden Ball",
+      "roles": ["direct_crop_coins", "money"],
+      "mechanics": ["Farming Fortune", "+0.2 coins per crop item harvested/gained"],
+      "exactStats": {
+        "coinsPerCropItem": 0.2,
+        "legendaryCommunityReferenceFarmingFortune": 7,
+        "rarityTableStatus": "VERIFY_RARITY_TABLE"
+      },
+      "sourceIds": ["hypixel_0244", "hypixel_forum_bountiful_mechanic", "hypixel_forum_reforge_math_2026_04"]
+    },
+    "earthy": {
+      "name": "Earthy",
+      "stone": "Large Walnut",
+      "roles": ["sowdust", "normal_crop_yield", "early_progression"],
+      "mechanics": ["Farming Fortune", "+5% Sowdust while farming"],
+      "exactStats": {
+        "sowdustMultiplierBonus": 0.05,
+        "farmingFortuneByRarity": "VERIFY_RARITY_TABLE"
+      },
+      "sourceIds": ["hypixel_0244"]
+    },
+    "deep_fried": {
+      "name": "Deep Fried",
+      "stone": "Hashbrown",
+      "roles": ["harvest_feast_seasoning", "feast_progression"],
+      "mechanics": ["Farming Fortune", "Seasoning chance bonus"],
+      "exactStats": {
+        "communityReferenceFarmingFortune": 20,
+        "communityReferenceSeasoningChanceBonus": 0.25,
+        "status": "VERIFY_LIVE_TOOLTIP"
+      },
+      "sourceIds": ["reddit_reforge_roles_2026_06"]
+    },
+    "overpriced": {
+      "name": "Overpriced",
+      "stone": "Overpriced Drink",
+      "roles": ["rare_crops", "overbloom", "full_ev_money", "greenhouse", "armor_progression"],
+      "mechanics": ["Farming Fortune", "Overbloom"],
+      "exactStats": {
+        "communityReferenceFarmingFortune": 25,
+        "communityReferenceOverbloom": 7,
+        "status": "VERIFY_LIVE_TOOLTIP"
+      },
+      "sourceIds": ["notenoughcoins_overpriced_reference", "reddit_reforge_roles_2026_06"]
+    }
+  },
+  "purposeRules": {
+    "money_full_ev": {
+      "label": "Maximum total coin EV",
+      "candidates": ["bountiful", "overpriced", "blessed", "earthy", "deep_fried"],
+      "selection": "SIMULATE_AND_ARGMAX",
+      "formula": "normalCropCoinPerHour + bountifulCoinBonusPerHour + enchantedCropProcEVPerHour + rareCropEVPerHour + feastTradableDropEVPerHour + otherPurposeValuedEVPerHour",
+      "important": "Do not hard-code Bountiful or Overpriced as the winner. Recalculate for each crop and current market state.",
+      "defaultFallbackWhenInputsMissing": "bountiful",
+      "fallbackConfidence": "LOW"
+    },
+    "money_normal_crop_only": {
+      "label": "Coins from normal crop output only",
+      "candidates": ["bountiful", "blessed", "earthy", "overpriced"],
+      "selection": "SIMULATE_NORMAL_CROP_OUTPUT_PLUS_BOUNTIFUL_BONUS",
+      "defaultFallbackWhenInputsMissing": "bountiful",
+      "fallbackConfidence": "MEDIUM"
+    },
+    "farming_xp": {
+      "label": "Farming XP",
+      "candidates": ["blessed", "earthy", "overpriced", "bountiful"],
+      "selection": "blessed",
+      "confidence": "HIGH",
+      "sourceIds": ["hypixel_forum_reforge_math_2026_04"]
+    },
+    "collection": {
+      "label": "Collection / raw crop amount",
+      "candidates": ["blessed", "earthy", "overpriced", "bountiful"],
+      "selection": "SIMULATE_EFFECTIVE_NORMAL_CROP_COUNT",
+      "important": "Use actual rarity-scaled Fortune and verify whether Blessed enchanted-crop procs count toward the relevant collection before including them."
+    },
+    "sowdust": {
+      "label": "Sowdust progression",
+      "candidates": ["earthy"],
+      "selection": "earthy",
+      "confidence": "HIGH",
+      "sourceIds": ["hypixel_0244"]
+    },
+    "rare_crops": {
+      "label": "RARE CROP drops",
+      "candidates": ["overpriced", "blessed", "earthy", "bountiful"],
+      "selection": "SIMULATE_RARE_CROP_EV_OR_DROP_RATE",
+      "defaultFallbackWhenInputsMissing": "overpriced",
+      "fallbackConfidence": "MEDIUM"
+    },
+    "harvest_feast_seasoning": {
+      "label": "Seasoning / Feast donation progression",
+      "candidates": ["deep_fried", "overpriced", "earthy", "blessed", "bountiful"],
+      "selection": "deep_fried",
+      "confidence": "MEDIUM",
+      "blockExactUseUntil": "Deep Fried live tooltip is verified"
+    },
+    "harvest_feast_tradable_rare_drops": {
+      "label": "Tradable Feast rare-crop EV",
+      "candidates": ["overpriced", "bountiful", "deep_fried"],
+      "selection": "SIMULATE_AND_ARGMAX",
+      "defaultFallbackWhenInputsMissing": "overpriced",
+      "fallbackConfidence": "MEDIUM"
+    },
+    "greenhouse_rare_drops": {
+      "label": "Greenhouse rare-drop progression",
+      "candidates": ["overpriced", "earthy", "blessed", "bountiful"],
+      "selection": "SIMULATE_GREENHOUSE_OUTPUT_AND_RARE_DROP_EV",
+      "defaultFallbackWhenInputsMissing": "overpriced",
+      "fallbackConfidence": "MEDIUM"
+    },
+    "armor_rare_crop_progression": {
+      "label": "Cropie / Squash / Fermento / Helianthus progression",
+      "candidates": ["overpriced", "earthy", "blessed", "bountiful"],
+      "selection": "SIMULATE_RARE_CROP_DROP_RATE",
+      "defaultFallbackWhenInputsMissing": "overpriced",
+      "fallbackConfidence": "MEDIUM"
+    }
+  },
+  "valueModel": {
+    "normalCropDropsPerHour": "blocksPerSecond * 3600 * baseDropsPerBlock * (1 + (farmingFortune + matchingCropFortune + reforgeFortune) / 100)",
+    "bountifulCoinBonusPerHour": "normalCropDropsPerHourWithBountiful * 0.2",
+    "rareDropChanceWithOverbloom": "baseRareDropChance * (1 + applicableOverbloom / 100)",
+    "rareCropEVPerHour": "SUM(eligibleRollsPerHour * rareDropChanceWithOverbloom * netTradableValue)",
+    "fullMoneyScore": "normalCropCoinPerHour + reforgeSpecificCoinPerHour + rareCropEVPerHour + feastTradableDropEVPerHour",
+    "progressionScore": "Use purpose-specific units. Do not silently convert Seasonings, Sowdust, XP or Collection into coins unless the user or a documented model assigns a conversion value.",
+    "swapRule": "Compare each candidate against the currently equipped reforge as a marginal swap. Never add effects from mutually exclusive reforges together."
+  },
+  "cropMatrix": {
+    "wheat": {
+      "tool": "Euclid's Wheat Sickle",
+      "physicalToolGroup": "wheat",
+      "moneyCandidates": ["bountiful", "overpriced", "blessed", "earthy"],
+      "purposeOverrides": {"farming_xp": "blessed", "sowdust": "earthy", "rare_crops": "overpriced", "harvest_feast_seasoning": "deep_fried"},
+      "moneyRule": "dynamic"
+    },
+    "carrot": {
+      "tool": "Gauss Carrot Shovel",
+      "physicalToolGroup": "carrot",
+      "moneyCandidates": ["bountiful", "overpriced", "blessed", "earthy"],
+      "purposeOverrides": {"farming_xp": "blessed", "sowdust": "earthy", "rare_crops": "overpriced", "harvest_feast_seasoning": "deep_fried"},
+      "moneyRule": "dynamic"
+    },
+    "potato": {
+      "tool": "Pythagorean Potato Shovel",
+      "physicalToolGroup": "potato",
+      "moneyCandidates": ["bountiful", "overpriced", "blessed", "earthy"],
+      "purposeOverrides": {"farming_xp": "blessed", "sowdust": "earthy", "rare_crops": "overpriced", "harvest_feast_seasoning": "deep_fried"},
+      "moneyRule": "dynamic"
+    },
+    "pumpkin": {
+      "tool": "Pumpkin Dicer",
+      "physicalToolGroup": "pumpkin",
+      "moneyCandidates": ["bountiful", "overpriced", "blessed", "earthy"],
+      "purposeOverrides": {"farming_xp": "blessed", "sowdust": "earthy", "rare_crops": "overpriced", "harvest_feast_seasoning": "deep_fried"},
+      "moneyRule": "dynamic",
+      "note": "Historically high crop unit value makes the lost Fortune versus Bountiful more important than on very cheap crops; do not use old fixed thresholds after 0.24.4."
+    },
+    "melon": {
+      "tool": "Melon Dicer",
+      "physicalToolGroup": "melon",
+      "moneyCandidates": ["bountiful", "overpriced", "blessed", "earthy"],
+      "purposeOverrides": {"farming_xp": "blessed", "sowdust": "earthy", "rare_crops": "overpriced", "harvest_feast_seasoning": "deep_fried"},
+      "moneyRule": "dynamic",
+      "note": "Bountiful is especially sensitive to high crop-item throughput, so Melon must be evaluated from actual drops/hour rather than blocks/hour."
+    },
+    "mushroom": {
+      "tool": "Fungi Cutter",
+      "physicalToolGroup": "mushroom",
+      "moneyCandidates": ["bountiful", "overpriced", "blessed", "earthy"],
+      "purposeOverrides": {"farming_xp": "blessed", "sowdust": "earthy", "rare_crops": "overpriced", "harvest_feast_seasoning": "deep_fried"},
+      "moneyRule": "dynamic"
+    },
+    "cactus": {
+      "tool": "Cactus Knife",
+      "physicalToolGroup": "cactus",
+      "moneyCandidates": ["bountiful", "overpriced", "blessed", "earthy"],
+      "purposeOverrides": {"farming_xp": "blessed", "sowdust": "earthy", "rare_crops": "overpriced", "harvest_feast_seasoning": "deep_fried"},
+      "moneyRule": "dynamic"
+    },
+    "sugar-cane": {
+      "tool": "Turing Sugar Cane Cutter",
+      "physicalToolGroup": "sugar-cane",
+      "moneyCandidates": ["bountiful", "overpriced", "blessed", "earthy"],
+      "purposeOverrides": {"farming_xp": "blessed", "sowdust": "earthy", "rare_crops": "overpriced", "harvest_feast_seasoning": "deep_fried"},
+      "moneyRule": "dynamic"
+    },
+    "cocoa-beans": {
+      "tool": "Cocoa Chopper",
+      "physicalToolGroup": "cocoa-beans",
+      "moneyCandidates": ["bountiful", "overpriced", "blessed", "earthy"],
+      "purposeOverrides": {"farming_xp": "blessed", "sowdust": "earthy", "rare_crops": "overpriced", "harvest_feast_seasoning": "deep_fried"},
+      "moneyRule": "dynamic"
+    },
+    "nether-wart": {
+      "tool": "Newton Nether Wart Cutter",
+      "physicalToolGroup": "nether-wart",
+      "moneyCandidates": ["bountiful", "overpriced", "blessed", "earthy"],
+      "purposeOverrides": {"farming_xp": "blessed", "sowdust": "earthy", "rare_crops": "overpriced", "harvest_feast_seasoning": "deep_fried"},
+      "moneyRule": "dynamic",
+      "specialContext": {
+        "id": "warty_active",
+        "effect": "When the Warty-related drop path is active, include Warty in Nether Wart rare-drop EV; this increases the relative value of Overbloom/Overpriced.",
+        "status": "VERIFY_EXACT_CURRENT_TRIGGER_AND_RATE_BEFORE_ENGINE_USE"
+      }
+    },
+    "sunflower": {
+      "tool": "Eclipse Sickle",
+      "physicalToolGroup": "eclipse-sickle",
+      "moneyCandidates": ["bountiful", "overpriced", "blessed", "earthy"],
+      "purposeOverrides": {"farming_xp": "blessed", "sowdust": "earthy", "rare_crops": "overpriced", "harvest_feast_seasoning": "deep_fried"},
+      "moneyRule": "dynamic",
+      "sharedToolWith": ["moonflower"]
+    },
+    "moonflower": {
+      "tool": "Eclipse Sickle",
+      "physicalToolGroup": "eclipse-sickle",
+      "moneyCandidates": ["bountiful", "overpriced", "blessed", "earthy"],
+      "purposeOverrides": {"farming_xp": "blessed", "sowdust": "earthy", "rare_crops": "overpriced", "harvest_feast_seasoning": "deep_fried"},
+      "moneyRule": "dynamic",
+      "sharedToolWith": ["sunflower"]
+    },
+    "wild-rose": {
+      "tool": "Wild Rose Cutter",
+      "physicalToolGroup": "wild-rose",
+      "moneyCandidates": ["bountiful", "overpriced", "blessed", "earthy"],
+      "purposeOverrides": {"farming_xp": "blessed", "sowdust": "earthy", "rare_crops": "overpriced", "harvest_feast_seasoning": "deep_fried"},
+      "moneyRule": "dynamic"
+    }
+  },
+  "implementationRules": [
+    "The UI may show a recommended badge, but the recommendation must be produced from crop + purpose + player state, not from a static reforge label.",
+    "When a player selects a crop tool, show every compatible Farming Tool reforge even if it is not currently recommended.",
+    "For Money mode, calculate candidates with current Bazaar/NPC values and current player Fortune. Recompute when prices or loadout change.",
+    "For Feast mode, separate Seasoning progression from tradable rare-crop coin EV. Deep Fried can win Seasoning progression without winning coin EV.",
+    "For Overpriced, include only rare-drop pools actually eligible for Overbloom in the current crop/context.",
+    "For Bountiful, use crop items obtained, not merely blocks broken.",
+    "For Sunflower and Moonflower, one owned Eclipse Sickle means one shared reforge state. A second physical Eclipse Sickle may be modeled as a separate loadout.",
+    "Do not rank a reforge using its full stat total when switching. Use the marginal difference from the player's current reforge."
+  ],
+  "verificationBacklog": [
+    "Verify the full rarity-scaled Farming Fortune table for Blessed, Bountiful, Earthy, Deep Fried and Overpriced from live 2026 tooltips/API data.",
+    "Verify Blessed enchanted-crop proc chance, amount, eligible crops and whether the proc contributes Collection and Farming XP.",
+    "Verify Deep Fried exact Seasoning modifier and whether it is additive or multiplicative with other Harvest Feast modifiers.",
+    "Verify Overpriced exact Farming Fortune and Overbloom values at every tool rarity.",
+    "Map each crop to every current Overbloom-eligible rare-drop pool, including Greenhouse-only and Feast-only pools.",
+    "Verify Warty trigger requirements and current base chance for Nether Wart.",
+    "Add current crop unit prices and rare-drop prices through the market service rather than hard-coding them in this research file.",
+    "Add tests proving that Money recommendations can differ by crop, Fortune, event state and market prices.",
+    "Add a test proving that Sunflower and Moonflower cannot independently equip different reforges on one Eclipse Sickle instance."
+  ]
+}
