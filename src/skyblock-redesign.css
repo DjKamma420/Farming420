@@ -547,7 +547,9 @@
   .skyblock-redesign .sidebar.sb-rail { width: 68px; padding-inline: 4px; }
   .skyblock-redesign .sb-rail .nav-link { width: 54px; }
   .skyblock-redesign .sb-nav-label { left: 60px; }
-  .skyblock-redesign .sb-tool-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+  /* Was minmax(180px,...), which produced three columns at 760px and left the
+     name 85px to live in. Wider minimum, fewer columns, readable names. */
+  .skyblock-redesign .sb-tool-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
   .skyblock-redesign .sb-reforge-grid { grid-template-columns: 1fr 1fr; }
   .skyblock-redesign .sb-block-title { display: block; }
   .skyblock-redesign .sb-hint { margin-top: 8px; max-width: none; text-align: left; }
@@ -585,17 +587,6 @@
     width: auto;
     height: 4px;
   }
-  /*
-   * enhancements.js wraps the nav in four titled groups. As a side rail those
-   * titles are useful; in the bottom bar they are laid out as four columns,
-   * each a heading stacked over its buttons, which needs two rows in a bar
-   * 68px tall -- so the bar showed "PROGRESS", "LOADOUT" and a clipped second
-   * row of icons instead of one row of destinations. `display: contents` drops
-   * the group boxes out of the layout so the buttons become direct children of
-   * the nav's flex row, without changing the DOM that the grouping module owns.
-   */
-  .skyblock-redesign .sb-rail .nav-group-addon { display: contents; }
-  .skyblock-redesign .sb-rail .nav-group-title-addon { display: none; }
   .skyblock-redesign .sb-nav-label { display: none !important; }
   .skyblock-redesign .content { padding: 18px 14px 88px; }
   .skyblock-redesign .sb-tool-grid,
@@ -630,4 +621,35 @@
 
 .sb-reforge-card.sb-reforge-none:not(.selected) {
   opacity: .8;
+}
+
+/* Crop tiles: pack art on top, the letter underneath as the fallback. The
+   letter is hidden rather than removed, because the core re-renders the tile
+   and would put it straight back. */
+.skyblock-redesign .crop-icon { position: relative; isolation: isolate; overflow: hidden; }
+.skyblock-redesign .crop-icon .sb-crop-art {
+  width: 82%;
+  height: 82%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(2px 3px 0 rgba(0,0,0,.35));
+}
+.skyblock-redesign .crop-icon .sb-crop-art + .sb-crop-letter,
+.skyblock-redesign .crop-icon .sb-crop-letter:has(+ .sb-crop-art) { display: none; }
+
+/* Side-rail group headings have to fit the rail, not the sentence. At 88px
+   "Specialized" was being cut to "SPECIALI"; the generous letter-spacing and
+   12px side padding inherited from the wide sidebar were the cause. Below
+   650px mobile-taskbar.css hides these outright, so this is desktop/tablet
+   only. */
+.skyblock-redesign .sb-rail .nav-group-addon { min-width: 0; }
+.skyblock-redesign .sb-rail .nav-group-title-addon {
+  padding: 8px 2px 2px;
+  font-size: 8px;
+  letter-spacing: 0;
+  text-align: center;
+  /* Fit the word, never break it: `overflow-wrap: anywhere` turned
+     "Specialized" into "SPECIALIZE" + "D", which reads no better than the
+     clipping it replaced. Two-word labels still wrap between the words. */
+  overflow-wrap: normal;
 }

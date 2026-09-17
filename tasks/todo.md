@@ -1388,3 +1388,52 @@ change.
 
 412px screenshots of Dashboard, Tools and Planner: one row of icons, Dashboard
 first, no group titles, no dropdown. 426 node tests and 7 Python tests pass.
+
+
+## 0.27.2 -- crop art and the overlay audit
+
+### Thirteen crop tiles were letters
+
+W, C, P, Pu, Mu, WR and the rest. The pack ships SkyBlock's own items only, so
+there is no plain wheat, melon or cocoa texture in it. Eight crops have their
+own produce in the pack and now use it: carrot `carrot_bait` (a basket of
+carrots), pumpkin `polished_pumpkin`, mushroom `glowing_mushroom`, cactus
+`potted_cactus`, nether wart `mutant_nether_wart`, and the three greenhouse
+crops `compacted_sunflower`, `compacted_moonflower`, `compacted_wild_rose`.
+
+Wheat, potato, melon, sugar cane and cocoa have no produce texture at all, so
+they take that crop's Mk. I tool. It repeats the Tools page art, but the tile
+names the tool right beside it and a recognisable tool beats a letter. Every
+key was checked as an image, not by name: `fine_flour` is a brown sack and
+`deepfries` are chips, so neither was used for wheat or potato.
+
+**The Recombobulator has no texture in this pack** -- zero matches. It keeps
+its placeholder rather than wearing something misleading.
+
+### An audit that was lying by omission
+
+`scripts/overlay-audit.mjs` (`npm run audit:overlay`) hit-tests every page in
+four viewports at three scroll positions for content painting over the chrome,
+boxes escaping their parent, clipped text and sideways page scroll. Two real
+bugs came out of it and are fixed:
+
+- The crops grid used `1fr 1fr` on phones. `1fr` is `minmax(auto, 1fr)`, so a
+  column may exceed its share when its content cannot shrink -- long tool names
+  did exactly that, giving columns of 188px and 205px in 362px of space and
+  scrolling the page sideways by 26px. Now `repeat(2, minmax(0, 1fr))`, with
+  the names allowed to wrap.
+- The tool grid's tablet rule *shrank* the minimum column to 180px, producing
+  three narrow columns at 760px and leaving the name 85px to live in, clipped
+  by 31px. Now 240px, so fewer and wider columns.
+
+The audit's first version only looked inside `.content`, which is why it missed
+the side rail entirely: at 88px the group headings were cut mid-word
+("SPECIALI"). Fixed here, and the first fix -- `overflow-wrap: anywhere` --
+was itself wrong, turning it into "SPECIALIZE" + "D", which reads no better
+than the clipping. It fits on one line now.
+
+### Duplicate removed
+
+The bottom-bar flattening added in 0.27.1 duplicated rules already shipped in
+`mobile-taskbar.css`, which loads after `skyblock-redesign.css` and therefore
+won regardless. Mine never applied and is gone.

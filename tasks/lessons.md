@@ -300,3 +300,33 @@ not move, so a page missing from its table is **not** dropped -- it silently
 leads the list. Three pages were missing and nobody noticed for as long as the
 grouping only ever appeared in a scrollable side rail. Any function that
 reorders a subset needs a test that the subset is the whole set.
+
+
+## Check an icon as an image, not as a name (0.27.2)
+
+Looking for crop art, the name `fine_flour` reads like the obvious wheat icon
+and `deepfries` like the obvious potato one. Rendered, the first is a brown
+sack and the second is a portion of chips -- neither says "wheat" or "potato"
+to anyone glancing at a tile. Both were rejected only because the candidates
+were rendered to a contact sheet and looked at.
+
+Pack keys are written by someone naming an item, not an icon. Render the
+candidates before wiring them up; it costs one script and settles the question
+that reading names cannot.
+
+Corollary: when nothing fits, say so. The Recombobulator has no texture in this
+pack at all, and the honest result is that it keeps its placeholder.
+
+## A detector that only looks where you already looked (0.27.2)
+
+The overlay audit swept `.content` in four viewports and reported three
+findings, one of which was a false positive. It never looked at the sidebar --
+and the sidebar was where a heading was being cut mid-word on every desktop
+page. I found that by eye, in a screenshot taken for a different reason.
+
+Two rules from this:
+1. A detector's scope is a claim about where bugs can be. Write the scope down
+   and challenge it; "0 findings" means nothing about what was never scanned.
+2. Exclude known-good cases explicitly. `.sr-only` text is clipped on purpose,
+   and a finding that is always wrong teaches people to skim past the ones that
+   are right.
