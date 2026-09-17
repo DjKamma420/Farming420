@@ -45,6 +45,25 @@ export const SET_ART = Object.freeze([
   ['SQUASH', 'squash'],
   ['LOTUS', 'lotus'],
   ['BLOSSOM', 'bachelors_rose'],
+
+  // Gemstones are not stand-ins: the pack ships the actual gem for every
+  // Peridot tier, so an upgrade that *is* a gemstone gets its own picture
+  // rather than the armour outline of whatever it was socketed into. Tier
+  // order is load-bearing the same way CONDENSED_* is -- PERFECT_PERIDOT
+  // contains PERIDOT, so the bare token has to be tested last.
+  ['PERFECT_PERIDOT', 'perfect_peridot_gem'],
+  ['FLAWLESS_PERIDOT', 'flawless_peridot_gem'],
+  ['FINE_PERIDOT', 'fine_peridot_gem'],
+  ['FLAWED_PERIDOT', 'flawed_peridot_gem'],
+  ['ROUGH_PERIDOT', 'rough_peridot_gem'],
+  ['PERIDOT', 'peridot_crystal'],
+
+  // Reforges. Every reforge has a design, and where the pack ships the item
+  // the reforge is named for, that item reads immediately: thorns for Thorny,
+  // a root for Rooted. Both are in-family stand-ins in the same class as
+  // BLOSSOM, and both give way to a head texture the moment one exists.
+  ['THORNY', 'blooming_thorns'],
+  ['ROOTED', 'deep_root'],
 ]);
 
 /** Ids and names, flattened to one comparable shape. */

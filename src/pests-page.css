@@ -1,0 +1,278 @@
+.pest-page-addon {
+  display: grid;
+  gap: 18px;
+  margin: 0 0 20px;
+}
+
+.pest-explainer,
+.pest-bestiary,
+.pest-philip {
+  border: 1px solid rgba(125, 160, 134, .28);
+  background: rgba(10, 18, 13, .76);
+  padding: 16px;
+  border-radius: 6px;
+}
+
+.pest-sides {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.pest-side {
+  border: 1px solid #2c3d31;
+  border-left: 3px solid #4d6b56;
+  background: #0b130d;
+  padding: 10px 12px;
+  border-radius: 4px;
+  min-width: 0;
+}
+
+/* The two loot rows are the ones people get wrong, so they are the ones that
+   carry a colour: green for the stat that works, amber for the one that does
+   not despite its size. */
+.pest-side[data-pest-side="loot-rng"] { border-left-color: #7fbf96; }
+.pest-side[data-pest-side="loot-guaranteed"] { border-left-color: #c9a227; }
+
+.pest-side strong {
+  display: block;
+  font-size: 13px;
+  color: #edf7ef;
+}
+
+.pest-side p {
+  margin: 4px 0 0;
+  color: #8fa294;
+  font-size: 12px;
+}
+
+.pest-pipelines {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.pest-pipeline {
+  min-width: 0;
+}
+
+.pest-pipeline h3 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #9fb0a3;
+}
+
+.pest-pipeline ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.pest-step {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.pest-step-index {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #1c2a20;
+  color: #9fd8b1;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.pest-step strong {
+  font-size: 13px;
+  color: #edf7ef;
+}
+
+.pest-step p {
+  margin: 2px 0 0;
+  color: #8fa294;
+  font-size: 12px;
+}
+
+.pest-rule {
+  margin: 16px 0 0;
+  border: 1px solid #4a3f18;
+  background: rgba(60, 50, 16, .35);
+  color: #e8dcae;
+  padding: 10px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.pest-list {
+  display: grid;
+  gap: 6px;
+}
+
+.pest-row {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  border: 1px solid #23322a;
+  background: #0b130d;
+  padding: 8px 10px;
+  border-radius: 4px;
+}
+
+/* `isolation` keeps the icon's own layering inside this box, so a pack texture
+   cannot compete with the sticky topbar the way one already did once. */
+.pest-crop-icon {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  background: #16211a;
+}
+
+.pest-crop-letter {
+  color: #9fd8b1;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+/* The letter is the placeholder. Once the texture loads it covers it, rather
+   than the two being stacked and both readable. */
+.pest-crop-icon img {
+  position: absolute;
+  inset: 2px;
+  width: calc(100% - 4px);
+  height: calc(100% - 4px);
+  object-fit: contain;
+  image-rendering: pixelated;
+  background: #16211a;
+  z-index: 1;
+}
+
+.pest-main {
+  min-width: 0;
+}
+
+.pest-main strong,
+.pest-vinyl strong {
+  display: block;
+  font-size: 13px;
+  color: #edf7ef;
+  overflow-wrap: anywhere;
+}
+
+.pest-main span,
+.pest-vinyl span {
+  display: block;
+  color: #8fa294;
+  font-size: 11px;
+}
+
+.pest-vinyl {
+  min-width: 0;
+  text-align: right;
+}
+
+.pest-note {
+  margin: 12px 0 0;
+  color: #8fa294;
+  font-size: 12px;
+}
+
+/* Same shape as the planner's economics panel: closed, and the summary keeps
+   the heading it had. A <summary> given `display: flex` stops being the
+   disclosure summary, so the flex row lives on an inner div. */
+.pest-philip > summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.pest-philip > summary::-webkit-details-marker { display: none; }
+
+.pest-philip-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.pest-philip-head h2 { margin: 2px 0 0; }
+
+.pest-philip-head::after {
+  content: '\25b8';
+  align-self: center;
+  color: #7fbf96;
+  font-size: .8rem;
+}
+
+.pest-philip[open] > summary .pest-philip-head::after { content: '\25be'; }
+
+.pest-philip-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.pest-philip-body .pest-note { grid-column: 1 / -1; margin-top: 0; }
+
+.pest-philip-input {
+  display: grid;
+  gap: 6px;
+  color: #9fb0a3;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.pest-philip-input input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #3c5142;
+  background: #09100b;
+  color: #edf7ef;
+  padding: 10px 11px;
+  border-radius: 4px;
+  font: inherit;
+}
+
+.pest-philip-result {
+  align-self: end;
+  min-width: 0;
+}
+
+.pest-philip-result strong {
+  display: block;
+  color: #edf7ef;
+  overflow-wrap: anywhere;
+}
+
+.pest-philip-result span {
+  display: block;
+  color: #8fa294;
+  font-size: 12px;
+}
+
+@media (max-width: 980px) {
+  .pest-sides { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pest-pipelines { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 650px) {
+  .pest-sides { grid-template-columns: 1fr; }
+  .pest-row { grid-template-columns: 30px minmax(0, 1fr); }
+  .pest-vinyl { grid-column: 2; text-align: left; }
+  .pest-philip-body { grid-template-columns: 1fr; }
+  .pest-philip-head { display: block; }
+}
