@@ -8,9 +8,10 @@ export const OPTION_SOURCE = Object.freeze({
   MANUAL: 'manual',
 });
 
-// v3 adds the item-level capability fields used by the setup editor. Bumping the
-// key deliberately prevents an old cache from making every item look generic.
-export const CATALOG_STORAGE_KEY = 'farming420-item-catalog-v3';
+// v4 preserves official gemstone slot requirements/costs instead of reducing a
+// socket to only its type. Invalidate v3 so old caches cannot silently make a
+// gated socket look always available.
+export const CATALOG_STORAGE_KEY = 'farming420-item-catalog-v4';
 export const CATALOG_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 const SLOT_CATEGORIES = Object.freeze({
@@ -44,7 +45,8 @@ const FARMING_EQUIPMENT_PREFIXES = Object.freeze([
   'LOTUS_', 'BLOSSOM_', 'PESTHUNTER_',
 ]);
 const FARMING_EQUIPMENT_NAME_PREFIXES = Object.freeze([
-  'lotus ', 'blossom ', 'pesthunter',
+  // LOTUS_* was renamed to Peony in 2026; the internal ids deliberately stayed LOTUS_*.
+  'lotus ', 'peony ', 'blossom ', 'pesthunter',
 ]);
 const FARMING_STANDALONE_EQUIPMENT_IDS = new Set([
   'PEST_VEST', 'ZORRO_CAPE',
@@ -79,12 +81,55 @@ function stringOrNull(value) {
   return trimmed || null;
 }
 
+function finiteNumberOrNull(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
+function reducedRequirement(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const type = stringOrNull(raw.type)?.toUpperCase() || null;
+  if (!type) return null;
+  const requirement = { type };
+  const dataKey = stringOrNull(raw.data_key);
+  const operator = stringOrNull(raw.operator)?.toUpperCase() || null;
+  if (dataKey) requirement.dataKey = dataKey;
+  if (operator) requirement.operator = operator;
+  if (raw.value !== undefined && raw.value !== null) requirement.value = String(raw.value);
+  const level = finiteNumberOrNull(raw.level);
+  if (level != null) requirement.level = level;
+  const skill = stringOrNull(raw.skill)?.toUpperCase() || null;
+  if (skill) requirement.skill = skill;
+  return requirement;
+}
+
+function reducedCost(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const type = stringOrNull(raw.type)?.toUpperCase() || null;
+  if (!type) return null;
+  if (type === 'COINS') {
+    const coins = finiteNumberOrNull(raw.coins);
+    return coins == null ? null : { type, coins };
+  }
+  if (type === 'ITEM') {
+    const itemId = stringOrNull(raw.item_id)?.toUpperCase() || null;
+    const amount = finiteNumberOrNull(raw.amount);
+    return itemId && amount != null ? { type, itemId, amount } : null;
+  }
+  return { type };
+}
+
 function reducedGemstoneSlots(raw) {
   if (!Array.isArray(raw)) return [];
   return raw.map((slot, index) => {
-    const type = stringOrNull(slot?.slot_type)?.toUpperCase() || null;
-    if (!type) return null;
-    return { index, slotType: type };
+    const slotType = stringOrNull(slot?.slot_type)?.toUpperCase() || null;
+    if (!slotType) return null;
+    return {
+      index,
+      slotType,
+      requirements: Array.isArray(slot?.requirements) ? slot.requirements.map(reducedRequirement).filter(Boolean) : [],
+      costs: Array.isArray(slot?.costs) ? slot.costs.map(reducedCost).filter(Boolean) : [],
+    };
   }).filter(Boolean);
 }
 
