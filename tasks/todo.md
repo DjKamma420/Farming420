@@ -1294,3 +1294,56 @@ bar overlap, then `elementFromPoint` on the overlapping strip. 8 of 8 samples
 had the icon on top before, 0 of 8 after. `tests/stacking-isolation.test.js`
 pins the containment and was itself checked by removing the fix and watching it
 fail.
+
+
+## 0.27.0 -- the navigation taskbar
+
+The thirteen-entry dropdown in the topbar is gone. Navigation is the icon rail:
+a side rail on desktop and tablet, a fixed bar along the bottom on phones.
+
+### The rail already existed and had never once been seen
+
+`skyblock-redesign.css` had defined it for a while, including the bottom bar
+below 650px. It never appeared, because `styles.css` hides the sidebar outright
+below 780px -- a leftover from when the topbar select was the only phone
+navigation. The redesign's rules override width, position, padding and border,
+but none of them touched `display`, so `display: none` stood. One rule fixed
+it, and the bar that was written long ago works now.
+
+### No second copy
+
+With the rail visible everywhere, the topbar select was a second copy of the
+same sixteen destinations, so `addMobileNavigation` and the select are deleted
+rather than hidden -- nothing recreates it, so there is nothing to hide.
+
+### Icons
+
+Twelve of sixteen entries were drawing a bare letter, because their candidate
+names are not in the pack at all: `garden`, `personal_bank`, `wardrobe`,
+`booster_cookie`, `calculator`, `clock`, `book`, `paper` and the rest. The pack
+ships SkyBlock's own items only, so there is no vanilla book, paper, clock or
+armour texture to reach for.
+
+Ten entries now carry real art, each key checked against the manifest:
+dashboard `garden_scythe`, account `visitors_gratitude`, crops `cropie`, tools
+`theoretical_hoe_wheat_3`, setups `fermento`, gear `squash`, pets
+`jolly_pink_rock`, chips `cropshot_chip`, shards `earth_shard`, buffs
+`goblin_omelette`, pests `pest_trap`, planner `wishing_compass`.
+
+Guide, What to enter, Mechanics and Coming Soon keep the letter on purpose:
+nothing in the pack fits them, and a wrong icon reads worse than a letter.
+`tests/nav-art.test.js` fails if any key stops resolving -- the same silent
+degradation that once drew the Cocoa Chopper as a letter because the table said
+`cocoa_chopper` and the pack says `coco_chopper`.
+
+### Verified
+
+390, 412, 760 and 1280px: rail visible at all four, 14 links visible at each,
+10 with art and 4 with letters, no select anywhere, and tapping Tools actually
+lands on Tools. All 16 sweep areas pass in all three variants; 420 node tests
+and 7 Python tests pass.
+
+### Still open
+
+The crop selector still sits in the topbar. Moving it into the planner is the
+other half of the request and is not in this change.

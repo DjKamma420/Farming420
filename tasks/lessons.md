@@ -261,3 +261,22 @@ first check reported the bug as still present after it was fixed, because it
 was looking at the number rather than at what actually paints on top. Prove the
 check fails without the fix before trusting it: 8 of 8 samples wrong before,
 0 of 8 after.
+
+
+## An override that does not name the property does not override it (0.27.0)
+
+The phone taskbar had been written, shipped and never once displayed. A base
+stylesheet said `.sidebar { display: none }` below 780px; the redesign restyled
+that same element for phones -- position, width, height, padding, border, even
+the flex direction of its nav -- and every one of those declarations applied.
+The element stayed invisible, because none of them was `display`.
+
+The trap is that the override *looks* complete: higher specificity, same
+element, a whole block of properties taking effect. Only the one property that
+matters is missing, and the result is indistinguishable from "the feature was
+never built".
+
+When restyling something another stylesheet hides, check `display`,
+`visibility` and `opacity` explicitly, and verify against the rendered box
+(`getBoundingClientRect` plus `getComputedStyle`) rather than by reading the
+rule you just wrote.

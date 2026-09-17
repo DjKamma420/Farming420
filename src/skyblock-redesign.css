@@ -531,6 +531,17 @@
   box-shadow: inset -2px -2px 0 rgba(0,0,0,.2), inset 2px 2px 0 rgba(255,255,255,.2);
 }
 
+/*
+ * styles.css hides the sidebar outright below 780px, from the days when the
+ * only phone navigation was a select in the topbar. The rail below replaces
+ * that select, so it has to be shown again: the redesign's own rules override
+ * width, position and border but never touched `display`, which is why the
+ * bottom bar defined further down had never once appeared on a phone.
+ */
+@media (max-width: 780px) {
+  .skyblock-redesign .sidebar.sb-rail { display: flex; }
+}
+
 @media (max-width: 920px) {
   .skyblock-redesign .app-shell { grid-template-columns: 68px minmax(0, 1fr); }
   .skyblock-redesign .sidebar.sb-rail { width: 68px; padding-inline: 4px; }
