@@ -1,0 +1,106 @@
+/* Progression cards: art, title and status are one compact row. The previous
+   space-between layout treated the portrait as a third column and pushed chip
+   titles away from their pictures on mobile. */
+.item-card .card-head {
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.item-card .card-head > div {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.item-card .card-head > .badge {
+  flex: none;
+  margin-left: auto;
+}
+
+.item-card .card-portrait {
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  margin: 0;
+}
+
+.item-card .card-portrait + div {
+  padding-top: 1px;
+}
+
+/* Art sourced from the official SkyBlock item resource. SKULL_ITEM entries use
+   their textures.minecraft.net skin and crop the 8x8 face from a 64x64 sheet. */
+.coverage-item-art {
+  display: block;
+  pointer-events: none;
+  image-rendering: pixelated;
+}
+
+.coverage-skull-art {
+  width: 78%;
+  height: 78%;
+  background-repeat: no-repeat;
+  background-size: 800% 800%;
+  background-position: 14.2857% 14.2857%;
+}
+
+.coverage-material-art {
+  width: 78%;
+  height: 78%;
+}
+
+.coverage-material-art svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 4px 7px rgba(0,0,0,.3));
+}
+
+.card-portrait > .coverage-item-art,
+.sb-reforge-art > .coverage-item-art {
+  margin: auto;
+}
+
+.card-portrait.has-coverage-item-art > .item-art-fallback,
+.sb-reforge-art.has-coverage-item-art > .sb-reforge-fallback,
+.slot-portrait.has-coverage-item-art > .item-portrait-fallback,
+.item-portrait.has-coverage-item-art > .item-portrait-fallback {
+  display: none;
+}
+
+/* A physical consumable/tool-upgrade icon belongs beside its own label, not as
+   decoration for the whole editor section. */
+.workspace-level-row.has-physical-item-art > div:first-child {
+  position: relative;
+  min-height: 46px;
+  padding-left: 54px;
+  justify-content: center;
+}
+
+.workspace-level-row.has-physical-item-art > div:first-child > .coverage-item-art {
+  position: absolute;
+  left: 2px;
+  top: 50%;
+  width: 40px;
+  height: 40px;
+  transform: translateY(-50%);
+}
+
+/* The setup portraits already own the right size/border. Coverage art simply
+   occupies that box when the shipped Hypixel pack has no matching item model. */
+.slot-portrait > .coverage-item-art,
+.item-portrait > .coverage-item-art {
+  width: 78%;
+  height: 78%;
+}
+
+@media (max-width: 700px) {
+  .item-card .card-portrait {
+    flex-basis: 40px;
+    width: 40px;
+    height: 40px;
+  }
+
+  .item-card .card-head {
+    gap: 10px;
+  }
+}
