@@ -18,10 +18,17 @@ import { installLocalStorage, uninstallLocalStorage } from './local-storage-stub
 const RESOURCE = {
   success: true,
   items: [
-    { id: 'HELIANTHUS_HELMET', name: 'Helianthus Helmet', category: 'HELMET', tier: 'MYTHIC' },
-    { id: 'FERMENTO_HELMET', name: 'Fermento Helmet', category: 'HELMET', tier: 'LEGENDARY' },
-    { id: 'HELIANTHUS_BOOTS', name: 'Helianthus Boots', category: 'BOOTS' },
-    { id: 'LOTUS_BRACELET', name: 'Lotus Bracelet', category: 'BRACELET' },
+    {
+      id: 'HELIANTHUS_HELMET',
+      name: 'Helianthus Helmet',
+      category: 'HELMET',
+      tier: 'MYTHIC',
+      material: 'SKULL_ITEM',
+      skin: 'ABCDEF'.repeat(10) + 'ABCD',
+    },
+    { id: 'FERMENTO_HELMET', name: 'Fermento Helmet', category: 'HELMET', tier: 'LEGENDARY', material: 'SKULL_ITEM' },
+    { id: 'HELIANTHUS_BOOTS', name: 'Helianthus Boots', category: 'BOOTS', material: 'LEATHER_BOOTS', color: '120,200,40' },
+    { id: 'LOTUS_BRACELET', name: 'Lotus Bracelet', category: 'BRACELET', material: 'SKULL_ITEM' },
     { id: 'NO_NAME', category: 'HELMET' },
     { name: 'No id', category: 'HELMET' },
     'not an object',
@@ -30,11 +37,21 @@ const RESOURCE = {
 
 test.afterEach(() => uninstallLocalStorage());
 
-test('the official resource is reduced to id, name, category and tier', () => {
+test('the official resource keeps picker fields plus item art metadata', () => {
   const items = reduceItemResource(RESOURCE);
   assert.equal(items.length, 4, 'entries without a usable id or name are skipped, not guessed at');
-  assert.deepEqual(items[0], { id: 'HELIANTHUS_HELMET', name: 'Helianthus Helmet', category: 'HELMET', tier: 'MYTHIC' });
+  assert.deepEqual(items[0], {
+    id: 'HELIANTHUS_HELMET',
+    name: 'Helianthus Helmet',
+    category: 'HELMET',
+    tier: 'MYTHIC',
+    material: 'SKULL_ITEM',
+    skin: ('ABCDEF'.repeat(10) + 'ABCD').toLowerCase(),
+    color: null,
+  });
   assert.equal(items[2].tier, null, 'a missing tier stays null');
+  assert.equal(items[2].material, 'LEATHER_BOOTS');
+  assert.equal(items[2].color, '120,200,40');
 });
 
 test('an unrecognised payload yields an empty catalogue rather than nonsense', () => {
