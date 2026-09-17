@@ -487,3 +487,25 @@ check that every entry it names still exists.
 
 Same rule as the coverage audit: the document is the readable form, the test is
 what keeps it true.
+
+
+## Key casing is not a detail (0.33.0)
+
+Three priced entries shipped with no verification date because one research file
+says `as_of` and another says `lastVerified`. Reading a single spelling returned
+undefined, which looks exactly like "this record has no date".
+
+Same shape as the head-texture reader two versions ago: a lookup that
+understands one spelling reports absence rather than failure. When reading
+data written by hand across several files, accept the spellings that exist and
+let a test ask for the field rather than trusting that it arrived.
+
+## An id table needs a guard, not care (0.33.0)
+
+My first link table named three upgrade ids that do not exist -- I had derived
+them from entry names instead of reading `src/data.js`. Nothing failed: they
+simply counted as unlinked, which is indistinguishable from honest absence.
+
+The generator now refuses to build if the table names an unknown id. Any
+hand-written mapping into another data set wants that check, because a typo in
+a mapping is silent by nature.
