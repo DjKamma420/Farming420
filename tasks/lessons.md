@@ -566,3 +566,27 @@ Deduplicating both made the work better, not just smaller: the pests page gained
 a guaranteed-drop column it did not have, and the measured panel lost a field
 because the crop's drop count is data, not a measurement. A duplicate is not
 only waste; it is a worse version of something that already works.
+
+## A false negative in the harness costs more than a slow harness (0.37.0)
+
+The full sweep reported `[crops] desktop-empty UNREACHABLE: page exists but no
+visible way to open it`. I investigated it as an app bug: probed the nav link's
+computed style, its box, its parent, and its visibility at six different delays.
+It was visible every time. Re-running the area passed, twice.
+
+The cause was in the harness. `sweep-all.sh` runs four areas at once, each with
+three browser contexts, against one local server -- and `sweep-area.mjs` waited
+a flat 900ms after `domcontentloaded` before looking for the nav. Under that
+load the nav enhancements had not finished building the rail yet.
+
+It now waits for `.sidebar [data-page]` to be visible, and gives a specific
+page's link a bounded second chance before calling it unreachable.
+
+Rule: **wait for the condition, not the clock.** A fixed delay in a harness that
+runs things in parallel is a false-failure generator.
+
+And the reason this mattered rather than being a shrug: the very same check had
+just found a *genuine* unreachable page. A check that cries wolf is a check that
+gets ignored the next time it is right. So I proved the guard still works by
+hiding a nav link on purpose and confirming all three profiles failed again,
+then restored the file.
