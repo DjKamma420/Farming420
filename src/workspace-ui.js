@@ -8,7 +8,7 @@ import {
   gemstoneUnlockCost,
   normalizeToolGemstoneSlots,
   toolGemstoneFortune,
-  toolGemstoneSlotCountForLevel,
+  toolGemstoneSlotCount,
   withGemstone,
   withGemstoneSlotCost,
   withGemstoneSlotUnlocked,
@@ -34,12 +34,17 @@ function toolBucket(state, cropId) {
   const bucket = state.profile.toolProgress[toolKeyForCropId(cropId)] ||= {};
   bucket.levels ||= {}; bucket.owned ||= {}; bucket.costs ||= {}; bucket.manualGain ||= {};
   // Preserve dormant future slots. Whether they are active is determined by the
-  // current Farming Tool level, not by the length of this stored array.
+  // current tool level and Mk tier, not by the length of this stored array.
   bucket.gemSlots = Array.isArray(bucket.gemSlots) ? bucket.gemSlots : [];
   return bucket;
 }
 function entryLevel(bucket, id) { return Math.max(0, Number(bucket?.levels?.[id] || 0)); }
-function toolGemSlotCount(bucket) { return toolGemstoneSlotCountForLevel(entryLevel(bucket, TOOL_LEVEL_ID)); }
+function toolGemSlotCount(bucket) {
+  return toolGemstoneSlotCount(
+    entryLevel(bucket, TOOL_LEVEL_ID),
+    highestChainTier(bucket, TOOL_TIER_CHAIN),
+  );
+}
 function setEntryLevel(bucket, id, value, max) {
   const level = Math.max(0, Math.min(max, Math.floor(Number(value) || 0)));
   if (level) { bucket.levels[id] = level; bucket.owned[id] = true; }
@@ -101,11 +106,15 @@ function gemOptions(value) {
   return `<option value="">Empty</option>${GEMSTONE_QUALITIES.map(q => { const v=`${q} PERIDOT`; return `<option value="${v}" ${v===selected?'selected':''}>${q[0]}${q.slice(1).toLowerCase()} Peridot</option>`; }).join('')}`;
 }
 function gemstoneSection(bucket) {
+  const level = entryLevel(bucket, TOOL_LEVEL_ID);
+  const tier = highestChainTier(bucket, TOOL_TIER_CHAIN);
   const count = toolGemSlotCount(bucket);
   const slots = normalizeToolGemstoneSlots(bucket.gemSlots, count);
   const fortune = toolGemstoneFortune(bucket.gemSlots, bucket.toolRarity, count);
-  const level = Math.max(1, entryLevel(bucket, TOOL_LEVEL_ID));
-  return `<section class="workspace-gemstones"><div class="workspace-section-head"><div><h3>Gemstone slots</h3><p>Tool level ${level} currently allows ${count} Peridot slot${count === 1 ? '' : 's'} (2 at level 15, 3 at 25, 4 at 50).</p></div></div><div class="workspace-gem-summary"><strong>${fortune == null ? 'Select item rarity to calculate Peridot Fortune.' : `${fortune} Farming Fortune from active Peridot slots`}</strong><span>${gemstoneUnlockCost(bucket.gemSlots, count).toLocaleString('en-US')} Coins in recorded unlock costs</span></div><div class="workspace-gem-list">${slots.map((slot,i)=>`<div class="workspace-gem-slot ${slot.unlocked?'unlocked':'locked'}"><label class="workspace-slot-toggle"><input type="checkbox" data-gem-unlocked="${i}" ${slot.unlocked?'checked':''}><span>Peridot Slot ${i+1}</span><small>${slot.unlocked?'Unlocked':'Locked'}</small></label><label><span>Unlock cost</span><input type="number" min="0" data-gem-cost="${i}" value="${slot.unlockCostCoins ?? ''}" ${slot.unlocked?'':'disabled'}></label><label><span>Gemstone</span><select data-gem-value="${i}" ${slot.unlocked?'':'disabled'}>${gemOptions(slot.gem)}</select></label></div>`).join('')}</div></section>`;
+  const availability = count
+    ? `${count} active Peridot slot${count === 1 ? '' : 's'}. Requirements: level 5 / 15 / 25 / 50 and Mk. I / II / III limits.`
+    : 'No Peridot socket is active yet. The first unlocks at Farming Tool level 5.';
+  return `<section class="workspace-gemstones"><div class="workspace-section-head"><div><h3>Gemstone slots</h3><p>Tool level ${level} · Mk. ${tier}. ${availability}</p></div></div><div class="workspace-gem-summary"><strong>${fortune == null ? 'Select item rarity to calculate Peridot Fortune.' : `${fortune} Farming Fortune from active Peridot slots`}</strong><span>${gemstoneUnlockCost(bucket.gemSlots, count).toLocaleString('en-US')} Coins in recorded unlock costs</span></div><div class="workspace-gem-list">${slots.map((slot,i)=>`<div class="workspace-gem-slot ${slot.unlocked?'unlocked':'locked'}"><label class="workspace-slot-toggle"><input type="checkbox" data-gem-unlocked="${i}" ${slot.unlocked?'checked':''}><span>Peridot Slot ${i+1}</span><small>${slot.unlocked?'Unlocked':'Locked'}</small></label><label><span>Unlock cost</span><input type="number" min="0" data-gem-cost="${i}" value="${slot.unlockCostCoins ?? ''}" ${slot.unlocked?'':'disabled'}></label><label><span>Gemstone</span><select data-gem-value="${i}" ${slot.unlocked?'':'disabled'}>${gemOptions(slot.gem)}</select></label></div>`).join('') || '<p class="hint">Raise the physical Farming Tool to level 5 to unlock its first Peridot socket.</p>'}</div></section>`;
 }
 function writeTool(mutator) {
   const state = readState(); if (!state) return;
