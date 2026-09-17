@@ -2,12 +2,18 @@ import './runtime-data-patches.js';
 import { CROPS, UPGRADES } from './data.js';
 import { toolKeyForCropId } from './migrations.js';
 import { mooshroomCowContribution } from './mooshroom-cow.js';
+import {
+  activityModeForState,
+  isPestVacuumEntry,
+  itemAppliesToActivity,
+} from './activity-mode.js';
 
-export const COMPUTED_STATS_VERSION = 2;
+export const COMPUTED_STATS_VERSION = 3;
 
 export const STAT_AXIS = Object.freeze({
   GLOBAL_FORTUNE: 'globalFortune',
   CROP_FORTUNE: 'cropFortune',
+  PEST_FORTUNE: 'pestFortune',
   OVERBLOOM: 'overbloom',
   BONUS_PEST_CHANCE: 'bonusPestChance',
 });
@@ -57,13 +63,15 @@ export function statAxisFor(item) {
   if (metric.includes('overbloom') || metric === 'rare crops') return STAT_AXIS.OVERBLOOM;
   if (metric.includes('pest spawn') || metric.includes('bonus pest chance')) return STAT_AXIS.BONUS_PEST_CHANCE;
   if (metric !== 'crop yield') return null;
+  if (isPestVacuumEntry(item)) return STAT_AXIS.PEST_FORTUNE;
   if (item.section === 'crops' || item.section === 'tools' || item.cropScope !== 'Any') return STAT_AXIS.CROP_FORTUNE;
   return STAT_AXIS.GLOBAL_FORTUNE;
 }
 
-function contributionFor(state, item, cropId) {
+function contributionFor(state, item, cropId, mode = null) {
   const profile = state?.profile || {};
   if (!appliesToCrop(item, cropId)) return null;
+  if (mode && !itemAppliesToActivity(item, mode)) return null;
   const axis = statAxisFor(item);
   if (!axis) return null;
 
@@ -105,29 +113,31 @@ function contributionFor(state, item, cropId) {
   return { axis, value: 0, incomplete: true, id: item.id, reason: 'total formula not modeled yet' };
 }
 
-export function computeTotalsFromEntries(state, entries, cropId = state?.selectedCrop || 'melon') {
+export function computeTotalsFromEntries(state, entries, cropId = state?.selectedCrop || 'melon', mode = null) {
   const totals = {
     globalFortune: 0,
     cropFortune: 0,
+    pestFortune: 0,
     effectiveFortune: 0,
     overbloom: 0,
     bonusPestChance: 0,
     incomplete: {
       globalFortune: [],
       cropFortune: [],
+      pestFortune: [],
       overbloom: [],
       bonusPestChance: [],
     },
   };
 
   for (const item of entries) {
-    const part = contributionFor(state, item, cropId);
+    const part = contributionFor(state, item, cropId, mode);
     if (!part) continue;
     totals[part.axis] += part.value;
     if (part.incomplete) totals.incomplete[part.axis].push({ id: part.id, reason: part.reason });
   }
 
-  totals.effectiveFortune = totals.globalFortune + totals.cropFortune;
+  totals.effectiveFortune = totals.globalFortune + totals.cropFortune + totals.pestFortune;
   return totals;
 }
 
@@ -148,25 +158,27 @@ function applyDerivedMechanics(state, totals) {
     }
   }
 
-  totals.effectiveFortune = totals.globalFortune + totals.cropFortune;
+  totals.effectiveFortune = totals.globalFortune + totals.cropFortune + totals.pestFortune;
   return totals;
 }
 
-export function computeStatTotals(state, cropId = state?.selectedCrop || 'melon') {
-  return applyDerivedMechanics(state, computeTotalsFromEntries(state, UPGRADES, cropId));
+export function computeStatTotals(state, cropId = state?.selectedCrop || 'melon', mode = activityModeForState(state)) {
+  return applyDerivedMechanics(state, computeTotalsFromEntries(state, UPGRADES, cropId, mode));
 }
 
-export function computedStatsSnapshot(state) {
+export function computedStatsSnapshot(state, mode = activityModeForState(state)) {
   const selectedCrop = state?.selectedCrop || 'melon';
   const byCrop = {};
-  for (const crop of CROPS) byCrop[crop.id] = computeStatTotals(state, crop.id);
+  for (const crop of CROPS) byCrop[crop.id] = computeStatTotals(state, crop.id, mode);
   return {
     version: COMPUTED_STATS_VERSION,
+    activityMode: mode,
     selectedCrop,
     strength: state?.profile?.inputs?.strength ?? null,
     mooshroomCow: byCrop[selectedCrop]?.derived?.mooshroomCow || null,
     globalFortune: byCrop[selectedCrop]?.globalFortune || 0,
     cropFortuneByCrop: Object.fromEntries(CROPS.map(crop => [crop.id, byCrop[crop.id].cropFortune])),
+    pestFortuneByCrop: Object.fromEntries(CROPS.map(crop => [crop.id, byCrop[crop.id].pestFortune])),
     effectiveFortuneByCrop: Object.fromEntries(CROPS.map(crop => [crop.id, byCrop[crop.id].effectiveFortune])),
     overbloomByCrop: Object.fromEntries(CROPS.map(crop => [crop.id, byCrop[crop.id].overbloom])),
     bonusPestChanceByCrop: Object.fromEntries(CROPS.map(crop => [crop.id, byCrop[crop.id].bonusPestChance])),
@@ -185,6 +197,8 @@ export function applyComputedStatsToState(state) {
     state.profile.cropFortune[crop.id] = snapshot.cropFortuneByCrop[crop.id];
     state.profile.plannerEconomics[crop.id] ||= {};
     state.profile.plannerEconomics[crop.id].overbloom = snapshot.overbloomByCrop[crop.id];
+    state.profile.plannerEconomics[crop.id].pestFortune = snapshot.pestFortuneByCrop[crop.id];
+    state.profile.plannerEconomics[crop.id].activityMode = snapshot.activityMode;
   }
   state.profile.computedStats = snapshot;
   return snapshot;
