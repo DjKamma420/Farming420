@@ -26,3 +26,19 @@
   white-space: nowrap;
   border: 0;
 }
+
+/*
+ * Collapse the wrapper around the hidden picker.
+ *
+ * Hiding `#workspaceToolSelect` left its container behind, and that container
+ * still painted a border, a background and 14px of padding around nothing --
+ * an empty bar under the Tools heading, shipped since the picker was
+ * deduplicated.
+ *
+ * `:only-child` is the guard: the moment that container holds anything besides
+ * the hidden picker, this rule stops applying and the bar comes back on its
+ * own. It is not a blanket hide of `.workspace-context`.
+ */
+.workspace-context:has(> .workspace-tool-picker-hidden:only-child) {
+  display: none;
+}

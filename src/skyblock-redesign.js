@@ -347,6 +347,34 @@ function toolPicker() {
   section.querySelectorAll('[data-sb-tool-crop]').forEach(button => button.addEventListener('click', () => setCrop(button.dataset.sbToolCrop)));
 }
 
+/**
+ * Puts the tool's editor directly beneath the tool it belongs to.
+ *
+ * The page used to list twelve tool cards and then, 4800 pixels down, one
+ * editor for whichever was selected -- so choosing a tool meant scrolling past
+ * every other tool to reach its settings.
+ *
+ * There is still exactly one editor. It is moved, not copied, which is what
+ * makes "clicking another tool closes the first one" fall out for free: the
+ * editor cannot be in two places, so the previous card simply no longer has it.
+ *
+ * Moving a node is itself a mutation, and this module re-enters through an
+ * observer on the same subtree, so the move is idempotent: once the editor is
+ * the selected card's next sibling there is nothing left to do.
+ */
+function dockToolEditor() {
+  if (pageId() !== 'tools') return;
+  const grid = document.querySelector('.sb-tool-picker .sb-tool-grid');
+  const editor = document.querySelector('[data-tool-editor="1"]');
+  if (!grid || !editor) return;
+  const selected = grid.querySelector('.sb-tool-card.selected')
+    || grid.querySelector('.sb-tool-card');
+  if (!selected) return;
+  if (!editor.classList.contains('sb-docked-editor')) editor.classList.add('sb-docked-editor');
+  if (selected.nextElementSibling === editor) return;
+  selected.insertAdjacentElement('afterend', editor);
+}
+
 function reforgePanel() {
   if (pageId() !== 'tools') return;
   const editor = document.querySelector('[data-tool-editor]');
@@ -432,6 +460,7 @@ function apply() {
     decorateNavigation();
     decorateCropIcons();
     toolPicker();
+    dockToolEditor();
     reforgePanel();
     toolPortrait();
     restyleCards();

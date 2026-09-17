@@ -404,3 +404,19 @@ one of them has to be authoritative and the others must stand aside by class,
 not by removal. `:has(> .the-authoritative-one)` expresses exactly that and
 costs no JavaScript -- and it must be scoped to where the authority actually
 exists, or containers that legitimately rely on the other renderer go blank.
+
+
+## Hiding a child leaves the parent painting (0.29.0)
+
+Deduplicating a control by hiding it is right, but a hidden child does not
+collapse its parent. The wrapper kept its border, background and padding and
+became an empty bar that shipped for three versions without anyone naming it.
+
+When hiding an element to remove a duplicate, look at what wraps it and decide
+about that too -- and collapse the wrapper conditionally (`:only-child`), so it
+comes back by itself the moment it has real content again. An unconditional
+hide of the parent is a second bug waiting for whoever adds content there next.
+
+Also: this was found by reading a screenshot, and named by walking
+`elementFromPoint` down the page. Neither the overlay audit nor any test saw
+it, because an empty box violates nothing.

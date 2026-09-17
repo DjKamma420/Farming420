@@ -1604,3 +1604,37 @@ intended look and what was asked for.
 
 `tests/portrait-single-layer.test.js` pins all three points and was checked by
 removing each fix and watching it fail.
+
+
+## 0.29.0 -- the tool editor sits under its tool
+
+The Tools page listed twelve cards and then, 4800 pixels further down, one
+editor for whichever was selected. Choosing a tool meant scrolling past every
+other tool to reach its settings.
+
+There is still exactly one editor; it is moved into the card grid, directly
+after the selected card, spanning the full row. "Clicking another tool closes
+the first one" falls out of that for free: the editor cannot be in two places,
+so the previous card simply no longer has it. Verified by clicking through
+three tools -- the editor's page offset moves 985 -> 516 -> 1219 and the
+document never holds more than one.
+
+The move is idempotent. This module re-enters through an observer on the same
+subtree it writes into, so once the editor is the selected card's next sibling
+there is nothing left to do -- the rule this project has now paid for three
+times.
+
+### The empty bar under the heading
+
+Found by looking at a screenshot, not by measuring: a dark rounded bar with
+nothing in it. `elementFromPoint` down the middle of the page named it
+`.workspace-context`, 384x30, holding text that does not fit in 30px.
+
+It was my own fallout. Hiding the duplicate `#workspaceToolSelect` in 0.26.0
+left its wrapper behind, and that wrapper kept painting a border, a background
+and 14px of padding around a 1x1 clipped child. It has been shipping since.
+
+Collapsed with `:has(> .workspace-tool-picker-hidden:only-child)`. The
+`:only-child` is the guard: the moment that container holds anything else, the
+rule stops applying and the bar returns on its own. Page height fell from 4866
+to 4818.
