@@ -2,6 +2,7 @@ import './runtime-data-patches.js';
 import { CROPS, UPGRADES } from './data.js';
 import { toolKeyForCropId } from './migrations.js';
 import { mooshroomCowContribution } from './mooshroom-cow.js';
+import { VACUUM_REFORGE_EFFECT_ENTRY_IDS, selectedVacuumReforge } from './item-capabilities.js';
 import {
   activityModeForState,
   isPestVacuumEntry,
@@ -9,7 +10,7 @@ import {
   itemAppliesToActivity,
 } from './activity-mode.js';
 
-export const COMPUTED_STATS_VERSION = 4;
+export const COMPUTED_STATS_VERSION = 5;
 
 export const STAT_AXIS = Object.freeze({
   GLOBAL_FORTUNE: 'globalFortune',
@@ -48,6 +49,14 @@ function scopeKey(item, cropId) {
 
 function configuredLevel(profile, item, cropId) {
   const store = progressBucket(profile, item, cropId);
+
+  // Vacuum reforges are mutually exclusive. An explicit current reforge wins
+  // over stale legacy `owned`/`levels` flags from older builds. Legacy profiles
+  // without `vacuumProgress.reforge` continue to read their old Beady flag.
+  if (item.id === VACUUM_REFORGE_EFFECT_ENTRY_IDS.beady && store.reforge) {
+    return selectedVacuumReforge(store) === 'beady' ? 1 : 0;
+  }
+
   const max = Math.max(1, Number(item.max || 1));
   const raw = Number(store.levels?.[item.id] || 0);
   if (Number.isFinite(raw) && raw > 0) return Math.min(max, raw);

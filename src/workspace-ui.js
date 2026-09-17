@@ -8,6 +8,7 @@ import {
   gemstoneUnlockCost,
   normalizeToolGemstoneSlots,
   toolGemstoneFortune,
+  toolGemstoneSlotCount,
   withGemstone,
   withGemstoneSlotCost,
   withGemstoneSlotUnlocked,
@@ -32,10 +33,18 @@ function toolBucket(state, cropId) {
   state.profile.toolProgress ||= {};
   const bucket = state.profile.toolProgress[toolKeyForCropId(cropId)] ||= {};
   bucket.levels ||= {}; bucket.owned ||= {}; bucket.costs ||= {}; bucket.manualGain ||= {};
-  bucket.gemSlots = normalizeToolGemstoneSlots(bucket.gemSlots);
+  // Preserve dormant future slots. Whether they are active is determined by the
+  // current tool level and Mk tier, not by the length of this stored array.
+  bucket.gemSlots = Array.isArray(bucket.gemSlots) ? bucket.gemSlots : [];
   return bucket;
 }
 function entryLevel(bucket, id) { return Math.max(0, Number(bucket?.levels?.[id] || 0)); }
+function toolGemSlotCount(bucket) {
+  return toolGemstoneSlotCount(
+    entryLevel(bucket, TOOL_LEVEL_ID),
+    highestChainTier(bucket, TOOL_TIER_CHAIN),
+  );
+}
 function setEntryLevel(bucket, id, value, max) {
   const level = Math.max(0, Math.min(max, Math.floor(Number(value) || 0)));
   if (level) { bucket.levels[id] = level; bucket.owned[id] = true; }
@@ -97,9 +106,15 @@ function gemOptions(value) {
   return `<option value="">Empty</option>${GEMSTONE_QUALITIES.map(q => { const v=`${q} PERIDOT`; return `<option value="${v}" ${v===selected?'selected':''}>${q[0]}${q.slice(1).toLowerCase()} Peridot</option>`; }).join('')}`;
 }
 function gemstoneSection(bucket) {
-  const slots = normalizeToolGemstoneSlots(bucket.gemSlots);
-  const fortune = toolGemstoneFortune(slots, bucket.toolRarity);
-  return `<section class="workspace-gemstones"><div class="workspace-section-head"><div><h3>Gemstone slots</h3><p>Unlock and configure each slot independently.</p></div></div><div class="workspace-gem-summary"><strong>${fortune == null ? 'Select item rarity to calculate Peridot Fortune.' : `${fortune} Farming Fortune from Peridot`}</strong><span>${gemstoneUnlockCost(slots).toLocaleString('en-US')} Coins in recorded unlock costs</span></div><div class="workspace-gem-list">${slots.map((slot,i)=>`<div class="workspace-gem-slot ${slot.unlocked?'unlocked':'locked'}"><label class="workspace-slot-toggle"><input type="checkbox" data-gem-unlocked="${i}" ${slot.unlocked?'checked':''}><span>Slot ${i+1}</span><small>${slot.unlocked?'Unlocked':'Locked'}</small></label><label><span>Unlock cost</span><input type="number" min="0" data-gem-cost="${i}" value="${slot.unlockCostCoins ?? ''}" ${slot.unlocked?'':'disabled'}></label><label><span>Gemstone</span><select data-gem-value="${i}" ${slot.unlocked?'':'disabled'}>${gemOptions(slot.gem)}</select></label></div>`).join('')}</div></section>`;
+  const level = entryLevel(bucket, TOOL_LEVEL_ID);
+  const tier = highestChainTier(bucket, TOOL_TIER_CHAIN);
+  const count = toolGemSlotCount(bucket);
+  const slots = normalizeToolGemstoneSlots(bucket.gemSlots, count);
+  const fortune = toolGemstoneFortune(bucket.gemSlots, bucket.toolRarity, count);
+  const availability = count
+    ? `${count} active Peridot slot${count === 1 ? '' : 's'}. Requirements: level 5 / 15 / 25 / 50 and Mk. I / II / III limits.`
+    : 'No Peridot socket is active yet. The first unlocks at Farming Tool level 5.';
+  return `<section class="workspace-gemstones"><div class="workspace-section-head"><div><h3>Gemstone slots</h3><p>Tool level ${level} · Mk. ${tier}. ${availability}</p></div></div><div class="workspace-gem-summary"><strong>${fortune == null ? 'Select item rarity to calculate Peridot Fortune.' : `${fortune} Farming Fortune from active Peridot slots`}</strong><span>${gemstoneUnlockCost(bucket.gemSlots, count).toLocaleString('en-US')} Coins in recorded unlock costs</span></div><div class="workspace-gem-list">${slots.map((slot,i)=>`<div class="workspace-gem-slot ${slot.unlocked?'unlocked':'locked'}"><label class="workspace-slot-toggle"><input type="checkbox" data-gem-unlocked="${i}" ${slot.unlocked?'checked':''}><span>Peridot Slot ${i+1}</span><small>${slot.unlocked?'Unlocked':'Locked'}</small></label><label><span>Unlock cost</span><input type="number" min="0" data-gem-cost="${i}" value="${slot.unlockCostCoins ?? ''}" ${slot.unlocked?'':'disabled'}></label><label><span>Gemstone</span><select data-gem-value="${i}" ${slot.unlocked?'':'disabled'}>${gemOptions(slot.gem)}</select></label></div>`).join('') || '<p class="hint">Raise the physical Farming Tool to level 5 to unlock its first Peridot socket.</p>'}</div></section>`;
 }
 function writeTool(mutator) {
   const state = readState(); if (!state) return;
@@ -117,7 +132,7 @@ function enhanceTools(root) {
   if (head && !content.querySelector('.workspace-context')) head.insertAdjacentHTML('afterend', `<div class="workspace-context">${toolSelector(state)}</div>`);
   const sections = [...editor.querySelectorAll('.item-editor-section')];
   const reforge = sections.find(s => s.querySelector('h3')?.textContent.trim() === 'Reforge');
-  if (reforge) reforge.innerHTML = `<div class="workspace-section-head"><div><h3>Reforge</h3><p>Exactly one reforge can be active.</p></div></div><div class="workspace-choice-list">${reforgeRows(active)}</div>${recommendationBox(crop, active)}`;
+  if (reforge) reforge.innerHTML = `<div class="workspace-section-head"><div><h3>Reforge</h3><p>Exactly one farming-tool reforge can be active.</p></div></div><div class="workspace-choice-list">${reforgeRows(active)}</div>${recommendationBox(crop, active)}`;
   const upgrades = sections.find(s => s.querySelector('h3')?.textContent.trim() === 'Tool upgrades');
   if (upgrades) upgrades.innerHTML = `<div class="workspace-section-head"><div><h3>Tool progression</h3><p>Select the current highest state instead of marking prerequisites separately.</p></div></div><div class="workspace-level-list">${tierRow(bucket)}${levelRow('Farming Tool level','Tool counter level.',TOOL_LEVEL_ID,entryLevel(bucket,TOOL_LEVEL_ID),50)}${levelRow('Overclocker 3000','Applications extending the tool-level cap.',OVERCLOCKER_ID,entryLevel(bucket,OVERCLOCKER_ID),10)}${levelRow('Farming for Dummies','Book applications on this tool.',DUMMIES_ID,entryLevel(bucket,DUMMIES_ID),5)}${rarityRow(bucket)}<label class="workspace-level-row workspace-toggle-row"><div><strong>Recombobulator 3000</strong><small>Current item state.</small></div><input type="checkbox" data-tool-recomb ${entryLevel(bucket,RECOMB_ID)>0?'checked':''}></label></div>`;
   const finish = sections.find(s => /Gemstone|rarity/i.test(s.querySelector('h3')?.textContent || ''));
@@ -133,9 +148,9 @@ function enhanceTools(root) {
   root.querySelectorAll('[data-tool-step]').forEach(button => button.addEventListener('click', () => { const id=button.dataset.toolEntry; const max={ [TOOL_LEVEL_ID]:50,[OVERCLOCKER_ID]:10,[DUMMIES_ID]:5 }[id]; writeTool(bucket=>setEntryLevel(bucket,id,entryLevel(bucket,id)+Number(button.dataset.toolStep),max)); }));
   root.querySelector('[data-tool-rarity]')?.addEventListener('change', e => writeTool(bucket => { bucket.toolRarity=e.target.value || null; }));
   root.querySelector('[data-tool-recomb]')?.addEventListener('change', e => writeTool(bucket => setEntryLevel(bucket,RECOMB_ID,e.target.checked?1:0,1)));
-  root.querySelectorAll('[data-gem-unlocked]').forEach(el => el.addEventListener('change', e => writeTool(bucket => { bucket.gemSlots=withGemstoneSlotUnlocked(bucket.gemSlots,Number(e.target.dataset.gemUnlocked),e.target.checked); })));
-  root.querySelectorAll('[data-gem-cost]').forEach(el => el.addEventListener('change', e => writeTool(bucket => { bucket.gemSlots=withGemstoneSlotCost(bucket.gemSlots,Number(e.target.dataset.gemCost),e.target.value); })));
-  root.querySelectorAll('[data-gem-value]').forEach(el => el.addEventListener('change', e => writeTool(bucket => { bucket.gemSlots=withGemstone(bucket.gemSlots,Number(e.target.dataset.gemValue),e.target.value); })));
+  root.querySelectorAll('[data-gem-unlocked]').forEach(el => el.addEventListener('change', e => writeTool(bucket => { const count=toolGemSlotCount(bucket); bucket.gemSlots=withGemstoneSlotUnlocked(bucket.gemSlots,Number(e.target.dataset.gemUnlocked),e.target.checked,count); })));
+  root.querySelectorAll('[data-gem-cost]').forEach(el => el.addEventListener('change', e => writeTool(bucket => { const count=toolGemSlotCount(bucket); bucket.gemSlots=withGemstoneSlotCost(bucket.gemSlots,Number(e.target.dataset.gemCost),e.target.value,count); })));
+  root.querySelectorAll('[data-gem-value]').forEach(el => el.addEventListener('change', e => writeTool(bucket => { const count=toolGemSlotCount(bucket); bucket.gemSlots=withGemstone(bucket.gemSlots,Number(e.target.dataset.gemValue),e.target.value,count); })));
 }
 
 export function applyWorkspaceUI(root = document) {
