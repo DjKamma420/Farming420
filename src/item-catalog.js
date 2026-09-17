@@ -40,6 +40,66 @@ const SLOT_CATEGORIES = Object.freeze({
   petItem: ['PET_ITEM'],
 });
 
+const ARMOR_SLOT_IDS = new Set(['helmet', 'chestplate', 'leggings', 'boots']);
+
+/**
+ * Farming420 is a farming planner, not a generic SkyBlock wardrobe. The armor
+ * picker therefore exposes only the current farming progression plus the few
+ * standalone armor pieces that are intentionally relevant to farming loadouts.
+ *
+ * 0.26.1 unified the progression as:
+ * Farmhand -> Haymaker -> Sprout -> Tater -> Cropie -> Squash -> Fermento ->
+ * Helianthus. Old ids/names remain accepted so existing profiles and legacy
+ * official-resource rows do not disappear after the rename.
+ */
+const FARMING_ARMOR_PREFIXES = Object.freeze([
+  'FARMHAND_',
+  'HAYMAKER_',
+  'SPROUT_',
+  'TATER_',
+  'CROPIE_',
+  'SQUASH_',
+  'FERMENTO_',
+  'HELIANTHUS_',
+  // pre-0.26.1 ids / names
+  'FARM_SUIT_',
+  'FARM_ARMOR_',
+  'PUMPKIN_',
+  'MELON_',
+]);
+
+const FARMING_ARMOR_NAME_PREFIXES = Object.freeze([
+  'farmhand ',
+  'haymaker ',
+  'sprout ',
+  'tater ',
+  'cropie ',
+  'squash ',
+  'fermento ',
+  'helianthus ',
+  // pre-0.26.1 display names
+  'farm suit ',
+  'farm armor ',
+  'pumpkin ',
+  'melon ',
+]);
+
+const FARMING_STANDALONE_ARMOR_IDS = new Set([
+  'RANCHERS_BOOTS',
+  'FARMER_BOOTS',
+  'PUFFERFISH_HAT',
+  'PUFFERFISH_HELMET',
+]);
+
+export function isFarmingArmorCatalogItem(item) {
+  if (!item || typeof item !== 'object') return false;
+  const id = String(item.id || '').trim().toUpperCase();
+  const name = String(item.name || '').trim().toLowerCase();
+  if (FARMING_STANDALONE_ARMOR_IDS.has(id)) return true;
+  if (FARMING_ARMOR_PREFIXES.some(prefix => id.startsWith(prefix))) return true;
+  return FARMING_ARMOR_NAME_PREFIXES.some(prefix => name.startsWith(prefix));
+}
+
 function stringOrNull(value) {
   if (typeof value !== 'string') return null;
   const trimmed = value.trim();
@@ -80,6 +140,7 @@ export function itemsForSlot(catalog, slotId) {
   const wanted = new Set(categories);
   return catalog
     .filter(item => item.category && wanted.has(item.category))
+    .filter(item => !ARMOR_SLOT_IDS.has(slotId) || isFarmingArmorCatalogItem(item))
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
