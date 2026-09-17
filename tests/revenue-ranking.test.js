@@ -37,6 +37,20 @@ test('Overbloom value depends on the rare crop revenue stream', () => {
   assert.ok(richRareRevenue.marginalCoinsHour > noRareRevenue.marginalCoinsHour);
 });
 
+test('Pest activity base reduces Fortune marginal value compared with Farm at the same displayed Fortune', () => {
+  const common = {
+    item: { metric: 'Crop Yield' },
+    gain: 10,
+    currentFortune: 900,
+    normalCropCoinsPerHour: 20_000_000,
+  };
+  const farm = evaluateUpgrade({ ...common, fortuneBase: 100 });
+  const pest = evaluateUpgrade({ ...common, fortuneBase: 600 });
+  assert.equal(farm.marginalCoinsHour, 200_000);
+  assert.ok(pest.marginalCoinsHour < farm.marginalCoinsHour);
+  assert.equal(pest.fortuneBase, 600);
+});
+
 test('known-cost upgrades rank by shortest payback before unknown-cost rows', () => {
   const rows = rankEvaluatedUpgrades([
     { item: { name: 'Unknown cost' }, payback: null, marginalCoinsHour: 2_000_000, fortuneEquivalent: 20 },
