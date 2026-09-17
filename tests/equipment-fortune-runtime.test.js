@@ -38,10 +38,11 @@ test('Blossom base fortune is seven per equipped Blossom piece', () => {
   assert.equal(blossomBaseFortune(pieces), 28);
 });
 
-test('Rooted fortune is derived from each item rarity', () => {
+test('Rooted fortune is derived from each effective item rarity', () => {
   assert.equal(rootedFortuneForPiece(piece({ rarity: 'EPIC' })), 15);
   assert.equal(rootedFortuneForPiece(piece({ rarity: 'LEGENDARY' })), 18);
   assert.equal(rootedFortuneForPiece(piece({ rarity: 'MYTHIC' })), 21);
+  assert.equal(rootedFortuneForPiece(piece({ rarity: 'LEGENDARY', recombobulated: true })), 21, 'base Legendary + Recombobulator is Mythic for Rooted');
   assert.equal(rootedFortuneForPiece(piece({ rarity: 'LEGENDARY', reforge: 'blooming' })), 0);
   assert.equal(rootedFortuneForPieces([
     piece({ rarity: 'EPIC' }),
