@@ -74,36 +74,39 @@ function decoratePetEditor(raw) {
     panel = document.createElement('div');
     panel.dataset.petCoreFields = '1';
     panel.className = 'item-editor-grid pet-core-fields';
-    const grid = editor.querySelector('.item-editor-grid');
-    grid?.insertAdjacentElement('afterend', panel);
+    editor.querySelector('.item-editor-grid')?.insertAdjacentElement('afterend', panel);
   }
 
-  panel.innerHTML = `
-    <label class="settings-field"><span>Pet rarity</span>
-      <select data-pet-rarity>
-        <option value="">— unknown —</option>
-        ${PET_RARITIES.map(rarity => `<option value="${rarity}" ${String(item.rarity || '').toUpperCase() === rarity ? 'selected' : ''}>${rarity}</option>`).join('')}
-      </select>
-    </label>
-    <label class="settings-field"><span>Pet level</span>
-      <input type="number" min="1" max="100" step="1" data-pet-level value="${esc(currentLevel)}" placeholder="1-100">
-      <span class="hint">Level and rarity drive the pet's perk values. They are not Recombobulator or gemstone upgrades.</span>
-    </label>`;
+  const signature = `${item.skyblockId || item.displayName || ''}:${item.rarity || ''}:${currentLevel || ''}`;
+  if (panel.dataset.signature !== signature) {
+    panel.dataset.signature = signature;
+    panel.innerHTML = `
+      <label class="settings-field"><span>Pet rarity</span>
+        <select data-pet-rarity>
+          <option value="">— unknown —</option>
+          ${PET_RARITIES.map(rarity => `<option value="${rarity}" ${String(item.rarity || '').toUpperCase() === rarity ? 'selected' : ''}>${rarity}</option>`).join('')}
+        </select>
+      </label>
+      <label class="settings-field"><span>Pet level</span>
+        <input type="number" min="1" max="100" step="1" data-pet-level value="${esc(currentLevel)}" placeholder="1-100">
+        <span class="hint">Level and rarity drive the pet's perk values. They are not Recombobulator or gemstone upgrades.</span>
+      </label>`;
 
-  panel.querySelector('[data-pet-rarity]')?.addEventListener('change', event => {
-    patchSlot('pet', { rarity: event.target.value || null });
-  });
-  panel.querySelector('[data-pet-level]')?.addEventListener('change', event => {
-    const value = Math.max(1, Math.min(100, Math.floor(Number(event.target.value) || 1)));
-    patchSlot('pet', { petLevel: value });
-  });
+    panel.querySelector('[data-pet-rarity]')?.addEventListener('change', event => {
+      patchSlot('pet', { rarity: event.target.value || null });
+    });
+    panel.querySelector('[data-pet-level]')?.addEventListener('change', event => {
+      const value = Math.max(1, Math.min(100, Math.floor(Number(event.target.value) || 1)));
+      patchSlot('pet', { petLevel: value });
+    });
+  }
 
   const summary = document.querySelector('[data-slot="pet"] .slot-text span:last-child');
   if (summary && item.displayName) {
     const parts = [];
     if (currentLevel) parts.push(`Lv ${currentLevel}`);
     if (item.rarity) parts.push(String(item.rarity).toUpperCase());
-    if (parts.length) summary.textContent = parts.join(' · ');
+    if (parts.length && summary.textContent !== parts.join(' · ')) summary.textContent = parts.join(' · ');
   }
 }
 
@@ -156,8 +159,10 @@ function renderVacuumSurface(raw) {
 
   const title = content.querySelector('.page-head h1');
   const description = content.querySelector('.page-head p');
-  if (title) title.textContent = 'Vacuum';
-  if (description) description.textContent = 'Pest Set uses the Vacuum layer instead of the crop farming tool.';
+  if (title && title.textContent !== 'Vacuum') title.textContent = 'Vacuum';
+  if (description && description.textContent !== 'Pest Set uses the Vacuum layer instead of the crop farming tool.') {
+    description.textContent = 'Pest Set uses the Vacuum layer instead of the crop farming tool.';
+  }
 
   let panel = content.querySelector('[data-vacuum-panel]');
   if (!panel) {
@@ -169,6 +174,10 @@ function renderVacuumSurface(raw) {
 
   const bucket = ensureVacuumBucket(raw);
   const entries = UPGRADES.filter(isPestVacuumEntry);
+  const signature = entries.map(item => `${item.id}:${vacuumLevel(bucket, item)}`).join('|');
+  if (panel.dataset.signature === signature) return;
+  panel.dataset.signature = signature;
+
   panel.innerHTML = `
     <header class="item-editor-head">
       <div class="item-portrait"><span class="item-portrait-fallback">VA</span></div>
