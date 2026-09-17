@@ -1,3 +1,4 @@
+import { setTextIfChanged } from './set-text.js';
 import { DATA_SCHEMA_VERSION, STORAGE_KEY } from './config.js';
 import { rarityClass } from './item-editor.js';
 import {
@@ -79,13 +80,9 @@ export function effectiveItemRarity(item) {
 }
 
 /** Idempotent DOM write used by rarity presentation. */
-export function setTextIfChanged(node, value) {
-  if (!node) return false;
-  const next = String(value ?? '');
-  if (node.textContent === next) return false;
-  node.textContent = next;
-  return true;
-}
+// Imported *and* re-exported: a bare `export ... from` creates no local
+// binding, so this module's own calls to it would be a ReferenceError.
+export { setTextIfChanged };
 
 function readState() {
   try {

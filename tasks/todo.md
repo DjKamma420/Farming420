@@ -2072,3 +2072,75 @@ caused by the folding work in the same release.
 A test now walks every stylesheet and fails on any rule that hides a nav link
 for a specific page. A page may be de-emphasised, reordered or put behind a
 scroll; it may not be the one page with no way in.
+
+## 0.37.0 -- the calculator core is no longer an orphan
+
+- [x] Give `profit-engine.js` a real entry point
+- [x] Ask only for what a player can measure
+- [x] Say what is missing in the player's words
+- [x] Never let a zero Fortune pass as an answer
+
+### Review
+
+`src/profit-engine.js` had been in this repo complete, tested, and imported by
+nothing. `strategy-model.js` imported it and was itself imported by nobody.
+Neither appeared in `index.html`.
+
+It was left unwired for a good reason: a full farm model needs constants the
+research marks unverified, and wiring it as one would have made it return
+`null` everywhere. Section 9 of the calculator audit says what to do instead --
+*"the new calculator core should accept measured/manual inputs and expose
+incompleteness rather than synthesize values"* -- so that is what it does.
+
+`src/measured-baseline.js` asks for the four numbers a player can read off
+their own farm in ten seconds: breaks per second, how much of the hour they
+really farm, crops per break, and the sell price. It borrows the Fortune the
+app already computes, and returns either Coins/h or a list of what it still
+needs. The panel lives inside the planner's existing baseline disclosure,
+because a second economics panel elsewhere would be two writers for one
+concern -- the exact bug that hid the revenue ranking in 0.34.0.
+
+### What it refuses to claim
+
+**Rare crops stay unknown.** No verified base probability for rare crops
+outside a Harvest Feast exists in the research. The two rare fields are
+optional, and leaving them empty produces `null` for that stream and a full
+answer for the normal one -- half an optional measurement must not cost the
+whole result.
+
+**An engine path is not an error message.** The engine reports
+`normalDrops[normal].unitValueCoins`, which is right for a diagnostic and wrong
+on screen. Every path has words a player can act on, and a test fails on any
+that still reads like a path.
+
+**A zero Fortune is stated, not swallowed.** This one only showed up in a
+browser. A computed Fortune of zero is a real value -- a player who has entered
+nothing has no *known* Fortune -- so the engine accepted it and called the
+measurement complete. The result was arithmetically right and practically
+misleading: 1.84m/h read as a finished number while quietly assuming no Fortune
+at all. The panel now prints the Fortune it multiplied by
+("Multiplied by the 256 Fortune your profile works out"), and when there is
+none it says so and says what to do about it. Axes `computeStatTotals` could
+not resolve are a *different* problem and get their own sentence -- the
+`incomplete` flag tracks unmodelled formulas, not an unfilled profile, and
+conflating the two would have been a plausible-looking mistake.
+
+### Freeze safety
+
+Typing recomputes in place and writes only the stored measurement. Dispatching
+a render per keystroke would rebuild the panel under the cursor -- a lost caret,
+and the loop shape rule 5 exists to prevent. Applying is a click, so that is
+where storage and the render belong. Text goes through the shared
+`setTextIfChanged`.
+
+Measurements are stored per crop **and** per activity, for the same reason the
+baselines are: a Farm measurement does not describe a Pest loadout.
+
+### Verified
+
+752 node + 7 python tests, overlay audit at 0 findings, planner sweep clean on
+all three profiles, and driven end to end in a real browser: the missing list
+shrinking field by field, 1.84m/h at no Fortune with the warning, 6.54m/h at
+256 Fortune without it, the rare stream appearing only once both its fields are
+filled, "Use as baseline" writing 1,836,000 and 275,400,000 into the planner's
+own inputs, and the measurements surviving a reload.

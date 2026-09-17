@@ -19,9 +19,11 @@ import {
   PEST_HEALTH,
   PEST_STAT_SIDES,
   SPAWN_PIPELINE,
+  UNMODELLED_PESTS,
+  guaranteedDropText,
   philipFortuneFor,
 } from './pest-model.js';
-import { setTextIfChanged } from './setup-selection-ui.js';
+import { setTextIfChanged } from './set-text.js';
 import { cropArtUrl } from './skyblock-redesign.js';
 
 function esc(value = '') {
@@ -53,22 +55,30 @@ function sideMarkup() {
 /** A crop's own art, with its initial as the placeholder underneath. */
 function cropIcon(pest) {
   const url = cropArtUrl(pest.cropId);
-  const letter = `<span class="pest-crop-letter">${esc(pest.crop.slice(0, 1))}</span>`;
+  const letter = `<span class="pest-crop-letter">${esc(knownCropName(pest).slice(0, 1))}</span>`;
   if (!url) return `<span class="pest-crop-icon">${letter}</span>`;
-  return `<span class="pest-crop-icon">${letter}<img src="${esc(url)}" alt="" loading="lazy" role="img" aria-label="${esc(pest.crop)}"></span>`;
+  return `<span class="pest-crop-icon">${letter}<img src="${esc(url)}" alt="" loading="lazy" role="img" aria-label="${esc(knownCropName(pest))}"></span>`;
 }
 
 function knownCropName(pest) {
-  return CROPS.find(crop => crop.id === pest.cropId)?.name || pest.crop;
+  return CROPS.find(crop => crop.id === pest.cropId)?.name || pest.cropId;
 }
 
 function pestTableMarkup() {
-  return GARDEN_PESTS.map(pest => `
-    <div class="pest-row">
+  return GARDEN_PESTS.map(pest => {
+    const drop = guaranteedDropText(pest);
+    // Null, not zero: for the three Greenhouse pests the research records that
+    // the exact live scaling divisor still needs a current table.
+    const perUnit = pest.fortunePerExtraUnit == null
+      ? 'scaling not verified'
+      : `+1 per ${pest.fortunePerExtraUnit} Fortune`;
+    return `<div class="pest-row${pest.status === 'VERIFIED' ? '' : ' pest-row-unverified'}">
       ${cropIcon(pest)}
       <div class="pest-main"><strong>${esc(pest.name)}</strong><span>spawns on ${esc(knownCropName(pest))}</span></div>
-      <div class="pest-vinyl"><strong>${esc(pest.vinyl)}</strong><span>vinyl</span></div>
-    </div>`).join('');
+      <div class="pest-drop"><strong>${esc(drop || '\u2014')}</strong><span>${esc(perUnit)}</span></div>
+      <div class="pest-vinyl"><strong>${esc(pest.vinyl || '\u2014')}</strong><span>vinyl</span></div>
+    </div>`;
+  }).join('');
 }
 
 function philipMarkup(pests) {
@@ -122,12 +132,15 @@ function panelMarkup() {
       <div class="section-row">
         <div>
           <h2>Which pest, which plot</h2>
-          <p>The plot's crop decides the pest, and the pest decides the vinyl.
-            ${GARDEN_PESTS.length} standard types; special types are not in this mapping.</p>
+          <p>The plot's crop decides the pest, the pest decides its guaranteed drop and its vinyl.
+            ${GARDEN_PESTS.length} standard types. The guaranteed drop is the one place Farming
+            Fortune does work on pest loot.</p>
         </div>
       </div>
       <div class="pest-list">${pestTableMarkup()}</div>
       <p class="pest-note">${PEST_HEALTH.normal} HP each. ${esc(PEST_HEALTH.derpyNote)}</p>
+      ${UNMODELLED_PESTS.length ? `<p class="pest-note">Not listed: ${UNMODELLED_PESTS.map(pest =>
+        `${esc(pest.name)}${pest.notes ? ` \u2014 ${esc(pest.notes)}` : ''}`).join('; ')}</p>` : ''}
     </section>
 
     <details class="pest-philip">

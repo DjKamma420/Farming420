@@ -91,7 +91,22 @@ async function sweepVariant(browser, label, viewport, seed) {
   let verdict = 'ok';
   try {
     await cap(p.goto(`${BASE_URL}/?t=${Date.now()}`, { waitUntil: 'domcontentloaded', timeout: 9000 }), 10000, 'goto');
-    await p.waitForTimeout(900);
+    /**
+     * Wait for the navigation, not for the clock.
+     *
+     * This used to be a flat 900ms. `sweep-all.sh` runs four areas at once,
+     * each with three browser contexts, against one local server -- so under
+     * that load the nav enhancements had not finished building the rail yet and
+     * the run reported `crops` as UNREACHABLE on a page whose link is perfectly
+     * fine. A false UNREACHABLE is worse than a slow sweep: it cost a real
+     * investigation, and the same check had just found a genuine one.
+     */
+    await cap(
+      p.waitForSelector('.sidebar [data-page]', { state: 'visible', timeout: 8000 }),
+      9000,
+      'nav ready',
+    ).catch(() => {});
+    await p.waitForTimeout(400);
     if (!await alive()) throw new Error('FROZE on load');
 
     /**
@@ -104,6 +119,13 @@ async function sweepVariant(browser, label, viewport, seed) {
      * makes the difference between "no error" and "it worked".
      */
     const reached = await (async () => {
+      /**
+       * A link that is merely late is not a link that is missing, so give it a
+       * bounded chance to appear before calling the page unreachable. A page
+       * genuinely hidden by CSS never becomes visible and still fails here.
+       */
+      await p.waitForSelector(`.sidebar [data-page="${PAGE}"]`, { state: 'visible', timeout: 3000 })
+        .catch(() => {});
       const navButton = await p.$(`[data-page="${PAGE}"]`);
       if (navButton && await navButton.isVisible()) {
         await tap(`[data-page="${PAGE}"]`);

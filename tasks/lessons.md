@@ -538,3 +538,83 @@ time.
 Rule: any component whose stylesheet sets `display` needs its own
 `[hidden] { display: none }`, or `hidden` is decoration. And "I set hidden" is
 not verification -- `checkVisibility()` is.
+
+## Grep the repo before writing the module (0.37.0)
+
+I wrote `src/pest-model.js` with a thirteen-row pest/crop table, and
+`src/measured-baseline.js` with a hand-rolled profit-engine input. Both already
+existed:
+
+- `src/pest-mechanics-data.js` had every pest with its crop, its guaranteed
+  drop item, that drop's base quantity and the Fortune each extra unit costs.
+- `src/planner-profit-adapter.js` had `sourceDrivenCropInput`, which builds the
+  same engine input *and* takes the crop's drop count from
+  `farming-mechanics-data.js` together with the status of that figure.
+
+That is the **third and fourth** duplicate of this kind after two rarity ladders
+and two taskbar rules. What found them was not a search: it was listing every
+module nothing imports, while waiting for CI. If I had run that list first I
+would have found both before writing a line.
+
+Rule: before creating a module, list what the repo already has on that subject.
+`ls src/` is twelve seconds. Grepping for the name I have in mind is not
+enough -- I searched for `RARITY_LADDER` and missed `RARITY_ORDER`, and here I
+would have searched for "pest model" and missed "pest mechanics data". Read the
+*file names* on the subject, then their exports.
+
+Deduplicating both made the work better, not just smaller: the pests page gained
+a guaranteed-drop column it did not have, and the measured panel lost a field
+because the crop's drop count is data, not a measurement. A duplicate is not
+only waste; it is a worse version of something that already works.
+
+## A false negative in the harness costs more than a slow harness (0.37.0)
+
+The full sweep reported `[crops] desktop-empty UNREACHABLE: page exists but no
+visible way to open it`. I investigated it as an app bug: probed the nav link's
+computed style, its box, its parent, and its visibility at six different delays.
+It was visible every time. Re-running the area passed, twice.
+
+The cause was in the harness. `sweep-all.sh` runs four areas at once, each with
+three browser contexts, against one local server -- and `sweep-area.mjs` waited
+a flat 900ms after `domcontentloaded` before looking for the nav. Under that
+load the nav enhancements had not finished building the rail yet.
+
+It now waits for `.sidebar [data-page]` to be visible, and gives a specific
+page's link a bounded second chance before calling it unreachable.
+
+Rule: **wait for the condition, not the clock.** A fixed delay in a harness that
+runs things in parallel is a false-failure generator.
+
+And the reason this mattered rather than being a shrug: the very same check had
+just found a *genuine* unreachable page. A check that cries wolf is a check that
+gets ignored the next time it is right. So I proved the guard still works by
+hiding a nav link on purpose and confirming all three profiles failed again,
+then restored the file.
+
+## Do not import an enhancer for a utility (0.37.0)
+
+I needed `setTextIfChanged`, saw it exported from `setup-selection-ui.js`, and
+imported it from there -- pleased with myself for not writing a second copy.
+
+But that module is a DOM enhancer with boot side effects: its body calls
+`schedule()` and registers document listeners on evaluation. Importing it from
+`revenue-planner.js` (index.html line 49) pulled its boot into that module's
+graph and moved it ahead of its own `<script>` at line 52. That is rule 10 of
+`docs/RENDER_FREEZE_SAFETY.md`: core boot must not depend on optional DOM
+enhancers. It is also the module whose observer froze the app in PR #90.
+
+`setTextIfChanged` now lives in `src/set-text.js`, which has no imports, no
+listeners and no boot. The enhancer imports and re-exports it, so its own
+callers and tests are untouched.
+
+Two things this cost me on the way:
+
+- A bare `export { x } from './y.js'` creates **no local binding**, so the
+  enhancer's own eleven calls to it became a ReferenceError. `node --check`
+  does not catch that; the import must be there too.
+- I inserted the new import with "after the last line starting with `import `",
+  which landed it *inside* a multi-line import block. Heuristics about source
+  text need to be checked against the source text.
+
+Rule: sharing a function is good; sharing a module's boot order is not. Before
+importing from a module, look at what its body does when it is evaluated.

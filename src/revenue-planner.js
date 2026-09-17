@@ -2,6 +2,8 @@ import { CROPS, UPGRADES } from './data.js';
 import { STORAGE_KEY } from './config.js';
 import { ACTIVITY_MODE, activityLabel, activityModeForState } from './activity-mode.js';
 import { evaluateUpgrade, rankEvaluatedUpgrades } from './revenue-ranking.js';
+import { MEASURED_FEAST_KEY, MEASURED_FIELDS, describeMissing, measuredBaseline } from './measured-baseline.js';
+import { setTextIfChanged } from './set-text.js';
 import { costOriginNote, resolveUpgradeCost } from './upgrade-cost-resolution.js';
 import { INTERNET_FARMING_TIME_VALUE_COINS_PER_HOUR } from './upgrade-economics.js';
 import {
@@ -151,6 +153,166 @@ function openItem(itemId) {
   window.dispatchEvent(new Event('farming420:state-changed'));
 }
 
+/**
+ * The measurements for the selected crop and activity, as last left.
+ *
+ * Keyed by crop *and* activity for the same reason the baselines are: a Farm
+ * measurement does not describe a Pest loadout, and inheriting one for the
+ * other is the bug the activity-aware economics already fixed once.
+ */
+function measuredKey(raw) {
+  return `${selectedCropId(raw)}:${activityModeForState(raw)}`;
+}
+
+function measured(raw) {
+  raw.profile ||= {};
+  raw.profile.plannerMeasured ||= {};
+  raw.profile.plannerMeasured[measuredKey(raw)] ||= {};
+  return raw.profile.plannerMeasured[measuredKey(raw)];
+}
+
+/**
+ * The Fortune the app already computed, so the player does not retype it.
+ *
+ * Passed through as-is, absent included. The engine's job is to say "I need
+ * your Farming Fortune"; substituting a zero here would have it answer with a
+ * confident wrong number instead.
+ */
+function measuredStats(context) {
+  return {
+    farmingFortune: context?.stats?.globalFortune,
+    cropFortune: context?.stats?.cropFortune,
+    overbloom: context?.stats?.overbloom,
+  };
+}
+
+/**
+ * What is worth saying about the Fortune this measurement was multiplied by.
+ *
+ * A computed Fortune of zero is a real value, not an absent one -- a player who
+ * has entered nothing has no *known* Fortune -- so the engine accepts it and
+ * calls the measurement complete. The result is then arithmetically right and
+ * practically misleading: it reads as a finished number while quietly assuming
+ * no Fortune at all. Two separate things can be wrong, and they are reported
+ * separately:
+ *
+ * - `unmodelled` are axes `computeStatTotals` could not work out, because a
+ *   formula is not modeled or a setup value was unavailable. It already tracks
+ *   these; they are not the same as an empty profile.
+ * - `zeroFortune` is an empty profile. Farming skill alone reaches +240, so a
+ *   real farm does not have none.
+ */
+function fortuneCaveats(context) {
+  const stats = context?.stats || {};
+  const incomplete = stats.incomplete && typeof stats.incomplete === 'object' ? stats.incomplete : {};
+  const labels = {
+    globalFortune: 'Farming Fortune',
+    cropFortune: 'Crop Fortune',
+    overbloom: 'Overbloom',
+  };
+  const unmodelled = Object.entries(labels)
+    .filter(([axis]) => Array.isArray(incomplete[axis]) && incomplete[axis].length > 0)
+    .map(([, label]) => label);
+  const total = Number(stats.globalFortune || 0) + Number(stats.cropFortune || 0);
+  return { unmodelled, zeroFortune: total <= 0 };
+}
+
+/** The Fortune the measurement is multiplied by, shown rather than implied. */
+function fortuneUsedText(context) {
+  const stats = context?.stats || {};
+  const farming = Number(stats.globalFortune || 0);
+  const crop = Number(stats.cropFortune || 0);
+  if (farming + crop <= 0) return 'No Fortune is known yet, so this counts plain drops only.';
+  return `Multiplied by the ${(farming + crop).toLocaleString('en-US')} Fortune your profile works out (${farming.toLocaleString('en-US')} Farming + ${crop.toLocaleString('en-US')} Crop).`;
+}
+
+function measuredResultText(result) {
+  if (result.normalCropCoinsPerHour == null) return '\u2014';
+  const normal = `${compactCoins(result.normalCropCoinsPerHour)}/h`;
+  return result.rareCropCoinsPerHour == null
+    ? normal
+    : `${normal} + ${compactCoins(result.rareCropCoinsPerHour)}/h Feast`;
+}
+
+/**
+ * What the measurement still needs, in the player's own words.
+ *
+ * The engine reports paths like `normalDrops[normal].unitValueCoins`, which is
+ * right for a diagnostic and wrong on screen. An unknown that names what is
+ * missing is useful; a dash that says nothing is not.
+ */
+function measuredMissingText(result, caveats = { unmodelled: [], zeroFortune: false }) {
+  // An unknown crop produces no missing entry at all, because the engine was
+  // never given a drop model to find a gap in. A dash with no reason is worse
+  // than any reason, so this case is named before the generic paths.
+  if (!result.cropKnown) {
+    return 'This crop has no verified drop model yet, so its Coins/h cannot be worked out here.';
+  }
+  if (result.normalCropCoinsPerHour != null) {
+    const parts = [result.rareCropCoinsPerHour == null
+      ? 'Normal crops only \u2014 Feast rare crops need the Feast switched on and a price'
+      : 'Measured from your own farm, with the Harvest Feast model applied'];
+    if (result.cropDataStatus !== 'VERIFIED') {
+      parts.push(`this crop\u2019s drops per break are ${String(result.cropDataStatus).toLowerCase()}${result.cropDataReason ? ` (${result.cropDataReason})` : ''}`);
+    }
+    if (caveats.zeroFortune) {
+      parts.push('Your profile works out no Fortune yet, so this is plain drops only \u2014 fill in your entries and measure again');
+    }
+    if (caveats.unmodelled.length) {
+      parts.push(`${caveats.unmodelled.join(' and ')} could not be fully worked out, so this assumes what is known`);
+    }
+    return `${parts.join('. ')}.`;
+  }
+  const words = [...new Set(result.missing.map(describeMissing))];
+  if (!words.length) return 'Enter your measurements';
+  const shown = words.slice(0, 3).join(', ');
+  return `Still needs ${shown}${words.length > 3 ? `, and ${words.length - 3} more` : ''}`;
+}
+
+/**
+ * Measurements in, planner baseline out.
+ *
+ * `src/profit-engine.js` shipped complete, tested and imported by nothing,
+ * because a full farm model needs constants the research marks unverified.
+ * Section 9 of that audit says what to do instead -- "accept measured/manual
+ * inputs and expose incompleteness rather than synthesize values" -- so this
+ * asks for the four numbers a player can read off their own farm in ten
+ * seconds, borrows the Fortune the app already computed, and either produces
+ * Coins/h or names exactly what it is still missing.
+ */
+function measuredPanel(raw, context) {
+  const values = measured(raw);
+  const result = measuredBaseline(values, measuredStats(context), selectedCropId(raw));
+  const caveats = fortuneCaveats(context);
+  return `<details class="revenue-measured">
+    <summary>
+      <div class="revenue-measured-head">
+        <strong>Don\u2019t know your Coins/h? Measure it.</strong>
+        <span>${esc(fortuneUsedText(context))}</span>
+      </div>
+    </summary>
+    <div class="revenue-measured-grid">
+      ${MEASURED_FIELDS.map(field => `<label class="${field.optional ? 'revenue-measured-optional' : ''}">
+        <span>${esc(field.label)}</span>
+        <input data-measured="${esc(field.key)}" type="number" min="0" step="${field.step}"${field.max ? ` max="${field.max}"` : ''} value="${values[field.key] === undefined ? '' : esc(values[field.key])}">
+        <small>${esc(field.hint)}</small>
+      </label>`).join('')}
+      <label class="revenue-measured-optional revenue-measured-toggle">
+        <span>Harvest Feast running</span>
+        <input data-measured-feast type="checkbox"${values[MEASURED_FEAST_KEY] ? ' checked' : ''}>
+        <small>The Feast rare-crop model comes from the research, not from you.</small>
+      </label>
+    </div>
+    <div class="revenue-measured-out">
+      <div>
+        <strong data-measured-out>${esc(measuredResultText(result))}</strong>
+        <span data-measured-note>${esc(measuredMissingText(result, caveats))}</span>
+      </div>
+      <button class="ghost small" data-measured-apply${result.normalCropCoinsPerHour == null ? ' disabled' : ''}>Use as baseline</button>
+    </div>
+  </details>`;
+}
+
 function economicsPanel(raw) {
   const crop = cropFor(raw);
   const cropId = selectedCropId(raw);
@@ -171,6 +333,7 @@ function economicsPanel(raw) {
       <label><span>Computed Overbloom</span><input type="number" readonly value="${Number(context.currentOverbloom || 0)}"></label>
     </div>
     <p class="revenue-help">Farm and Pest keep separate Coins/h baselines. Fortune and Overbloom are read from the active ${esc(activityLabel(mode))}; switching sets no longer reuses the other set's economics.</p>
+    ${measuredPanel(raw, context)}
   </details>`;
 }
 
@@ -272,6 +435,57 @@ function enhancePlanner() {
     save(next);
     window.dispatchEvent(new Event('farming420:state-changed'));
   }));
+
+  // Typing recomputes in place and writes nothing but the stored measurement.
+  // Dispatching a render on every keystroke would rebuild the panel under the
+  // cursor, which is both a lost caret and the loop shape
+  // docs/RENDER_FREEZE_SAFETY.md rule 5 exists to prevent.
+  const measuredInputs = [...panel.querySelectorAll('[data-measured]')];
+  const feastToggle = panel.querySelector('[data-measured-feast]');
+  const refreshMeasured = () => {
+    const next = load();
+    const values = measured(next);
+    for (const input of measuredInputs) {
+      const raw = String(input.value || '').trim();
+      if (raw === '') delete values[input.dataset.measured];
+      else values[input.dataset.measured] = Number(raw);
+    }
+    if (feastToggle?.checked) values[MEASURED_FEAST_KEY] = true;
+    else delete values[MEASURED_FEAST_KEY];
+    save(next);
+
+    const liveContext = plannerActivityContext(next, selectedCropId(next));
+    const result = measuredBaseline(values, measuredStats(liveContext), selectedCropId(next));
+    setTextIfChanged(panel.querySelector('[data-measured-out]'), measuredResultText(result));
+    setTextIfChanged(
+      panel.querySelector('[data-measured-note]'),
+      measuredMissingText(result, fortuneCaveats(liveContext)),
+    );
+    const apply = panel.querySelector('[data-measured-apply]');
+    if (apply) apply.disabled = result.normalCropCoinsPerHour == null;
+    return result;
+  };
+  measuredInputs.forEach(input => input.addEventListener('input', refreshMeasured));
+  feastToggle?.addEventListener('change', refreshMeasured);
+
+  // Applying is the user action, so this is where storage and a render belong.
+  // A rare-crop stream that was never measured leaves that baseline alone
+  // rather than overwriting it with a zero.
+  panel.querySelector('[data-measured-apply]')?.addEventListener('click', () => {
+    const result = refreshMeasured();
+    if (result.normalCropCoinsPerHour == null) return;
+    const next = load();
+    const cropId = selectedCropId(next);
+    const nextMode = activityModeForState(next);
+    // Rounded: coins are whole, and a float artifact like 3060000.0000000005
+    // would be stored and then shown back in the baseline input.
+    setPlannerEconomicsValue(next, cropId, nextMode, 'normalCropCoinsPerHour', Math.round(result.normalCropCoinsPerHour));
+    if (result.rareCropCoinsPerHour != null) {
+      setPlannerEconomicsValue(next, cropId, nextMode, 'rareCropCoinsPerHour', Math.round(result.rareCropCoinsPerHour));
+    }
+    save(next);
+    window.dispatchEvent(new Event('farming420:state-changed'));
+  });
 
   panel.querySelectorAll('[data-revenue-open]').forEach(button => button.addEventListener('click', () => openItem(button.dataset.revenueOpen)));
 }

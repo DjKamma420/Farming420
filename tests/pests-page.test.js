@@ -72,7 +72,10 @@ test('the page answers the render-freeze checklist', () => {
   // Text inside the observed subtree goes through the shared guard rather than
   // being assigned unconditionally -- assigning the same string still replaces
   // the text node and emits another childList mutation.
-  assert.match(page, /import \{ setTextIfChanged \} from '\.\/setup-selection-ui\.js'/);
+  // From the side-effect-free module, not from an enhancer: importing it from
+  // `setup-selection-ui.js` pulled that enhancer's boot into this module's
+  // graph, which is rule 10 of docs/RENDER_FREEZE_SAFETY.md.
+  assert.match(page, /import \{ setTextIfChanged \} from '\.\/set-text\.js'/);
   assert.doesNotMatch(page, /\.textContent\s*=/);
 
   // Rule 5: no storage write and no state-changed dispatch at all, so the
@@ -88,4 +91,26 @@ test('one writer per concern: nothing else builds this panel', () => {
   const owners = ['pests-page.js', 'skyblock-redesign.js', 'ux-simplify.js', 'activity-mode-ui.js']
     .filter(name => /pest-page-addon|pest-explainer/.test(read(name)));
   assert.deepEqual(owners, ['pests-page.js']);
+});
+
+test('no enhancer is imported for a utility', () => {
+  // Importing `setTextIfChanged` from `setup-selection-ui.js` pulled that
+  // enhancer's boot into this module's graph and moved it ahead of its own
+  // <script> position -- rule 10 of docs/RENDER_FREEZE_SAFETY.md, "core boot
+  // must not depend on optional DOM enhancers". A shared function is worth
+  // sharing; a shared boot order is not.
+  const enhancers = ['setup-selection-ui.js', 'activity-mode-ui.js', 'ux-simplify.js', 'skyblock-redesign.js'];
+  for (const name of ['pests-page.js', 'revenue-planner.js']) {
+    const source = read(name);
+    for (const enhancer of enhancers) {
+      if (enhancer === 'skyblock-redesign.js' && name === 'pests-page.js') continue;
+      assert.doesNotMatch(source, new RegExp(`from '\\./${enhancer.replace('.', '\\.')}'`),
+        `${name} imports the enhancer ${enhancer}`);
+    }
+  }
+  // And the shared helper's own module boots nothing. Comments stripped: its
+  // own doc comment names the observer loop it exists to prevent.
+  const helper = read('set-text.js').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+  assert.doesNotMatch(helper, /MutationObserver|addEventListener|document\.|localStorage/);
+  assert.doesNotMatch(helper, /^(?!import|export|function|\s|\}|$)/m);
 });
