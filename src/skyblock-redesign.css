@@ -682,3 +682,24 @@
 .skyblock-redesign .sb-tool-art:has(> .sb-pack-icon) > .official-item-art {
   display: none;
 }
+
+/* The tool editor, docked into the card grid under the tool it belongs to.
+   It spans the full row so the cards either side of it stay in their columns. */
+.skyblock-redesign .sb-tool-grid > .sb-docked-editor {
+  grid-column: 1 / -1;
+  margin: 2px 0 10px;
+  border: 2px solid #4a7a57;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #16241a, #0d150f);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.04), 0 6px 0 rgba(0,0,0,.35);
+}
+
+/* A hairline pointing back at the card it belongs to. */
+.skyblock-redesign .sb-tool-grid > .sb-docked-editor::before {
+  content: '';
+  display: block;
+  width: 34px;
+  height: 3px;
+  margin: 0 0 -3px 20px;
+  background: var(--sb-green);
+}

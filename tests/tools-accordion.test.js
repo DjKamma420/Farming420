@@ -1,0 +1,57 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+
+/**
+ * The tool editor is docked under the tool it belongs to, and the wrapper left
+ * behind by hiding the duplicate picker is collapsed.
+ */
+const read = path => readFileSync(new URL(`../src/${path}`, import.meta.url), 'utf8');
+
+test('the editor is moved, not copied', () => {
+  const src = read('skyblock-redesign.js');
+  assert.match(src, /function dockToolEditor\(\)/, 'dockToolEditor is missing');
+  const body = src.slice(src.indexOf('function dockToolEditor()'));
+  const fn = body.slice(0, body.indexOf('\n}\n') + 3);
+  assert.match(fn, /insertAdjacentElement\('afterend', editor\)/, 'the editor must be relocated');
+  assert.ok(
+    !/cloneNode/.test(fn),
+    'cloning would leave two editors and break "the other one closes"',
+  );
+});
+
+test('docking is idempotent, because an observer re-enters it', () => {
+  const src = read('skyblock-redesign.js');
+  const body = src.slice(src.indexOf('function dockToolEditor()'));
+  const fn = body.slice(0, body.indexOf('\n}\n') + 3);
+  assert.match(
+    fn,
+    /nextElementSibling === editor\)\s*return/,
+    'without this early return, moving the node re-triggers the observer that moved it',
+  );
+});
+
+test('dockToolEditor runs in the apply pass', () => {
+  assert.match(read('skyblock-redesign.js'), /\n\s*dockToolEditor\(\);/, 'never called');
+});
+
+test('the docked editor spans the whole card row', () => {
+  const css = read('skyblock-redesign.css').replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.match(
+    css,
+    /\.sb-tool-grid > \.sb-docked-editor \{[^}]*grid-column:\s*1 \/ -1/,
+    'a docked editor in one grid column would squeeze into a card slot',
+  );
+});
+
+test('the empty picker wrapper is collapsed, but only while it is empty', () => {
+  const css = read('workspace-direct-picker.css').replace(/\/\*[\s\S]*?\*\//g, '');
+  const rule = css.match(/\.workspace-context:has\([^)]*\)[^{]*\{[^}]*\}/);
+  assert.ok(rule, 'no rule collapses the wrapper around the hidden picker');
+  assert.match(
+    rule[0],
+    /:only-child/,
+    'without :only-child this hides the wrapper even once it holds real content',
+  );
+  assert.match(rule[0], /display:\s*none/);
+});
