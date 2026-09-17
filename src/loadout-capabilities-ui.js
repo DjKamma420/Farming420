@@ -1,6 +1,12 @@
 import { STORAGE_KEY } from './config.js';
 import { UPGRADES } from './data.js';
 import { ACTIVITY_MODE, activityModeForState, isVacuumItemEntry } from './activity-mode.js';
+import {
+  FARMING_REFORGES_BY_FAMILY,
+  VACUUM_REFORGE_EFFECT_ENTRY_IDS,
+  applyVacuumReforge,
+  selectedVacuumReforge,
+} from './item-capabilities.js';
 import { petLevelFromExperience } from './mooshroom-cow.js';
 
 const PET_RARITIES = Object.freeze(['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY', 'MYTHIC']);
@@ -146,6 +152,14 @@ function writeVacuumEntry(item, patch) {
   window.dispatchEvent(new Event('farming420:state-changed'));
 }
 
+function writeVacuumReforge(reforgeId) {
+  const raw = load();
+  const bucket = ensureVacuumBucket(raw);
+  applyVacuumReforge(bucket, reforgeId || null);
+  save(raw);
+  window.location.reload();
+}
+
 function renderVacuumSurface(raw) {
   if (raw.page !== 'tools' || activityModeForState(raw) !== ACTIVITY_MODE.PEST) return;
   const content = document.querySelector('.content');
@@ -173,8 +187,13 @@ function renderVacuumSurface(raw) {
   }
 
   const bucket = ensureVacuumBucket(raw);
-  const entries = UPGRADES.filter(isVacuumItemEntry);
-  const signature = entries.map(item => `${item.id}:${vacuumLevel(bucket, item)}`).join('|');
+  const reforge = selectedVacuumReforge(bucket);
+  // If an old build left Beady's scored flag enabled while Buzzing was selected,
+  // normalize it before totals are recalculated.
+  if (bucket.reforge && reforge) applyVacuumReforge(bucket, reforge);
+  const reforgeEntries = new Set(Object.values(VACUUM_REFORGE_EFFECT_ENTRY_IDS).filter(Boolean));
+  const entries = UPGRADES.filter(isVacuumItemEntry).filter(item => !reforgeEntries.has(item.id));
+  const signature = `${reforge || ''}|${entries.map(item => `${item.id}:${vacuumLevel(bucket, item)}`).join('|')}`;
   if (panel.dataset.signature === signature) return;
   panel.dataset.signature = signature;
 
@@ -184,7 +203,17 @@ function renderVacuumSurface(raw) {
       <div class="item-identity"><div class="eyebrow">Pest Set</div><strong class="item-title">Vacuum</strong><span class="item-rarity">Used instead of the farming tool</span></div>
     </header>
     <section class="item-editor-section">
-      <div class="section-row"><div><h3>Vacuum values</h3><p>Only Vacuum properties belong here. Pest shards and other Pest modifiers stay in their own sections.</p></div></div>
+      <div class="section-row"><div><h3>Vacuum reforge</h3><p>A Vacuum can have exactly one reforge. Beady gives Pest-only Farming Fortune; Buzzing is the damage reforge.</p></div></div>
+      <div class="workspace-choice-list">
+        ${FARMING_REFORGES_BY_FAMILY.vacuum.map(option => `<label class="workspace-choice ${option.id === reforge ? 'selected' : ''}">
+          <input type="radio" name="vacuum-reforge" value="${esc(option.id)}" ${option.id === reforge ? 'checked' : ''}>
+          <span class="workspace-radio"></span>
+          <span class="workspace-choice-copy"><strong>${esc(option.name)}</strong><small>${esc(option.stone || '')}</small><em>${option.id === 'beady' ? '+100 Farming Fortune on Pests' : 'Doubles Vacuum damage'}</em></span>
+        </label>`).join('')}
+      </div>
+    </section>
+    <section class="item-editor-section">
+      <div class="section-row"><div><h3>Other Vacuum values</h3><p>Only Vacuum properties belong here. Pest shards and other Pest modifiers stay in their own sections.</p></div></div>
       <div class="enchant-grid">
         ${entries.map(item => {
           const level = vacuumLevel(bucket, item);
@@ -196,10 +225,13 @@ function renderVacuumSurface(raw) {
             ${max > 1 ? `<input class="enchant-level" type="number" min="1" max="${max}" value="${level || 1}" data-vacuum-level="${esc(item.id)}" ${on ? '' : 'disabled'}>` : '<span></span>'}
             <span class="enchant-max">${item.stepGain ? `+${Number(item.stepGain).toLocaleString('en-US')} / step` : item.metric}</span>
           </div>`;
-        }).join('') || '<p class="hint">No modeled Vacuum values are available yet.</p>'}
+        }).join('') || '<p class="hint">No other modeled Vacuum values are available yet.</p>'}
       </div>
     </section>`;
 
+  panel.querySelectorAll('input[name="vacuum-reforge"]').forEach(input => input.addEventListener('change', event => {
+    if (event.target.checked) writeVacuumReforge(event.target.value);
+  }));
   panel.querySelectorAll('[data-vacuum-toggle]').forEach(input => input.addEventListener('change', event => {
     const item = entries.find(entry => entry.id === input.dataset.vacuumToggle);
     if (!item) return;
