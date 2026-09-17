@@ -1,0 +1,46 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+
+/**
+ * `groupSidebar` appends its groups after everything it did not move, so a page
+ * missing from GROUPS is not hidden -- it is left sitting in front of the
+ * groups. That is how the rail came to open with Setups and two bare letters
+ * before Dashboard.
+ */
+const enhancements = readFileSync(new URL('../src/enhancements.js', import.meta.url), 'utf8');
+const app = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+
+function navPages() {
+  const block = app.match(/const NAV = \[([\s\S]*?)\n\];/);
+  assert.ok(block, 'NAV table not found in app.js');
+  return [...block[1].matchAll(/\[\s*'([\w-]+)'/g)].map(m => m[1]);
+}
+
+function groupedPages() {
+  const block = enhancements.match(/const GROUPS = \[([\s\S]*?)\n\];/);
+  assert.ok(block, 'GROUPS table not found in enhancements.js');
+  return [...block[1].matchAll(/'([\w-]+)'/g)]
+    .map(m => m[1])
+    // Group labels contain spaces or start uppercase; page ids do not.
+    .filter(name => name === name.toLowerCase() && !name.includes(' '));
+}
+
+test('every nav page is in exactly one group', () => {
+  const pages = navPages();
+  const grouped = groupedPages();
+  const missing = pages.filter(page => !grouped.includes(page));
+  assert.deepEqual(missing, [], `ungrouped pages sit in front of the groups: ${missing.join(', ')}`);
+});
+
+test('no group lists a page that the nav does not have', () => {
+  const pages = navPages();
+  const unknown = groupedPages().filter(page => !pages.includes(page));
+  assert.deepEqual(unknown, [], `grouped but not in NAV: ${unknown.join(', ')}`);
+});
+
+test('no page is listed in two groups', () => {
+  const grouped = groupedPages();
+  const twice = grouped.filter((page, index) => grouped.indexOf(page) !== index);
+  assert.deepEqual(twice, [], `listed more than once: ${twice.join(', ')}`);
+});

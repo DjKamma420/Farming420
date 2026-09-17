@@ -280,3 +280,23 @@ When restyling something another stylesheet hides, check `display`,
 `visibility` and `opacity` explicitly, and verify against the rendered box
 (`getBoundingClientRect` plus `getComputedStyle`) rather than by reading the
 rule you just wrote.
+
+
+## A container that reads well in one axis breaks in the other (0.27.1)
+
+The nav is wrapped in titled groups. Down a 88px side rail that is a heading
+over its items -- exactly right. Turned into a horizontal 68px bar, the same
+markup makes each group a column of heading-over-buttons, which needs two rows
+and gets clipped.
+
+Nothing was wrong with either the grouping or the bar; they were written by
+different modules for different axes and never seen together, because the bar
+had never rendered at all (see 0.27.0). Re-laying a vertical grouping
+horizontally needs `display: contents` on the wrapper so its children join the
+parent's flex row, not a second copy of the markup.
+
+Related, from the same bug: `groupSidebar` appends groups after whatever it did
+not move, so a page missing from its table is **not** dropped -- it silently
+leads the list. Three pages were missing and nobody noticed for as long as the
+grouping only ever appeared in a scrollable side rail. Any function that
+reorders a subset needs a test that the subset is the whole set.

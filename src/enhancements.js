@@ -1,11 +1,22 @@
 import { enchantPresentation } from './enchant-presentation.js';
 import { parseSkyBlockTooltip, recognizeSkyBlockTooltip } from './tooltip-scanner.js';
 
+/**
+ * Every nav page belongs to exactly one group.
+ *
+ * Pages left out of this table are not dropped -- they stay in the nav, ahead
+ * of the groups, because `groupSidebar` appends groups after whatever it did
+ * not move. With `setups`, `guide` and `setup` missing, the rail opened with a
+ * set of items and two bare letters before Dashboard, which is not where a
+ * first-time reader looks. `tests/nav-groups.test.js` fails if a page is
+ * missing here.
+ */
 const GROUPS = [
   ['Progress', ['dashboard', 'account', 'crops', 'tools']],
-  ['Loadout', ['gear', 'pets', 'buffs']],
+  ['Loadout', ['setups', 'gear', 'pets', 'buffs']],
   ['Specialized', ['chips', 'shards', 'pests']],
   ['Analysis', ['planner', 'research', 'coming']],
+  ['Getting started', ['guide', 'setup']],
 ];
 
 const HUBS = [
