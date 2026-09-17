@@ -1,19 +1,20 @@
 export const GEMSTONE_SLOTS_VERIFIED = '2026-09-17';
-export const TOOL_GEMSTONE_SOURCE = 'https://hypixel-skyblock.fandom.com/wiki/Module:Item/ApiData';
+export const TOOL_GEMSTONE_SOURCE = 'https://hypixel-skyblock.fandom.com/wiki/Euclid%27s_Wheat_Hoe';
 export const PERIDOT_VALUES_SOURCE = 'https://hypixel.net/threads/list-of-item-in-skyblock-major-update.6123513/';
 
 export const GEMSTONE_QUALITIES = Object.freeze(['ROUGH', 'FLAWED', 'FINE', 'FLAWLESS', 'PERFECT']);
 export const TOOL_GEMSTONE_TYPES = Object.freeze(['PERIDOT']);
 export const TOOL_GEMSTONE_SLOT_COUNT = 4;
-export const TOOL_GEMSTONE_LEVEL_THRESHOLDS = Object.freeze([5, 15, 25, 50]);
-export const TOOL_GEMSTONE_MAX_BY_TIER = Object.freeze({ 1: 2, 2: 3, 3: 4 });
+export const TOOL_GEMSTONE_LEVEL_THRESHOLDS = Object.freeze([1, 15, 25, 50]);
+export const TOOL_GEMSTONE_MAX_BY_TIER = Object.freeze({ 1: 1, 2: 3, 3: 4 });
 export const GEMSTONE_RARITIES = Object.freeze(['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY', 'MYTHIC']);
 
 /**
- * Official item definitions gate Peridot sockets at tool levels 5/15/25/50.
- * Mk. I defines only the first two sockets, Mk. II the first three and Mk. III
- * all four. A socket is usable only when both its level requirement and tool
- * tier exist.
+ * Current specialised Farming Tool progression exposes one Peridot socket from
+ * tool level 1, a second at 15, a third at 25, and the fourth at 50.
+ * Mk. I physically supports only the first socket, Mk. II supports the first
+ * three, and Mk. III supports all four. A socket is usable only when both its
+ * level requirement and the current physical Mk tier allow it.
  */
 export function toolGemstoneSlotCountForLevel(level) {
   const value = Math.max(0, Math.min(50, Math.floor(Number(level) || 0)));
