@@ -162,3 +162,43 @@ a reforge, a tool tier. Those need a radiogroup with an explicit "none" option
 first, so "no reforge" is a state the user can select rather than the absence
 of any selection. A lever list for an exclusive set also invites the duplicate
 that started this: the same choice offered twice, in two shapes, on one page.
+
+
+## A sweep that hangs forever is a sweep with no deadline (0.26.0)
+
+The click sweep kept running past any patience, and the reason was structural:
+one process walked every page, and a frozen renderer makes *each* Playwright
+call wait out its own timeout. Hundreds of clicks times a few seconds each is
+an afternoon. Per-click timeouts do not bound a run; only a clock does.
+
+What fixed it:
+1. **Shard by area.** One process per page, each with its own deadline and its
+   own browser. A hang costs that area and nothing else, and the fifteen areas
+   that work still report.
+2. **Budget in time, not in clicks.** Each variant stops when its wall clock
+   runs out and says how far it got, instead of promising to finish.
+3. **A hard outer `timeout`** on every worker, so a wedged browser cannot
+   outlive its shard.
+
+## Three ways a sweep lies about passing
+
+All three of these reported "ok" while testing nothing, which is worse than
+failing:
+
+- **Clicking hidden elements.** Below 780px the sidebar is `display:none`, so
+  every `[data-page]` button is invisible; the clicks went nowhere and the run
+  swept the dashboard sixteen times while reporting a pass for each page.
+  Phone navigation is the `.mobile-page-select-addon` in the topbar.
+- **Not checking where you landed.** The fix for the above is not "click the
+  select" but "click it, then read the stored page back and fail if it is not
+  the one asked for."
+- **Counting timeouts as work.** The planner keeps its old list in the DOM as
+  `.planner-v1-source` with `display:none`. Twenty 0x0 nodes ate 3s each in
+  click timeouts, exhausted the budget, and the page's actual UI -- 30 revenue
+  rows and 7 mode tabs -- was never touched. A drawer that takes exactly
+  6002ms to open is not slow, it is two stacked timeouts.
+
+Rule: only click elements with a layout box (`boundingBox()` with non-zero
+width and height), and assert the state you expected to reach. An identical
+click count across viewports is a smell, not a reassurance -- it usually means
+navigation silently did nothing.
