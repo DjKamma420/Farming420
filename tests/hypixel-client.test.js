@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 
 import { HypixelApiError, createHypixelClient, describeApiFailure } from '../src/hypixel-client.js';
 
@@ -44,33 +45,11 @@ test('direct mode sends the key as an API-Key header to Hypixel', async () => {
   assert.ok(call.url.includes(`uuid=${UUID}`));
 });
 
-test('proxy mode targets the proxy and never sends the key', async () => {
-  const fetchImpl = recordingFetch(ok({ success: true, profiles: [] }));
-  const client = createHypixelClient({ apiKey: KEY, proxyUrl: 'https://proxy.example.dev', fetchImpl });
-  assert.equal(client.mode, 'proxy', 'a proxy URL takes precedence over a stored key');
-  await client.fetchProfiles(UUID);
-  const call = fetchImpl.calls[0];
-  assert.ok(call.url.startsWith('https://proxy.example.dev/v2/skyblock/profiles?'));
-  assert.equal(call.init.headers['API-Key'], undefined);
-});
-
-test('the keyless resource call bypasses the proxy', async () => {
-  const fetchImpl = recordingFetch(ok({ success: true }));
-  await createHypixelClient({ proxyUrl: 'https://proxy.example.dev', fetchImpl }).fetchSkillResources();
-  assert.ok(fetchImpl.calls[0].url.startsWith('https://api.hypixel.net/'));
-});
-
 test('the garden endpoint is addressed by profile id, not player uuid', async () => {
   const fetchImpl = recordingFetch(ok({ success: true, garden: {} }));
   await createHypixelClient({ apiKey: KEY, fetchImpl }).fetchGarden('abc123');
   assert.ok(fetchImpl.calls[0].url.includes('profile=abc123'));
   assert.ok(!fetchImpl.calls[0].url.includes('uuid='));
-});
-
-test('a proxy URL with a path prefix is preserved', async () => {
-  const fetchImpl = recordingFetch(ok({ success: true }));
-  await createHypixelClient({ proxyUrl: 'https://proxy.example.dev/api/', fetchImpl }).fetchProfiles(UUID);
-  assert.ok(fetchImpl.calls[0].url.startsWith('https://proxy.example.dev/api/v2/skyblock/profiles'));
 });
 
 test('every HTTP failure becomes an actionable message', () => {
@@ -95,16 +74,21 @@ test('a 200 response carrying success:false is still treated as a failure', asyn
   );
 });
 
-test('a network failure says which side could not be reached', async () => {
+test('a network failure names Hypixel as the side that could not be reached', async () => {
   const failing = async () => { throw new TypeError('Failed to fetch'); };
   await assert.rejects(
     () => createHypixelClient({ apiKey: KEY, fetchImpl: failing }).fetchProfiles(UUID),
     /Could not reach the Hypixel API/,
   );
-  await assert.rejects(
-    () => createHypixelClient({ proxyUrl: 'https://p.example.dev', fetchImpl: failing }).fetchProfiles(UUID),
-    /Could not reach the configured proxy/,
-  );
+});
+
+test('a key is the only way to configure access', () => {
+  // The proxy URL was removed: it could not work without hand-editing the
+  // shipped connect-src list, so it was a setting nobody could actually use.
+  assert.equal(createHypixelClient({ apiKey: KEY, fetchImpl: async () => ok({}) }).mode, 'direct');
+  assert.equal(createHypixelClient({ fetchImpl: async () => ok({}) }).mode, 'none');
+  const source = readFileSync(new URL('../src/hypixel-client.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(source, /options\.proxyUrl/);
 });
 
 test('a non-JSON error body still produces a status-based message', async () => {
@@ -112,10 +96,17 @@ test('a non-JSON error body still produces a status-based message', async () => 
   await assert.rejects(() => createHypixelClient({ apiKey: KEY, fetchImpl }).fetchProfiles(UUID), /unavailable/i);
 });
 
-test('a proxy that cannot be reached points at the CSP allow-list', async () => {
-  const failing = async () => { throw new TypeError('Failed to fetch'); };
-  await assert.rejects(
-    () => createHypixelClient({ proxyUrl: 'https://p.example.dev', fetchImpl: failing }).fetchProfiles(UUID),
-    /connect-src list in index.html/,
-  );
+
+test('Settings offers no proxy URL and no manual JSON import', () => {
+  // Both were removed on request. The proxy could not work without hand-editing
+  // the shipped connect-src list, and the raw-JSON import duplicated what the
+  // key-based sync already does.
+  const foundation = readFileSync(new URL('../src/foundation.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(foundation, /data-proxy-url/);
+  assert.doesNotMatch(foundation, /data-profile-json|data-garden-json/);
+  assert.doesNotMatch(foundation, /Manual import/);
+  assert.doesNotMatch(foundation, /proxyUrl/);
+  // The key stays the one and only way in.
+  assert.match(foundation, /data-api-key/);
+  assert.match(foundation, /data-player-uuid/);
 });

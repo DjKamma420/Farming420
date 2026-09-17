@@ -11,7 +11,6 @@ import {
   validateBackupPayload,
 } from './backup.js';
 import { migrateState } from './migrations.js';
-import { syncGardenPayload, syncProfilePayload } from './profile-sync.js';
 import { maskApiKey, readApiKey, writeApiKey } from './credentials.js';
 import { syncProfile } from './live-sync.js';
 
@@ -68,12 +67,11 @@ function settingsMarkup() {
   const state = readState();
   const meta = currentMeta();
   const playerUuid = state.profile?.playerUuid || '';
-  const proxyUrl = state.profile?.proxyUrl || '';
   const storedKey = readApiKey();
   const sync = state.profile?.lastSync || {};
   const profileOptions = Array.isArray(sync.availableProfiles) ? sync.availableProfiles : [];
   const selectedProfileId = state.profile?.skyblockProfileId || '';
-  const accessModeLabel = proxyUrl ? 'Proxy' : (storedKey ? 'Own API key' : 'Not configured');
+  const accessModeLabel = storedKey ? 'Own API key' : 'Not configured';
   return `
     <div class="settings-shell" role="document">
       <div class="settings-header">
@@ -120,33 +118,14 @@ function settingsMarkup() {
       <section class="settings-section">
         <div class="settings-section-copy">
           <h3>Hypixel access</h3>
-          <p>Profile and Garden endpoints require a key. Use <strong>either</strong> your own key, which stays in this browser and is sent only to api.hypixel.net, <strong>or</strong> a proxy URL if you deployed the proxy in <code>proxy/</code>. A key is never written into a backup.</p>
+          <p>Profile and Garden endpoints require a key. Yours stays in this browser and is sent only to api.hypixel.net. A key is never written into a backup.</p>
         </div>
         <label class="settings-field">
           <span>Your Hypixel API key <a href="https://developer.hypixel.net/" target="_blank" rel="noreferrer">(get one)</a></span>
           <input type="password" data-api-key placeholder="${escapeHtml(storedKey ? maskApiKey(storedKey) : 'Paste your personal key')}" autocomplete="off" spellcheck="false">
         </label>
-        <label class="settings-field">
-          <span>Proxy URL (optional, overrides the key &mdash; also needs its origin in the index.html connect-src list)</span>
-          <input type="url" data-proxy-url value="${escapeHtml(proxyUrl)}" placeholder="https://your-proxy.example.workers.dev" autocomplete="off" spellcheck="false">
-        </label>
         <div class="settings-actions">
           <button class="settings-button danger" type="button" data-clear-key ${storedKey ? '' : 'disabled'}>Forget stored key</button>
-        </div>
-      </section>
-
-      <section class="settings-section">
-        <div class="settings-section-copy">
-          <h3>Manual import</h3>
-          <p>Raw Hypixel JSON import needs no key at all and stays available for offline, privacy-first and debugging workflows. It uses the UUID above to pick the right member of a co-op profile.</p>
-        </div>
-        <div class="settings-actions">
-          <label class="settings-button file-button">Import profile JSON<input data-profile-json type="file" accept="application/json,.json" hidden></label>
-          <label class="settings-button file-button">Import Garden JSON<input data-garden-json type="file" accept="application/json,.json" hidden></label>
-        </div>
-        <div class="settings-meta-grid">
-          <div><span>Profile import</span><strong>${escapeHtml(formatTime(meta.profile?.importedAt))}</strong></div>
-          <div><span>Garden import</span><strong>${escapeHtml(formatTime(meta.garden?.importedAt))}</strong></div>
         </div>
       </section>
 
@@ -230,7 +209,7 @@ function saveLastSync(report) {
 
 /** Both credentials present means a sync can run without asking again. */
 function syncIsConfigured(state = readState()) {
-  const hasAccess = Boolean(readApiKey() || state.profile?.proxyUrl);
+  const hasAccess = Boolean(readApiKey());
   return hasAccess && Boolean(state.profile?.playerUuid);
 }
 
@@ -245,7 +224,6 @@ async function handleLiveSync() {
     playerUuid: uuid,
     profileId,
     apiKey: readApiKey(),
-    proxyUrl: state.profile?.proxyUrl || '',
   });
   saveLastSync(report);
 
@@ -273,7 +251,7 @@ async function handleLiveSync() {
  */
 async function syncIfConfigured() {
   const state = readState();
-  const hasAccess = Boolean(readApiKey() || state.profile?.proxyUrl);
+  const hasAccess = Boolean(readApiKey());
   const hasUuid = Boolean(state.profile?.playerUuid);
 
   // Saying nothing would look like the app ignored the value that was entered.
@@ -297,22 +275,6 @@ function savePlayerUuid(input) {
   writeState(state);
 }
 
-async function handleProfileImport(file) {
-  const payload = await readJsonFile(file);
-  const uuidInput = settingsDialog.querySelector('[data-player-uuid]');
-  savePlayerUuid(uuidInput);
-  const report = await syncProfilePayload(payload, { playerUuid: uuidInput.value });
-  const details = report.farmingLevel === null ? 'Farming level could not be derived.' : `Farming level ${report.farmingLevel} imported.`;
-  setStatus(`Profile import completed. ${details}${report.warnings.length ? ` ${report.warnings.join(' ')}` : ''}`, report.warnings.length ? 'warning' : 'success');
-}
-
-async function handleGardenImport(file) {
-  const payload = await readJsonFile(file);
-  const report = syncGardenPayload(payload);
-  const warning = report.unknownCropKeys.length ? ` Unknown crop keys: ${report.unknownCropKeys.join(', ')}.` : '';
-  setStatus(`Garden import completed: ${report.cropUpgradesImported} crop upgrades, ${report.unlockedPlots ?? 'unknown'} plots.${warning}`, warning ? 'warning' : 'success');
-}
-
 function bindSettings() {
   settingsDialog.querySelector('[data-settings-close]')?.addEventListener('click', closeSettings);
 
@@ -321,18 +283,6 @@ function bindSettings() {
     await syncIfConfigured();
   });
 
-  settingsDialog.querySelector('[data-proxy-url]')?.addEventListener('change', async event => {
-    const value = String(event.target.value || '').trim();
-    if (value && !/^https:\/\//i.test(value)) {
-      setStatus('The proxy URL must start with https://.', 'error');
-      return;
-    }
-    saveProfileField('proxyUrl', value);
-    settingsDialog.innerHTML = settingsMarkup();
-    bindSettings();
-    setStatus(value ? 'Proxy URL saved. It takes precedence over a stored key.' : 'Proxy URL cleared.', 'success');
-    await syncIfConfigured();
-  });
 
   settingsDialog.querySelector('[data-api-key]')?.addEventListener('change', async event => {
     const value = String(event.target.value || '').trim();
@@ -366,26 +316,6 @@ function bindSettings() {
     } finally {
       const button = settingsDialog.querySelector('[data-sync-now]');
       if (button) button.disabled = false;
-    }
-  });
-
-  settingsDialog.querySelector('[data-profile-json]')?.addEventListener('change', async event => {
-    try {
-      await handleProfileImport(event.target.files?.[0]);
-    } catch (error) {
-      setStatus(error.message, 'error');
-    } finally {
-      event.target.value = '';
-    }
-  });
-
-  settingsDialog.querySelector('[data-garden-json]')?.addEventListener('change', async event => {
-    try {
-      await handleGardenImport(event.target.files?.[0]);
-    } catch (error) {
-      setStatus(error.message, 'error');
-    } finally {
-      event.target.value = '';
     }
   });
 
