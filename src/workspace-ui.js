@@ -1,3 +1,4 @@
+import { deriveRarity, describeRarity } from './tool-rarity.js';
 import { CROPS } from './data.js';
 import { STORAGE_KEY } from './config.js';
 import { toolKeyForCropId } from './migrations.js';
@@ -29,6 +30,7 @@ const OVERCLOCKER_ID = 'tool-overclocker-3000';
 const DUMMIES_ID = 'tool-farming-for-dummies';
 const RECOMB_ID = 'tool-recombobulator-effect-on-tool-stats';
 const TOOL_RARITIES = Object.freeze(['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY', 'MYTHIC']);
+
 let catalogRequested = false;
 
 function esc(value = '') {
@@ -118,9 +120,25 @@ function tierRow(bucket) {
   const tier = highestChainTier(bucket, TOOL_TIER_CHAIN);
   return `<div class="workspace-level-row"><div><strong>Tool tier</strong><small>Mk. III includes Mk. II automatically.</small></div><select data-tool-tier>${TOOL_TIER_CHAIN.options.map(o => `<option value="${o.value}" ${o.value===tier?'selected':''}>${o.label}</option>`).join('')}</select></div>`;
 }
-function rarityRow(bucket) {
+/**
+ * Item rarity, derived rather than asked for.
+ *
+ * The official item resource states the item's own rarity and a Recombobulator
+ * raises it one step, so both facts are already here and the dropdown that
+ * started at "Unknown" was asking for an answer the app had.
+ *
+ * The dropdown survives for exactly one case: the official data has no rarity
+ * for this item, usually because the catalogue has not loaded. Then there is
+ * nothing to derive from, a guess would silently change rarity-scaled Peridot
+ * Fortune, and the row says so instead of pretending.
+ */
+function rarityRow(bucket, catalogItem = null, recombobulated = false) {
+  const described = describeRarity({ base: catalogItem?.tier, recombobulated });
+  if (described) {
+    return `<div class="workspace-level-row"><div><strong>Item rarity</strong><small>Used for rarity-scaled Peridot values.</small></div><div class="workspace-derived"><strong data-tool-rarity-derived="${esc(described.rarity)}">${esc(described.rarity)}</strong><small>${esc(described.note)}</small></div></div>`;
+  }
   const rarity = String(bucket.toolRarity || '').toUpperCase();
-  return `<div class="workspace-level-row"><div><strong>Item rarity</strong><small>Used for rarity-scaled Peridot values.</small></div><select data-tool-rarity><option value="">Unknown</option>${TOOL_RARITIES.map(r => `<option value="${r}" ${r===rarity?'selected':''}>${r}</option>`).join('')}</select></div>`;
+  return `<div class="workspace-level-row"><div><strong>Item rarity</strong><small>Official item data has no rarity for this item yet, so it cannot be derived.</small></div><select data-tool-rarity><option value="">Unknown</option>${TOOL_RARITIES.map(r => `<option value="${r}" ${r===rarity?'selected':''}>${r}</option>`).join('')}</select></div>`;
 }
 function gemOptions(value, slotType = 'PERIDOT') {
   const selected = String(value || '').toUpperCase();
@@ -140,7 +158,13 @@ function gemstoneSection(bucket, catalogItem) {
   const officialSlots = activeOfficialSlots(bucket, catalogItem);
   const count = officialSlots ? officialSlots.length : toolGemSlotCount(bucket);
   const slots = normalizeToolGemstoneSlots(bucket.gemSlots, count);
-  const fortune = toolGemstoneFortune(bucket.gemSlots, bucket.toolRarity, count);
+  // The derived rarity is the one the item actually has; the recorded value is
+  // only a fallback for when the official data has no rarity to derive from.
+  const effectiveRarity = deriveRarity({
+    base: catalogItem?.tier,
+    recombobulated: entryLevel(bucket, RECOMB_ID) > 0,
+  }) || bucket.toolRarity;
+  const fortune = toolGemstoneFortune(bucket.gemSlots, effectiveRarity, count);
   const physical = Array.isArray(catalogItem?.gemstoneSlots) ? catalogItem.gemstoneSlots.length : null;
   const availability = catalogItem
     ? `${count} of ${physical} official socket${physical === 1 ? '' : 's'} currently meet this item's requirements.`
@@ -173,7 +197,7 @@ function enhanceTools(root) {
   }
   const upgrades = sections.find(s => s.querySelector('h3')?.textContent.trim() === 'Tool upgrades');
   const canRecomb = !catalogItem || canRecombobulateItem('tool', catalogItem);
-  if (upgrades) upgrades.innerHTML = `<div class="workspace-section-head"><div><h3>Tool progression</h3><p>${catalogItem ? `Exact item: ${esc(catalogItem.name)} (${esc(catalogItem.id)}).` : 'Official item data is loading; verified offline rules are used temporarily.'}</p></div></div><div class="workspace-level-list">${tierRow(bucket)}${levelRow('Farming Tool level','Tool counter level.',TOOL_LEVEL_ID,entryLevel(bucket,TOOL_LEVEL_ID),50)}${levelRow('Overclocker 3000','Applications extending the tool-level cap.',OVERCLOCKER_ID,entryLevel(bucket,OVERCLOCKER_ID),10)}${levelRow('Farming for Dummies','Book applications on this tool.',DUMMIES_ID,entryLevel(bucket,DUMMIES_ID),5)}${rarityRow(bucket)}${canRecomb ? `<label class="workspace-level-row workspace-toggle-row"><div><strong>Recombobulator 3000</strong><small>Current item state.</small></div><input type="checkbox" data-tool-recomb ${entryLevel(bucket,RECOMB_ID)>0?'checked':''}></label>` : ''}</div>`;
+  if (upgrades) upgrades.innerHTML = `<div class="workspace-section-head"><div><h3>Tool progression</h3><p>${catalogItem ? `Exact item: ${esc(catalogItem.name)} (${esc(catalogItem.id)}).` : 'Official item data is loading; verified offline rules are used temporarily.'}</p></div></div><div class="workspace-level-list">${tierRow(bucket)}${levelRow('Farming Tool level','Tool counter level.',TOOL_LEVEL_ID,entryLevel(bucket,TOOL_LEVEL_ID),50)}${levelRow('Overclocker 3000','Applications extending the tool-level cap.',OVERCLOCKER_ID,entryLevel(bucket,OVERCLOCKER_ID),10)}${levelRow('Farming for Dummies','Book applications on this tool.',DUMMIES_ID,entryLevel(bucket,DUMMIES_ID),5)}${rarityRow(bucket, catalogItem, entryLevel(bucket, RECOMB_ID) > 0)}${canRecomb ? `<label class="workspace-level-row workspace-toggle-row"><div><strong>Recombobulator 3000</strong><small>Current item state.</small></div><input type="checkbox" data-tool-recomb ${entryLevel(bucket,RECOMB_ID)>0?'checked':''}></label>` : ''}</div>`;
   const finish = sections.find(s => /Gemstone|rarity/i.test(s.querySelector('h3')?.textContent || ''));
   if (finish) finish.innerHTML = gemstoneSection(bucket, catalogItem);
   content?.querySelectorAll('.workspace-secondary-analysis').forEach(node => node.remove());

@@ -1638,3 +1638,46 @@ Collapsed with `:has(> .workspace-tool-picker-hidden:only-child)`. The
 `:only-child` is the guard: the moment that container holds anything else, the
 rule stops applying and the bar returns on its own. Page height fell from 4866
 to 4818.
+
+
+## 0.30.0 -- rarity is derived, not asked for
+
+The tool editor asked for an item's rarity through a dropdown that started at
+"Unknown". That is a question the app can already answer: the official item
+resource states each item's own rarity, and a Recombobulator raises it by
+exactly one rung. Two facts already in hand, turned into a third the user was
+being asked to supply.
+
+The row shows the derived value read-only and says where it came from -- "from
+the official item data", or "recombobulated from EPIC", or "already at MYTHIC;
+a Recombobulator adds nothing". The rarity-scaled Peridot Fortune uses the
+derived value too, not the hand-recorded one.
+
+### The dropdown survives exactly one case
+
+When the official data has no rarity for this item there is nothing to derive
+from. Guessing would silently change Fortune values, so the row keeps the
+dropdown and says why: "Official item data has no rarity for this item yet, so
+it cannot be derived." That is the state this sandbox is permanently in, since
+`api.hypixel.net` is unreachable from here.
+
+### One ladder, one rule
+
+`exact-farming-items.js` already carried a rarity ladder and the
+Recombobulator step, for the vacuums. Adding a second copy would have been two
+tables to keep in step, so `RARITY_ORDER` and `bumpRarity` are exported from
+there and both the vacuums and the tools use them. `vacuumEffectiveRarity` now
+calls `bumpRarity` rather than repeating the clamp.
+
+### Verified
+
+Nine unit tests cover the derivation: one rung per Recombobulator, clamped at
+MYTHIC, unknown stays unknown rather than being guessed, casing tolerated, and
+the explanation strings. Two more pin that the editor derives before it offers
+the dropdown and that the gemstone Fortune uses the derived value. 556 node
+tests and 7 Python tests pass, audit clean, tools sweep clean.
+
+**Not verified here:** the derived row rendering in a live browser. The
+catalogue cannot load in this sandbox, so every local run takes the fallback
+branch. The logic is covered by unit tests and the fallback was observed
+directly; the derived branch needs a browser with API access to see.
