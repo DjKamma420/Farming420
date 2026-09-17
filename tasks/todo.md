@@ -1473,3 +1473,53 @@ The reforge and gear-slot placeholders still show letters in this sandbox
 because `api.hypixel.net` is blocked by the egress proxy, so the official item
 catalog cannot load. They belong to the coverage-art system and are very likely
 fine in a real browser; nothing about them is claimed either way.
+
+
+## 0.27.4 -- why the gear showed silhouettes and letters
+
+Reported with screenshots: the Mossy Helianthus set renders as flat white, grey
+and yellow armour outlines, and the Blossom equipment as two-letter badges on a
+hatched square. "Das sind nicht die richtigen Modelle."
+
+### What was measured
+
+Seeding a setup whose slots carry a head texture renders that texture: all
+eight armour and equipment portraits produced `.skull-art` and the silhouette
+never appeared. So the rendering path is sound, and the portraits in the
+screenshots mean those slots reached the renderer with **no** `skullTexture`.
+
+### The reader knew one NBT shape out of several
+
+`skullTextureFromTag` only understood `SkullOwner.Properties.textures[].Value`.
+Minecraft 1.20.5 replaced `SkullOwner` with a `profile` data component whose
+properties are a list of `{name: 'textures', value: '<base64>'}` -- lowercase
+`value` -- and serialisers along the way case these keys differently. For every
+shape it did not recognise the reader answered "not a head", which is
+indistinguishable from the truth for the many items that really are not heads.
+Nothing logged, nothing failed; the grid just fell back to silhouettes.
+
+It now tries each known shape: classic `SkullOwner`, a `profile` component, a
+bare `profile`, either casing of `Value`/`value`, a lowercased owner key, a
+texture URL, and a bare hash. `tests/skull-texture-shapes.test.js` covers all
+of them plus the cases that must still answer null. Seven of its ten cases
+failed against the previous reader.
+
+### What this does not establish
+
+Whether it is the cause of the screenshots. The egress proxy here blocks
+`api.hypixel.net` and `resourcepacks.hypixel.net`, so the actual NBT of those
+items cannot be inspected and neither can the upstream pack. If Helianthus
+armour is not a head item at all, its slots will still carry no texture and the
+silhouette is the honest fallback -- in which case the fix is different art for
+that fallback, not this.
+
+The check is one sync: if the armour comes back with real models, this was it.
+
+### The fallback itself is still poor
+
+`armorSvg` in `item-art-coverage.js` draws four hand-made outlines filled with
+one flat colour, and equipment has no shape at all, which is why those slots
+show letters. The shipped pack does carry the set items (`helianthus`,
+`fermento`, `cropie`, `squash`), which would read far better than a grey
+T-shirt. That file belongs to the other agent's current work, so it is not
+touched here.
