@@ -3,6 +3,7 @@ import { STORAGE_KEY } from './config.js';
 export const DUPLICATE_PAGE_TARGETS = Object.freeze({
   gear: 'setups',
   pets: 'setups',
+  guide: 'dashboard',
 });
 
 export function canonicalPage(page) {
