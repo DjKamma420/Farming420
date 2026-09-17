@@ -465,3 +465,25 @@ API that answers exactly that (`checkVisibility`, `elementFromPoint`), rather
 than reaching for the property that happens to be nearby. And prove the check
 can fail: a check that cannot distinguish the broken state from the fixed one
 is not a check.
+
+
+## Tested is not wired (0.32.0)
+
+Three modules -- the profit engine, the strategy layer, the item-model coverage
+auditor -- had tests, careful documentation and a design document describing
+them as "added in this pass". None was imported by any runtime path. Green
+tests said the code worked; nothing said it ran.
+
+`grep -rl <module> src/` minus the module itself, plus a check of the entry
+point, answers in seconds what a test suite cannot: is this reachable at all.
+Worth running on anything described as newly added, including my own.
+
+## A generated document needs a test or it rots
+
+The price gap list is generated from two moving data sets. Written once it
+would be wrong within a week and still look authoritative. It states its own
+numbers, and a test recomputes them and fails when they drift -- including a
+check that every entry it names still exists.
+
+Same rule as the coverage audit: the document is the readable form, the test is
+what keeps it true.
