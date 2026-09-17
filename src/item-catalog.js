@@ -1,19 +1,6 @@
 import { UPGRADES } from './data.js';
 
-/**
- * Selectable options for the setup editor.
- *
- * Rule 1 forbids inventing an item, reforge or enchantment list, so nothing
- * here is written from memory. Every option carries where it came from:
- *
- * - `official`  — the keyless `/v2/resources/skyblock/items` resource
- * - `profile`   — found on the player's own synced items
- * - `app-data`  — named by an entry in `src/data.js`, which cites its source
- * - `manual`    — typed by the player
- *
- * Free text is always accepted, so a missing catalogue row never blocks anyone.
- */
-
+/** Selectable options for the setup editor. */
 export const OPTION_SOURCE = Object.freeze({
   OFFICIAL: 'official',
   PROFILE: 'profile',
@@ -21,13 +8,11 @@ export const OPTION_SOURCE = Object.freeze({
   MANUAL: 'manual',
 });
 
-// v2 keeps the official material/skin/color fields used by the art layer. A new
-// key deliberately invalidates old cached rows that only contained picker text.
-export const CATALOG_STORAGE_KEY = 'farming420-item-catalog-v2';
-/** The resource is static reference data; a day-old copy is fine. */
+// v3 adds the item-level capability fields used by the setup editor. Bumping the
+// key deliberately prevents an old cache from making every item look generic.
+export const CATALOG_STORAGE_KEY = 'farming420-item-catalog-v3';
 export const CATALOG_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
-/** Slot id -> the item categories the official resource uses for it. */
 const SLOT_CATEGORIES = Object.freeze({
   helmet: ['HELMET'],
   chestplate: ['CHESTPLATE'],
@@ -41,54 +26,17 @@ const SLOT_CATEGORIES = Object.freeze({
 });
 
 const ARMOR_SLOT_IDS = new Set(['helmet', 'chestplate', 'leggings', 'boots']);
-
-/**
- * Farming420 is a farming planner, not a generic SkyBlock wardrobe. The armor
- * picker therefore exposes only the current farming progression plus the few
- * standalone armor pieces that are intentionally relevant to farming loadouts.
- *
- * 0.26.1 unified the progression as:
- * Farmhand -> Haymaker -> Sprout -> Tater -> Cropie -> Squash -> Fermento ->
- * Helianthus. Old ids/names remain accepted so existing profiles and legacy
- * official-resource rows do not disappear after the rename.
- */
 const FARMING_ARMOR_PREFIXES = Object.freeze([
-  'FARMHAND_',
-  'HAYMAKER_',
-  'SPROUT_',
-  'TATER_',
-  'CROPIE_',
-  'SQUASH_',
-  'FERMENTO_',
-  'HELIANTHUS_',
-  // pre-0.26.1 ids / names
-  'FARM_SUIT_',
-  'FARM_ARMOR_',
-  'PUMPKIN_',
-  'MELON_',
+  'FARMHAND_', 'HAYMAKER_', 'SPROUT_', 'TATER_', 'CROPIE_', 'SQUASH_', 'FERMENTO_', 'HELIANTHUS_',
+  // Legacy names/ids are kept so restored pre-0.26.1 profiles still resolve.
+  'FARM_SUIT_', 'FARM_ARMOR_', 'PUMPKIN_', 'MELON_',
 ]);
-
 const FARMING_ARMOR_NAME_PREFIXES = Object.freeze([
-  'farmhand ',
-  'haymaker ',
-  'sprout ',
-  'tater ',
-  'cropie ',
-  'squash ',
-  'fermento ',
-  'helianthus ',
-  // pre-0.26.1 display names
-  'farm suit ',
-  'farm armor ',
-  'pumpkin ',
-  'melon ',
+  'farmhand ', 'haymaker ', 'sprout ', 'tater ', 'cropie ', 'squash ', 'fermento ', 'helianthus ',
+  'farm suit ', 'farm armor ', 'pumpkin ', 'melon ',
 ]);
-
 const FARMING_STANDALONE_ARMOR_IDS = new Set([
-  'RANCHERS_BOOTS',
-  'FARMER_BOOTS',
-  'PUFFERFISH_HAT',
-  'PUFFERFISH_HELMET',
+  'RANCHERS_BOOTS', 'FARMER_BOOTS', 'PUFFERFISH_HAT', 'PUFFERFISH_HELMET',
 ]);
 
 export function isFarmingArmorCatalogItem(item) {
@@ -106,12 +54,20 @@ function stringOrNull(value) {
   return trimmed || null;
 }
 
+function reducedGemstoneSlots(raw) {
+  if (!Array.isArray(raw)) return [];
+  return raw.map((slot, index) => {
+    const type = stringOrNull(slot?.slot_type)?.toUpperCase() || null;
+    if (!type) return null;
+    return { index, slotType: type };
+  }).filter(Boolean);
+}
+
 /**
- * Reduces the official resource to what the picker and item-art layer need.
- *
- * `skin` is the textures.minecraft.net hash for SKULL_ITEM entries. `material`
- * and `color` let the UI draw honest material silhouettes for dyed armour when
- * a head texture does not exist. Unknown fields remain ignored.
+ * Reduces the official item resource without throwing away capability data.
+ * `gemstone_slots`, `cannot_reforge` and `can_recombobulate` belong to the
+ * concrete SkyBlock item. The UI must never infer those properties from the UI
+ * slot (Helmet, Necklace, ...).
  */
 export function reduceItemResource(payload) {
   const items = Array.isArray(payload?.items) ? payload.items : [];
@@ -128,12 +84,16 @@ export function reduceItemResource(payload) {
       material: stringOrNull(item?.material)?.toUpperCase() || null,
       skin: stringOrNull(item?.skin)?.toLowerCase() || null,
       color: stringOrNull(item?.color) || null,
+      gemstoneSlots: reducedGemstoneSlots(item?.gemstone_slots),
+      cannotReforge: item?.cannot_reforge === true,
+      canRecombobulate: item?.can_recombobulate === true
+        ? true
+        : item?.can_recombobulate === false ? false : null,
     });
   }
   return reduced;
 }
 
-/** Items the official resource lists for one slot, sorted by name. */
 export function itemsForSlot(catalog, slotId) {
   const categories = SLOT_CATEGORIES[slotId];
   if (!categories || !Array.isArray(catalog)) return [];
@@ -144,7 +104,6 @@ export function itemsForSlot(catalog, slotId) {
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
-/** True when this slot has no official category to filter by (pets). */
 export function slotHasOfficialCategory(slotId) {
   return Boolean(SLOT_CATEGORIES[slotId]);
 }
@@ -152,21 +111,12 @@ export function slotHasOfficialCategory(slotId) {
 function optionsFrom(values, source) {
   return [...new Set(values.filter(Boolean))].sort().map(value => ({ value, source }));
 }
-
 function decodedItemsOf(snapshot) {
   return Array.isArray(snapshot?.items) ? snapshot.items : [];
 }
 
-/**
- * Reforge names the app can offer.
- *
- * `src/data.js` names several reforges in its entry titles, and each of those
- * entries cites a source, so they are quotable. Anything else comes from the
- * player's own items.
- */
+/** Legacy generic option list; item-aware UI uses item-capabilities.js. */
 export function reforgeOptions(snapshot) {
-  // Read from the entry ids, which are uniformly `<scope>-reforge-<name>-...`.
-  // Display names are not uniform: "Blessed reforge" but "Beady - Pest-only ...".
   const fromData = UPGRADES
     .map(entry => /-reforge-([a-z0-9]+)(?:-|$)/.exec(entry.id)?.[1])
     .filter(Boolean);
@@ -177,7 +127,6 @@ export function reforgeOptions(snapshot) {
   ]);
 }
 
-/** Enchantment ids the app can offer, from the player's items first. */
 export function enchantmentOptions(snapshot) {
   const fromProfile = decodedItemsOf(snapshot)
     .flatMap(item => Object.keys(item?.enchantments || {}))
@@ -185,7 +134,6 @@ export function enchantmentOptions(snapshot) {
   return dedupeBySource(optionsFrom(fromProfile, OPTION_SOURCE.PROFILE));
 }
 
-/** Gemstone strings the app can offer, from the player's items. */
 export function gemOptions(snapshot) {
   const fromProfile = decodedItemsOf(snapshot).flatMap(item => {
     const gems = item?.gems;
@@ -198,7 +146,6 @@ export function gemOptions(snapshot) {
   return dedupeBySource(optionsFrom(fromProfile, OPTION_SOURCE.PROFILE));
 }
 
-/** Keeps the first occurrence of a value, so the better-grounded source wins. */
 function dedupeBySource(options) {
   const seen = new Set();
   const result = [];
@@ -211,11 +158,7 @@ function dedupeBySource(options) {
 }
 
 function storage() {
-  try {
-    return globalThis.localStorage ?? null;
-  } catch {
-    return null;
-  }
+  try { return globalThis.localStorage ?? null; } catch { return null; }
 }
 
 export function readCachedCatalog() {
@@ -225,17 +168,12 @@ export function readCachedCatalog() {
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed?.items) || !parsed.fetchedAt) return null;
     return parsed;
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 }
 
 export function writeCachedCatalog(items, fetchedAt = new Date().toISOString()) {
-  try {
-    storage()?.setItem(CATALOG_STORAGE_KEY, JSON.stringify({ fetchedAt, items }));
-  } catch {
-    // A full storage quota must not break the editor; it just loses the cache.
-  }
+  try { storage()?.setItem(CATALOG_STORAGE_KEY, JSON.stringify({ fetchedAt, items })); }
+  catch { /* A full storage quota must not break the editor. */ }
 }
 
 export function catalogIsStale(cached, now = Date.now()) {
@@ -244,24 +182,15 @@ export function catalogIsStale(cached, now = Date.now()) {
   return !Number.isFinite(age) || age > CATALOG_MAX_AGE_MS;
 }
 
-/**
- * Loads the official item resource, using the cached copy when it is fresh.
- * A failure is reported rather than thrown: the editor stays usable on free
- * text alone.
- *
- * @returns {Promise<{items: object[], fetchedAt: string|null, fromCache: boolean, error: string|null}>}
- */
 export async function loadItemCatalog({ fetchImpl, baseUrl = 'https://api.hypixel.net', force = false, now = Date.now() } = {}) {
   const cached = readCachedCatalog();
   if (!force && cached && !catalogIsStale(cached, now)) {
     return { items: cached.items, fetchedAt: cached.fetchedAt, fromCache: true, error: null };
   }
-
   const request = fetchImpl || globalThis.fetch;
   if (typeof request !== 'function') {
     return { items: cached?.items || [], fetchedAt: cached?.fetchedAt || null, fromCache: Boolean(cached), error: 'No fetch implementation is available.' };
   }
-
   try {
     const response = await request(`${baseUrl}/v2/resources/skyblock/items`, { headers: { accept: 'application/json' } });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -271,7 +200,6 @@ export async function loadItemCatalog({ fetchImpl, baseUrl = 'https://api.hypixe
     writeCachedCatalog(items, fetchedAt);
     return { items, fetchedAt, fromCache: false, error: null };
   } catch (error) {
-    // A stale cache still beats an empty picker.
     return {
       items: cached?.items || [],
       fetchedAt: cached?.fetchedAt || null,
