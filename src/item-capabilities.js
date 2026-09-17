@@ -153,9 +153,12 @@ export function gemstoneSlotsForItem(catalogItem) {
 const DIRECT_GEM_TYPES = new Set(GEM_TYPES);
 const SLOT_TYPE_GROUPS = Object.freeze({
   UNIVERSAL: Object.freeze([...GEM_TYPES]),
-  COMBAT: Object.freeze(['AMETHYST', 'JASPER', 'RUBY', 'SAPPHIRE']),
+  // Current grouped socket definitions include the newer Onyx and Opal gems.
+  // Peridot remains a direct Farming socket and is therefore not added to
+  // Combat/Defensive groups.
+  COMBAT: Object.freeze(['AMETHYST', 'JASPER', 'ONYX', 'OPAL', 'RUBY', 'SAPPHIRE']),
   OFFENSIVE: Object.freeze(['JASPER', 'SAPPHIRE']),
-  DEFENSIVE: Object.freeze(['AMETHYST', 'RUBY']),
+  DEFENSIVE: Object.freeze(['AMETHYST', 'OPAL', 'RUBY']),
   MINING: Object.freeze(['JADE', 'AMBER', 'TOPAZ']),
 });
 
