@@ -73,3 +73,48 @@ test('the specific tokens are ordered ahead of the general ones', () => {
     assert.ok(index(tier) < index('LOTUS'), `${tier} must be tested before LOTUS`);
   }
 });
+
+test('a gemstone shows the gem, not the armour it sits in', () => {
+  // These are not stand-ins. The pack ships the actual gem for every Peridot
+  // tier, so an upgrade that *is* a gemstone gets its own picture instead of
+  // the leather outline of whatever it was socketed into.
+  const cases = [
+    ['Perfect Peridot on full armor', 'perfect_peridot_gem'],
+    ['Flawless Peridot on Farming Tool', 'flawless_peridot_gem'],
+    ['Fine Peridot', 'fine_peridot_gem'],
+    ['Flawed Peridot', 'flawed_peridot_gem'],
+    ['Rough Peridot', 'rough_peridot_gem'],
+    ['Peridot slot unlock', 'peridot_crystal'],
+  ];
+  for (const [name, key] of cases) {
+    assert.equal(packArtKeyFor({ id: '', name }), key, name);
+  }
+});
+
+test('the Peridot tiers are ordered before the bare token', () => {
+  // PERFECT_PERIDOT contains PERIDOT, so the general token must be tested
+  // last -- the same trap CONDENSED_FERMENTO and DIAMOND_LOTUS already set.
+  const index = token => SET_ART.findIndex(([name]) => name === token);
+  const bare = index('PERIDOT');
+  assert.ok(bare >= 0);
+  for (const tier of ['PERFECT_PERIDOT', 'FLAWLESS_PERIDOT', 'FINE_PERIDOT', 'FLAWED_PERIDOT', 'ROUGH_PERIDOT']) {
+    const at = index(tier);
+    assert.ok(at >= 0, `${tier} missing`);
+    assert.ok(at < bare, `${tier} must be tested before the bare PERIDOT token`);
+  }
+});
+
+test('a reforge named for an item shows that item', () => {
+  // "Every reforge has a design." Where the pack ships the thing the reforge
+  // is named for, that thing reads immediately.
+  assert.equal(packArtKeyFor({ id: '', name: 'Thorny on full Mythic equipment' }), 'blooming_thorns');
+  assert.equal(packArtKeyFor({ id: '', name: 'Rooted on full equipment' }), 'deep_root');
+});
+
+test('set art never claims a key the shipped pack does not have', () => {
+  // This is the check that makes the table safe to extend: a mistyped key
+  // would otherwise fall through to the outline with nothing reporting it.
+  for (const [token, key] of SET_ART) {
+    assert.ok(manifest.items[key]?.texture, `${token} -> ${key} has no texture in the shipped pack`);
+  }
+});

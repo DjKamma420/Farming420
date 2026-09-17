@@ -1978,3 +1978,25 @@ stays a real answer: spend nothing, get nothing.
 all three profiles, and read back out of a real browser at 1280px and 412px:
 one panel (not one per mutation), 13 rows, 13 textures resolved, no sideways
 scroll, and the converter capping 500 pests to 200 for +1,000.
+
+### 0.35.0 addendum -- gemstones, two reforges, and an honest gap list
+
+Six more entries have a real picture. The Peridot gemstones are **not**
+stand-ins: the pack ships the actual gem for every tier, so "Perfect Peridot on
+full armor" now shows the gem instead of the leather outline of whatever it was
+socketed into. Tier order is load-bearing the same way `CONDENSED_*` already
+was -- `PERFECT_PERIDOT` contains `PERIDOT`, so the bare token is tested last,
+and a test pins that.
+
+Thorny and Rooted get the item each reforge is named for, in the same in-family
+class as `BLOSSOM`. Both give way to a head texture the moment one exists.
+
+`docs/ITEM_ART_COVERAGE.md` records what cannot be pictured from this repo and
+why, rather than leaving it as something I would have to rediscover: pets and
+pet items, three reforges with no matching pack item, Zorro's Cape, and the
+enchantments -- an enchantment is not an item and has no model of its own.
+
+Farm Suit, Melon and Rabbit armour turned out **not to be entries in this app
+at all**. They exist only in the live setup catalogue, where the head-texture
+and vanilla-material rungs already cover them. Inventing pack stand-ins for
+items the repo does not contain would have been fabricating coverage.
