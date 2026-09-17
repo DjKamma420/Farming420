@@ -1,6 +1,6 @@
 import { STORAGE_KEY } from './config.js';
 import { UPGRADES } from './data.js';
-import { ACTIVITY_MODE, activityModeForState, isPestVacuumEntry } from './activity-mode.js';
+import { ACTIVITY_MODE, activityModeForState, isVacuumItemEntry } from './activity-mode.js';
 import { petLevelFromExperience } from './mooshroom-cow.js';
 
 const PET_RARITIES = Object.freeze(['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY', 'MYTHIC']);
@@ -173,7 +173,7 @@ function renderVacuumSurface(raw) {
   }
 
   const bucket = ensureVacuumBucket(raw);
-  const entries = UPGRADES.filter(isPestVacuumEntry);
+  const entries = UPGRADES.filter(isVacuumItemEntry);
   const signature = entries.map(item => `${item.id}:${vacuumLevel(bucket, item)}`).join('|');
   if (panel.dataset.signature === signature) return;
   panel.dataset.signature = signature;
@@ -184,7 +184,7 @@ function renderVacuumSurface(raw) {
       <div class="item-identity"><div class="eyebrow">Pest Set</div><strong class="item-title">Vacuum</strong><span class="item-rarity">Used instead of the farming tool</span></div>
     </header>
     <section class="item-editor-section">
-      <div class="section-row"><div><h3>Vacuum values</h3><p>Only Vacuum and Pest-drop modifiers belong here. Crop-tool reforges and enchants do not count in Pest Set.</p></div></div>
+      <div class="section-row"><div><h3>Vacuum values</h3><p>Only Vacuum properties belong here. Pest shards and other Pest modifiers stay in their own sections.</p></div></div>
       <div class="enchant-grid">
         ${entries.map(item => {
           const level = vacuumLevel(bucket, item);
