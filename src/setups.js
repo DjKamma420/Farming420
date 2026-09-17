@@ -14,6 +14,8 @@
  * same value two competing sources.
  */
 
+import { baseRarityFromDisplayed } from './setup-rarity.js';
+
 export const SETUPS_MODEL_VERSION = 1;
 
 /** The slots a setup has, in the order the editor shows them. */
@@ -53,6 +55,7 @@ export function createEmptyItem() {
     skyblockId: null,
     displayName: '',
     rarity: null,
+    rarityBasis: 'base',
     petLevel: null,
     reforge: null,
     enchantments: {},
@@ -78,6 +81,18 @@ export function createDefaultSetups() {
   };
 }
 
+function normalizeSetupItem(item) {
+  const normalized = { ...createEmptyItem(), ...item };
+  const legacyEffectiveSyncRarity = normalized.source === ITEM_SOURCE.SYNC
+    && normalized.recombobulated
+    && item.rarityBasis !== 'base';
+  if (legacyEffectiveSyncRarity || item.rarityBasis === 'effective') {
+    normalized.rarity = baseRarityFromDisplayed(normalized.rarity, true);
+  }
+  normalized.rarityBasis = 'base';
+  return normalized;
+}
+
 /** Repairs anything missing so a hand-edited or older backup cannot crash the UI. */
 export function normalizeSetups(raw) {
   const source = (raw && typeof raw === 'object') ? raw : {};
@@ -88,7 +103,7 @@ export function normalizeSetups(raw) {
       const slots = {};
       for (const slotId of SLOT_IDS) {
         const item = setup.slots?.[slotId];
-        slots[slotId] = item && typeof item === 'object' ? { ...createEmptyItem(), ...item } : null;
+        slots[slotId] = item && typeof item === 'object' ? normalizeSetupItem(item) : null;
       }
       return { id: String(setup.id), name: String(setup.name || setup.id), slots };
     });
@@ -142,15 +157,20 @@ function gemListFrom(gems) {
 /** Turns one decoded profile item into a setup item record. */
 export function itemRecordFromDecoded(decoded) {
   if (!decoded) return null;
+  const recombobulated = Number(decoded.recombobulated || 0) >= 1;
   return {
     ...createEmptyItem(),
     skyblockId: decoded.skyblockId ?? null,
     displayName: cleanName(decoded.displayName) || decoded.skyblockId || '',
-    rarity: decoded.rarity ?? null,
+    // The lore footer contains displayed rarity, i.e. already upgraded when a
+    // Recombobulator is present. Store the base rung so every caller applies
+    // that upgrade exactly once.
+    rarity: baseRarityFromDisplayed(decoded.rarity, recombobulated),
+    rarityBasis: 'base',
     reforge: decoded.reforge ?? null,
     enchantments: { ...(decoded.enchantments || {}) },
     gems: gemListFrom(decoded.gems),
-    recombobulated: Number(decoded.recombobulated || 0) >= 1,
+    recombobulated,
     skullTexture: decoded.skullTexture ?? null,
     source: ITEM_SOURCE.SYNC,
     itemUuid: decoded.itemUuid ?? null,

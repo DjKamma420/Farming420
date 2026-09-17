@@ -2,6 +2,7 @@ import {
   GREEN_THUMB_FORTUNE_PER_LEVEL_PER_UNIQUE_VISITOR,
   ROOTED_FORTUNE_BY_RARITY,
 } from '../research/equipment-fortune.js';
+import { effectiveSetupItemRarity } from './setup-rarity.js';
 
 const BLOSSOM_NAMES = Object.freeze([
   'blossom necklace',
@@ -33,7 +34,7 @@ export function blossomBaseFortune(pieces) {
 
 export function rootedFortuneForPiece(piece) {
   if (String(piece?.reforge || '').toLowerCase() !== 'rooted') return 0;
-  const rarity = clean(piece?.rarity).toUpperCase();
+  const rarity = effectiveSetupItemRarity(piece);
   return Number(ROOTED_FORTUNE_BY_RARITY[rarity] || 0);
 }
 

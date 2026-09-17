@@ -1,3 +1,5 @@
+import { effectiveSetupItemRarity } from './setup-rarity.js';
+
 export const MOSSY_FORTUNE_BY_RARITY = Object.freeze({
   COMMON: 5,
   UNCOMMON: 10,
@@ -72,7 +74,7 @@ export function helianthusFeastFortune(pieces) {
 
 export function mossyFortuneForPiece(piece) {
   if (String(piece?.reforge || '').toLowerCase() !== 'mossy') return 0;
-  const rarity = clean(piece?.rarity).toUpperCase();
+  const rarity = effectiveSetupItemRarity(piece);
   return Number(MOSSY_FORTUNE_BY_RARITY[rarity] || 0);
 }
 
@@ -130,7 +132,7 @@ export function perfectPeridotFortuneOnArmor(pieces) {
   return (pieces || []).reduce((sum, piece) => {
     const count = perfectPeridotCountOnPiece(piece);
     if (!count) return sum;
-    const rarity = clean(piece?.rarity).toUpperCase();
+    const rarity = effectiveSetupItemRarity(piece);
     return sum + count * Number(PERFECT_PERIDOT_FORTUNE_BY_RARITY[rarity] || 0);
   }, 0);
 }
