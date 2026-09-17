@@ -68,12 +68,13 @@ export function resolveUpgradeCost(store, itemId) {
     : { currentLevel: null, targetLevel: null, stepAware: false };
 
   if (recorded > 0 && record) {
+    const recordedMode = acquisitionMode === 'EARNED' ? 'EARNED' : 'BUYABLE';
     return {
       coins: recorded,
-      directCoinCost: acquisitionMode === 'EARNED' ? recorded : 0,
+      directCoinCost: recordedMode === 'EARNED' ? recorded : 0,
       origin: 'recorded',
-      unit: record.unit || 'coins',
-      acquisitionMode,
+      unit: recordedMode === 'EARNED' ? 'time' : 'coins',
+      acquisitionMode: recordedMode,
       reason: null,
       ...stepMeta,
     };
@@ -162,20 +163,16 @@ export function resolveUpgradeCost(store, itemId) {
   };
 }
 
-/** One line saying where a cost came from, or why there is none. */
+/** One stable line saying where a cost came from, or why there is none. */
 export function costOriginNote(cost) {
-  const target = cost?.stepAware && cost?.targetLevel
-    ? ` · next ${cost.targetLevel}`
-    : '';
   if (cost?.acquisitionMode === 'EARNED') {
-    if (cost.origin === 'recorded') return `EARNED — recorded direct coin cost; enter active grind time${target}`;
-    return `EARNED — enter active grind time${target}`;
+    if (cost.origin === 'recorded') return 'EARNED — recorded direct coin cost; enter active grind time';
+    return 'EARNED — enter active grind time';
   }
-  if (cost?.origin === 'recorded') return `your recorded price${target}`;
+  if (cost?.origin === 'recorded') return 'your recorded price';
   if (cost?.origin === 'research') {
-    if (cost.priceStatus === 'STALE_FALLBACK_SNAPSHOT') return `research snapshot, stale${target}`;
-    const confidence = cost.confidence ? `research, ${cost.confidence.toLowerCase()} confidence` : 'research snapshot';
-    return `${confidence}${target}`;
+    if (cost.priceStatus === 'STALE_FALLBACK_SNAPSHOT') return 'research snapshot, stale';
+    return cost.confidence ? `research, ${cost.confidence.toLowerCase()} confidence` : 'research snapshot';
   }
   return cost?.reason || 'no price recorded';
 }
