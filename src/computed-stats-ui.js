@@ -59,10 +59,34 @@ function replaceGlobalInput(raw) {
   const strip = input.closest('.input-strip');
   if (!strip) return;
   const missing = stats.incomplete.globalFortune.length;
+  const strength = raw.profile?.inputs?.strength;
+  const cow = stats.derived?.mooshroomCow;
+  const cowDetail = cow?.active
+    ? (cow.level === null
+      ? 'Mooshroom Cow active · level unavailable'
+      : `Mooshroom Cow Lv${cow.level}: +${shortValue(cow.baseFortune)} base FF${cow.rarity === 'LEGENDARY' ? ` +${shortValue(cow.strengthFortune)} from Strength` : ''}`)
+    : 'Used automatically when a Mooshroom Cow is the active pet.';
+
   strip.className = 'computed-output-panel';
   strip.innerHTML = `
-    <div><span class="eyebrow">Calculated total</span><strong>${shortValue(stats.globalFortune)} Farming Fortune</strong></div>
-    <p>This is derived from the sources configured in Farming420. It cannot be entered manually.${missing ? ` ${missing} configured source${missing === 1 ? '' : 's'} still need${missing === 1 ? 's' : ''} an exact total formula, so this value is marked incomplete.` : ''}</p>`;
+    <div class="computed-output-value"><span class="eyebrow">Calculated total</span><strong>${shortValue(stats.globalFortune)} Farming Fortune</strong></div>
+    <label class="computed-source-input">
+      <span>Strength · input</span>
+      <input id="strengthInput" type="number" min="0" step="1" inputmode="numeric" value="${strength === null || strength === undefined ? '' : Number(strength)}" placeholder="e.g. 850">
+      <small>${cowDetail}</small>
+    </label>
+    <p>This total is derived from the configured sources and cannot be entered manually.${missing ? ` ${missing} configured source${missing === 1 ? '' : 's'} still need${missing === 1 ? 's' : ''} an exact total formula or input, so this value is marked incomplete.` : ''}</p>`;
+
+  strip.querySelector('#strengthInput')?.addEventListener('change', event => {
+    const next = load();
+    next.profile ||= {};
+    next.profile.inputs ||= {};
+    const value = event.target.value;
+    if (value === '') delete next.profile.inputs.strength;
+    else next.profile.inputs.strength = Math.max(0, Number(value || 0));
+    save(next);
+    window.dispatchEvent(new Event('farming420:state-changed'));
+  });
 }
 
 function replaceCropInput(raw) {
@@ -95,9 +119,13 @@ function addAccountAudit(raw) {
   if (!heading.includes('Global Account Progression')) return;
   const stats = computeStatTotals(raw, raw.selectedCrop || 'melon');
   const unresolved = stats.incomplete.globalFortune;
+  const cow = stats.derived?.mooshroomCow;
+  const cowText = cow?.active
+    ? ` Active Mooshroom Cow contributes ${shortValue(cow.value)} known FF${cow.incomplete ? ' and is not fully resolved yet.' : '.'}`
+    : '';
   const panel = document.createElement('section');
   panel.className = 'computed-stat-audit';
-  panel.innerHTML = `<div><span class="eyebrow">Coverage check</span><h2>${shortValue(stats.globalFortune)} Global Farming Fortune</h2><p>${unresolved.length ? `${unresolved.length} configured source${unresolved.length === 1 ? '' : 's'} cannot yet be converted to an exact total. The displayed total is therefore a known minimum, not a guessed result.` : 'Every configured global source currently has a modeled total contribution.'}</p></div>`;
+  panel.innerHTML = `<div><span class="eyebrow">Coverage check</span><h2>${shortValue(stats.globalFortune)} Global Farming Fortune</h2><p>${unresolved.length ? `${unresolved.length} configured source${unresolved.length === 1 ? '' : 's'} cannot yet be converted to an exact total. The displayed total is therefore a known minimum, not a guessed result.` : 'Every configured global source currently has a modeled total contribution.'}${cowText}</p></div>`;
   const firstPanel = content.querySelector('.computed-output-panel');
   (firstPanel || content.querySelector('.page-head'))?.insertAdjacentElement('afterend', panel);
 }
