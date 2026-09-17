@@ -27,7 +27,15 @@ export const GARDEN_VACUUM_ITEMS = Object.freeze([
   Object.freeze({ id: 'INFINI_VACUUM_HOOVERIUS', name: 'InfiniVacuum™ Hooverius', rarity: 'LEGENDARY', peridotSlots: 2 }),
 ]);
 
-const RARITY_ORDER = Object.freeze(['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY', 'MYTHIC']);
+/**
+ * The rarity ladder, in order.
+ *
+ * Exported so there is one ladder in the app rather than one per feature.
+ * DIVINE and the SPECIAL rarities exist in the game but no farming tool or
+ * vacuum reaches them, and adding rungs an item cannot occupy would let a
+ * recombobulated Mythic claim a rarity it can never have.
+ */
+export const RARITY_ORDER = Object.freeze(['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY', 'MYTHIC']);
 
 export function farmingToolSkyblockId(toolName, tier = 1) {
   const chain = FARMING_TOOL_ITEM_IDS[toolName];
@@ -41,12 +49,25 @@ export function vacuumRecordById(id) {
   return GARDEN_VACUUM_ITEMS.find(item => item.id === normalized) || null;
 }
 
+/**
+ * A vacuum's rarity with its Recombobulator state applied.
+ *
+ * The step itself is `bumpRarity`, shared with the farming tools, so "a
+ * Recombobulator is one rung, clamped at the top" is stated once in the app.
+ */
 export function vacuumEffectiveRarity(id, recombobulated = false) {
   const record = vacuumRecordById(id);
   if (!record) return null;
-  const index = RARITY_ORDER.indexOf(record.rarity);
+  return bumpRarity(record.rarity, recombobulated ? 1 : 0);
+}
+
+/** One rung up the ladder, clamped at both ends. Null for an unknown rarity. */
+export function bumpRarity(rarity, steps = 1) {
+  const key = String(rarity || '').trim().toUpperCase();
+  const index = RARITY_ORDER.indexOf(key);
   if (index < 0) return null;
-  return RARITY_ORDER[Math.min(RARITY_ORDER.length - 1, index + (recombobulated ? 1 : 0))];
+  const next = Math.min(RARITY_ORDER.length - 1, Math.max(0, index + steps));
+  return RARITY_ORDER[next];
 }
 
 export function vacuumFallbackGemstoneSlotCount(id) {

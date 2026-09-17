@@ -420,3 +420,15 @@ hide of the parent is a second bug waiting for whoever adds content there next.
 Also: this was found by reading a screenshot, and named by walking
 `elementFromPoint` down the page. Neither the overlay audit nor any test saw
 it, because an empty box violates nothing.
+
+
+## Look for the rule before writing it again (0.30.0)
+
+I wrote a rarity ladder and a "Recombobulator is one rung" function, then found
+both already in `exact-farming-items.js`, written for the vacuums. Nothing had
+gone wrong yet -- but two tables stating the same game rule drift, and the one
+that drifts is the one nobody is looking at.
+
+Before adding a domain constant or rule, grep for the concept, not just the
+name I would have chosen. `RARITY_ORDER` was there all along; I searched for
+`RARITY_LADDER`.
