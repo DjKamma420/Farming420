@@ -10,6 +10,19 @@ const sw = readFileSync(new URL('../sw.js', import.meta.url), 'utf8');
 const listed = new Set([...sw.matchAll(/'(\.\/[^']+)'/g)].map(match => match[1]));
 
 /**
+ * The worker can legitimately precache nothing.
+ *
+ * A cache-first worker that had pinned browsers to an old build was replaced by
+ * one whose only job is to unregister itself and delete the caches it left
+ * behind. It ships no file list on purpose, and demanding one would fail this
+ * check on every run for as long as that worker is deployed.
+ */
+if (!sw.includes('APP_FILES')) {
+  console.log('sw.js precaches nothing: it exists only to remove the previous worker.');
+  process.exit(0);
+}
+
+/**
  * Generated asset trees that are deliberately *not* precached.
  *
  * `assets/hypixel-pack/` is Hypixel's official resource pack, written by

@@ -86,3 +86,44 @@ Rule: the command the repo documents as "run the tests" must run everything CI
 runs. `npm test` now chains `test:node` and `test:python`, so local green and CI
 green mean the same thing. Before changing a script or a config file, check which
 workflow steps touch it rather than assuming one test runner covers the repo.
+
+## An observer writing into the subtree it watches (4th occurrence)
+
+`tool-presentation-ui.js` observed `#app` with `{childList: true, subtree: true}`
+and its callback wrote into that same subtree on every run:
+
+    goals.innerHTML = markup;      // every call, even when markup was identical
+    badge.textContent = label;     // every call
+
+`innerHTML` and `textContent` replace the child nodes even when the new value
+equals the old one. The observer cannot tell the difference: it reports a
+mutation, the callback runs again, it writes again. The page wedged within a
+second of the Tools page rendering, which reads to a user as "everything
+freezes as soon as I click".
+
+It hid on load because the function returns early unless the active page is
+Tools, so the first click was what started it.
+
+Rules:
+1. Never assign `innerHTML`/`textContent`/an attribute from an observer callback
+   without first comparing against the current value. Equal values must not be
+   written.
+2. Add the structural guard too: `disconnect()`, write, `takeRecords()`,
+   `observe()` again. Idempotence relies on every future writer remembering;
+   pausing does not.
+3. Coalescing with a `scheduled` flag plus `queueMicrotask` is **not** a fix for
+   this. It limits the loop to one callback per microtask; the loop still never
+   ends.
+
+This property is not checkable by pattern matching. Two attempts produced false
+alarms on correct code (writing into a not-yet-appended node; per-module marker
+names), so the family is covered by audit, not by a test. The audit of the other
+twelve observer modules: each either returns early on a marker, compares before
+writing, or records what it already painted.
+
+Also: a hotfix series that cuts modules out of `index.html` to isolate a fault
+has to be undone once the fault is found. This one left 39 of 56 modules
+unreferenced -- Settings, the API sync, the scanner and all item art among them.
+Bisect forward from the minimal core instead: add one module, run the click
+sweep, repeat. The ninth addition crashed the renderer and named the culprit,
+and the module the hotfixes had blamed passed cleanly at step eight.
