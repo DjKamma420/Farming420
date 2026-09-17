@@ -42,12 +42,16 @@ jobs:
                       assets/icon.svg \
                       AGENTS.md README.md \
                       docs/PRODUCT_SPEC.md docs/PROFILE_DATA_MATRIX.md docs/PROFILE_MODEL.md docs/MATH_MODEL.md docs/FINDING_VALUES.md \
-                      docs/VERIFIED_MECHANICS.md docs/FARMING_HISTORY.md; do
+                      docs/VERIFIED_MECHANICS.md docs/FARMING_HISTORY.md docs/RENDER_FREEZE_SAFETY.md \
+                      scripts/browser-startup-smoke.sh; do
             test -f "$file" || { echo "missing required file: $file"; exit 1; }
           done
 
       - name: Check the service worker caches every shipped app file
         run: node scripts/check-sw-manifest.js
+
+      - name: Browser startup smoke test
+        run: bash scripts/browser-startup-smoke.sh
 
       - name: Run tests
         run: npm test
