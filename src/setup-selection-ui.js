@@ -1,9 +1,19 @@
 import { DATA_SCHEMA_VERSION, STORAGE_KEY } from './config.js';
 import { rarityClass } from './item-editor.js';
-import { ITEM_SOURCE, SLOT_IDS, normalizeSetups } from './setups.js';
+import {
+  createEmptyItem,
+  ITEM_SOURCE,
+  SLOT_IDS,
+  normalizeSetups,
+} from './setups.js';
+import {
+  itemsForSlot,
+  loadItemCatalog,
+  readCachedCatalog,
+  slotHasOfficialCategory,
+} from './item-catalog.js';
 import {
   FARMING_PETS,
-  clampPetLevel,
   farmingPetById,
   petLevelBounds,
   petRarities,
@@ -32,6 +42,31 @@ const KNOWN_RARITY_CLASSES = Object.freeze([
   'rarity-unknown',
 ]);
 
+const REAPPLY_CLICK_SELECTOR = [
+  '[data-page="setups"]',
+  '[data-slot]',
+  '[data-setup]',
+  '[data-setup-add]',
+  '[data-setup-remove]',
+  '[data-setup-prefill]',
+  '[data-slot-clear]',
+].join(',');
+
+const REAPPLY_CHANGE_SELECTOR = [
+  '#setupName',
+  '[data-slot-item]',
+  '[data-slot-reforge]',
+  '[data-slot-recomb]',
+  '[data-ench-toggle]',
+  '[data-ench-select]',
+  '[data-gem-value]',
+  '[data-gem-new]',
+  '[data-closed-item-select]',
+  '[data-farming-pet-select]',
+  '[data-farming-pet-rarity]',
+  '[data-farming-pet-level]',
+].join(',');
+
 function normalizedRarity(value) {
   return String(value || '').trim().toUpperCase().replace(/_/g, ' ') || null;
 }
@@ -43,11 +78,7 @@ export function effectiveItemRarity(item) {
   return RARITY_UPGRADE[base] || base;
 }
 
-/**
- * Observed DOM must only be mutated when the value actually changes.
- * Unconditional textContent writes inside a MutationObserver callback can
- * create an endless childList -> observer -> childList microtask loop.
- */
+/** Idempotent DOM write used by rarity presentation. */
 export function setTextIfChanged(node, value) {
   if (!node) return false;
   const next = String(value ?? '');
@@ -94,13 +125,13 @@ function activeSetupFromStorage() {
   return currentSetupRecord(state).setup;
 }
 
-function replacePet(mutator) {
+function replaceSlot(slotId, mutator) {
   const state = readState();
   if (!state) return false;
   const { setup } = currentSetupRecord(state);
   if (!setup) return false;
   setup.slots ||= {};
-  setup.slots.pet = mutator(setup.slots.pet || null);
+  setup.slots[slotId] = mutator(setup.slots[slotId] || null);
   return writeState(state);
 }
 
@@ -117,8 +148,8 @@ function element(tag, attrs = {}, text = null) {
   return node;
 }
 
-function field(labelText, control) {
-  const label = element('label', { className: 'settings-field' });
+function field(labelText, control, className = '') {
+  const label = element('label', { className: `settings-field ${className}`.trim() });
   label.append(element('span', {}, labelText), control);
   return label;
 }
@@ -130,12 +161,30 @@ function selectedPetId(item) {
   return byName?.id || '';
 }
 
+function buildLevelSelect(petId, currentLevel) {
+  const bounds = petLevelBounds(petId);
+  const select = element('select', {
+    dataset: { farmingPetLevel: '1' },
+    disabled: !bounds,
+  });
+  select.append(element('option', { value: '' }, bounds ? '— choose level —' : '— choose a pet first —'));
+  if (!bounds) return select;
+  for (let level = bounds.min; level <= bounds.max; level += 1) {
+    select.append(element('option', { value: String(level) }, `Level ${level}`));
+  }
+  const numeric = Number(currentLevel);
+  select.value = Number.isFinite(numeric) && numeric >= bounds.min && numeric <= bounds.max
+    ? String(Math.floor(numeric))
+    : '';
+  return select;
+}
+
 function buildPetPicker(editor, item) {
   if (editor.querySelector('[data-farming-pet-picker]')) return;
 
   editor.classList.add('sb-pet-editor');
   const picker = element('div', {
-    className: 'sb-pet-picker item-editor-grid',
+    className: 'sb-selection-picker sb-pet-picker item-editor-grid',
     dataset: { farmingPetPicker: '1' },
   });
 
@@ -149,76 +198,57 @@ function buildPetPicker(editor, item) {
   for (const pet of FARMING_PETS) petSelect.append(element('option', { value: pet.id }, pet.name));
   petSelect.value = currentId;
 
-  const raritySelect = element('select', { dataset: { farmingPetRarity: '1' } });
-  const fillRarities = (petId, current) => {
-    raritySelect.replaceChildren(element('option', { value: '' }, '— choose rarity —'));
-    const legal = [...petRarities(petId)];
-    const existing = normalizedRarity(current);
-    if (existing && !legal.includes(existing)) {
-      raritySelect.append(element('option', { value: existing }, `${existing} · current`));
-    }
-    for (const rarity of legal) raritySelect.append(element('option', { value: rarity }, rarity));
-    raritySelect.value = existing || '';
-    raritySelect.disabled = !petId;
-  };
-  fillRarities(currentId, item?.rarity);
+  const raritySelect = element('select', { dataset: { farmingPetRarity: '1' }, disabled: !currentId });
+  raritySelect.append(element('option', { value: '' }, '— choose rarity —'));
+  const legalRarities = [...petRarities(currentId)];
+  const currentRarity = normalizedRarity(item?.rarity);
+  if (currentRarity && !legalRarities.includes(currentRarity)) {
+    raritySelect.append(element('option', { value: currentRarity }, `${currentRarity} · current`));
+  }
+  for (const rarity of legalRarities) raritySelect.append(element('option', { value: rarity }, rarity));
+  raritySelect.value = currentRarity || '';
 
-  const bounds = petLevelBounds(currentId);
-  const levelInput = element('input', {
-    type: 'number',
-    dataset: { farmingPetLevel: '1' },
-    min: bounds?.min ?? 1,
-    max: bounds?.max ?? 100,
-    step: 1,
-    value: Number.isFinite(Number(item?.petLevel)) ? Number(item.petLevel) : '',
-    placeholder: bounds ? `${bounds.min}–${bounds.max}` : 'Choose a pet first',
-    disabled: !currentId,
-  });
+  const levelSelect = buildLevelSelect(currentId, item?.petLevel);
 
   petSelect.addEventListener('change', () => {
     const pet = farmingPetById(petSelect.value);
     if (!pet) {
-      replacePet(() => null);
+      replaceSlot('pet', () => null);
       return;
     }
-    replacePet(current => {
-      const legalRarities = pet.rarities;
+    replaceSlot('pet', current => {
       const oldRarity = normalizedRarity(current?.rarity);
-      const rarity = legalRarities.includes(oldRarity)
+      const rarity = pet.rarities.includes(oldRarity)
         ? oldRarity
-        : (legalRarities.length === 1 ? legalRarities[0] : null);
+        : (pet.rarities.length === 1 ? pet.rarities[0] : null);
       const currentLevel = Number(current?.petLevel);
       const petLevel = Number.isFinite(currentLevel)
         && currentLevel >= pet.levelMin && currentLevel <= pet.levelMax
         ? Math.floor(currentLevel)
         : null;
       return {
-        ...(current || {}),
+        ...createEmptyItem(),
         skyblockId: pet.id,
         displayName: pet.name,
         rarity,
         petLevel,
-        reforge: null,
-        enchantments: {},
-        gems: [],
-        recombobulated: false,
         source: ITEM_SOURCE.MANUAL,
       };
     });
   });
 
   raritySelect.addEventListener('change', () => {
-    replacePet(current => current ? {
+    replaceSlot('pet', current => current ? {
       ...current,
       rarity: normalizedRarity(raritySelect.value),
       source: ITEM_SOURCE.MANUAL,
     } : current);
   });
 
-  levelInput.addEventListener('change', () => {
-    replacePet(current => current ? {
+  levelSelect.addEventListener('change', () => {
+    replaceSlot('pet', current => current ? {
       ...current,
-      petLevel: levelInput.value === '' ? null : clampPetLevel(selectedPetId(current), levelInput.value),
+      petLevel: levelSelect.value === '' ? null : Number(levelSelect.value),
       source: ITEM_SOURCE.MANUAL,
     } : current);
   });
@@ -226,9 +256,97 @@ function buildPetPicker(editor, item) {
   picker.append(
     field('Pet', petSelect),
     field('Rarity', raritySelect),
-    field('Level', levelInput),
+    field('Level', levelSelect),
   );
   editor.querySelector('.item-editor-head')?.insertAdjacentElement('afterend', picker);
+}
+
+function currentCatalogItems(slotId) {
+  return itemsForSlot(readCachedCatalog()?.items || [], slotId);
+}
+
+function buildClosedItemPicker(editor, slotId, item) {
+  if (!slotHasOfficialCategory(slotId) || editor.querySelector(`[data-closed-item-select="${slotId}"]`)) return;
+
+  const oldControl = editor.querySelector(`[data-slot-item="${slotId}"]`)
+    || editor.querySelector(`[data-slot-name="${slotId}"]`);
+  const oldField = oldControl?.closest('.settings-field');
+  if (!oldField) return;
+
+  const options = currentCatalogItems(slotId);
+  const select = element('select', { dataset: { closedItemSelect: slotId } });
+  select.append(element('option', { value: '' }, '— none —'));
+
+  const currentId = String(item?.skyblockId || '').trim();
+  const knownCurrent = options.some(option => option.id === currentId);
+  if ((currentId || item?.displayName) && !knownCurrent) {
+    select.append(element('option', { value: '__current__' }, `${item?.displayName || currentId} · current`));
+  }
+  for (const option of options) select.append(element('option', { value: option.id }, option.name));
+  select.value = knownCurrent ? currentId : ((currentId || item?.displayName) ? '__current__' : '');
+
+  select.addEventListener('change', () => {
+    if (select.value === '__current__') return;
+    if (!select.value) {
+      replaceSlot(slotId, () => null);
+      return;
+    }
+    const chosen = currentCatalogItems(slotId).find(option => option.id === select.value);
+    if (!chosen) return;
+    replaceSlot(slotId, current => {
+      if (current?.skyblockId === chosen.id) {
+        return {
+          ...current,
+          displayName: chosen.name,
+          rarity: chosen.tier || current.rarity || null,
+          source: ITEM_SOURCE.MANUAL,
+        };
+      }
+      return {
+        ...createEmptyItem(),
+        skyblockId: chosen.id,
+        displayName: chosen.name,
+        rarity: chosen.tier || null,
+        source: ITEM_SOURCE.MANUAL,
+      };
+    });
+  });
+
+  const closedField = field(`Which item`, select, 'sb-closed-item-field');
+  if (!options.length) {
+    const warning = element('span', { className: 'find-warn sb-picker-status' },
+      item?.displayName
+        ? 'This saved item is not in the loaded official Farming item list. Choose none or wait for the catalog to refresh.'
+        : 'Loading the official Farming item list…');
+    closedField.append(warning);
+  }
+  oldField.replaceWith(closedField);
+
+  if (slotId === 'petItem') editor.classList.add('sb-pet-item-editor');
+}
+
+function closeReforgePicker(editor, slotId, item) {
+  const existing = editor.querySelector(`[data-slot-reforge="${slotId}"]`);
+  if (!existing || existing.matches('select')) return;
+  const listId = existing.getAttribute('list');
+  const datalist = listId ? editor.querySelector(`#${CSS.escape(listId)}`) : null;
+  const values = [...new Set([
+    String(item?.reforge || '').trim().toLowerCase(),
+    ...[...(datalist?.querySelectorAll('option') || [])].map(option => String(option.value || '').trim().toLowerCase()),
+  ].filter(Boolean))].sort();
+
+  const select = element('select', { dataset: { slotReforge: slotId, closedReforge: '1' } });
+  select.append(element('option', { value: '' }, '— no reforge —'));
+  for (const value of values) select.append(element('option', { value }, value.replace(/\b\w/g, letter => letter.toUpperCase())));
+  select.value = String(item?.reforge || '').trim().toLowerCase();
+  select.addEventListener('change', () => {
+    replaceSlot(slotId, current => current ? {
+      ...current,
+      reforge: select.value || null,
+      source: ITEM_SOURCE.MANUAL,
+    } : current);
+  });
+  existing.replaceWith(select);
 }
 
 /** Move the existing bound editor; never clone it, so its event handlers survive. */
@@ -271,13 +389,32 @@ function applyRarityPresentation(root, setup) {
   }
 }
 
+let catalogRequestStarted = false;
+function ensurePickerCatalog() {
+  if (catalogRequestStarted || (readCachedCatalog()?.items || []).length) return;
+  catalogRequestStarted = true;
+  loadItemCatalog().finally(() => schedule());
+}
+
 export function applySetupSelectionUi(root = document) {
   const app = root.querySelector?.('#app') || root;
   if (!app?.querySelector) return;
+  const editor = app.querySelector('[data-item-editor]');
+  if (!editor) return;
+
   const setup = activeSetupFromStorage();
+  const slotId = editor.dataset.itemEditor;
+  const item = setup?.slots?.[slotId] || null;
+
   dockSetupEditor(app);
-  const petEditor = app.querySelector('[data-item-editor="pet"]');
-  if (petEditor) buildPetPicker(petEditor, setup?.slots?.pet || null);
+  if (slotId === 'pet') {
+    buildPetPicker(editor, item);
+  } else {
+    buildClosedItemPicker(editor, slotId, item);
+    if (slotId === 'petItem') editor.classList.add('sb-pet-item-editor');
+    else closeReforgePicker(editor, slotId, item);
+    ensurePickerCatalog();
+  }
   applyRarityPresentation(app, setup);
 }
 
@@ -291,8 +428,18 @@ function schedule() {
   });
 }
 
+function matchesEventTarget(event, selector) {
+  const target = event.target;
+  return target instanceof Element && Boolean(target.closest(selector));
+}
+
 if (typeof document !== 'undefined') {
   schedule();
-  const app = document.getElementById('app');
-  if (app) new MutationObserver(schedule).observe(app, { childList: true, subtree: true });
+  document.addEventListener('click', event => {
+    if (matchesEventTarget(event, REAPPLY_CLICK_SELECTOR)) schedule();
+  });
+  document.addEventListener('change', event => {
+    if (matchesEventTarget(event, REAPPLY_CHANGE_SELECTOR)) schedule();
+  });
+  globalThis.addEventListener?.('farming420:state-changed', schedule);
 }
