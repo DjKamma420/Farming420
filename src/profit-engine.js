@@ -1,4 +1,4 @@
-export const PROFIT_ENGINE_VERSION = 1;
+export const PROFIT_ENGINE_VERSION = 2;
 
 export const DROP_SCALING = Object.freeze({
   NONE: 'none',
@@ -11,6 +11,7 @@ export const DROP_SCALING = Object.freeze({
 });
 
 function finite(value) {
+  if (value === null || value === undefined || value === '') return null;
   const number = Number(value);
   return Number.isFinite(number) ? number : null;
 }
@@ -30,7 +31,9 @@ function pathLabel(prefix, index, id) {
 }
 
 function addMissing(missing, path, reason) {
-  missing.push({ path, reason });
+  if (!missing.some(entry => entry.path === path && entry.reason === reason)) {
+    missing.push({ path, reason });
+  }
 }
 
 function requiredNonNegative(value, path, missing) {
@@ -39,18 +42,35 @@ function requiredNonNegative(value, path, missing) {
   return number;
 }
 
+function requiredStat(stats, key, path, missing) {
+  const number = nonNegative(stats?.[key]);
+  if (number == null) addMissing(missing, `stats.${key}`, `${path} requires this stat explicitly`);
+  return number;
+}
+
 function fortuneMultiplier(scaling, stats, path, missing) {
   switch (scaling) {
     case DROP_SCALING.NONE:
       return 1;
-    case DROP_SCALING.FARMING_FORTUNE:
-      return 1 + stats.farmingFortune / 100;
-    case DROP_SCALING.CROP_FORTUNE:
-      return 1 + stats.cropFortune / 100;
-    case DROP_SCALING.COMBINED_FORTUNE:
-      return 1 + (stats.farmingFortune + stats.cropFortune) / 100;
-    case DROP_SCALING.PEST_FORTUNE:
-      return 1 + stats.pestFortune / 100;
+    case DROP_SCALING.FARMING_FORTUNE: {
+      const farmingFortune = requiredStat(stats, 'farmingFortune', path, missing);
+      return farmingFortune == null ? null : 1 + farmingFortune / 100;
+    }
+    case DROP_SCALING.CROP_FORTUNE: {
+      const cropFortune = requiredStat(stats, 'cropFortune', path, missing);
+      return cropFortune == null ? null : 1 + cropFortune / 100;
+    }
+    case DROP_SCALING.COMBINED_FORTUNE: {
+      const farmingFortune = requiredStat(stats, 'farmingFortune', path, missing);
+      const cropFortune = requiredStat(stats, 'cropFortune', path, missing);
+      return farmingFortune == null || cropFortune == null
+        ? null
+        : 1 + (farmingFortune + cropFortune) / 100;
+    }
+    case DROP_SCALING.PEST_FORTUNE: {
+      const pestFortune = requiredStat(stats, 'pestFortune', path, missing);
+      return pestFortune == null ? null : 1 + pestFortune / 100;
+    }
     default:
       addMissing(missing, `${path}.scaling`, 'drop scaling must be explicit');
       return null;
@@ -61,10 +81,17 @@ function probabilityMultiplier(scaling, stats, path, missing) {
   switch (scaling) {
     case DROP_SCALING.NONE:
       return 1;
-    case DROP_SCALING.OVERBLOOM:
-      return 1 + stats.overbloom / 100;
-    case DROP_SCALING.PEST_OVERBLOOM:
-      return 1 + (stats.overbloom + stats.pestOverbloom) / 100;
+    case DROP_SCALING.OVERBLOOM: {
+      const overbloom = requiredStat(stats, 'overbloom', path, missing);
+      return overbloom == null ? null : 1 + overbloom / 100;
+    }
+    case DROP_SCALING.PEST_OVERBLOOM: {
+      const overbloom = requiredStat(stats, 'overbloom', path, missing);
+      const pestOverbloom = requiredStat(stats, 'pestOverbloom', path, missing);
+      return overbloom == null || pestOverbloom == null
+        ? null
+        : 1 + (overbloom + pestOverbloom) / 100;
+    }
     default:
       addMissing(missing, `${path}.scaling`, 'probability scaling must be none, overbloom, or pest-overbloom');
       return null;
@@ -98,11 +125,11 @@ function probabilityFor(drop, stats, path, missing, warnings) {
 
 function normalizeStats(input = {}) {
   return {
-    farmingFortune: nonNegative(input.farmingFortune) ?? 0,
-    cropFortune: nonNegative(input.cropFortune) ?? 0,
-    pestFortune: nonNegative(input.pestFortune) ?? 0,
-    overbloom: nonNegative(input.overbloom) ?? 0,
-    pestOverbloom: nonNegative(input.pestOverbloom) ?? 0,
+    farmingFortune: nonNegative(input.farmingFortune),
+    cropFortune: nonNegative(input.cropFortune),
+    pestFortune: nonNegative(input.pestFortune),
+    overbloom: nonNegative(input.overbloom),
+    pestOverbloom: nonNegative(input.pestOverbloom),
   };
 }
 
@@ -240,30 +267,31 @@ function pestDropStreams(drops, pestsPerHour, stats, missing, warnings) {
   for (const [index, drop] of (Array.isArray(drops) ? drops : []).entries()) {
     const path = pathLabel('pest.drops', index, drop?.id);
     const rollsPerPest = requiredNonNegative(drop?.rollsPerPest, `${path}.rollsPerPest`, missing);
-    const quantity = requiredNonNegative(drop?.expectedQuantity, `${path}.expectedQuantity`, missing);
+    const baseProbability = requiredNonNegative(drop?.baseProbability, `${path}.baseProbability`, missing);
+    const baseQuantity = requiredNonNegative(drop?.expectedQuantity, `${path}.expectedQuantity`, missing);
     const unitValue = requiredNonNegative(drop?.unitValueCoins, `${path}.unitValueCoins`, missing);
-    let probability = null;
+    if (baseProbability != null && baseProbability > 1) {
+      addMissing(missing, `${path}.baseProbability`, 'probability must be expressed as a decimal in [0, 1]');
+    }
 
+    let probability = baseProbability != null && baseProbability <= 1 ? baseProbability : null;
+    let quantityMultiplier = 1;
     if ([DROP_SCALING.OVERBLOOM, DROP_SCALING.PEST_OVERBLOOM, DROP_SCALING.NONE].includes(drop?.scaling)) {
       probability = probabilityFor(drop, stats, path, missing, warnings);
     } else {
-      const baseProbability = requiredNonNegative(drop?.baseProbability, `${path}.baseProbability`, missing);
-      const multiplier = fortuneMultiplier(drop?.scaling, stats, path, missing);
-      if (baseProbability != null && baseProbability <= 1 && multiplier != null) {
-        probability = baseProbability * multiplier;
-      } else if (baseProbability != null && baseProbability > 1) {
-        addMissing(missing, `${path}.baseProbability`, 'probability must be expressed as a decimal in [0, 1]');
-      }
+      quantityMultiplier = fortuneMultiplier(drop?.scaling, stats, path, missing);
     }
 
-    if (rollsPerPest == null || quantity == null || unitValue == null || probability == null) continue;
+    if (rollsPerPest == null || baseQuantity == null || unitValue == null || probability == null || quantityMultiplier == null) continue;
     const eligibleRollsPerHour = pestsPerHour * rollsPerPest;
-    const expectedUnitsPerHour = eligibleRollsPerHour * probability * quantity;
+    const expectedQuantityPerSuccessfulRoll = baseQuantity * quantityMultiplier;
+    const expectedUnitsPerHour = eligibleRollsPerHour * probability * expectedQuantityPerSuccessfulRoll;
     rows.push({
       id: drop?.id || `pest-${index}`,
       kind: 'pest-drop',
       scaling: drop.scaling,
       effectiveProbability: probability,
+      expectedQuantityPerSuccessfulRoll,
       eligibleRollsPerHour,
       expectedUnitsPerHour,
       coinsPerHour: expectedUnitsPerHour * unitValue,
