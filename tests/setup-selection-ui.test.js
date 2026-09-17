@@ -58,8 +58,8 @@ test('observed rarity text is idempotent so the MutationObserver cannot trigger 
   assert.doesNotMatch(source, /rarity\.textContent\s*=/);
 });
 
-test('index loads the setup selection module and stylesheet', () => {
+test('setup selection runtime patch stays out of the automatic app startup path', () => {
   const html = read('index.html');
-  assert.match(html, /src\/setup-selection-ui\.css/);
-  assert.match(html, /src\/setup-selection-ui\.js/);
+  assert.doesNotMatch(html, /src\/setup-selection-ui\.js/);
+  assert.doesNotMatch(html, /src\/setup-selection-ui\.css/);
 });

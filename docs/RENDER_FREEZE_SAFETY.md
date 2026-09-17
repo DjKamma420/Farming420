@@ -19,6 +19,7 @@ Any future freeze or runaway-render incident must be added to the incident log b
 7. **One writer per concern.** Avoid multiple enhancement modules continuously rewriting the same node or presentation field.
 8. **Repeated application is a required test case.** Every runtime enhancer that mutates DOM must have a regression test proving that applying the same state twice does not perform another write for values already correct.
 9. **Freeze fixes are release blockers.** If a new UI patch can produce an observer/render loop, revert or fix it before merging unrelated work.
+10. **Core boot must not depend on optional DOM enhancers.** Experimental or corrective UI patches must stay out of `index.html` until they have a browser-level startup smoke test. If a runtime enhancer causes a startup regression, remove it from the boot path first and re-integrate the feature directly into the owning render/bind code.
 
 ## Review checklist for DOM enhancer changes
 
@@ -31,6 +32,7 @@ Before merging a change that adds `MutationObserver`, `queueMicrotask`, `request
 - Is that no-op behavior covered by a test?
 - Could the same user action install duplicate listeners or observers after another render?
 - Does the code write storage or dispatch a render-causing event from anything other than a user action?
+- Can the app still reach its first `src/app.js` render if the enhancer is removed or fails?
 
 If any answer is unclear, the change is not ready to merge.
 
@@ -70,3 +72,17 @@ The existing `scheduled` boolean only coalesced mutations before one microtask. 
 **General lesson**
 
 A mutation observer is safe only when the DOM transform it runs converges to a stable no-op state. A scheduling/debounce flag is not sufficient protection against self-generated mutations.
+
+### 2026-09-17 — startup still unreliable after PR #91
+
+**Symptom**
+
+After the observer loop was fixed, the deployed app still did not reliably reach a usable startup state for the user.
+
+**Recovery action**
+
+The entire `setup-selection-ui.js` runtime enhancer and its stylesheet were removed from the automatic `index.html` startup path. The implementation remains source-controlled for reference/tests, but it is dormant in production.
+
+**Rule added**
+
+Restore availability first. A feature that needs a broad post-render DOM observer must not be re-enabled merely because unit tests are green. Rebuild the behavior in the owning `src/app.js` render/bind path and add a browser-level startup smoke test before putting it back into production boot.
