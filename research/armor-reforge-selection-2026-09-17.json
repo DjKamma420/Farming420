@@ -1,0 +1,182 @@
+{
+  "meta": {
+    "title": "Farming Armor Reforge Selection and Cost Matrix",
+    "as_of": "2026-09-17",
+    "target_reader": "AI/optimizer",
+    "status": "ACTIVE_LIVE_SELECTION_RULES_WITH_MARKET_SNAPSHOT",
+    "purpose": "Choose the armor reforge by farming objective instead of applying one global recommendation. Separates direct Farming Fortune from Bonus Pest Chance and Pest-driven expected value.",
+    "refresh_policy": "Refresh reforge-stone Bazaar prices before player-facing upgrade ranking. Reforge stats are mechanics data; market prices are dated fallbacks."
+  },
+  "core_rule": {
+    "statement": "There is no universal farming-armor reforge winner across all contexts.",
+    "normal_crop_axis": "Direct Farming Fortune favors Mossy over Bustling/Mantid at equal item rarity.",
+    "pest_axis": "Mantid trades direct Farming Fortune for Bonus Pest Chance and a temporary kill-stacking Bonus Pest Chance effect.",
+    "optimizer": "Score the complete active armor set in the selected context using before/after profit or the context metric. Never rank Mossy vs Mantid from Farming Fortune alone when Pest EV is active."
+  },
+  "reforges": [
+    {
+      "name": "Bustling",
+      "stone": "SkyMart Brochure",
+      "item_id": "SKYMART_BROCHURE",
+      "stats_by_rarity": {
+        "COMMON": {"farming_fortune": 1},
+        "UNCOMMON": {"farming_fortune": 2},
+        "RARE": {"farming_fortune": 4},
+        "EPIC": {"farming_fortune": 6},
+        "LEGENDARY": {"farming_fortune": 8},
+        "MYTHIC": {"farming_fortune": 10}
+      },
+      "market_snapshot": {
+        "instant_sell_coins": 111450,
+        "instant_buy_coins": 310000,
+        "spread_pct_approx": 178.1,
+        "price_confidence": "WIDE_SPREAD_REFRESH_REQUIRED",
+        "source": "https://skyblock.finance/items/SKYMART_BROCHURE"
+      },
+      "role": "budget_direct_farming_fortune",
+      "selection_rule": "Use as the low-cost direct-Farming-Fortune stepping stone when Mossy is not yet economical. Do not keep it merely because it is cheap if the marginal gain from Mossy has acceptable payback.",
+      "source_stats": "https://hypixel-skyblock.fandom.com/wiki/Reforging/Armor_(Advanced)"
+    },
+    {
+      "name": "Mossy",
+      "stone": "Overgrown Grass",
+      "item_id": "OVERGROWN_GRASS",
+      "stats_by_rarity": {
+        "COMMON": {"farming_fortune": 5, "speed": 3},
+        "UNCOMMON": {"farming_fortune": 10, "speed": 3},
+        "RARE": {"farming_fortune": 15, "speed": 5},
+        "EPIC": {"farming_fortune": 20, "speed": 5},
+        "LEGENDARY": {"farming_fortune": 25, "speed": 7},
+        "MYTHIC": {"farming_fortune": 30, "speed": 7}
+      },
+      "market_snapshot": {
+        "instant_sell_coins": 9780000,
+        "instant_buy_coins": 10750000,
+        "spread_pct_approx": 10.0,
+        "source": "https://skyblock.finance/items/OVERGROWN_GRASS"
+      },
+      "role": "maximum_direct_farming_fortune",
+      "selection_rule": "Default direct-output reforge for an armor piece when maximizing crop Farming Fortune is the relevant objective and the price/payback is justified.",
+      "mythic_vs_legendary_recomb_delta": {
+        "farming_fortune_per_piece": 5,
+        "note": "Recombobulation can therefore add reforge value in addition to other rarity-scaled effects; price the exact item before ranking."
+      },
+      "source_stats": "https://hypixel-skyblock.fandom.com/wiki/Reforging/Armor_(Advanced)"
+    },
+    {
+      "name": "Mantid",
+      "stone": "Mantid Claw",
+      "item_id": "MANTID_CLAW",
+      "stats_by_rarity": {
+        "COMMON": {"bonus_pest_chance": 0.5, "farming_fortune": 2},
+        "UNCOMMON": {"bonus_pest_chance": 0.5, "farming_fortune": 4},
+        "RARE": {"bonus_pest_chance": 1.0, "farming_fortune": 6},
+        "EPIC": {"bonus_pest_chance": 1.5, "farming_fortune": 8},
+        "LEGENDARY": {"bonus_pest_chance": 2.0, "farming_fortune": 10},
+        "MYTHIC": {"bonus_pest_chance": 2.5, "farming_fortune": 12}
+      },
+      "reforge_bonus": {
+        "name": "Mantid Bonus",
+        "bonus_pest_chance_per_pest_killed": 0.25,
+        "duration_minutes": 10,
+        "cap_bonus_pest_chance_per_reforged_piece": 5,
+        "four_piece_theoretical_dynamic_cap": 20,
+        "four_piece_cap_source_note": "Current Bonus Pest Chance reference lists Mantid Claw +10 base BPC and 20 recent Pest kills +20 BPC for a full four-piece setup."
+      },
+      "market_snapshot": {
+        "instant_sell_coins": 64470,
+        "instant_buy_coins": 79310,
+        "npc_sell_coins": 75000,
+        "spread_pct_approx": 23.0,
+        "source": "https://skyblock.finance/items/MANTID_CLAW"
+      },
+      "role": "pest_spawn_and_hybrid_economics",
+      "selection_rule": "Use when Bonus Pest Chance / Pest spawning / Pest EV is the objective or when a full profit model shows the extra Pest stream outweighs the direct Farming Fortune lost versus Mossy.",
+      "source_stats": "https://hypixel-skyblock.fandom.com/wiki/Mantid_Claw"
+    }
+  ],
+  "mythic_piece_comparison": {
+    "Bustling": {"farming_fortune": 10, "bonus_pest_chance": 0},
+    "Mossy": {"farming_fortune": 30, "bonus_pest_chance": 0, "speed": 7},
+    "Mantid": {"farming_fortune": 12, "base_bonus_pest_chance": 2.5, "dynamic_bonus_pest_chance_cap_per_piece": 5}
+  },
+  "mythic_four_piece_comparison": {
+    "Bustling": {"farming_fortune": 40},
+    "Mossy": {"farming_fortune": 120, "speed": 28},
+    "Mantid": {"farming_fortune": 48, "base_bonus_pest_chance": 10, "dynamic_bonus_pest_chance_cap": 20, "direct_farming_fortune_difference_vs_mossy": -72}
+  },
+  "selection_matrix": [
+    {
+      "context": "early_or_budget_direct_farming",
+      "preferred_family": "Bustling",
+      "reason": "Direct Farming Fortune at a far lower acquisition cost than Overgrown Grass.",
+      "transition_rule": "Replace piece-by-piece with Mossy when the exact marginal profit/payback justifies it."
+    },
+    {
+      "context": "normal_crop_max_direct_output",
+      "preferred_family": "Mossy",
+      "reason": "Highest direct Farming Fortune of the three Farming-focused armor reforges at the same rarity.",
+      "metric": "crop output / net coins per hour"
+    },
+    {
+      "context": "jacob_contest_when_raw_crop_collection_is_the_target",
+      "preferred_family": "Mossy",
+      "reason": "Direct Farming Fortune is the relevant armor-reforge contribution unless a contest-specific Pest mechanic is explicitly part of the measured strategy.",
+      "metric": "contest collection/score, not generic coins"
+    },
+    {
+      "context": "pest_spawn_or_pest_ev",
+      "preferred_family": "Mantid",
+      "reason": "Adds Bonus Pest Chance plus Mantid Bonus. Direct Farming Fortune is lower than Mossy, so the calculator must include Pest EV and Pest handling time.",
+      "metric": "net coins/hour or Pest-specific objective"
+    },
+    {
+      "context": "hybrid_farming_and_pests",
+      "preferred_family": "MODEL_REQUIRED",
+      "reason": "Mixed Mossy/Mantid and full Mantid/Mossy setups depend on live Pest value, Bonus Pest Chance, active Mantid stacks, crop value, Pest handling downtime, armor rarity and the player's actual set.",
+      "rule": "Evaluate all legal candidate mixes; do not encode an internet 'meta' as a universal winner."
+    }
+  ],
+  "community_strategy_notes": [
+    {
+      "claim": "Recent community discussion commonly separates a high-Farming-Fortune Mossy set from a Pest/BPC Mantid set, and some players use mixed Mossy/Mantid setups.",
+      "status": "COMMUNITY_STRATEGY_NOT_OFFICIAL_RULE",
+      "source": "https://hypixel.net/threads/some-changes-to-mantid-claw-overgrown-grass.6059881/",
+      "optimizer_use": "Generate candidate setups only. Final ranking must come from the calculator."
+    }
+  ],
+  "anti_patterns": [
+    "Do not recommend Ancient for pure Farming solely because Mooshroom Cow converts Strength; current Farming reforges provide much larger direct relevant stats in normal Farming use.",
+    "Do not call Bustling obsolete for every player; its acquisition cost makes it a valid budget progression state.",
+    "Do not call Mossy universally best when Pest EV is part of the objective.",
+    "Do not multiply the Mantid dynamic bonus without respecting per-piece cap, 10-minute kill window and the player's actual number of Mantid-reforged pieces.",
+    "Do not sum Farm-set and Pest-set armor simultaneously."
+  ],
+  "calculator_integration": {
+    "candidate_unit": "one concrete armor piece at its actual rarity and active set mode",
+    "required_state": [
+      "armor item and rarity",
+      "current reforge",
+      "target reforge",
+      "number of Mantid-reforged active pieces",
+      "recent Pest kills / Mantid stack state when relevant",
+      "active Farm/Pest context",
+      "live stone price",
+      "application cost if material",
+      "current crop revenue model",
+      "Pest EV and Pest handling time for Pest/hybrid contexts"
+    ],
+    "direct_delta_formula": "new_piece_stats - old_piece_stats",
+    "economic_rule": "Score the whole before/after active setup; use net coins/hour for economic contexts and contest collection/score for Jacob contexts.",
+    "unknown_rule": "If Pest EV, Mantid stack state, live price or relevant crop model is unknown, mark the hybrid comparison incomplete instead of silently choosing Mossy or Mantid."
+  },
+  "sources": [
+    {"url": "https://hypixel-skyblock.fandom.com/wiki/Reforging/Armor_(Advanced)", "use": "Bustling and Mossy rarity-scaled stats"},
+    {"url": "https://hypixel-skyblock.fandom.com/wiki/Mantid_Claw", "use": "Mantid rarity-scaled stats, application cost table and Mantid Bonus"},
+    {"url": "https://hypixel-skyblock.fandom.com/wiki/Bonus_Pest_Chance", "use": "Full-set Mantid base and dynamic BPC reference"},
+    {"url": "https://skyblock.finance/items/SKYMART_BROCHURE", "use": "SkyMart Brochure market snapshot"},
+    {"url": "https://skyblock.finance/items/OVERGROWN_GRASS", "use": "Overgrown Grass market snapshot"},
+    {"url": "https://skyblock.finance/items/MANTID_CLAW", "use": "Mantid Claw market snapshot"},
+    {"url": "https://hypixel.net/threads/some-changes-to-mantid-claw-overgrown-grass.6059881/", "use": "Recent community context showing the Mossy-vs-Mantid normal-farming/Pest tradeoff"}
+  ]
+}
