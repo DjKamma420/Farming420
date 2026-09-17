@@ -1437,3 +1437,39 @@ than the clipping. It fits on one line now.
 The bottom-bar flattening added in 0.27.1 duplicated rules already shipped in
 `mobile-taskbar.css`, which loads after `skyblock-redesign.css` and therefore
 won regardless. Mine never applied and is gone.
+
+
+## 0.27.3 -- nothing left wearing a letter
+
+Correction to 0.27.2. Those notes said the Recombobulator "has no texture in
+this pack" and that four nav pages had "no honest match". Both statements
+answered the wrong question.
+
+The Recombobulator does have art: `item-art-coverage.js` already maps it to
+`RECOMBOBULATOR_3000`, and the reforges to `GOLDEN_BALL`, `BLESSED_FRUIT`,
+`LARGE_WALNUT`, `HASHBROWN` and `OVERPRICED_DRINK`. That art comes from the
+official SkyBlock item resource, not from the resource pack -- many SkyBlock
+items are player heads and have no pack texture at all. Searching the pack and
+concluding "it does not exist" was looking in one drawer and declaring the
+house empty.
+
+The four letter-only nav pages were the same mistake in a smaller form. They
+are app pages, not SkyBlock items, so no literal match exists -- but an item
+that *means* the same thing does:
+
+- Mechanics: `plant_diagnostics_tool`, a clipboard for reading how something
+  behaves.
+- Coming Soon: `greenhouse_blueprint`, a plan for what is not built yet.
+- What to enter: `builders_ruler`, for the figures you measure and type in.
+- Guide 0-60: `box_of_seeds`, for starting out.
+
+All 13 nav entries carry art now, and `tests/nav-art.test.js` fails if any page
+in `NAV` would fall back to a letter, rather than allowing a documented
+exception list.
+
+### Not verifiable here
+
+The reforge and gear-slot placeholders still show letters in this sandbox
+because `api.hypixel.net` is blocked by the egress proxy, so the official item
+catalog cannot load. They belong to the coverage-art system and are very likely
+fine in a real browser; nothing about them is claimed either way.

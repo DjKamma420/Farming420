@@ -330,3 +330,21 @@ Two rules from this:
 2. Exclude known-good cases explicitly. `.sr-only` text is clipped on purpose,
    and a finding that is always wrong teaches people to skim past the ones that
    are right.
+
+
+## "It does not exist" is a claim about where you looked (0.27.3)
+
+I searched the shipped resource pack for a Recombobulator texture, found none,
+and reported that it has no design. It has one -- from the official SkyBlock
+item resource, which is a different source that the app already uses, and where
+player-head items live precisely because they have no pack texture.
+
+The pack was one of at least three art sources in this codebase. Searching one
+and reporting absence reads as a finding but is only a statement about the
+drawer I opened. Before saying something does not exist, enumerate the sources
+that could hold it and say which ones were checked.
+
+The same error in miniature: four nav pages were left as bare letters because
+no pack item is literally called "Mechanics" or "Coming Soon". An item that
+*means* the thing was available the whole time -- a diagnostics tool, a
+blueprint. "No literal match" is not "no match".

@@ -16,8 +16,8 @@ const manifest = JSON.parse(
 );
 const source = readFileSync(new URL('../src/skyblock-redesign.js', import.meta.url), 'utf8');
 
-/** Pages that intentionally show a letter: the pack has no honest match. */
-const LETTER_ONLY_PAGES = new Set(['guide', 'setup', 'research', 'coming']);
+/** Every nav page carries art now; nothing is allowed to fall back to a letter. */
+const LETTER_ONLY_PAGES = new Set();
 
 function navArtTable() {
   const block = source.match(/const NAV_ART = Object\.freeze\(\{([\s\S]*?)\n\}\);/);
@@ -51,12 +51,15 @@ test('every nav art entry resolves to at least one real icon', () => {
   assert.deepEqual(letterOnly, [], `these pages would fall back to a letter: ${letterOnly.join(', ')}`);
 });
 
-test('pages with no pack art are left out of the table on purpose', () => {
+test('every nav page in app.js has art', () => {
   const table = navArtTable();
-  for (const page of LETTER_ONLY_PAGES) {
-    assert.ok(
-      !(page in table),
-      `${page} has no fitting pack art; listing it invites a name that resolves to nothing`,
-    );
-  }
+  const nav = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const block = nav.match(/const NAV = \[([\s\S]*?)\n\];/);
+  assert.ok(block, 'NAV table not found in app.js');
+  const pages = [...block[1].matchAll(/\[\s*'([\w-]+)'/g)].map(m => m[1]);
+  const bare = pages.filter(page => {
+    if (LETTER_ONLY_PAGES.has(page)) return false;
+    return !(table[page] || []).some(key => key in manifest.items);
+  });
+  assert.deepEqual(bare, [], `these nav entries would show a bare letter: ${bare.join(', ')}`);
 });

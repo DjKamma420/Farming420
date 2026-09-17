@@ -31,9 +31,11 @@ const GOALS = Object.freeze([
  * twelve of sixteen entries ended up as letters (`garden`, `personal_bank`,
  * `wardrobe`, `calculator` and friends are not in the pack at all). The pack
  * ships SkyBlock's own items only -- there is no book, paper, clock or armour
- * texture in it -- so the four pages with no honest match keep the letter
- * rather than wear a misleading icon. `tests/nav-art.test.js` fails if a key
- * stops resolving.
+ * texture in it -- so the pages without a literal match take the SkyBlock item
+ * that means the same thing: a blueprint for what is not built yet, a
+ * diagnostics tool for mechanics, a ruler for the figures you type in, a box of
+ * seeds for starting out. Every page has art; none falls back to a letter.
+ * `tests/nav-art.test.js` fails if a key stops resolving.
  */
 const NAV_ART = Object.freeze({
   dashboard: ['garden_scythe'],
@@ -48,8 +50,10 @@ const NAV_ART = Object.freeze({
   buffs: ['goblin_omelette'],
   pests: ['pest_trap', 'sprayonator'],
   planner: ['wishing_compass'],
-  // No fitting art in the pack: guide, setup, research, coming. They keep the
-  // letter badge on purpose -- see LETTER_ONLY_PAGES in the test.
+  guide: ['box_of_seeds'],
+  setup: ['builders_ruler'],
+  research: ['plant_diagnostics_tool'],
+  coming: ['greenhouse_blueprint'],
 });
 
 /**
