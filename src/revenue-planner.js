@@ -2,6 +2,7 @@ import { CROPS, UPGRADES } from './data.js';
 import { STORAGE_KEY } from './config.js';
 import { ACTIVITY_MODE, activityLabel, activityModeForState } from './activity-mode.js';
 import { evaluateUpgrade, rankEvaluatedUpgrades } from './revenue-ranking.js';
+import { CROP_PRICE_STATUS, liveCropPriceNote, liveCropUnitPrice } from './live-crop-price.js';
 import { MEASURED_FEAST_KEY, MEASURED_FIELDS, describeMissing, measuredBaseline } from './measured-baseline.js';
 import { setTextIfChanged } from './set-text.js';
 import { costOriginNote, resolveUpgradeCost } from './upgrade-cost-resolution.js';
@@ -226,6 +227,26 @@ function fortuneUsedText(context) {
   return `Multiplied by the ${(farming + crop).toLocaleString('en-US')} Fortune your profile works out (${farming.toLocaleString('en-US')} Farming + ${crop.toLocaleString('en-US')} Crop).`;
 }
 
+/**
+ * The crop price the player does not have to look up.
+ *
+ * The research's own runtime rule is that fresh Bazaar data overrides a
+ * snapshot wherever a Bazaar product exists, and `live-prices.js` could do that
+ * all along with nothing calling it. A live quote fills the field's placeholder
+ * and is used when the player has typed nothing; anything they type wins,
+ * because they may be selling somewhere else or at a different order depth.
+ */
+function livePriceFor(raw) {
+  return liveCropUnitPrice(selectedCropId(raw));
+}
+
+/** The measurements, with a live crop price standing in for an empty field. */
+function measuredWithLivePrice(values, live) {
+  if (values.coinsPerUnit !== undefined && values.coinsPerUnit !== '') return values;
+  if (live?.status !== CROP_PRICE_STATUS.LIVE) return values;
+  return { ...values, coinsPerUnit: live.coinsPerUnit };
+}
+
 function measuredResultText(result) {
   if (result.normalCropCoinsPerHour == null) return '\u2014';
   const normal = `${compactCoins(result.normalCropCoinsPerHour)}/h`;
@@ -282,7 +303,8 @@ function measuredMissingText(result, caveats = { unmodelled: [], zeroFortune: fa
  */
 function measuredPanel(raw, context) {
   const values = measured(raw);
-  const result = measuredBaseline(values, measuredStats(context), selectedCropId(raw));
+  const live = livePriceFor(raw);
+  const result = measuredBaseline(measuredWithLivePrice(values, live), measuredStats(context), selectedCropId(raw));
   const caveats = fortuneCaveats(context);
   return `<details class="revenue-measured">
     <summary>
@@ -292,11 +314,16 @@ function measuredPanel(raw, context) {
       </div>
     </summary>
     <div class="revenue-measured-grid">
-      ${MEASURED_FIELDS.map(field => `<label class="${field.optional ? 'revenue-measured-optional' : ''}">
+      ${MEASURED_FIELDS.map(field => {
+        const isPrice = field.key === 'coinsPerUnit';
+        const priced = isPrice && live.status === CROP_PRICE_STATUS.LIVE;
+        return `<label class="${field.optional ? 'revenue-measured-optional' : ''}">
         <span>${esc(field.label)}</span>
-        <input data-measured="${esc(field.key)}" type="number" min="0" step="${field.step}"${field.max ? ` max="${field.max}"` : ''} value="${values[field.key] === undefined ? '' : esc(values[field.key])}">
-        <small>${esc(field.hint)}</small>
-      </label>`).join('')}
+        <input data-measured="${esc(field.key)}" type="number" min="0" step="${field.step}"${field.max ? ` max="${field.max}"` : ''}
+          value="${values[field.key] === undefined ? '' : esc(values[field.key])}"${priced ? ` placeholder="${esc(live.coinsPerUnit)}"` : ''}>
+        <small>${isPrice ? esc(liveCropPriceNote(live)) : esc(field.hint)}</small>
+      </label>`;
+      }).join('')}
       <label class="revenue-measured-optional revenue-measured-toggle">
         <span>Harvest Feast running</span>
         <input data-measured-feast type="checkbox"${values[MEASURED_FEAST_KEY] ? ' checked' : ''}>
@@ -455,7 +482,11 @@ function enhancePlanner() {
     save(next);
 
     const liveContext = plannerActivityContext(next, selectedCropId(next));
-    const result = measuredBaseline(values, measuredStats(liveContext), selectedCropId(next));
+    const result = measuredBaseline(
+      measuredWithLivePrice(values, livePriceFor(next)),
+      measuredStats(liveContext),
+      selectedCropId(next),
+    );
     setTextIfChanged(panel.querySelector('[data-measured-out]'), measuredResultText(result));
     setTextIfChanged(
       panel.querySelector('[data-measured-note]'),
@@ -472,6 +503,8 @@ function enhancePlanner() {
   // A rare-crop stream that was never measured leaves that baseline alone
   // rather than overwriting it with a zero.
   panel.querySelector('[data-measured-apply]')?.addEventListener('click', () => {
+    // The same `refreshMeasured` the panel displays, so a live-filled price is
+    // applied exactly as it was shown rather than recomputed differently here.
     const result = refreshMeasured();
     if (result.normalCropCoinsPerHour == null) return;
     const next = load();

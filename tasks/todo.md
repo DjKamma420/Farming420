@@ -2144,3 +2144,64 @@ shrinking field by field, 1.84m/h at no Fortune with the warning, 6.54m/h at
 256 Fortune without it, the rare stream appearing only once both its fields are
 filled, "Use as baseline" writing 1,836,000 and 275,400,000 into the planner's
 own inputs, and the measurements surviving a reload.
+
+## 0.38.0 -- live Bazaar prices
+
+- [x] Keep one fresh Bazaar snapshot
+- [x] Fill the crop price from it, without overriding the player
+- [x] Never show a stale number as current
+
+### Review
+
+`src/live-prices.js` was a complete Bazaar model -- payload normalization,
+freshness windows, buy-order vs sell-offer sides, NPC fallback, caching -- and
+nothing in the app called it. Meanwhile the measured panel asked the player to
+look up their own crop price, and the cost research says outright what should
+happen instead:
+
+> "Fresh Hypixel Bazaar data must override snapshot prices whenever a Bazaar
+> product exists." -- `runtimePriceRule`
+
+`src/live-price-refresh.js` keeps one snapshot fresh and owns no DOM.
+`src/live-crop-price.js` turns it into a price for the selected crop, or a
+stated reason there is none.
+
+**The product id is data, not a guess.** `ACTIVE_CROP_MODELS` already carries an
+`itemId` per crop. Deriving it from the crop name would work for `MELON` and
+fail for `CARROT_ITEM`, which is exactly why it is looked up. A test asserts
+there is no `toUpperCase()` in the module.
+
+**`RED_MUSHROOM/BROWN_MUSHROOM` has no single price.** A Garden mushroom layout
+can break either, so that crop reports no-product rather than resolving to
+whichever half comes first.
+
+**The side matters.** Selling crops means the buy-order side, which is what the
+player receives. Using the sell-offer side would have overstated every farm in
+the app by the spread.
+
+### What it will not do
+
+- **Show a stale number as current.** `bazaarSnapshotFresh` owns that decision,
+  and an hour-old snapshot resolves to no quote rather than to a price.
+- **Override the player.** A live quote fills the field's *placeholder* and is
+  used only while the field is empty. Anything typed wins, because the player
+  may be selling elsewhere or at a different order depth. Verified both ways in
+  a browser: 6.14m/h from the live 5.9, 103m/h after typing 99, and back to
+  6.14m/h once cleared.
+- **Render on a timer.** A snapshot is announced only when a genuinely new one
+  arrives. Firing on a cache hit would be a render every five minutes forever,
+  which is rule 5 of the freeze doc -- a state-changing event from something
+  other than a user action.
+- **Fail loudly.** `api.hypixel.net` is unreachable from this environment, so
+  the failure path is the one that runs here: no throw, no retry storm, no
+  render, and a field hint that says what to do instead.
+
+One round lost to my own test harness: a synchronous `finally` around an async
+body restored the fake `localStorage` before the awaits inside it ran, so every
+cache read saw no storage at all.
+
+### Verified
+
+774 node + 7 python tests, overlay audit at 0 findings, planner sweep clean on
+all three profiles, the startup smoke test passing on Chromium 141, and the
+panel driven in a browser with a seeded snapshot and without one.
