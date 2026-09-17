@@ -3,6 +3,7 @@ import { STORAGE_KEY } from './config.js';
 import { toolKeyForCropId } from './migrations.js';
 import { evaluateUpgrade, rankEvaluatedUpgrades } from './revenue-ranking.js';
 import { costOriginNote, resolveUpgradeCost } from './upgrade-cost-resolution.js';
+import { INTERNET_FARMING_TIME_VALUE_COINS_PER_HOUR } from './upgrade-economics.js';
 
 function esc(value = '') {
   return String(value).replace(/[&<>'"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#039;', '"':'&quot;' }[c]));
@@ -30,6 +31,7 @@ function ensureProfile(raw) {
   raw.profile.levels ||= {};
   raw.profile.owned ||= {};
   raw.profile.costs ||= {};
+  raw.profile.grindHours ||= {};
   raw.profile.manualGain ||= {};
   raw.profile.cropFortune ||= {};
   raw.profile.cropProgress ||= {};
@@ -38,23 +40,28 @@ function ensureProfile(raw) {
   return raw.profile;
 }
 
+function ensureBucketShape(bucket) {
+  bucket.levels ||= {};
+  bucket.owned ||= {};
+  bucket.costs ||= {};
+  bucket.grindHours ||= {};
+  bucket.manualGain ||= {};
+  return bucket;
+}
+
 function progressBucket(raw, item) {
   const profile = ensureProfile(raw);
   const cropId = selectedCropId(raw);
   if (item.section === 'crops') {
     profile.cropProgress[cropId] ||= {};
-    const bucket = profile.cropProgress[cropId];
-    bucket.levels ||= {}; bucket.owned ||= {}; bucket.costs ||= {}; bucket.manualGain ||= {};
-    return bucket;
+    return ensureBucketShape(profile.cropProgress[cropId]);
   }
   if (item.section === 'tools') {
     const key = toolKeyForCropId(cropId);
     profile.toolProgress[key] ||= {};
-    const bucket = profile.toolProgress[key];
-    bucket.levels ||= {}; bucket.owned ||= {}; bucket.costs ||= {}; bucket.manualGain ||= {};
-    return bucket;
+    return ensureBucketShape(profile.toolProgress[key]);
   }
-  return profile;
+  return ensureBucketShape(profile);
 }
 
 function level(raw, item) {
@@ -88,9 +95,34 @@ function economics(raw) {
   return profile.plannerEconomics[cropId];
 }
 
+function timeValueFor(raw) {
+  const econ = economics(raw);
+  const measured = Math.max(0, Number(econ.normalCropCoinsPerHour || 0))
+    + Math.max(0, Number(econ.rareCropCoinsPerHour || 0));
+  if (measured > 0) return { coinsPerHour: measured, source: 'player_baseline' };
+  return {
+    coinsPerHour: INTERNET_FARMING_TIME_VALUE_COINS_PER_HOUR,
+    source: 'internet_benchmark',
+  };
+}
+
+function earnedRouteRows(raw) {
+  return UPGRADES
+    .filter(item => item.status === 'ACTIVE')
+    .filter(item => appliesToCrop(raw, item))
+    .filter(item => !maxed(raw, item))
+    .map(item => {
+      const store = progressBucket(raw, item);
+      const costSource = resolveUpgradeCost(store, item.id);
+      return { item, store, costSource, itemGain: gain(raw, item) };
+    })
+    .filter(row => row.costSource.acquisitionMode === 'EARNED' && row.itemGain > 0);
+}
+
 function evaluatedRows(raw) {
   const profile = ensureProfile(raw);
   const econ = economics(raw);
+  const timeValue = timeValueFor(raw);
   const currentFortune = Number(profile.globalFortune || 0) + Number(profile.cropFortune?.[selectedCropId(raw)] || 0);
   return rankEvaluatedUpgrades(UPGRADES
     .filter(item => item.status === 'ACTIVE')
@@ -100,14 +132,19 @@ function evaluatedRows(raw) {
       const itemGain = gain(raw, item);
       const store = progressBucket(raw, item);
       const costSource = resolveUpgradeCost(store, item.id);
+      const storedHours = store.grindHours?.[item.id];
+      const activeGrindHours = storedHours === undefined || storedHours === '' ? null : Number(storedHours);
       return {
         item,
-        // After the spread: `evaluateUpgrade` returns its own numeric `cost`,
-        // and this must not be the field it overwrites.
         ...evaluateUpgrade({
           item,
           gain: itemGain,
           costCoins: costSource.coins,
+          acquisitionMode: costSource.acquisitionMode,
+          directCoinCost: costSource.directCoinCost,
+          activeGrindHours,
+          timeValueCoinsPerHour: timeValue.coinsPerHour,
+          timeValueSource: timeValue.source,
           currentFortune,
           currentOverbloom: Number(econ.overbloom || 0),
           normalCropCoinsPerHour: Number(econ.normalCropCoinsPerHour || 0),
@@ -135,6 +172,12 @@ function formatPayback(hours) {
   return `${Math.round(hours).toLocaleString('en-US')} h`;
 }
 
+function formatHours(hours) {
+  if (!Number.isFinite(hours)) return '—';
+  if (hours < 10) return `${hours.toFixed(1)} h`;
+  return `${Math.round(hours).toLocaleString('en-US')} h`;
+}
+
 function openItem(itemId) {
   const raw = load();
   raw.drawer = itemId;
@@ -145,15 +188,11 @@ function openItem(itemId) {
 function economicsPanel(raw) {
   const crop = cropFor(raw);
   const econ = economics(raw);
-  // Money is kept, not shown. The question this page answers is "what should I
-  // upgrade next", and coin figures are an input to that ranking rather than
-  // something the reader has to hold in their head. Closed by default; the
-  // ranking works without any of it and says which rows lack a cost.
   return `<details class="revenue-panel revenue-economics">
     <summary class="revenue-summary">
       <div class="revenue-panel-head">
         <div><div class="eyebrow">${esc(crop?.name || 'Crop')} economics</div><h2>Profit baseline</h2></div>
-        <span class="revenue-note">Optional. Only sharpens coin and payback ranking.</span>
+        <span class="revenue-note">Optional. Sharpens profit, payback and earned-time value.</span>
       </div>
     </summary>
     <div class="revenue-inputs">
@@ -161,14 +200,40 @@ function economicsPanel(raw) {
       <label><span>RARE CROP Coins/h</span><input data-revenue-input="rareCropCoinsPerHour" type="number" min="0" step="1000" value="${Number(econ.rareCropCoinsPerHour || 0)}"></label>
       <label><span>Current Overbloom</span><input data-revenue-input="overbloom" type="number" min="0" step="0.1" value="${Number(econ.overbloom || 0)}"></label>
     </div>
-    <p class="revenue-help">Overbloom is valued from the actual RARE-CROP revenue stream instead of a fixed global FF conversion.</p>
+    <p class="revenue-help">Overbloom is valued from the actual RARE-CROP stream. When Coins/h is entered, the total measured baseline also becomes the opportunity cost of active EARNED grind time.</p>
+  </details>`;
+}
+
+function earnedAssumptionsPanel(raw) {
+  const rows = earnedRouteRows(raw);
+  if (!rows.length) return '';
+  const timeValue = timeValueFor(raw);
+  const sourceLabel = timeValue.source === 'player_baseline' ? 'your measured farming baseline' : 'Internet fallback';
+  return `<details class="revenue-panel revenue-economics earned-routes">
+    <summary class="revenue-summary">
+      <div class="revenue-panel-head">
+        <div><div class="eyebrow">Acquisition routes</div><h2>Earned upgrade time</h2></div>
+        <span class="revenue-note">${compactCoins(timeValue.coinsPerHour)} Coins/h · ${esc(sourceLabel)}</span>
+      </div>
+    </summary>
+    <div class="earned-route-list">
+      ${rows.map(({ item, store }) => {
+        const stored = store.grindHours?.[item.id];
+        const value = stored === undefined || stored === '' ? '' : Math.max(0, Number(stored) || 0);
+        return `<label class="earned-route-row">
+          <span><strong>${esc(item.name)}</strong><small>${esc(item.category)} · active grind time</small></span>
+          <input data-earned-hours="${esc(item.id)}" type="number" min="0" step="0.1" placeholder="hours" value="${value}">
+        </label>`;
+      }).join('')}
+    </div>
+    <p class="revenue-help">Only active grind time belongs here. Empty stays unknown. Farming420 converts entered time to opportunity cost and labels it EARNED — time converted to coins.</p>
   </details>`;
 }
 
 function rankingMarkup(rows, ready) {
   if (!rows.length) return '<div class="empty">No modeled Fortune/Overbloom upgrades for the current state.</div>';
   return rows.slice(0, 30).map((row, index) => {
-    const costKnown = row.cost > 0;
+    const costKnown = row.costKnown === true;
     const marginalKnown = Number.isFinite(row.marginalCoinsHour);
     const valueLabel = row.modeled === 'overbloom'
       ? `+${row.gain.toLocaleString('en-US')} Overbloom`
@@ -176,12 +241,20 @@ function rankingMarkup(rows, ready) {
     const equivalent = row.modeled === 'overbloom' && row.fortuneEquivalent > 0
       ? `≈ ${row.fortuneEquivalent.toFixed(2)} FF eq.`
       : row.modeled === 'fortune' ? `${row.fortuneEquivalent.toFixed(2)} FF eq.` : '—';
+    const costLabel = costKnown
+      ? `${compactCoins(row.cost)} ${row.acquisitionMode === 'EARNED' ? 'Coins eq.' : 'Coins'}`
+      : '—';
+    const costNote = row.acquisitionMode === 'EARNED' && costKnown
+      ? `EARNED — time converted to coins · ${formatHours(row.activeGrindHours)} @ ${compactCoins(row.timeValueCoinsPerHour)}/h${row.directCoinCost > 0 ? ` + ${compactCoins(row.directCoinCost)} direct` : ''}`
+      : costKnown && row.coinsPerEffectiveFortune
+        ? `${compactCoins(row.coinsPerEffectiveFortune)} / FF eq. · ${costOriginNote(row.costSource)}`
+        : costOriginNote(row.costSource);
     return `<button class="planner-row revenue-row" data-revenue-open="${esc(row.item.id)}">
       <div class="rank">${index + 1}</div>
       <div class="planner-main"><strong>${esc(row.item.name)}</strong><span>${esc(row.item.category)} · ${esc(row.modeled === 'overbloom' ? 'Overbloom' : 'Farming Fortune')}</span></div>
       <div class="planner-number"><strong>${valueLabel}</strong><span>${equivalent}</span></div>
       <div class="planner-number"><strong>${marginalKnown ? `+${compactCoins(row.marginalCoinsHour)}/h` : '—'}</strong><span>${ready ? 'marginal profit' : 'enter baseline'}</span></div>
-      <div class="planner-number"><strong>${costKnown ? `${compactCoins(row.cost)} Coins` : '—'}</strong><span>${esc(costKnown && row.coinsPerEffectiveFortune ? `${compactCoins(row.coinsPerEffectiveFortune)} / FF eq. · ${costOriginNote(row.costSource)}` : costOriginNote(row.costSource))}</span></div>
+      <div class="planner-number"><strong>${costLabel}</strong><span>${esc(costNote)}</span></div>
       <div class="planner-number"><strong>${costKnown && row.payback !== null ? formatPayback(row.payback) : '—'}</strong><span>payback</span></div>
     </button>`;
   }).join('');
@@ -202,7 +275,8 @@ function enhancePlanner() {
   const panel = document.createElement('div');
   panel.className = 'revenue-planner-v2';
   panel.innerHTML = `${economicsPanel(raw)}
-    <div class="section-row revenue-ranking-head"><div><h2>${ready ? 'Best value now' : 'Best value per Coin'}</h2><p>${ready ? 'Known-cost upgrades are ordered by shortest payback; missing-cost upgrades follow by marginal profit.' : 'Ordered by researched cost per point of Farming Fortune. Enter Coins/h above to rank by payback instead; without it Fortune and Overbloom stay separate rather than sharing a fake exchange rate.'}</p></div></div>
+    ${earnedAssumptionsPanel(raw)}
+    <div class="section-row revenue-ranking-head"><div><h2>${ready ? 'Best value now' : 'Best value per Coin'}</h2><p>${ready ? 'Resolved BUYABLE and EARNED costs are ordered by shortest payback; unresolved acquisition costs follow.' : 'BUYABLE costs use recorded/researched Coins. EARNED time is converted at your baseline or the 20m/h fallback; empty grind time remains unknown.'}</p></div></div>
     <div class="planner-list revenue-list">${rankingMarkup(rows, ready)}</div>`;
   original.before(panel);
 
@@ -213,6 +287,19 @@ function enhancePlanner() {
     save(next);
     window.dispatchEvent(new Event('farming420:state-changed'));
   }));
+
+  panel.querySelectorAll('[data-earned-hours]').forEach(input => input.addEventListener('change', event => {
+    const next = load();
+    const item = UPGRADES.find(entry => entry.id === event.target.dataset.earnedHours);
+    if (!item) return;
+    const store = progressBucket(next, item);
+    const rawValue = String(event.target.value || '').trim();
+    if (!rawValue) delete store.grindHours[item.id];
+    else store.grindHours[item.id] = Math.max(0, Number(rawValue) || 0);
+    save(next);
+    window.dispatchEvent(new Event('farming420:state-changed'));
+  }));
+
   panel.querySelectorAll('[data-revenue-open]').forEach(button => button.addEventListener('click', () => openItem(button.dataset.revenueOpen)));
 }
 
