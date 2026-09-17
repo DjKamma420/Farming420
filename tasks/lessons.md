@@ -348,3 +348,27 @@ The same error in miniature: four nav pages were left as bare letters because
 no pack item is literally called "Mechanics" or "Coming Soon". An item that
 *means* the thing was available the whole time -- a diagnostics tool, a
 blueprint. "No literal match" is not "no match".
+
+
+## A parser that knows one shape reports absence, not failure (0.27.4)
+
+The head-texture reader understood a single NBT layout. Given any other, it
+returned null -- which is also the correct answer for the thousands of items
+that are not heads. So a total parsing failure and a perfectly ordinary
+"not applicable" produced identical output, and the UI did what it was told:
+fell back to silhouettes, silently, everywhere.
+
+That is the dangerous shape of bug. There was no error to find, no log line,
+nothing failing a test. It only became visible as "looks wrong" in a
+screenshot, weeks later.
+
+Rules:
+1. When a reader's "no" and its "I did not understand" are the same value,
+   enumerate the shapes you accept and test each one. Seven of ten known
+   layouts failed here.
+2. Work outward from the render, not inward from the complaint. Seeding a slot
+   that *did* carry a texture proved the renderer was fine in one run and moved
+   the search upstream immediately.
+3. Say what the fix does not establish. The API is unreachable from here, so
+   whether this is the cause of the reported screenshots is still unverified,
+   and claiming otherwise would just be a guess wearing a commit message.

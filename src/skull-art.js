@@ -63,6 +63,73 @@ function plainObject(value) {
   return value && typeof value === 'object' && !Array.isArray(value) ? value : null;
 }
 
+/** A key lookup that does not care how the serialiser cased the name. */
+function pick(source, ...names) {
+  const object = plainObject(source);
+  if (!object) return undefined;
+  for (const name of names) {
+    if (object[name] !== undefined) return object[name];
+  }
+  const wanted = names.map(name => name.toLowerCase());
+  for (const [key, value] of Object.entries(object)) {
+    if (wanted.includes(key.toLowerCase())) return value;
+  }
+  return undefined;
+}
+
+function asList(value) {
+  return Array.isArray(value) ? value : [];
+}
+
+/**
+ * Every place a head's texture is known to sit, tried in turn.
+ *
+ * The original reader knew exactly one shape,
+ * `SkullOwner.Properties.textures[].Value`, and returned null for anything
+ * else. That is not a safe assumption: Minecraft 1.20.5 replaced `SkullOwner`
+ * with a `profile` data component whose properties are a list of
+ * `{name: 'textures', value: '<base64>'}` -- lowercase `value` -- and different
+ * serialisers along the way case these keys differently. A reader that knows
+ * one shape reports "this item is not a head" for every head it does not
+ * recognise, and the whole gear grid then falls back to silhouettes and letter
+ * badges with nothing to say why.
+ *
+ * So each known shape is tried and the first texture wins. Unknown shapes still
+ * return null, which remains the correct answer for the many items that really
+ * are not heads.
+ */
+function textureCandidates(tag) {
+  const root = plainObject(tag);
+  if (!root) return [];
+  const out = [];
+
+  const owner = pick(root, 'SkullOwner', 'skullOwner', 'skullowner');
+  const profile = pick(root, 'profile')
+    ?? pick(pick(root, 'components'), 'minecraft:profile', 'profile');
+
+  for (const holder of [owner, profile]) {
+    const properties = pick(holder, 'Properties', 'properties');
+
+    // Shape A: { textures: [ { Value } ] }
+    for (const entry of asList(pick(properties, 'textures'))) {
+      out.push(pick(entry, 'Value', 'value'));
+    }
+
+    // Shape B: properties is itself a list of { name, value } pairs.
+    for (const entry of asList(properties)) {
+      const name = firstString(pick(entry, 'name', 'Name'));
+      if (!name || name.toLowerCase() !== 'textures') continue;
+      out.push(pick(entry, 'value', 'Value'));
+    }
+
+    // Shape C: the url or the bare id carried directly.
+    const direct = pick(holder, 'url', 'Url', 'texture', 'Texture');
+    if (direct) out.push(direct);
+  }
+
+  return out.filter(Boolean);
+}
+
 /**
  * Reads the skull texture id out of a decoded Minecraft item.
  *
@@ -70,12 +137,12 @@ function plainObject(value) {
  * caller falls back to the resource pack and then to a placeholder.
  */
 export function skullTextureFromTag(tag) {
-  const owner = plainObject(plainObject(tag)?.SkullOwner);
-  const properties = plainObject(owner?.Properties);
-  const textures = Array.isArray(properties?.textures) ? properties.textures : [];
-  for (const entry of textures) {
-    const id = textureIdFromProperty(plainObject(entry)?.Value);
+  for (const candidate of textureCandidates(tag)) {
+    const id = textureIdFromProperty(candidate) || textureIdFromUrl(candidate);
     if (id) return id;
+    // A bare hash, with no URL and no base64 wrapper around it.
+    const bare = firstString(candidate);
+    if (bare && /^[0-9a-f]{32,64}$/i.test(bare)) return bare.toLowerCase();
   }
   return null;
 }
