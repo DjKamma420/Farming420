@@ -432,3 +432,19 @@ that drifts is the one nobody is looking at.
 Before adding a domain constant or rule, grep for the concept, not just the
 name I would have chosen. `RARITY_ORDER` was there all along; I searched for
 `RARITY_LADDER`.
+
+
+## "Where applicable" is a per-item gate, not a footnote (0.30.1)
+
+I implemented the Recombobulator as "+1 rarity", which is how it is described
+everywhere in shorthand. The repo's own research said "+1 item rarity tier
+where applicable" and "do not assign a fixed delta globally" -- and I had read
+that file to find the rule in the first place.
+
+The qualifier was the whole rule. Dropping it would have inflated every
+rarity-scaled reforge and gemstone value on any item that cannot take the step.
+
+When research states a rule with a condition attached, the condition is part of
+the rule. And check whether the codebase already answers it: the per-item gate
+existed in the same file, used two lines away to decide whether to show the
+checkbox.
