@@ -23,7 +23,7 @@ import {
   guaranteedDropText,
   philipFortuneFor,
 } from './pest-model.js';
-import { setTextIfChanged } from './setup-selection-ui.js';
+import { setTextIfChanged } from './set-text.js';
 import { cropArtUrl } from './skyblock-redesign.js';
 
 function esc(value = '') {

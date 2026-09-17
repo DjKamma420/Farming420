@@ -3,7 +3,7 @@ import { STORAGE_KEY } from './config.js';
 import { ACTIVITY_MODE, activityLabel, activityModeForState } from './activity-mode.js';
 import { evaluateUpgrade, rankEvaluatedUpgrades } from './revenue-ranking.js';
 import { MEASURED_FEAST_KEY, MEASURED_FIELDS, describeMissing, measuredBaseline } from './measured-baseline.js';
-import { setTextIfChanged } from './setup-selection-ui.js';
+import { setTextIfChanged } from './set-text.js';
 import { costOriginNote, resolveUpgradeCost } from './upgrade-cost-resolution.js';
 import { INTERNET_FARMING_TIME_VALUE_COINS_PER_HOUR } from './upgrade-economics.js';
 import {

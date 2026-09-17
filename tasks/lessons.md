@@ -590,3 +590,31 @@ just found a *genuine* unreachable page. A check that cries wolf is a check that
 gets ignored the next time it is right. So I proved the guard still works by
 hiding a nav link on purpose and confirming all three profiles failed again,
 then restored the file.
+
+## Do not import an enhancer for a utility (0.37.0)
+
+I needed `setTextIfChanged`, saw it exported from `setup-selection-ui.js`, and
+imported it from there -- pleased with myself for not writing a second copy.
+
+But that module is a DOM enhancer with boot side effects: its body calls
+`schedule()` and registers document listeners on evaluation. Importing it from
+`revenue-planner.js` (index.html line 49) pulled its boot into that module's
+graph and moved it ahead of its own `<script>` at line 52. That is rule 10 of
+`docs/RENDER_FREEZE_SAFETY.md`: core boot must not depend on optional DOM
+enhancers. It is also the module whose observer froze the app in PR #90.
+
+`setTextIfChanged` now lives in `src/set-text.js`, which has no imports, no
+listeners and no boot. The enhancer imports and re-exports it, so its own
+callers and tests are untouched.
+
+Two things this cost me on the way:
+
+- A bare `export { x } from './y.js'` creates **no local binding**, so the
+  enhancer's own eleven calls to it became a ReferenceError. `node --check`
+  does not catch that; the import must be there too.
+- I inserted the new import with "after the last line starting with `import `",
+  which landed it *inside* a multi-line import block. Heuristics about source
+  text need to be checked against the source text.
+
+Rule: sharing a function is good; sharing a module's boot order is not. Before
+importing from a module, look at what its body does when it is evaluated.
