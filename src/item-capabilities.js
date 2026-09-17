@@ -29,11 +29,44 @@ export const FARMING_REFORGES_BY_FAMILY = Object.freeze({
     Object.freeze({ id: 'overpriced', name: 'Overpriced' }),
   ]),
   vacuum: Object.freeze([
-    Object.freeze({ id: 'beady', name: 'Beady' }),
-    Object.freeze({ id: 'buzzing', name: 'Buzzing' }),
+    Object.freeze({ id: 'beady', name: 'Beady', stone: 'Beady Eyes' }),
+    Object.freeze({ id: 'buzzing', name: 'Buzzing', stone: 'Clipped Wings' }),
   ]),
   none: Object.freeze([]),
 });
+
+/** Only Beady has a scored calculator entry; Buzzing is a real exclusive state with no FF contribution. */
+export const VACUUM_REFORGE_EFFECT_ENTRY_IDS = Object.freeze({
+  beady: 'vacuum-reforge-beady-pest-only-farming-fortune',
+  buzzing: null,
+});
+
+export function selectedVacuumReforge(bucket) {
+  const explicit = String(bucket?.reforge || '').trim().toLowerCase();
+  if (FARMING_REFORGES_BY_FAMILY.vacuum.some(option => option.id === explicit)) return explicit;
+  const beadyId = VACUUM_REFORGE_EFFECT_ENTRY_IDS.beady;
+  if (Number(bucket?.levels?.[beadyId] || 0) > 0 || bucket?.owned?.[beadyId] === true) return 'beady';
+  return null;
+}
+
+/** Writes one and only one Vacuum reforge and keeps the legacy scored Beady entry in sync. */
+export function applyVacuumReforge(bucket, requested) {
+  if (!bucket || typeof bucket !== 'object') return bucket;
+  bucket.levels ||= {};
+  bucket.owned ||= {};
+  const next = FARMING_REFORGES_BY_FAMILY.vacuum.some(option => option.id === requested) ? requested : null;
+  bucket.reforge = next;
+  for (const entryId of Object.values(VACUUM_REFORGE_EFFECT_ENTRY_IDS).filter(Boolean)) {
+    delete bucket.levels[entryId];
+    delete bucket.owned[entryId];
+  }
+  const scored = VACUUM_REFORGE_EFFECT_ENTRY_IDS[next];
+  if (scored) {
+    bucket.levels[scored] = 1;
+    bucket.owned[scored] = true;
+  }
+  return bucket;
+}
 
 const ARMOR_SLOTS = new Set(['helmet', 'chestplate', 'leggings', 'boots']);
 const EQUIPMENT_SLOTS = new Set(['equipment1', 'equipment2', 'equipment3', 'equipment4']);
@@ -104,6 +137,7 @@ export function gemstoneSlotsForItem(catalogItem) {
 const DIRECT_GEM_TYPES = new Set(GEM_TYPES);
 const SLOT_TYPE_GROUPS = Object.freeze({
   UNIVERSAL: Object.freeze([...GEM_TYPES]),
+  COMBAT: Object.freeze(['AMETHYST', 'JASPER', 'RUBY', 'SAPPHIRE']),
   OFFENSIVE: Object.freeze(['JASPER', 'SAPPHIRE']),
   DEFENSIVE: Object.freeze(['AMETHYST', 'RUBY']),
   MINING: Object.freeze(['JADE', 'AMBER', 'TOPAZ']),
