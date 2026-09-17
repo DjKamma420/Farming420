@@ -3,11 +3,14 @@ import test from 'node:test';
 
 import {
   FARMING_REFORGES_BY_FAMILY,
+  VACUUM_REFORGE_EFFECT_ENTRY_IDS,
+  applyVacuumReforge,
   canRecombobulateItem,
   catalogItemForSetupItem,
   gemValuesForSlotType,
   itemCapabilities,
   reforgeOptionsForItem,
+  selectedVacuumReforge,
 } from '../src/item-capabilities.js';
 
 const catalog = [
@@ -35,6 +38,23 @@ test('armor and equipment reforges stay in their own farming families', () => {
   assert.equal(equipment.includes('bountiful'), false);
   assert.deepEqual(FARMING_REFORGES_BY_FAMILY.vacuum.map(option => option.id), ['beady', 'buzzing']);
   assert.deepEqual(FARMING_REFORGES_BY_FAMILY['farming-tool'].map(option => option.id), ['bountiful', 'blessed', 'earthy', 'deep-fried', 'overpriced']);
+});
+
+test('Vacuum reforges are exclusive and Beady scoring follows the selected reforge', () => {
+  const beadyEntry = VACUUM_REFORGE_EFFECT_ENTRY_IDS.beady;
+  const bucket = { levels: { [beadyEntry]: 1 }, owned: { [beadyEntry]: true } };
+  assert.equal(selectedVacuumReforge(bucket), 'beady', 'legacy Beady state remains readable');
+
+  applyVacuumReforge(bucket, 'buzzing');
+  assert.equal(bucket.reforge, 'buzzing');
+  assert.equal(bucket.levels[beadyEntry], undefined);
+  assert.equal(bucket.owned[beadyEntry], undefined);
+  assert.equal(selectedVacuumReforge(bucket), 'buzzing');
+
+  applyVacuumReforge(bucket, 'beady');
+  assert.equal(bucket.reforge, 'beady');
+  assert.equal(bucket.levels[beadyEntry], 1);
+  assert.equal(bucket.owned[beadyEntry], true);
 });
 
 test('cannot_reforge and can_recombobulate false are authoritative', () => {
