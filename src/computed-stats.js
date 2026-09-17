@@ -8,7 +8,7 @@ import {
   itemAppliesToActivity,
 } from './activity-mode.js';
 
-export const COMPUTED_STATS_VERSION = 3;
+export const COMPUTED_STATS_VERSION = 4;
 
 export const STAT_AXIS = Object.freeze({
   GLOBAL_FORTUNE: 'globalFortune',
@@ -18,9 +18,6 @@ export const STAT_AXIS = Object.freeze({
   BONUS_PEST_CHANCE: 'bonusPestChance',
 });
 
-// snapshot-apply writes these dynamic gear totals into manualGain. Most are
-// complete totals; Green Thumb is the one exception: its stored dynamic value
-// is the per-enchant-level gain and has to be multiplied by the summed levels.
 const AUTO_DYNAMIC_TOTAL = Object.freeze({
   'armor-helianthus-armor-base-stats': 'total',
   'armor-helianthus-feast-set-bonus': 'total',
@@ -35,12 +32,14 @@ function cropName(cropId) {
 }
 
 function progressBucket(profile, item, cropId) {
+  if (isPestVacuumEntry(item)) return profile.vacuumProgress || {};
   if (item.section === 'crops') return profile.cropProgress?.[cropId] || {};
   if (item.section === 'tools') return profile.toolProgress?.[toolKeyForCropId(cropId)] || {};
   return profile;
 }
 
 function scopeKey(item, cropId) {
+  if (isPestVacuumEntry(item)) return 'vacuum';
   if (item.section === 'crops') return `crop:${cropId}`;
   if (item.section === 'tools') return `tool:${toolKeyForCropId(cropId)}`;
   return 'account';
@@ -71,9 +70,13 @@ export function statAxisFor(item) {
 function contributionFor(state, item, cropId, mode = null) {
   const profile = state?.profile || {};
   if (!appliesToCrop(item, cropId)) return null;
-  if (mode && !itemAppliesToActivity(item, mode)) return null;
   const axis = statAxisFor(item);
   if (!axis) return null;
+
+  // BPC is shown for both Farm and Pest sets. It describes the spawn chance
+  // produced by the currently active loadout; it does not mean a BPC upgrade
+  // becomes a normal-farming planner candidate.
+  if (mode && axis !== STAT_AXIS.BONUS_PEST_CHANCE && !itemAppliesToActivity(item, mode)) return null;
 
   const level = configuredLevel(profile, item, cropId);
   if (level <= 0) return null;
@@ -82,9 +85,6 @@ function contributionFor(state, item, cropId, mode = null) {
     return { axis, value: 0, incomplete: true, id: item.id, reason: 'not verified' };
   }
 
-  // Sunset is represented with a zero generic step because the same enchant
-  // also has a night Visitor-Cooldown effect. For the Overbloom axis the day
-  // contribution is exactly +1 per summed enchant level.
   if (item.id === 'armor-enchant-sunset-v-day-overbloom') {
     return { axis, value: level, incomplete: false, id: item.id };
   }
