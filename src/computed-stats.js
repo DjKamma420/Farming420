@@ -1,16 +1,19 @@
 import './runtime-data-patches.js';
+import './vacuum-data-patches.js';
 import { CROPS, UPGRADES } from './data.js';
 import { toolKeyForCropId } from './migrations.js';
 import { mooshroomCowContribution } from './mooshroom-cow.js';
 import { VACUUM_REFORGE_EFFECT_ENTRY_IDS, selectedVacuumReforge } from './item-capabilities.js';
+import { vacuumPeridotFortune } from './vacuum-state.js';
 import {
+  ACTIVITY_MODE,
   activityModeForState,
   isPestVacuumEntry,
   isVacuumItemEntry,
   itemAppliesToActivity,
 } from './activity-mode.js';
 
-export const COMPUTED_STATS_VERSION = 5;
+export const COMPUTED_STATS_VERSION = 6;
 
 export const STAT_AXIS = Object.freeze({
   GLOBAL_FORTUNE: 'globalFortune',
@@ -148,11 +151,15 @@ export function computeTotalsFromEntries(state, entries, cropId = state?.selecte
   return totals;
 }
 
-function applyDerivedMechanics(state, totals) {
+function applyDerivedMechanics(state, totals, mode) {
   const cow = mooshroomCowContribution(state);
+  const vacuumPeridot = mode === ACTIVITY_MODE.PEST
+    ? vacuumPeridotFortune(state?.profile?.vacuumProgress || {})
+    : 0;
   totals.derived = {
     strength: state?.profile?.inputs?.strength ?? null,
     mooshroomCow: cow,
+    vacuumPeridotFortune: vacuumPeridot,
   };
 
   if (cow.active) {
@@ -165,12 +172,14 @@ function applyDerivedMechanics(state, totals) {
     }
   }
 
+  if (vacuumPeridot > 0) totals.pestFortune += vacuumPeridot;
+
   totals.effectiveFortune = totals.globalFortune + totals.cropFortune + totals.pestFortune;
   return totals;
 }
 
 export function computeStatTotals(state, cropId = state?.selectedCrop || 'melon', mode = activityModeForState(state)) {
-  return applyDerivedMechanics(state, computeTotalsFromEntries(state, UPGRADES, cropId, mode));
+  return applyDerivedMechanics(state, computeTotalsFromEntries(state, UPGRADES, cropId, mode), mode);
 }
 
 export function computedStatsSnapshot(state, mode = activityModeForState(state)) {
