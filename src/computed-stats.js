@@ -1,8 +1,9 @@
 import './runtime-data-patches.js';
 import { CROPS, UPGRADES } from './data.js';
 import { toolKeyForCropId } from './migrations.js';
+import { mooshroomCowContribution } from './mooshroom-cow.js';
 
-export const COMPUTED_STATS_VERSION = 1;
+export const COMPUTED_STATS_VERSION = 2;
 
 export const STAT_AXIS = Object.freeze({
   GLOBAL_FORTUNE: 'globalFortune',
@@ -130,8 +131,29 @@ export function computeTotalsFromEntries(state, entries, cropId = state?.selecte
   return totals;
 }
 
+function applyDerivedMechanics(state, totals) {
+  const cow = mooshroomCowContribution(state);
+  totals.derived = {
+    strength: state?.profile?.inputs?.strength ?? null,
+    mooshroomCow: cow,
+  };
+
+  if (cow.active) {
+    totals.globalFortune += cow.value;
+    if (cow.incomplete) {
+      totals.incomplete.globalFortune.push({
+        id: 'derived-mooshroom-cow',
+        reason: cow.reasons.join('; '),
+      });
+    }
+  }
+
+  totals.effectiveFortune = totals.globalFortune + totals.cropFortune;
+  return totals;
+}
+
 export function computeStatTotals(state, cropId = state?.selectedCrop || 'melon') {
-  return computeTotalsFromEntries(state, UPGRADES, cropId);
+  return applyDerivedMechanics(state, computeTotalsFromEntries(state, UPGRADES, cropId));
 }
 
 export function computedStatsSnapshot(state) {
@@ -141,6 +163,8 @@ export function computedStatsSnapshot(state) {
   return {
     version: COMPUTED_STATS_VERSION,
     selectedCrop,
+    strength: state?.profile?.inputs?.strength ?? null,
+    mooshroomCow: byCrop[selectedCrop]?.derived?.mooshroomCow || null,
     globalFortune: byCrop[selectedCrop]?.globalFortune || 0,
     cropFortuneByCrop: Object.fromEntries(CROPS.map(crop => [crop.id, byCrop[crop.id].cropFortune])),
     effectiveFortuneByCrop: Object.fromEntries(CROPS.map(crop => [crop.id, byCrop[crop.id].effectiveFortune])),
