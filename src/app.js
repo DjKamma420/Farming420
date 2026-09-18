@@ -818,7 +818,10 @@ function leverInput(attribute, slotId, key, checked, label) {
 
 function enchantLine(slotId, row) {
   const levels = row.maxLevel
-    ? Array.from({ length: row.maxLevel }, (_, index) => index + 1)
+    ? [...new Set([
+      ...Array.from({ length: row.maxLevel }, (_, index) => index + 1),
+      row.level,
+    ].filter(value => value > 0))].sort((a, b) => a - b)
     : [...new Set([row.level, 1, 2, 3, 4, 5].filter(value => value > 0))].sort((a, b) => a - b);
   return `<div class="enchant-line enchant-${esc(row.state)} ${row.active ? 'on' : 'off'}" data-ench-row="${esc(row.storageKey)}">
       ${leverInput('data-ench-toggle', slotId, row.storageKey, row.active, `${row.label} on this item`)}
