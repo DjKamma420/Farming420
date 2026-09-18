@@ -98,6 +98,15 @@ test('resolved physical progression cards expose their exact item id for the rar
   assert.match(source, /delete card\.dataset\.physicalItemId/);
 });
 
+test('reforge choices and physical tool-upgrade rows expose exact item ids for rarity backgrounds', () => {
+  const source = readFileSync(new URL('../src/item-art-coverage.js', import.meta.url), 'utf8');
+  assert.match(source, /card\.dataset\.physicalItemId\s*=\s*record\.id/);
+  assert.match(source, /row\.dataset\.physicalItemId\s*=\s*record\.id/);
+  assert.match(source, /delete row\.dataset\.physicalItemId/);
+  assert.match(source, /decorateReforges\(catalog\)/);
+  assert.match(source, /decorateToolProgression\(catalog\)/);
+});
+
 test('chip/card art is pinned directly beside its title even under redesign specificity', () => {
   const css = readFileSync(new URL('../src/item-art-coverage.css', import.meta.url), 'utf8');
   assert.match(css, /\.skyblock-redesign \.item-card \.card-head[\s\S]*?display:\s*flex\s*!important/);
