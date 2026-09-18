@@ -64,3 +64,26 @@ test('runtime update path is versionless and retires the old service worker', ()
   assert.doesNotMatch(sw, /addEventListener\(['"]fetch['"]/);
   assert.match(sw, /self\.registration\.unregister\(\)/);
 });
+
+
+test('top bar always exposes Settings and a local-data-safe force reload', () => {
+  const app = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const foundation = readFileSync(new URL('../src/foundation.js', import.meta.url), 'utf8');
+
+  assert.match(app, /data-open-settings/);
+  assert.match(app, /data-force-reload/);
+  assert.match(foundation, /async function forceReloadApp\(\)/);
+  assert.match(foundation, /name\.startsWith\('farming420-'\)/);
+  assert.match(foundation, /url\.searchParams\.set\('reload'/);
+  assert.match(foundation, /window\.location\.replace/);
+  assert.doesNotMatch(
+    /async function forceReloadApp\(\) \{([\s\S]*?)\n\}/.exec(foundation)?.[1] || '',
+    /localStorage\.(?:clear|removeItem)/,
+  );
+});
+
+test('foundation no longer re-registers the retired service worker', () => {
+  const foundation = readFileSync(new URL('../src/foundation.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(foundation, /navigator\.serviceWorker\.register/);
+  assert.doesNotMatch(foundation, /serviceWorkerRegistration\.update/);
+});
