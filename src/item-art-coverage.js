@@ -223,7 +223,12 @@ function decorateProgressionCards(catalog) {
     const entry = UPGRADES.find(item => item.id === card.dataset.open);
     if (!entry) return;
     const record = catalogItemForUpgrade(catalog, entry);
-    const node = itemArtNode(record, record?.name || entry.name);
+    if (!record) {
+      delete card.dataset.physicalItemId;
+      return;
+    }
+    if (card.dataset.physicalItemId !== record.id) card.dataset.physicalItemId = record.id;
+    const node = itemArtNode(record, record.name || entry.name);
     if (!node) return;
     let portrait = card.querySelector('.card-head > .card-portrait');
     if (!portrait) {
