@@ -134,6 +134,129 @@ let readOnlyState = false;
 let migrationApplied = false;
 let state = loadState();
 
+let pendingScrollAnchor = null;
+const SCROLL_ANCHOR_MAX_AGE_MS = 1500;
+const SCROLL_ANCHOR_CONTROL_SELECTOR = 'button, input, select, textarea, a, label, [role="button"], [role="radio"]';
+
+function scrollAnchorElement(target) {
+  if (!target?.closest) return null;
+  let element = target.closest(SCROLL_ANCHOR_CONTROL_SELECTOR) || target;
+  if (element?.tagName === 'LABEL') {
+    element = element.querySelector('input, select, textarea, button') || element;
+  }
+  return element instanceof Element ? element : null;
+}
+
+function scrollAnchorPath(root, element) {
+  const path = [];
+  let node = element;
+  while (node && node !== root) {
+    const parent = node.parentElement;
+    if (!parent) return null;
+    path.unshift(Array.prototype.indexOf.call(parent.children, node));
+    node = parent;
+  }
+  return node === root ? path : null;
+}
+
+function describeScrollAnchor(root, element) {
+  return {
+    tag: element.tagName.toLowerCase(),
+    id: element.id || '',
+    attrs: [...element.attributes]
+      .filter(attr => attr.name.startsWith('data-') || ['name', 'value', 'type'].includes(attr.name))
+      .map(attr => [attr.name, attr.value]),
+    path: scrollAnchorPath(root, element),
+  };
+}
+
+function resolveScrollAnchor(root, descriptor) {
+  if (!root || !descriptor) return null;
+
+  if (descriptor.id) {
+    const byId = document.getElementById(descriptor.id);
+    if (byId && root.contains(byId)) return byId;
+  }
+
+  if (descriptor.attrs?.length) {
+    for (const candidate of root.querySelectorAll(descriptor.tag)) {
+      if (descriptor.attrs.every(([name, value]) => candidate.getAttribute(name) === value)) return candidate;
+    }
+  }
+
+  let node = root;
+  for (const index of descriptor.path || []) {
+    node = node?.children?.[index] || null;
+    if (!node) return null;
+  }
+  return node instanceof Element ? node : null;
+}
+
+function rememberScrollAnchor(target) {
+  const root = document.getElementById('app');
+  const element = scrollAnchorElement(target);
+  if (!root || !element || !root.contains(element)) return;
+
+  pendingScrollAnchor = {
+    page: state.page,
+    capturedAt: Date.now(),
+    viewportTop: element.getBoundingClientRect().top,
+    descriptor: describeScrollAnchor(root, element),
+  };
+}
+
+function consumeScrollAnchor() {
+  const anchor = pendingScrollAnchor;
+  pendingScrollAnchor = null;
+  if (!anchor) return null;
+  if (Date.now() - anchor.capturedAt > SCROLL_ANCHOR_MAX_AGE_MS) return null;
+  return anchor;
+}
+
+function restoreRelativeScrollAnchor(anchor) {
+  if (!anchor || anchor.page !== state.page) return;
+
+  const attempt = () => {
+    const root = document.getElementById('app');
+    const element = resolveScrollAnchor(root, anchor.descriptor);
+    if (!element) return false;
+
+    const delta = element.getBoundingClientRect().top - anchor.viewportTop;
+    if (Math.abs(delta) < 0.5) return true;
+
+    const main = document.querySelector('#app .main');
+    const overflowY = main ? getComputedStyle(main).overflowY : '';
+    const mainScrolls = Boolean(
+      main
+      && main.scrollHeight > main.clientHeight + 1
+      && /auto|scroll|overlay/.test(overflowY),
+    );
+
+    if (mainScrolls) main.scrollTop += delta;
+    else window.scrollBy(0, delta);
+    return true;
+  };
+
+  // Feature modules decorate and move editor nodes in MutationObservers after
+  // the core render. Re-check across the next frames so their layout changes do
+  // not move the control the user just operated.
+  queueMicrotask(attempt);
+  requestAnimationFrame(() => {
+    attempt();
+    requestAnimationFrame(attempt);
+  });
+}
+
+function captureInteractionScrollAnchor(event) {
+  rememberScrollAnchor(event.target);
+}
+
+if (typeof document !== 'undefined') {
+  for (const type of ['click', 'change', 'input']) {
+    document.addEventListener(type, captureInteractionScrollAnchor, true);
+  }
+}
+
 function saveState() {
   if (readOnlyState) return;
   state.schemaVersion = DATA_SCHEMA_VERSION;
@@ -1211,6 +1334,7 @@ function render({ preserveScroll = true } = {}) {
   // Most state changes only alter a control/card. Replacing #app is still the
   // core render model, but it must not behave like navigation: keep the right
   // content pane and the navigation rail exactly where the user left them.
+  const relativeAnchor = preserveScroll ? consumeScrollAnchor() : (pendingScrollAnchor = null);
   const scrollState = preserveScroll ? {
     main: document.querySelector('#app .main')?.scrollTop || 0,
     nav: document.querySelector('#app .sidebar nav')?.scrollTop || 0,
@@ -1254,6 +1378,7 @@ function render({ preserveScroll = true } = {}) {
     if (main) main.scrollTop = scrollState.main;
     if (nav) nav.scrollTop = scrollState.nav;
     window.scrollTo(scrollState.windowX, scrollState.windowY);
+    restoreRelativeScrollAnchor(relativeAnchor);
   }
 }
 
