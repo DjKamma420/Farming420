@@ -1,4 +1,5 @@
 import { CROPS, UPGRADES, HIDDEN_INTERACTIONS, COMING_SOON } from './data.js';
+import { FARMING_ACCESSORY_GROUPS } from './farming-accessories.js';
 import { DATA_SCHEMA_VERSION, STORAGE_KEY } from './config.js';
 import { ensureProgressBucket, migrateState, toolKeyForCropId } from './migrations.js';
 import { applySnapshotToProgress, isAutoApplied } from './snapshot-apply.js';
@@ -58,6 +59,7 @@ import {
 const NAV = [
   ['dashboard', 'Dashboard'],
   ['account', 'Account'],
+  ['accessories', 'Accessories'],
   ['crops', 'Crops'],
   ['tools', 'Tools'],
   ['setups', 'Setups'],
@@ -357,7 +359,7 @@ function accountPage() {
   const groups = [
     ['Account & Skill',['Account/Skill','Account Upgrade','Anita']],
     ['Garden',['Garden','Greenhouse']],
-    ['Accessories & permanent items',['Accessory','Consumable','Jacob Accessory','Chocolate Factory']]
+    ['Permanent account items',['Consumable','Chocolate Factory']]
   ];
   return `${pageHeader('Account', 'Global Account Progression', 'Progress that is not bound to one crop or one physical farming tool.')}
     <div class="input-strip">
@@ -365,6 +367,56 @@ function accountPage() {
       ${inputHint('input:globalFortune', 'Used only for relative upgrade evaluation. Ownership remains a separate state.')}
     </div>
     ${groups.map(([title,cats]) => `<div class="group"><div class="section-row"><div><h2>${title}</h2></div></div><div class="card-grid">${visibleUpgrades('account').filter(x=>cats.includes(x.category)).map(x=>card(x)).join('')}</div></div>`).join('')}`;
+}
+
+function accessoryCatalogCard(accessory) {
+  const upgrade = accessory.upgradeId
+    ? UPGRADES.find(item => item.id === accessory.upgradeId)
+    : null;
+  const status = upgrade ? statusClass(upgrade) : '';
+  const tag = upgrade ? 'button' : 'article';
+  const action = upgrade ? ` type="button" data-open="${esc(upgrade.id)}"` : '';
+  const stateBadge = upgrade
+    ? badge(isMaxed(upgrade) ? 'owned' : 'not set', isMaxed(upgrade) ? 'maxed' : 'missing')
+    : badge('reference', 'soft');
+
+  return `<${tag} class="item-card accessory-catalog-card ${status}" data-accessory-item-id="${esc(accessory.itemId)}"${action}>
+    <div class="card-layer"></div>
+    <div class="card-head">
+      <span class="card-portrait accessory-portrait" aria-hidden="true"></span>
+      <div>
+        <div class="eyebrow">${esc(accessory.rarity)} · ${esc(accessory.itemId)}</div>
+        <div class="item-title">${esc(accessory.name)}</div>
+      </div>
+      ${stateBadge}
+    </div>
+    <p class="accessory-effect">${esc(accessory.effect)}</p>
+    <div class="chips">
+      ${badge(accessory.condition, 'soft')}
+      ${upgrade ? badge('calculator-linked', 'synced') : badge('progression reference', 'soft')}
+    </div>
+  </${tag}>`;
+}
+
+function accessoriesPage() {
+  const term = state.search.trim().toLowerCase();
+  const groups = FARMING_ACCESSORY_GROUPS.map(group => ({
+    ...group,
+    items: group.items.filter(item => !term
+      || `${item.name} ${item.itemId} ${item.effect} ${item.condition}`.toLowerCase().includes(term)),
+  })).filter(group => group.items.length);
+
+  return `${pageHeader('Accessories', 'Farming Accessories', 'Accessory Bag progression is kept separate from wearable armor/equipment setups. Cards use exact SkyBlock item IDs so the art layer can load the real Hypixel item skin instead of a guessed icon.')}
+    <div class="accessory-model-note">
+      <strong>Model source</strong>
+      <span>Hypixel /v2/resources/skyblock/items → exact item ID → skin hash → textures.minecraft.net. Upgrade-family members are shown individually but are not added together.</span>
+    </div>
+    ${groups.length ? groups.map(group => `
+      <section class="accessory-group" data-accessory-group="${esc(group.id)}">
+        <div class="section-row"><div><h2>${esc(group.title)}</h2><p>${esc(group.note)}</p></div></div>
+        <div class="card-grid accessory-grid">${group.items.map(accessoryCatalogCard).join('')}</div>
+      </section>
+    `).join('') : '<div class="empty">No farming accessories match the current search.</div>'}`;
 }
 
 function cropFocusCard() {
@@ -1114,6 +1166,7 @@ function render() {
   switch(state.page) {
     case 'dashboard': content = dashboard(); break;
     case 'account': content = accountPage(); break;
+    case 'accessories': content = accessoriesPage(); break;
     case 'crops': content = cropsPage(); break;
     // The heading says what the page is; the picker and the editor below both
     // name the selected tool, so repeating it a third time here added nothing.
