@@ -47,6 +47,23 @@ test('resolved setup art hides the old letter fallback', () => {
   assert.match(css, /\.slot-portrait\.has-coverage-item-art\s*>\s*\.item-art-fallback/);
 });
 
+test('setup editor does not repeat the selected item identity', () => {
+  const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../src/item-editor.css', import.meta.url), 'utf8');
+  const start = source.indexOf('function slotEditor(slotId)');
+  const end = source.indexOf('\nfunction setupsPage()', start);
+
+  assert.notEqual(start, -1);
+  assert.notEqual(end, -1);
+  const slotEditor = source.slice(start, end);
+  assert.match(slotEditor, /class="item-editor-head item-editor-actions"/);
+  assert.match(slotEditor, /data-slot-clear/);
+  assert.doesNotMatch(slotEditor, /data-item-art-slot/);
+  assert.doesNotMatch(slotEditor, /class="item-identity"/);
+  assert.match(css, /\.item-editor-head\.item-editor-actions\s*\{[^}]*grid-template-columns:\s*1fr/s);
+  assert.match(css, /\.item-editor-head\.item-editor-actions\s*>\s*button\s*\{[^}]*width:\s*100%/s);
+});
+
 test('exact capability startup does not reload while cleaning stale state', () => {
   const source = readFileSync(new URL('../src/exact-item-capabilities-ui.js', import.meta.url), 'utf8');
   assert.match(source, /if \(changed\) save\(raw\);/);
