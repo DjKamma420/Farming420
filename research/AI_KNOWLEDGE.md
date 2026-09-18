@@ -493,13 +493,42 @@ Calculate each worn piece independently from its actual rarity.
 
 ## Thorny
 
-Current index FF by rarity:
+Current live values by equipment rarity:
 
 ```text
-+2 / +4 / +6 / +8 / +10 / +12
+Farming Fortune:  +2 / +4 / +6 / +8 / +10 / +12
+Base Overbloom:  +0.25 / +0.5 / +0.75 / +1 / +1.25 / +1.5
 ```
 
-The current Overbloom page additionally lists rarity-scaled base Overbloom plus +0.1 Overbloom per Thorns tier. Therefore Thorny cannot be fully evaluated from equipment alone; worn armor Thorns tiers are dependencies.
+The Thorny Bonus is item-local to every equipped Thorny equipment piece:
+
+```text
+thorny_armor_bonus_overbloom
+= thorny_equipment_piece_count
+* total_worn_armor_thorns_tiers
+* 0.1
+```
+
+Hypixel's 0.26.1 release explicitly confirms that Thorny grants additional Overbloom from the tiers of Thorns on worn armor. The current item data documents the exact +0.1 coefficient.
+
+### Pufferfish Hat secret strategy
+
+Do not collapse the two Pufferfish Hats into one item.
+
+- `PUFFERFISH_HAT` is the ordinary craftable hat and does not intrinsically carry Thorns V.
+- `PUFFERFISH_HAT_CELEBRATION` is the Century/Raffle reward variant and comes pre-enchanted with Thorns V. Hypixel again listed `Pufferfish Hat (Thorns V)` among the Year 500 Century Celebration rewards in 2026.
+- Thorns V contributes five Thorns tiers to the Thorny formula. With four Thorny equipment pieces, the hat's five tiers contribute `4 * 5 * 0.1 = +2.0 Overbloom`.
+- The relevant marginal comparison is normally against the helmet it replaces. Replacing a Thorns IV helmet with the Thorns V celebration hat adds only one extra tier, i.e. `+0.4 Overbloom` with four Thorny equipment pieces.
+- Never recommend the Pufferfish Hat from the +2.0 headline alone. Subtract the replaced helmet's Farming Fortune, set-bonus tier, reforge, gemstones, enchantments, Bonus Pest Chance and any other objective-specific effects. It is a niche maximum-Overbloom/rare-drop or Pest-loot swap candidate, not a universal farming helmet.
+- Pest spawn/loot snapshot timing remains a separate VERIFY target. Do not assume a last-moment armor swap affects a drop unless the relevant live timing is verified.
+
+Sources:
+- https://hypixel.net/threads/hypixel-skyblock-0-26-1-new-player-improvements-harvest-feast-changes-healing-revamp-and-more.6127383/
+- https://hypixel.net/threads/list-of-item-in-skyblock-update-1-81.6151548/
+- https://hypixel.net/threads/hypixel-skyblock-0-21-2-year-400-raffle-event.5841821/
+- https://hypixel.net/threads/skyblock-year-500-century-celebration.6114883/
+Last verified: 2026-09-18
+Status: ACTIVE for Thorny and the celebration hat; VERIFY Pest-loot swap timing.
 
 ## Squeaky
 
@@ -514,7 +543,7 @@ Its pest utility belongs in pest context.
 Sources:
 - Farming Fortune page
 - Overbloom page
-Last verified: 2026-09-16
+Last verified: 2026-09-18
 Status: ACTIVE for displayed current values, with central index staleness warning propagated.
 
 ---
