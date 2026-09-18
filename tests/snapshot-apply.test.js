@@ -9,6 +9,8 @@ import {
   isAutoApplied,
   stripFormatting,
   turboCropLevel,
+  turboCropLevelFor,
+  turboProgressEntryId,
 } from '../src/snapshot-apply.js';
 import { createEmptyProfileSnapshot } from '../src/profile-normalizer.js';
 
@@ -68,6 +70,29 @@ test('Turbo-Crop is read by prefix, so no crop suffix has to be known', () => {
   assert.equal(turboCropLevel(undefined), 0);
 });
 
+test('Turbo-Crop is resolved against the selected crop instead of the highest Turbo on the item', () => {
+  const enchants = { turbo_sunflower: 7, turbo_moonflower: 2, turbo_melon: 5 };
+  assert.equal(turboCropLevelFor(enchants, 'sunflower'), 7);
+  assert.equal(turboCropLevelFor(enchants, 'moonflower'), 2);
+  assert.equal(turboCropLevelFor(enchants, 'melon'), 5);
+  assert.equal(turboCropLevelFor(enchants, 'wheat'), 0);
+});
+
+test('the shared Eclipse tool keeps Sunflower and Moonflower Turbo levels separate', () => {
+  const state = emptyState();
+  applySnapshotToProgress(state, snapshotWith({
+    items: [toolItem({
+      displayName: 'Eclipse Sickle',
+      enchantments: { harvesting: 6, turbo_sunflower: 7, turbo_moonflower: 2 },
+    })],
+  }));
+  const tool = state.profile.toolProgress['eclipse-sickle'].levels;
+  assert.equal(tool['tool-enchant-harvesting-vi'], 6, 'shared enchants remain physical-item-local');
+  assert.equal(tool[turboProgressEntryId('sunflower')], 7);
+  assert.equal(tool[turboProgressEntryId('moonflower')], 2);
+  assert.notEqual(turboProgressEntryId('sunflower'), turboProgressEntryId('moonflower'));
+});
+
 test('derived account and garden values land on the account and crop cards', () => {
   const state = emptyState();
   applySnapshotToProgress(state, snapshotWith({
@@ -91,7 +116,16 @@ test('tool counters, enchantments, reforge, gem and recomb land on that tool', (
       recombobulated: 1,
       reforge: 'blessed',
       gems: { PERIDOT_0: 'PERFECT' },
-      enchantments: { dedication: 4, cultivating: 10, harvesting: 6, turbo_melon: 5 },
+      enchantments: {
+        dedication: 4,
+        cultivating: 10,
+        harvesting: 6,
+        turbo_melon: 5,
+        feast: 5,
+        replenish: 1,
+        delicate: 5,
+        ultimate_crop_fever: 4,
+      },
     })],
   }));
 
@@ -102,6 +136,10 @@ test('tool counters, enchantments, reforge, gem and recomb land on that tool', (
   assert.equal(tool['tool-enchant-cultivating-x'], 10);
   assert.equal(tool['tool-enchant-harvesting-vi'], 6);
   assert.equal(tool['tool-enchant-turbo-crop'], 5);
+  assert.equal(tool['tool-enchant-feast-v'], 5);
+  assert.equal(tool['tool-enchant-replenish'], 1);
+  assert.equal(tool['tool-enchant-delicate-v'], 5);
+  assert.equal(tool['tool-enchant-crop-fever-v'], 4);
   assert.equal(tool['tool-reforge-blessed-reforge'], 1);
   assert.equal(tool['tool-recombobulator-effect-on-tool-stats'], 1);
   assert.equal(tool['tool-gem-perfect-peridot-on-farming-tool'], 1);
