@@ -71,12 +71,17 @@ test('armor uses the item model before any same-set pack stand-in', () => {
   assert.match(source, /armorItemSvgMarkup/);
 });
 
-test('catalog head art renders both the face and hat layers', () => {
+test('catalog head art uses CSP-safe image layers for the face and hat', () => {
   const source = readFileSync(new URL('../src/item-art-coverage.js', import.meta.url), 'utf8');
   const css = readFileSync(new URL('../src/item-art-coverage.css', import.meta.url), 'utf8');
   assert.match(source, /\['face', 'hat'\]/);
-  assert.match(css, /\.coverage-skull-face[\s\S]*?14\.2857% 14\.2857%/);
-  assert.match(css, /\.coverage-skull-hat[\s\S]*?71\.4286% 14\.2857%/);
+  assert.match(source, /document\.createElement\('img'\)/);
+  assert.match(source, /layer\.src = url/);
+  assert.doesNotMatch(source, /style\.backgroundImage/);
+  assert.match(css, /\.coverage-skull-art[\s\S]*?overflow:\s*hidden/);
+  assert.match(css, /\.coverage-skull-layer[\s\S]*?width:\s*800%/);
+  assert.match(css, /\.coverage-skull-face[\s\S]*?left:\s*-100%[\s\S]*?top:\s*-100%/);
+  assert.match(css, /\.coverage-skull-hat[\s\S]*?left:\s*-500%[\s\S]*?top:\s*-100%/);
 });
 
 
