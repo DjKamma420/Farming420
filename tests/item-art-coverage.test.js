@@ -98,6 +98,14 @@ test('resolved physical progression cards expose their exact item id for the rar
   assert.match(source, /delete card\.dataset\.physicalItemId/);
 });
 
+test('a physical item detail drawer reuses the same exact catalog identity', () => {
+  const source = readFileSync(new URL('../src/item-art-coverage.js', import.meta.url), 'utf8');
+  assert.match(source, /function decorateDrawer/);
+  assert.match(source, /rawState\?\.drawer/);
+  assert.match(source, /drawer\.dataset\.physicalItemId\s*=\s*record\.id/);
+  assert.match(source, /decorateDrawer\(items, rawState\)/);
+});
+
 test('reforge choices and physical tool-upgrade rows expose exact item ids for rarity backgrounds', () => {
   const source = readFileSync(new URL('../src/item-art-coverage.js', import.meta.url), 'utf8');
   assert.match(source, /card\.dataset\.physicalItemId\s*=\s*record\.id/);
