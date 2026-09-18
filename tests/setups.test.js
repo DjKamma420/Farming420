@@ -19,9 +19,10 @@ function decoded(overrides = {}) {
   return { container: 'armor', slot: 3, displayName: '§6Helianthus Helmet', enchantments: {}, gems: {}, ...overrides };
 }
 
-test('the default setups are the three mutually exclusive states the spec names', () => {
+test('the default setups are farming, pest spawning, and pest killing', () => {
   const setups = createDefaultSetups();
-  assert.deepEqual(setups.list.map(setup => setup.id), ['normal', 'pest', 'contest']);
+  assert.deepEqual(setups.list.map(setup => setup.id), ['normal', 'pest', 'pest-kill']);
+  assert.deepEqual(setups.list.map(setup => setup.name), ['Farming', 'Pest Spawning', 'Pest Killing']);
   assert.equal(setups.activeId, 'normal');
 });
 
