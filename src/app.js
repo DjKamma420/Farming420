@@ -296,12 +296,14 @@ function shell(content) {
   return `
   <div class="app-shell">
     <aside class="sidebar">
+      <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="primaryNav" aria-label="Open navigation"><span aria-hidden="true">⋮</span></button>
       <div class="brand">
         <div class="brand-mark">F4</div>
         <div><strong>Farming420</strong><span>SkyBlock Farming Planner</span></div>
       </div>
-      <nav>
+      <nav id="primaryNav" aria-label="Main navigation">
         ${NAV.map(([id,label]) => `<button class="nav-link ${state.page===id?'active':''}" data-page="${id}">${esc(label)}</button>`).join('')}
+        <button class="nav-link" type="button" data-nav-id="settings" data-open-settings>Settings</button>
       </nav>
       <div class="side-foot">
         <div class="mini-label">Profile</div>
@@ -321,8 +323,6 @@ function shell(content) {
         </div>
         <div class="search-wrap"><input id="search" placeholder="Search item, upgrade or effect…" value="${esc(state.search)}" /></div>
         <div class="fortune-pill"><span>Effective</span><strong>${effectiveFortune().toLocaleString('en-US')} FF</strong></div>
-        <button class="settings-entry" type="button" data-force-reload aria-label="Reload latest app version"><span aria-hidden="true">↻</span><span class="settings-entry-label">Reload</span></button>
-        <button class="settings-entry" type="button" data-open-settings aria-label="Open settings"><span aria-hidden="true">⚙</span><span class="settings-entry-label">Settings</span></button>
       </header>
       <section class="content">${content}</section>
     </main>
@@ -1284,9 +1284,35 @@ function render({ preserveScroll = true } = {}) {
   }
 }
 
+function closeNavigation() {
+  const sidebar = document.querySelector('#app .sidebar');
+  const toggle = document.querySelector('#app [data-nav-toggle]');
+  if (!sidebar || !toggle) return;
+  sidebar.classList.remove('nav-open');
+  toggle.setAttribute('aria-expanded', 'false');
+  toggle.setAttribute('aria-label', 'Open navigation');
+}
+
 function bind() {
   document.querySelectorAll('[data-progress]').forEach(el => { el.style.width = `${el.dataset.progress}%`; });
-  document.querySelectorAll('[data-page]').forEach(el => el.addEventListener('click', () => { state.page=el.dataset.page; state.drawer=null; saveState(); render({ preserveScroll: false }); }));
+
+  const sidebar = document.querySelector('#app .sidebar');
+  const navToggle = document.querySelector('#app [data-nav-toggle]');
+  navToggle?.addEventListener('click', () => {
+    const open = !sidebar?.classList.contains('nav-open');
+    sidebar?.classList.toggle('nav-open', open);
+    navToggle.setAttribute('aria-expanded', String(open));
+    navToggle.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
+  });
+
+  document.querySelectorAll('[data-page]').forEach(el => el.addEventListener('click', () => {
+    state.page=el.dataset.page;
+    state.drawer=null;
+    closeNavigation();
+    saveState();
+    render({ preserveScroll: false });
+  }));
+  document.querySelectorAll('[data-open-settings]').forEach(el => el.addEventListener('click', closeNavigation));
   document.querySelectorAll('[data-open]').forEach(el => el.addEventListener('click', () => { state.drawer=el.dataset.open; saveState(); render(); }));
   // The backdrop closes the drawer, but a click on the drawer itself must not:
   // it bubbles up to the backdrop, so the target is checked explicitly.
