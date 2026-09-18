@@ -1,12 +1,6 @@
 import { CROPS, UPGRADES, HIDDEN_INTERACTIONS, COMING_SOON } from './data.js';
 import { FARMING_ACCESSORY_GROUPS, farmingAccessoryByItemId } from './farming-accessories.js';
-import {
-  ACCESSORY_ENRICHMENTS,
-  accessoryCapabilityState,
-  canEnrichAccessory,
-  farmingEnrichmentSummary,
-  normalizeAccessoryEnrichment,
-} from './accessory-capabilities.js';
+import { accessoryCapabilityState } from './accessory-capabilities.js';
 import { DATA_SCHEMA_VERSION, STORAGE_KEY } from './config.js';
 import { ensureProgressBucket, migrateState, toolKeyForCropId } from './migrations.js';
 import { applySnapshotToProgress, isAutoApplied } from './snapshot-apply.js';
@@ -101,7 +95,6 @@ const defaultState = {
     costs: {},
     manualGain: {},
     accessoryItems: {},
-    enrichmentSpeedOverride: null,
   }
 };
 
@@ -395,15 +388,9 @@ function accessoryCatalogCard(accessory) {
   const itemState = accessoryItemState(accessory);
   const capability = accessoryCapabilityState(accessory, itemState, accessoryCatalogRecord(accessory));
   const synced = itemState.source === 'hypixel-sync';
-  const enrichment = capability.enrichment || '';
   const rarityText = itemState.recombobulated && capability.baseRarity !== capability.effectiveRarity
     ? `${capability.baseRarity} → ${capability.effectiveRarity}`
     : capability.effectiveRarity;
-  const enrichmentHint = capability.canEnrich
-    ? `${capability.effectiveRarity} is eligible. One Enrichment can be active on this accessory.`
-    : capability.baseRarity === 'EPIC' && capability.canRecombobulate && !itemState.recombobulated
-      ? 'Recombobulate EPIC → LEGENDARY to unlock Enrichments.'
-      : `${capability.effectiveRarity || capability.baseRarity} is below the LEGENDARY Enrichment requirement.`;
   const stateBadge = synced
     ? badge('profile sync', 'synced')
     : upgrade
@@ -424,20 +411,12 @@ function accessoryCatalogCard(accessory) {
     <div class="chips">
       ${badge(accessory.condition, 'soft')}
       ${badge(itemState.recombobulated ? 'recombobulated' : 'base rarity', itemState.recombobulated ? 'owned' : 'soft')}
-      ${badge(capability.canEnrich ? 'enrichment ready' : 'no enrichment yet', capability.canEnrich ? 'maxed' : 'soft')}
     </div>
     <div class="accessory-upgrades">
       <label class="accessory-upgrade-row">
         <span><strong>Recombobulator 3000</strong><small>Raises this accessory by exactly one rarity.</small></span>
         <input type="checkbox" data-accessory-recomb="${esc(accessory.itemId)}" ${itemState.recombobulated ? 'checked' : ''} ${capability.canRecombobulate ? '' : 'disabled'}>
       </label>
-      ${capability.canEnrich ? `<label class="accessory-upgrade-row accessory-enrichment-row">
-        <span><strong>Enrichment</strong><small>${esc(enrichmentHint)}</small></span>
-        <select data-accessory-enrichment="${esc(accessory.itemId)}">
-          <option value="">— none —</option>
-          ${ACCESSORY_ENRICHMENTS.map(option => `<option value="${esc(option.id)}" ${option.id === enrichment ? 'selected' : ''}>${esc(option.name)} · ${esc(option.bonus)}</option>`).join('')}
-        </select>
-      </label>` : ''}
       ${upgrade ? `<button class="ghost small accessory-progression-btn" type="button" data-open="${esc(upgrade.id)}">Open calculator progression</button>` : ''}
     </div>
   </article>`;
@@ -445,44 +424,16 @@ function accessoryCatalogCard(accessory) {
 
 function accessoriesPage() {
   const term = state.search.trim().toLowerCase();
-  const enrichmentSummary = farmingEnrichmentSummary(state.profile);
-  const enrichmentSource = enrichmentSummary.hasOverride
-    ? 'manual total override'
-    : enrichmentSummary.hasAccessoryBagData
-      ? 'full Accessory Bag sync'
-      : enrichmentSummary.manualKnownEnrichedAccessories > 0
-        ? 'manually configured Farming accessories'
-        : 'not set';
-  const detectedCounts = ACCESSORY_ENRICHMENTS
-    .filter(option => Number(enrichmentSummary.counts[option.id] || 0) > 0)
-    .map(option => badge(`${option.name} ×${enrichmentSummary.counts[option.id]}`, option.farmingRelevant ? 'maxed' : 'soft'))
-    .join('');
   const groups = FARMING_ACCESSORY_GROUPS.map(group => ({
     ...group,
     items: group.items.filter(item => !term
       || `${item.name} ${item.itemId} ${item.effect} ${item.condition}`.toLowerCase().includes(term)),
   })).filter(group => group.items.length);
 
-  return `${pageHeader('Accessories', 'Farming Accessories', 'Each Accessory keeps its own rarity upgrades. Recombobulation changes the effective rarity; Enrichments appear only when that concrete accessory is eligible.')}
-    <section class="accessory-enrichment-summary">
-      <div class="accessory-enrichment-stat">
-        <div class="eyebrow">Farming-relevant Enrichment bonus</div>
-        <strong>+${Number(enrichmentSummary.speed).toLocaleString('en-US')} Speed</strong>
-        <small>Source: ${esc(enrichmentSource)}</small>
-      </div>
-      <label class="accessory-enrichment-override">
-        <span><strong>Manual total Speed from Enrichments</strong><small>Leave blank to use the full synced Accessory Bag automatically. This is a total override, not an extra bonus.</small></span>
-        <input type="number" min="0" step="1" inputmode="numeric" data-enrichment-speed-override value="${enrichmentSummary.hasOverride ? esc(enrichmentSummary.override) : ''}" placeholder="${Number(enrichmentSummary.detectedSpeed).toLocaleString('en-US')}">
-      </label>
-      <div class="accessory-enrichment-detected">
-        <strong>Detected across all accessories</strong>
-        <span>Non-farming accessories are included. Only Speed is used as a farming-relevant Enrichment stat; Magic Find is not treated as a pest-farming bonus.</span>
-        <div class="chips">${detectedCounts || badge('no enrichments detected', 'soft')}</div>
-      </div>
-    </section>
+  return `${pageHeader('Accessories', 'Farming Accessories', 'Accessory progression keeps the physical item, effective rarity and Recombobulator state.')}
     <div class="accessory-model-note">
-      <strong>Exact item model and rarity rules</strong>
-      <span>Live Hypixel item metadata wins. Exact current player-head hashes are used as an offline fallback. A Recombobulator raises one rarity; an EPIC accessory therefore becomes LEGENDARY and can receive one Enrichment, while a recombobulated RARE accessory is only EPIC.</span>
+      <strong>Exact item model and rarity</strong>
+      <span>Live Hypixel item metadata wins. Exact current player-head hashes are used as an offline fallback. A Recombobulator raises the accessory by exactly one rarity and is tracked per physical accessory.</span>
     </div>
     ${groups.length ? groups.map(group => `
       <section class="accessory-group" data-accessory-group="${esc(group.id)}">
@@ -1294,32 +1245,12 @@ function bind() {
   const cf = document.getElementById('cropFortune');
   if (cf) cf.addEventListener('change', e => { state.profile.cropFortune[state.selectedCrop]=Number(e.target.value||0); saveState(); render(); });
 
-  document.querySelector('[data-enrichment-speed-override]')?.addEventListener('change', event => {
-    const raw = String(event.target.value || '').trim();
-    state.profile.enrichmentSpeedOverride = raw === '' ? null : Math.max(0, Number(raw) || 0);
-    saveState();
-    render();
-  });
-
   document.querySelectorAll('[data-accessory-recomb]').forEach(el => el.addEventListener('change', event => {
     const accessory = farmingAccessoryByItemId(event.target.dataset.accessoryRecomb);
     if (!accessory) return;
     state.profile.accessoryItems ||= {};
     const next = { ...(state.profile.accessoryItems[accessory.itemId] || {}) };
     next.recombobulated = Boolean(event.target.checked);
-    next.source = 'manual';
-    if (!canEnrichAccessory(accessory, next)) next.enrichment = null;
-    state.profile.accessoryItems[accessory.itemId] = next;
-    saveState();
-    render();
-  }));
-  document.querySelectorAll('[data-accessory-enrichment]').forEach(el => el.addEventListener('change', event => {
-    const accessory = farmingAccessoryByItemId(event.target.dataset.accessoryEnrichment);
-    if (!accessory) return;
-    state.profile.accessoryItems ||= {};
-    const next = { ...(state.profile.accessoryItems[accessory.itemId] || {}) };
-    if (!canEnrichAccessory(accessory, next)) return;
-    next.enrichment = normalizeAccessoryEnrichment(event.target.value);
     next.source = 'manual';
     state.profile.accessoryItems[accessory.itemId] = next;
     saveState();
