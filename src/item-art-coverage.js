@@ -166,21 +166,42 @@ function genericMaterialSvg(item, label) {
   return span;
 }
 
+function flatSkullNode(url, item, label) {
+  const span = document.createElement('span');
+  span.className = 'coverage-item-art coverage-skull-art coverage-skull-fallback';
+  span.setAttribute('role', 'img');
+  span.setAttribute('aria-label', `${label || item?.name || 'SkyBlock item'} head texture fallback`);
+  for (const layerName of ['face', 'hat']) {
+    const layer = document.createElement('span');
+    layer.className = `coverage-skull-layer coverage-skull-${layerName}`;
+    layer.style.backgroundImage = `url("${url}")`;
+    span.append(layer);
+  }
+  return span;
+}
+
 export function itemArtNode(item, label = '') {
   if (typeof document === 'undefined' || !item) return null;
   const url = skinTextureUrl(item);
   if (url) {
-    const span = document.createElement('span');
-    span.className = 'coverage-item-art coverage-skull-art';
-    span.setAttribute('role', 'img');
-    span.setAttribute('aria-label', `${label || item.name || 'SkyBlock item'} head texture`);
-    for (const layerName of ['face', 'hat']) {
-      const layer = document.createElement('span');
-      layer.className = `coverage-skull-layer coverage-skull-${layerName}`;
-      layer.style.backgroundImage = `url("${url}")`;
-      span.append(layer);
+    const textureId = url.split('/').pop();
+    const exactUrl = exactItemRenderUrl({ ...item, skullTexture: textureId });
+    if (exactUrl) {
+      const image = document.createElement('img');
+      image.className = 'coverage-item-art coverage-skull-art coverage-exact-item-art';
+      image.src = exactUrl;
+      image.alt = '';
+      image.loading = 'lazy';
+      image.decoding = 'async';
+      image.dataset.itemRenderer = 'skycrypt';
+      image.setAttribute('role', 'img');
+      image.setAttribute('aria-label', `${label || item.name || 'SkyBlock item'} exact head render`);
+      image.addEventListener('error', () => {
+        if (image.isConnected) image.replaceWith(flatSkullNode(url, item, label));
+      }, { once: true });
+      return image;
     }
-    return span;
+    return flatSkullNode(url, item, label);
   }
 
   // Hypixel does not currently ship Resource Pack models for armour. The
