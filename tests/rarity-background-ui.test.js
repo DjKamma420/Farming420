@@ -12,7 +12,10 @@ test('rarity presentation covers every physical farming item surface', () => {
   assert.match(uiSource, /\.slot-card\[data-slot/);
   assert.match(uiSource, /\.item-card\[data-open\]/);
   assert.match(uiSource, /physicalItemId/);
-  assert.match(uiSource, /applyProgressionCardRarity/);
+  assert.match(uiSource, /applyCatalogItemSurfaceRarity/);
+  assert.match(uiSource, /\.drawer/);
+  assert.match(uiSource, /\.sb-reforge-card/);
+  assert.match(uiSource, /\.workspace-level-row/);
   assert.match(uiSource, /\.sb-tool-card\[data-sb-tool-crop/);
   assert.match(uiSource, /data-tool-editor/);
   assert.match(uiSource, /data-vacuum-panel/);
@@ -24,7 +27,7 @@ test('rarity presentation covers every physical farming item surface', () => {
 test('physical progression cards use the official resolved item tier and non-items stay neutral', () => {
   assert.match(uiSource, /catalogItemById/);
   assert.match(uiSource, /item\?\.tier/);
-  assert.match(uiSource, /clearRarityClass\(card\)/);
+  assert.match(uiSource, /clearRarityClass\(surface\)/);
   assert.match(uiSource, /attributeFilter:\s*\['data-physical-item-id'\]/);
 });
 

@@ -242,19 +242,42 @@ function decorateProgressionCards(catalog) {
   });
 }
 
+function decorateDrawer(catalog, rawState) {
+  const drawer = document.querySelector('.drawer');
+  if (!drawer) return;
+  const entry = UPGRADES.find(item => item.id === rawState?.drawer);
+  const record = catalogItemForUpgrade(catalog, entry);
+  if (record) {
+    if (drawer.dataset.physicalItemId !== record.id) drawer.dataset.physicalItemId = record.id;
+  } else {
+    delete drawer.dataset.physicalItemId;
+  }
+}
+
 function decorateReforges(catalog) {
   document.querySelectorAll('.sb-reforge-card[data-sb-reforge]').forEach(card => {
     const reforgeId = card.dataset.sbReforge;
-    if (!reforgeId) return;
+    if (!reforgeId) {
+      delete card.dataset.physicalItemId;
+      return;
+    }
     const itemId = REFORGE_ITEM_IDS[reforgeId];
     const art = card.querySelector('.sb-reforge-art');
-    if (!itemId || !art) return;
+    if (!itemId || !art) {
+      delete card.dataset.physicalItemId;
+      return;
+    }
 
     // skyblock-redesign historically used fuzzy substring matching here. Remove
     // that image first so Blessed Fruit can never silently become Blessed Bait.
     art.querySelectorAll(':scope > .sb-pack-icon').forEach(node => node.remove());
     const record = catalogItemById(catalog, itemId);
-    const node = itemArtNode(record, record?.name || reforgeId);
+    if (!record) {
+      delete card.dataset.physicalItemId;
+      return;
+    }
+    if (card.dataset.physicalItemId !== record.id) card.dataset.physicalItemId = record.id;
+    const node = itemArtNode(record, record.name || reforgeId);
     if (node) putArt(art, node, `reforge:${itemId}`, { prepend: true });
   });
 }
@@ -263,9 +286,17 @@ function decorateToolProgression(catalog) {
   document.querySelectorAll('.workspace-level-row').forEach(row => {
     const label = row.querySelector('strong')?.textContent?.trim();
     const itemId = TOOL_PROGRESS_ITEM_IDS[label];
-    if (!itemId) return;
+    if (!itemId) {
+      delete row.dataset.physicalItemId;
+      return;
+    }
     const record = catalogItemById(catalog, itemId);
-    const node = itemArtNode(record, record?.name || label);
+    if (!record) {
+      delete row.dataset.physicalItemId;
+      return;
+    }
+    if (row.dataset.physicalItemId !== record.id) row.dataset.physicalItemId = record.id;
+    const node = itemArtNode(record, record.name || label);
     if (!node) return;
     const copy = row.querySelector(':scope > div:first-child');
     if (!copy) return;
@@ -296,6 +327,7 @@ export async function applyItemArtCoverage(root = document, rawState = readState
     if (!items.length) return 0;
     decorateSetupItems(items, rawState);
     decorateProgressionCards(items);
+    decorateDrawer(items, rawState);
     decorateReforges(items);
     decorateToolProgression(items);
     return items.length;
@@ -321,8 +353,8 @@ function boot() {
       const relevant = mutations.some(mutation => [...mutation.addedNodes].some(node =>
         node instanceof Element
         && !node.matches?.('.coverage-item-art')
-        && (node.matches?.('.item-card, .slot-portrait, [data-item-art-slot], .sb-reforge-card, .workspace-level-row')
-          || node.querySelector?.('.item-card, .slot-portrait, [data-item-art-slot], .sb-reforge-card, .workspace-level-row'))));
+        && (node.matches?.('.item-card, .drawer, .slot-portrait, [data-item-art-slot], .sb-reforge-card, .workspace-level-row')
+          || node.querySelector?.('.item-card, .drawer, .slot-portrait, [data-item-art-slot], .sb-reforge-card, .workspace-level-row'))));
       if (relevant) queueApply();
     }).observe(root, { childList: true, subtree: true });
   }
