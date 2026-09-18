@@ -69,7 +69,7 @@ function commit(item, updater) {
   const raw = load();
   const current = level(raw, item);
   writeLevel(raw, item, updater(current));
-  window.location.reload();
+  window.dispatchEvent(new Event('farming420:state-changed'));
 }
 
 function binaryControl(item, current) {
