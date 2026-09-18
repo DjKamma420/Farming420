@@ -61,11 +61,13 @@ test('collapsed rail reserves only the handle while the open rail overlays conte
   assert.match(mobile, /\.sidebar\.sb-rail \{[^}]*width:\s*44px/);
   assert.match(mobile, /\.main \{[^}]*margin-left:\s*44px/);
   assert.match(mobile, /\.sidebar\.sb-rail\.nav-open \{[^}]*width:\s*144px/);
+  assert.match(mobile, /\.sidebar\.sb-rail\.nav-open \{[^}]*padding:\s*6px 4px/);
   assert.doesNotMatch(mobile, /\.main \{[^}]*margin-left:\s*144px/);
 
   assert.match(mobile, /@media \(max-width:\s*650px\)[\s\S]*\.sidebar\.sb-rail \{[^}]*width:\s*40px/);
   assert.match(mobile, /@media \(max-width:\s*650px\)[\s\S]*\.main \{[^}]*margin-left:\s*40px/);
   assert.match(mobile, /\.sidebar\.sb-rail\.nav-open \{[^}]*width:\s*min\(138px,\s*calc\(100vw - 14px\)\)/);
+  assert.match(mobile, /@media \(max-width:\s*650px\)[\s\S]*\.sidebar\.sb-rail\.nav-open \{[^}]*padding:\s*4px 2px/);
 });
 
 test('navigation CSS is cache-busted in the page shell', () => {
