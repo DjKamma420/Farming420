@@ -2270,3 +2270,29 @@ startup smoke test passing, and the panel driven in a browser at 1280px and
 412px: 346,800 measured, an em-dash plus the missing list when unmeasured,
 +20 after typing a personal best, the value stored per crop, and the revenue
 ranking correctly absent from the goal mode.
+
+
+## 0.39.1 -- strategy metrics keep unknown distinct from zero
+
+- [x] Audit numeric coercion across the calculation models after the contest fix
+- [x] Keep absent explicit strategy objectives unknown
+- [x] Preserve an explicit measured zero as a valid objective value
+- [x] Pin all four non-coin strategy objective fields with regression tests
+
+### Why this was still wrong
+
+The 0.39.0 contest fix established the correct rule: reject absence before
+calling `Number()`. The generic strategy layer still used `Number(value)`
+directly. That made `null` and an empty string become zero, so a strategy with
+no measured contest score, Farming XP/hour, Tool XP/hour or progression/hour
+could be marked complete with an objective value of 0.
+
+The profit engine, Greenhouse model, Mooshroom Cow model and their explicit
+known-value helpers were checked in the same pass and already guard absence.
+The remaining unsafe helper was `strategy-model.js`.
+
+### Rule
+
+An absent explicit metric is `null`, never zero. A literal numeric zero is
+still valid when it was actually measured or supplied. This keeps incomplete
+strategies out of comparable rankings without erasing legitimate zero results.
