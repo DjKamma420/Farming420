@@ -72,7 +72,7 @@ test('collapsed rail reserves only the handle while the open rail overlays conte
 
 test('navigation CSS is cache-busted in the page shell', () => {
   const index = read('index.html');
-  assert.match(index, /src\/skyblock-redesign\.css\?v=20260918-5/);
+  assert.match(index, /src\/skyblock-redesign\.css\?v=20260918-6/);
   assert.match(index, /src\/mobile-taskbar\.css\?v=20260918-6/);
 });
 
