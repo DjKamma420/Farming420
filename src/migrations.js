@@ -144,6 +144,20 @@ function migrateRenamedToolKeys(state, warnings) {
   }
 }
 
+/**
+ * Schema 5 -> 6
+ *
+ * Accessories now keep physical item-local state for Recombobulators and
+ * Enrichments. The map starts empty so existing profiles do not gain invented
+ * item upgrades during migration.
+ */
+function migrateAccessoryItemState(state) {
+  const profile = state.profile ||= {};
+  if (!profile.accessoryItems || typeof profile.accessoryItems !== 'object' || Array.isArray(profile.accessoryItems)) {
+    profile.accessoryItems = {};
+  }
+}
+
 const MIGRATIONS = [
   {
     to: 2,
@@ -164,6 +178,11 @@ const MIGRATIONS = [
     to: 5,
     description: 'Move tool progress to the renamed specialised farming tools.',
     run: migrateRenamedToolKeys,
+  },
+  {
+    to: 6,
+    description: 'Add physical accessory Recombobulator and Enrichment state.',
+    run: migrateAccessoryItemState,
   },
 ];
 

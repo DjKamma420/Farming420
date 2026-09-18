@@ -220,11 +220,11 @@ function decorateProgressionCards(catalog) {
 function decorateAccessoryCatalog(catalog) {
   document.querySelectorAll('[data-accessory-item-id]').forEach(card => {
     const itemId = String(card.dataset.accessoryItemId || '').trim().toUpperCase();
-    const record = catalogItemById(catalog, itemId);
-    if (!record) {
-      delete card.dataset.physicalItemId;
-      return;
-    }
+    const catalogRecord = catalogItemById(catalog, itemId);
+    const record = catalogRecord || {
+      id: itemId,
+      name: card.querySelector('.item-title')?.textContent?.trim() || itemId,
+    };
     if (card.dataset.physicalItemId !== record.id) card.dataset.physicalItemId = record.id;
     const portrait = card.querySelector('.card-head > .card-portrait');
     if (!portrait || portrait.querySelector(':scope > .official-item-art, :scope > .coverage-item-art')) return;

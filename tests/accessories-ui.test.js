@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 
 import { UPGRADES } from '../src/data.js';
 import { FARMING_ACCESSORIES } from '../src/farming-accessories.js';
+import { ACCESSORY_CAPABILITIES_VERIFIED } from '../src/accessory-capabilities.js';
 
 test('every calculator-linked accessory resolves to the same exact physical item id', () => {
   const upgrades = new Map(UPGRADES.map(item => [item.id, item]));
@@ -39,4 +40,31 @@ test('conditional physical accessories stay in the accessories section', () => {
   assert.equal(byId.get('temporary-magic-8-ball-ff-roll')?.physicalItemId, 'MAGIC_8_BALL');
   assert.equal(byId.get('temporary-magic-8-ball-ff-roll')?.section, 'accessories');
   assert.equal(byId.get('accessory-relic-of-power-perfect-peridot-effect')?.physicalItemId, 'POWER_RELIC');
+});
+
+
+test('accessory cards expose item-local Recombobulator and Enrichment controls', () => {
+  const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  assert.match(source, /data-accessory-recomb=/);
+  assert.match(source, /data-accessory-enrichment=/);
+  assert.match(source, /ACCESSORY_ENRICHMENTS\.map/);
+  assert.match(source, /EPIC → LEGENDARY/);
+  assert.match(source, /farmingAccessoryByItemId/);
+  assert.equal(ACCESSORY_CAPABILITIES_VERIFIED, '2026-09-18');
+});
+
+test('accessory state is persistent and the Accessories page loads the official item catalog', () => {
+  const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  assert.match(source, /accessoryItems: \{\}/);
+  assert.match(source, /state\.profile\.accessoryItems/);
+  assert.match(source, /\['setups', 'accessories'\]\.includes\(state\.page\)/);
+});
+
+test('accessory cards are articles so nested controls remain valid interactive HTML', () => {
+  const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const start = source.indexOf('function accessoryCatalogCard');
+  const end = source.indexOf('function accessoriesPage', start);
+  const block = source.slice(start, end);
+  assert.match(block, /<article class="item-card accessory-catalog-card/);
+  assert.doesNotMatch(block, /const tag = upgrade/);
 });

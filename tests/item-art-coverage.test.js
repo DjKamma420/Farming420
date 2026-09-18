@@ -43,7 +43,11 @@ test('tool progression resolves Recombobulator as a physical item', () => {
   assert.ok(skinTextureUrl(catalogItemById(catalog, 'RECOMBOBULATOR_3000')).endsWith('c'.repeat(64)));
 });
 
-test('known equipment gets exact id-backed art while live Hypixel skin still wins', () => {
+test('known accessory and equipment ids get exact art while live Hypixel skin still wins', () => {
+  const accessoryFallback = skinTextureUrl({ id: 'HELIANTHUS_RELIC', skin: null });
+  assert.ok(accessoryFallback.endsWith('2e6c711f74f92bcbe486ec7e67810a16f0d1eaaac39b80d7a650cd81d611a2e7'));
+
+
   const fallback = skinTextureUrl({ id: 'BLOSSOM_CLOAK', skin: null });
   assert.ok(fallback.endsWith('8453a8084b7773c1b2bb6213901da8cfb50de5e5d0c8c524ff4fad0e182ea68b'));
 
@@ -119,6 +123,7 @@ test('accessory catalog cards are decorated by exact item id', () => {
   assert.match(source, /function decorateAccessoryCatalog/);
   assert.match(source, /dataset\.accessoryItemId/);
   assert.match(source, /catalogItemById\(catalog, itemId\)/);
+  assert.match(source, /catalogRecord \|\|/);
   assert.match(source, /decorateAccessoryCatalog\(items\)/);
 });
 

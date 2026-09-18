@@ -1,5 +1,11 @@
 import { CROPS, UPGRADES, HIDDEN_INTERACTIONS, COMING_SOON } from './data.js';
-import { FARMING_ACCESSORY_GROUPS } from './farming-accessories.js';
+import { FARMING_ACCESSORY_GROUPS, farmingAccessoryByItemId } from './farming-accessories.js';
+import {
+  ACCESSORY_ENRICHMENTS,
+  accessoryCapabilityState,
+  canEnrichAccessory,
+  normalizeAccessoryEnrichment,
+} from './accessory-capabilities.js';
 import { DATA_SCHEMA_VERSION, STORAGE_KEY } from './config.js';
 import { ensureProgressBucket, migrateState, toolKeyForCropId } from './migrations.js';
 import { applySnapshotToProgress, isAutoApplied } from './snapshot-apply.js';
@@ -92,6 +98,7 @@ const defaultState = {
     owned: {},
     costs: {},
     manualGain: {},
+    accessoryItems: {},
   }
 };
 
@@ -369,23 +376,43 @@ function accountPage() {
     ${groups.map(([title,cats]) => `<div class="group"><div class="section-row"><div><h2>${title}</h2></div></div><div class="card-grid">${visibleUpgrades('account').filter(x=>cats.includes(x.category)).map(x=>card(x)).join('')}</div></div>`).join('')}`;
 }
 
+function accessoryItemState(accessory) {
+  return state.profile.accessoryItems?.[accessory.itemId] || {};
+}
+
+function accessoryCatalogRecord(accessory) {
+  return itemCatalog.find(item => String(item?.id || '').toUpperCase() === accessory.itemId) || null;
+}
+
 function accessoryCatalogCard(accessory) {
   const upgrade = accessory.upgradeId
     ? UPGRADES.find(item => item.id === accessory.upgradeId)
     : null;
   const status = upgrade ? statusClass(upgrade) : '';
-  const tag = upgrade ? 'button' : 'article';
-  const action = upgrade ? ` type="button" data-open="${esc(upgrade.id)}"` : '';
-  const stateBadge = upgrade
-    ? badge(isMaxed(upgrade) ? 'owned' : 'not set', isMaxed(upgrade) ? 'maxed' : 'missing')
-    : badge('reference', 'soft');
+  const itemState = accessoryItemState(accessory);
+  const capability = accessoryCapabilityState(accessory, itemState, accessoryCatalogRecord(accessory));
+  const synced = itemState.source === 'hypixel-sync';
+  const enrichment = capability.enrichment || '';
+  const rarityText = itemState.recombobulated && capability.baseRarity !== capability.effectiveRarity
+    ? `${capability.baseRarity} → ${capability.effectiveRarity}`
+    : capability.effectiveRarity;
+  const enrichmentHint = capability.canEnrich
+    ? `${capability.effectiveRarity} is eligible. One Enrichment can be active on this accessory.`
+    : capability.baseRarity === 'EPIC' && capability.canRecombobulate && !itemState.recombobulated
+      ? 'Recombobulate EPIC → LEGENDARY to unlock Enrichments.'
+      : `${capability.effectiveRarity || capability.baseRarity} is below the LEGENDARY Enrichment requirement.`;
+  const stateBadge = synced
+    ? badge('profile sync', 'synced')
+    : upgrade
+      ? badge(isMaxed(upgrade) ? 'owned' : 'not set', isMaxed(upgrade) ? 'maxed' : 'missing')
+      : badge('manual state', 'soft');
 
-  return `<${tag} class="item-card accessory-catalog-card ${status}" data-accessory-item-id="${esc(accessory.itemId)}"${action}>
+  return `<article class="item-card accessory-catalog-card ${status}" data-accessory-item-id="${esc(accessory.itemId)}">
     <div class="card-layer"></div>
     <div class="card-head">
       <span class="card-portrait accessory-portrait" aria-hidden="true"></span>
       <div>
-        <div class="eyebrow">${esc(accessory.rarity)} · ${esc(accessory.itemId)}</div>
+        <div class="eyebrow">${esc(rarityText)} · ${esc(accessory.itemId)}</div>
         <div class="item-title">${esc(accessory.name)}</div>
       </div>
       ${stateBadge}
@@ -393,9 +420,24 @@ function accessoryCatalogCard(accessory) {
     <p class="accessory-effect">${esc(accessory.effect)}</p>
     <div class="chips">
       ${badge(accessory.condition, 'soft')}
-      ${upgrade ? badge('calculator-linked', 'synced') : badge('progression reference', 'soft')}
+      ${badge(itemState.recombobulated ? 'recombobulated' : 'base rarity', itemState.recombobulated ? 'owned' : 'soft')}
+      ${badge(capability.canEnrich ? 'enrichment ready' : 'no enrichment yet', capability.canEnrich ? 'maxed' : 'soft')}
     </div>
-  </${tag}>`;
+    <div class="accessory-upgrades">
+      <label class="accessory-upgrade-row">
+        <span><strong>Recombobulator 3000</strong><small>Raises this accessory by exactly one rarity.</small></span>
+        <input type="checkbox" data-accessory-recomb="${esc(accessory.itemId)}" ${itemState.recombobulated ? 'checked' : ''} ${capability.canRecombobulate ? '' : 'disabled'}>
+      </label>
+      <label class="accessory-upgrade-row accessory-enrichment-row">
+        <span><strong>Enrichment</strong><small>${esc(enrichmentHint)}</small></span>
+        <select data-accessory-enrichment="${esc(accessory.itemId)}" ${capability.canEnrich ? '' : 'disabled'}>
+          <option value="">— none —</option>
+          ${ACCESSORY_ENRICHMENTS.map(option => `<option value="${esc(option.id)}" ${option.id === enrichment ? 'selected' : ''}>${esc(option.name)} · ${esc(option.bonus)}</option>`).join('')}
+        </select>
+      </label>
+      ${upgrade ? `<button class="ghost small accessory-progression-btn" type="button" data-open="${esc(upgrade.id)}">Open calculator progression</button>` : ''}
+    </div>
+  </article>`;
 }
 
 function accessoriesPage() {
@@ -406,10 +448,10 @@ function accessoriesPage() {
       || `${item.name} ${item.itemId} ${item.effect} ${item.condition}`.toLowerCase().includes(term)),
   })).filter(group => group.items.length);
 
-  return `${pageHeader('Accessories', 'Farming Accessories', 'Accessory Bag progression is kept separate from wearable armor/equipment setups. Cards use exact SkyBlock item IDs so the art layer can load the real Hypixel item skin instead of a guessed icon.')}
+  return `${pageHeader('Accessories', 'Farming Accessories', 'Each Accessory keeps its own rarity upgrades. Recombobulation changes the effective rarity; Enrichments unlock only when the resulting accessory is eligible.')}
     <div class="accessory-model-note">
-      <strong>Model source</strong>
-      <span>Hypixel /v2/resources/skyblock/items → exact item ID → skin hash → textures.minecraft.net. Upgrade-family members are shown individually but are not added together.</span>
+      <strong>Exact item model and rarity rules</strong>
+      <span>Live Hypixel item metadata wins. Exact current player-head hashes are used as an offline fallback. A Recombobulator raises one rarity; an EPIC accessory therefore becomes LEGENDARY and can receive one Enrichment, while a recombobulated RARE accessory is only EPIC.</span>
     </div>
     ${groups.length ? groups.map(group => `
       <section class="accessory-group" data-accessory-group="${esc(group.id)}">
@@ -1038,8 +1080,8 @@ function bindSetups() {
 }
 
 /**
- * The official item list is fetched once per session when the Setups page is
- * first opened, so the app does not pay for it on every start.
+ * The official item list is fetched once per session when an item-aware page
+ * first opens, so the app does not pay for it on every start.
  */
 async function ensureItemCatalog() {
   if (catalogRequested) return;
@@ -1048,7 +1090,7 @@ async function ensureItemCatalog() {
   itemCatalog = result.items;
   catalogNotice = result.error;
   // Only repaint when there is something new to show.
-  if (state.page === 'setups' && (result.items.length || result.error)) render();
+  if (['setups', 'accessories'].includes(state.page) && (result.items.length || result.error)) render();
 }
 
 // --- Guide 0-60 -------------------------------------------------------------
@@ -1187,10 +1229,8 @@ function render() {
   }
   document.getElementById('app').innerHTML = shell(content);
   bind();
-  if (state.page === 'setups') {
-    bindSetups();
-    ensureItemCatalog();
-  }
+  if (state.page === 'setups') bindSetups();
+  if (['setups', 'accessories'].includes(state.page)) ensureItemCatalog();
   if (state.page === 'tools') bindToolPanel();
   if (state.page === 'guide') bindGuide();
 }
@@ -1217,6 +1257,31 @@ function bind() {
   if (gf) gf.addEventListener('change', e => { state.profile.globalFortune=Number(e.target.value||0); saveState(); render(); });
   const cf = document.getElementById('cropFortune');
   if (cf) cf.addEventListener('change', e => { state.profile.cropFortune[state.selectedCrop]=Number(e.target.value||0); saveState(); render(); });
+
+  document.querySelectorAll('[data-accessory-recomb]').forEach(el => el.addEventListener('change', event => {
+    const accessory = farmingAccessoryByItemId(event.target.dataset.accessoryRecomb);
+    if (!accessory) return;
+    state.profile.accessoryItems ||= {};
+    const next = { ...(state.profile.accessoryItems[accessory.itemId] || {}) };
+    next.recombobulated = Boolean(event.target.checked);
+    next.source = 'manual';
+    if (!canEnrichAccessory(accessory, next)) next.enrichment = null;
+    state.profile.accessoryItems[accessory.itemId] = next;
+    saveState();
+    render();
+  }));
+  document.querySelectorAll('[data-accessory-enrichment]').forEach(el => el.addEventListener('change', event => {
+    const accessory = farmingAccessoryByItemId(event.target.dataset.accessoryEnrichment);
+    if (!accessory) return;
+    state.profile.accessoryItems ||= {};
+    const next = { ...(state.profile.accessoryItems[accessory.itemId] || {}) };
+    if (!canEnrichAccessory(accessory, next)) return;
+    next.enrichment = normalizeAccessoryEnrichment(event.target.value);
+    next.source = 'manual';
+    state.profile.accessoryItems[accessory.itemId] = next;
+    saveState();
+    render();
+  }));
 
   document.querySelectorAll('[data-step]').forEach(el => el.addEventListener('click', () => {
     const item = UPGRADES.find(x=>x.id===el.dataset.id); if (!item) return;
