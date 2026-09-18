@@ -1,6 +1,6 @@
 import { STORAGE_KEY } from './config.js';
 import { itemAssetForSkyblockId, loadItemAssetManifest } from './item-assets.js';
-import { knownSkyblockHeadTexture, knownSkyblockRenderedIcon, skullTextureUrl } from './skull-art.js?v=20260918-3';
+import { knownSkyblockHeadTexture, knownSkyblockRenderedIcon, skullTextureUrl } from './skull-art.js?v=20260918-4';
 
 let manifest = null;
 let manifestRequested = false;
