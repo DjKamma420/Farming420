@@ -62,6 +62,10 @@ export const KNOWN_FARMING_EQUIPMENT_RENDERED_ICONS = Object.freeze({
   // Exact rendered item icon, verified against the current item page.
   // This bypasses player-skin cropping on clients where that route renders blank.
   PESTHUNTERS_NECKLACE: 'https://skyah.net/icons/items/pesthunters_necklace.webp',
+  // SkyAH's Helianthus item pages use the underlying vanilla iron sprites for
+  // these two pieces instead of a SkyBlock-id-specific icon path.
+  HELIANTHUS_CHESTPLATE: 'https://skyah.net/icons/items/iron_chestplate.webp',
+  HELIANTHUS_BOOTS: 'https://skyah.net/icons/items/iron_boots.webp',
 });
 
 const FARMING_ARMOR_RENDERED_ICON_PREFIXES = Object.freeze([
