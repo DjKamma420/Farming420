@@ -105,6 +105,14 @@
   gap: 12px;
 }
 
+.item-editor-head.item-editor-actions {
+  grid-template-columns: 1fr;
+}
+
+.item-editor-head.item-editor-actions > button {
+  width: 100%;
+}
+
 .item-identity { min-width: 0; }
 
 .item-editor .item-title {
