@@ -1223,10 +1223,26 @@ function bindGuide() {
   }));
 }
 
+function restoreScrollState(scrollState) {
+  if (!scrollState) return;
+  const main = document.querySelector('#app .main');
+  const nav = document.querySelector('#app .sidebar nav');
+  if (main) main.scrollTop = scrollState.main;
+  if (nav) nav.scrollTop = scrollState.nav;
+  window.scrollTo(scrollState.windowX, scrollState.windowY);
+}
+
 function render({ preserveScroll = true } = {}) {
   // Most state changes only alter a control/card. Replacing #app is still the
   // core render model, but it must not behave like navigation: keep the right
   // content pane and the navigation rail exactly where the user left them.
+  //
+  // Enhancement modules move and replace nodes in MutationObserver callbacks
+  // after this function returns (notably the docked tool editor). Restoring
+  // scroll only once, synchronously, therefore still lets the visible viewport
+  // jump when those post-render mutations change the layout. Restore now and
+  // again on the next two animation frames so the final enhanced layout keeps
+  // exactly the same scroll coordinates.
   const scrollState = preserveScroll ? {
     main: document.querySelector('#app .main')?.scrollTop || 0,
     nav: document.querySelector('#app .sidebar nav')?.scrollTop || 0,
@@ -1265,11 +1281,11 @@ function render({ preserveScroll = true } = {}) {
   if (state.page === 'guide') bindGuide();
 
   if (scrollState) {
-    const main = document.querySelector('#app .main');
-    const nav = document.querySelector('#app .sidebar nav');
-    if (main) main.scrollTop = scrollState.main;
-    if (nav) nav.scrollTop = scrollState.nav;
-    window.scrollTo(scrollState.windowX, scrollState.windowY);
+    restoreScrollState(scrollState);
+    requestAnimationFrame(() => {
+      restoreScrollState(scrollState);
+      requestAnimationFrame(() => restoreScrollState(scrollState));
+    });
   }
 }
 
