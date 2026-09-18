@@ -42,6 +42,7 @@ import {
   setupSummary,
 } from './setups.js';
 import {
+  intrinsicEnchantmentsForCatalogItem,
   itemsForSlot,
   loadItemCatalog,
   readCachedCatalog,
@@ -987,9 +988,11 @@ function bindSetups() {
   });
   document.querySelector(`[data-slot-item="${slotId}"]`)?.addEventListener('change', event => {
     const chosen = itemsForSlot(itemCatalog, slotId).find(entry => entry.id === event.target.value);
+    const changingItem = Boolean(chosen?.id && chosen.id !== currentItem().skyblockId);
     patch({
       skyblockId: chosen?.id ?? null,
       displayName: chosen?.name ?? currentItem().displayName,
+      enchantments: changingItem ? intrinsicEnchantmentsForCatalogItem(chosen) : currentItem().enchantments,
       // Hypixel's own item resource carries the base tier, so picking an item
       // from the list colours it correctly without anyone typing a rarity. A
       // recombobulator raises the shown rarity, which the editor states
