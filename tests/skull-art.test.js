@@ -109,6 +109,31 @@ test('Pesthunter necklace has an exact rendered item icon fallback', () => {
   assert.equal(knownSkyblockRenderedIcon('NOT_REAL'), null);
 });
 
+test('farming armor uses the same exact rendered-icon path as equipment', () => {
+  const cases = {
+    FARM_SUIT_LEGGINGS: 'https://skyah.net/icons/items/farm_suit_leggings.webp',
+    FARM_ARMOR_CHESTPLATE: 'https://skyah.net/icons/items/farm_armor_chestplate.webp',
+    MELON_BOOTS: 'https://skyah.net/icons/items/melon_boots.webp',
+    CROPIE_HELMET: 'https://skyah.net/icons/items/cropie_helmet.webp',
+    SQUASH_LEGGINGS: 'https://skyah.net/icons/items/squash_leggings.webp',
+    FERMENTO_HELMET: 'https://skyah.net/icons/items/fermento_helmet.webp',
+    HELIANTHUS_CHESTPLATE: 'https://skyah.net/icons/items/helianthus_chestplate.webp',
+    RANCHERS_BOOTS: 'https://skyah.net/icons/items/ranchers_boots.webp',
+    FARMER_BOOTS: 'https://skyah.net/icons/items/farmer_boots.webp',
+    PUFFERFISH_HAT: 'https://skyah.net/icons/items/pufferfish_hat.webp',
+  };
+  for (const [id, url] of Object.entries(cases)) {
+    assert.equal(knownSkyblockRenderedIcon(id), url, id);
+  }
+  assert.equal(
+    knownSkyblockRenderedIcon('PUFFERFISH_HELMET'),
+    'https://skyah.net/icons/items/pufferfish_hat.webp',
+    'legacy pufferfish id uses the current item id',
+  );
+  assert.equal(knownSkyblockRenderedIcon('PUMPKIN_DICER'), null, 'only armor slot suffixes are accepted');
+  assert.equal(knownSkyblockRenderedIcon('FERMENTO_ARTIFACT'), null, 'accessories stay on their own head-model path');
+});
+
 test('anything that is not a plain hex id is refused', () => {
   // This id is interpolated into a URL the page then loads. A field from a
   // remote payload must never become an arbitrary request.
