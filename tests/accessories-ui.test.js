@@ -48,7 +48,7 @@ test('accessory cards expose only item-local Recombobulator controls', () => {
   assert.match(source, /data-accessory-recomb=/);
   assert.doesNotMatch(source, /data-accessory-enrichment=/);
   assert.doesNotMatch(source, /ACCESSORY_ENRICHMENTS/);
-  assert.match(source, /EPIC → LEGENDARY/);
+  assert.match(source, /baseRarity.*effectiveRarity/);
   assert.match(source, /farmingAccessoryByItemId/);
   assert.equal(ACCESSORY_CAPABILITIES_VERIFIED, '2026-09-18');
 });
