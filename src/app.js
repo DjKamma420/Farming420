@@ -1,7 +1,7 @@
 import { CROPS, UPGRADES, HIDDEN_INTERACTIONS, COMING_SOON } from './data.js';
 import { DATA_SCHEMA_VERSION, STORAGE_KEY } from './config.js';
 import { ensureProgressBucket, migrateState, toolKeyForCropId } from './migrations.js';
-import { applySnapshotToProgress, isAutoApplied } from './snapshot-apply.js';
+import { applySnapshotToProgress, isAutoApplied, turboProgressEntryId } from './snapshot-apply.js';
 import { LOCATION_STATUS, isSyncFilled, locationFor, manualEntries, manualEntrySummary } from './help-locations.js';
 import {
   ARMOR_CHAIN,
@@ -148,6 +148,16 @@ function isCropScopedItem(item) {
   return item.section === 'crops' || item.section === 'tools';
 }
 
+/**
+ * Most physical-tool progress shares one store. The Eclipse Sickle is the
+ * exception only for its two crop-specific Turbo enchants: Sunflower and
+ * Moonflower share the item but not the Turbo level that applies to each crop.
+ */
+function entryStorageId(item) {
+  if (item?.id === 'tool-enchant-turbo-crop') return turboProgressEntryId(state.selectedCrop);
+  return item?.id;
+}
+
 /** The autoApplied scope key an entry is recorded under, matching itemStore. */
 function autoScopeKey(item) {
   if (item.section === 'crops') return `crop:${state.selectedCrop}`;
@@ -156,7 +166,7 @@ function autoScopeKey(item) {
 }
 
 function isSynced(item) {
-  return isAutoApplied(state, autoScopeKey(item), item.id);
+  return isAutoApplied(state, autoScopeKey(item), entryStorageId(item));
 }
 
 function itemStore(item) {
@@ -173,12 +183,14 @@ function itemStore(item) {
 
 function currentLevel(item) {
   const store = itemStore(item);
-  return Math.max(0, Math.min(Number(item.max || 1), Number(store.levels[item.id] || 0)));
+  const storageId = entryStorageId(item);
+  return Math.max(0, Math.min(Number(item.max || 1), Number(store.levels[storageId] || 0)));
 }
 
 function isOwned(item) {
   const store = itemStore(item);
-  return Boolean(store.owned[item.id]) || currentLevel(item) > 0;
+  const storageId = entryStorageId(item);
+  return Boolean(store.owned[storageId]) || currentLevel(item) > 0;
 }
 
 function isMaxed(item) {
@@ -199,7 +211,7 @@ function visibleUpgrades(section) {
 }
 
 function gainFor(item) {
-  const manual = itemStore(item).manualGain[item.id];
+  const manual = itemStore(item).manualGain[entryStorageId(item)];
   if (manual !== undefined && manual !== '' && !Number.isNaN(Number(manual))) return Number(manual);
   if (item.name === 'Switch to best farming pet') return item.rawMarginal || 0;
   return Number(item.stepGain || item.rawMarginal || 0);
@@ -226,7 +238,7 @@ function plannerCandidates() {
     .filter(item => !isMaxed(item))
     .map(item => {
       const gain = gainFor(item);
-      const cost = Number(itemStore(item).costs[item.id] || 0);
+      const cost = Number(itemStore(item).costs[entryStorageId(item)] || 0);
       const rel = relativeGainPct(item);
       const efficiency = cost > 0 ? rel / (cost / 1_000_000) : null;
       return { item, gain, rel, cost, efficiency };
@@ -412,15 +424,18 @@ const TOOL_PANEL_ENTRIES = new Map(UPGRADES.map(entry => [entry.id, entry]));
 
 function setEntryLevel(item, level) {
   const store = itemStore(item);
-  const max = Number(item.max || 1);
-  const value = Math.max(0, Math.min(max, Math.floor(Number(level) || 0)));
+  const storageId = entryStorageId(item);
+  const min = Math.max(1, Number(item.min || 1));
+  const max = Math.max(min, Number(item.max || 1));
+  const raw = Math.floor(Number(level) || 0);
+  const value = raw <= 0 ? 0 : Math.max(min, Math.min(max, raw));
   if (value <= 0) {
-    delete store.levels[item.id];
-    delete store.owned[item.id];
+    delete store.levels[storageId];
+    delete store.owned[storageId];
     return;
   }
-  store.levels[item.id] = value;
-  store.owned[item.id] = true;
+  store.levels[storageId] = value;
+  store.owned[storageId] = true;
 }
 
 /** Clears the other members of a group the game only lets you hold one of. */
@@ -573,8 +588,9 @@ function drawer() {
   const level = currentLevel(item);
   const max = Number(item.max||1);
   const store = itemStore(item);
-  const cost = store.costs[item.id] ?? '';
-  const manual = store.manualGain[item.id] ?? '';
+  const storageId = entryStorageId(item);
+  const cost = store.costs[storageId] ?? '';
+  const manual = store.manualGain[storageId] ?? '';
   return `<div class="drawer-backdrop" data-close-drawer><aside class="drawer">
     <div class="drawer-top"><div><div class="eyebrow">${esc(item.category)}</div><h2>${esc(item.name)}</h2></div><button class="close" data-close-drawer>×</button></div>
     <div class="drawer-badges">${badge(item.status,item.status==='VERIFY'?'verify':'soft')} ${isCropScopedItem(item)?badge(crop().name,'soft'):(item.cropScope!=='Any'?badge(item.cropScope,'soft'):'')} ${item.modeScope!=='Any'?badge(item.modeScope,'soft'):''}</div>
@@ -1171,29 +1187,35 @@ function bind() {
   document.querySelectorAll('[data-step]').forEach(el => el.addEventListener('click', () => {
     const item = UPGRADES.find(x=>x.id===el.dataset.id); if (!item) return;
     const store = itemStore(item);
-    store.levels[item.id] = Math.max(0, Math.min(Number(item.max||1), currentLevel(item)+Number(el.dataset.step)));
-    store.owned[item.id] = store.levels[item.id] > 0;
+    const storageId = entryStorageId(item);
+    const next = currentLevel(item) + Number(el.dataset.step);
+    const min = Math.max(1, Number(item.min || 1));
+    store.levels[storageId] = next <= 0 ? 0 : Math.max(min, Math.min(Number(item.max||1), next));
+    store.owned[storageId] = store.levels[storageId] > 0;
     saveState(); render();
   }));
   document.querySelectorAll('[data-max]').forEach(el => el.addEventListener('click', () => {
     const item = UPGRADES.find(x=>x.id===el.dataset.max); if (!item) return;
     const store = itemStore(item);
-    store.levels[item.id]=Number(item.max||1); store.owned[item.id]=true; saveState(); render();
+    const storageId = entryStorageId(item);
+    store.levels[storageId]=Number(item.max||1); store.owned[storageId]=true; saveState(); render();
   }));
   document.querySelectorAll('[data-owned]').forEach(el => el.addEventListener('change', e => {
     const item = UPGRADES.find(x=>x.id===e.target.dataset.owned); if (!item) return;
     const store = itemStore(item);
-    store.owned[item.id]=e.target.checked;
-    store.levels[item.id]=e.target.checked?1:0; saveState(); render();
+    const storageId = entryStorageId(item);
+    store.owned[storageId]=e.target.checked;
+    store.levels[storageId]=e.target.checked?Math.max(1, Number(item.min || 1)):0; saveState(); render();
   }));
   document.querySelectorAll('[data-cost]').forEach(el => el.addEventListener('change', e => {
     const item = UPGRADES.find(x=>x.id===e.target.dataset.cost); if (!item) return;
-    itemStore(item).costs[item.id]=Number(e.target.value||0); saveState(); render();
+    itemStore(item).costs[entryStorageId(item)]=Number(e.target.value||0); saveState(); render();
   }));
   document.querySelectorAll('[data-manual]').forEach(el => el.addEventListener('change', e => {
     const item = UPGRADES.find(x=>x.id===e.target.dataset.manual); if (!item) return;
     const store = itemStore(item);
-    const v=e.target.value; if(v==='') delete store.manualGain[item.id]; else store.manualGain[item.id]=Number(v); saveState(); render();
+    const storageId = entryStorageId(item);
+    const v=e.target.value; if(v==='') delete store.manualGain[storageId]; else store.manualGain[storageId]=Number(v); saveState(); render();
   }));
 
   // Export/import share the versioned, validated backup format used by Settings,
