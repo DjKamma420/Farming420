@@ -35,6 +35,17 @@ test('dockToolEditor runs in the apply pass', () => {
   assert.match(read('skyblock-redesign.js'), /\n\s*dockToolEditor\(\);/, 'never called');
 });
 
+test('the expanded tool editor does not repeat the selected tool identity', () => {
+  const app = read('app.js');
+  const start = app.indexOf('function toolItemPanel()');
+  const end = app.indexOf('\nfunction bindToolPanel()', start);
+  assert.ok(start >= 0 && end > start, 'toolItemPanel block not found');
+  const fn = app.slice(start, end);
+  assert.doesNotMatch(fn, /item-editor-head/);
+  assert.doesNotMatch(fn, /item-portrait/);
+  assert.doesNotMatch(fn, /item-identity/);
+});
+
 test('the docked editor spans the whole card row', () => {
   const css = read('skyblock-redesign.css').replace(/\/\*[\s\S]*?\*\//g, '');
   assert.match(
@@ -61,7 +72,7 @@ test('tool cards and shared item editors stay compact', () => {
   const redesign = read('skyblock-redesign.css').replace(/\/\*[\s\S]*?\*\//g, '');
   const editor = read('item-editor.css').replace(/\/\*[\s\S]*?\*\//g, '');
   assert.match(redesign, /\.sb-tool-card \{[^}]*min-height:\s*58px/);
-  assert.match(redesign, /\.sb-reforge-card \{[^}]*min-height:\s*86px/);
+  assert.match(redesign, /\.sb-reforge-card \{[^}]*min-height:\s*58px/);
   assert.match(editor, /\.item-editor \{[^}]*padding:\s*14px/);
   assert.match(editor, /\.item-portrait \{\s*width:\s*58px;\s*height:\s*58px/);
 });

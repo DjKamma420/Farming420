@@ -588,18 +588,7 @@ function toolEntryLine(item) {
 }
 
 function toolItemPanel() {
-  const tool = crop().tool;
-  const filled = toolPanelEntryIds().filter(id => isOwned(TOOL_PANEL_ENTRIES.get(id))).length;
-
   return `<div class="item-editor rarity-unknown" data-tool-editor="1">
-    <header class="item-editor-head">
-      <div class="item-portrait"><span class="item-portrait-fallback" aria-hidden="true">${esc(tool.slice(0, 2).toUpperCase())}</span></div>
-      <div class="item-identity">
-        <div class="eyebrow">Tool · ${esc(crop().name)}</div>
-        <strong class="item-title">${esc(tool)}</strong>
-        <span class="item-rarity">${filled}/${toolPanelEntryIds().length} parts set</span>
-      </div>
-    </header>
     ${TOOL_PANEL.map(group => `<section class="item-editor-section">
       <div class="section-row"><div><h3>${esc(group.title)}</h3><p>${esc(group.note)}</p></div></div>
       <div class="enchant-grid">${group.entries.map(id => toolEntryLine(TOOL_PANEL_ENTRIES.get(id))).join('')}</div>
