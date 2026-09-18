@@ -2,6 +2,8 @@ import { CROPS, UPGRADES, HIDDEN_INTERACTIONS, COMING_SOON } from './data.js';
 import { FARMING_ACCESSORY_GROUPS, farmingAccessoryByItemId } from './farming-accessories.js';
 import { accessoryCapabilityState } from './accessory-capabilities.js';
 import { DATA_SCHEMA_VERSION, STORAGE_KEY } from './config.js';
+import { computeStatTotals } from './computed-stats.js';
+import { activityLabel, activityModeForState } from './activity-mode.js';
 import { ensureProgressBucket, migrateState, toolKeyForCropId } from './migrations.js';
 import { applySnapshotToProgress, isAutoApplied } from './snapshot-apply.js';
 import { LOCATION_STATUS, isSyncFilled, locationFor, manualEntries, manualEntrySummary } from './help-locations.js';
@@ -329,32 +331,77 @@ function pageHeader(kicker, title, text='') {
 }
 
 function dashboard() {
-  const candidate = plannerCandidates()[0];
-  const maxed = UPGRADES.filter(isMaxed).length;
-  const active = UPGRADES.filter(x => x.status === 'ACTIVE').length;
-  const cropItems = UPGRADES.filter(appliesToCrop);
-  const cropMaxed = cropItems.filter(isMaxed).length;
+  const mode = activityModeForState(state);
+  const selectedCrop = crop();
+  const stats = computeStatTotals(state, selectedCrop.id, mode);
+  const fortuneIncomplete = stats.incomplete.globalFortune.length
+    + stats.incomplete.cropFortune.length
+    + stats.incomplete.pestFortune.length;
+  const marker = count => count ? ' ~' : '';
+  const number = value => Number(value || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
+  const cropRows = CROPS.map(entry => {
+    const values = computeStatTotals(state, entry.id, mode);
+    const incomplete = values.incomplete.globalFortune.length
+      + values.incomplete.cropFortune.length
+      + values.incomplete.pestFortune.length
+      + values.incomplete.overbloom.length
+      + values.incomplete.bonusPestChance.length;
+    return `
+      <article class="stat-card dashboard-crop-result ${entry.id === selectedCrop.id ? 'selected' : ''}">
+        <span>${esc(entry.name)}</span>
+        <strong>${number(values.effectiveFortune)} FF${marker(
+          values.incomplete.globalFortune.length
+          + values.incomplete.cropFortune.length
+          + values.incomplete.pestFortune.length
+        )}</strong>
+        <small>Crop FF ${number(values.cropFortune)} · Pest FF ${number(values.pestFortune)}</small>
+        <small>Overbloom ${number(values.overbloom)}${marker(values.incomplete.overbloom.length)} · BPC ${number(values.bonusPestChance)}${marker(values.incomplete.bonusPestChance.length)}</small>
+        ${incomplete ? '<small>~ enthält noch nicht vollständig modellierte Quellen</small>' : '<small>vollständig aus bekannten Quellen berechnet</small>'}
+      </article>`;
+  }).join('');
+
   return `
-    ${pageHeader('Dashboard', 'Your Farming Progress', 'Only the important decisions are shown here. Open a layer for details.')}
-    <div class="hero-grid">
-      <div class="hero-card primary">
-        <div class="eyebrow">Next upgrade</div>
-        ${candidate ? `
-          <h2>${esc(candidate.item.name)}</h2>
-          <p>+${candidate.gain.toLocaleString('en-US')} marginal stat · about ${candidate.rel.toFixed(2)}% relative gain in the current ${esc(crop().name)}-Setup.</p>
-          <button class="primary-btn" data-open="${candidate.item.id}">Open details</button>
-        ` : `<h2>No calculated upgrade</h2><p>No active upgrade with a calculated marginal gain is available for the current profile state.</p>`}
-      </div>
-      <div class="stat-card"><span>Total</span><strong>${maxed}/${active}</strong><small>active entries maxed</small></div>
-      <div class="stat-card"><span>${esc(crop().name)}</span><strong>${cropMaxed}/${cropItems.length}</strong><small>relevant entries maxed</small></div>
-      <div class="stat-card"><span>Effective Fortune</span><strong>${effectiveFortune()}</strong><small>global + ${esc(crop().name)}</small></div>
+    ${pageHeader('Dashboard', 'Calculated Farming Stats', `Read-only result overview · ${activityLabel(mode)} · ${selectedCrop.name}. Configuration stays in the dedicated tabs.`)}
+    <div class="card-grid dashboard-results-grid">
+      <article class="stat-card">
+        <span>Effective Farming Fortune</span>
+        <strong>${number(stats.effectiveFortune)}${marker(fortuneIncomplete)}</strong>
+        <small>Global + Crop + Pest Fortune for the active context</small>
+      </article>
+      <article class="stat-card">
+        <span>Global Farming Fortune</span>
+        <strong>${number(stats.globalFortune)}${marker(stats.incomplete.globalFortune.length)}</strong>
+        <small>Account-wide Fortune used by this set</small>
+      </article>
+      <article class="stat-card">
+        <span>${esc(selectedCrop.name)} Crop Fortune</span>
+        <strong>${number(stats.cropFortune)}${marker(stats.incomplete.cropFortune.length)}</strong>
+        <small>Crop- and tool-specific Fortune</small>
+      </article>
+      <article class="stat-card">
+        <span>Pest Fortune</span>
+        <strong>${number(stats.pestFortune)}${marker(stats.incomplete.pestFortune.length)}</strong>
+        <small>Pest/Vacuum Fortune in the active context</small>
+      </article>
+      <article class="stat-card">
+        <span>Overbloom</span>
+        <strong>${number(stats.overbloom)}${marker(stats.incomplete.overbloom.length)}</strong>
+        <small>Calculated rare-crop multiplier stat</small>
+      </article>
+      <article class="stat-card">
+        <span>Bonus Pest Chance</span>
+        <strong>${number(stats.bonusPestChance)}${marker(stats.incomplete.bonusPestChance.length)}</strong>
+        <small>Calculated BPC for the active set</small>
+      </article>
     </div>
 
-    <div class="section-row"><div><h2>Account layer</h2><p>Global progression that affects multiple crops.</p></div><button class="ghost" data-page="account">View all</button></div>
-    <div class="card-grid">${visibleUpgrades('account').slice(0,6).map(x=>card(x,true)).join('')}</div>
-
-    <div class="section-row"><div><h2>${esc(crop().name)} layer</h2><p>Crop-specific progression and its physical farming tool.</p></div><button class="ghost" data-page="crops">Open crop</button></div>
-    ${cropFocusCard()}
+    <div class="section-row">
+      <div>
+        <h2>All crops</h2>
+        <p>Same calculation model across every crop. The selected crop is highlighted by context in the header.</p>
+      </div>
+    </div>
+    <div class="card-grid dashboard-crop-results">${cropRows}</div>
   `;
 }
 
