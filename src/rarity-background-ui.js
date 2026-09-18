@@ -10,6 +10,7 @@ import { TOOL_TIER_CHAIN, highestChainTier } from './progression-chains.js';
 import { catalogItemByExactId, farmingToolSkyblockId } from './exact-farming-items.js';
 import { deriveRarity } from './tool-rarity.js';
 import { vacuumRarity } from './vacuum-state.js';
+import { setTextIfChanged } from './set-text.js';
 
 const RECOMB_ID = 'tool-recombobulator-effect-on-tool-stats';
 const RARITY_CLASSES = Object.freeze([
@@ -67,11 +68,10 @@ function applySetupRarity(root, state, catalog) {
     if (!rarityLabel) continue;
     const base = normalizeRarity(catalogItem?.tier) || normalizeRarity(item.rarity);
     const source = item.source === 'sync' ? ' · synced' : '';
-    if (item.recombobulated && base && base !== rarity) {
-      rarityLabel.textContent = `${rarity} · base ${base} + Recombobulator${source}`;
-    } else {
-      rarityLabel.textContent = `${rarity}${source}`;
-    }
+    const label = item.recombobulated && base && base !== rarity
+      ? `${rarity} · base ${base} + Recombobulator${source}`
+      : `${rarity}${source}`;
+    setTextIfChanged(rarityLabel, label);
   }
 }
 
@@ -98,6 +98,31 @@ function toolRarityForCrop(state, cropId, catalog) {
   });
 }
 
+function catalogItemById(catalog, id) {
+  const wanted = String(id || '').trim().toUpperCase();
+  if (!wanted || !Array.isArray(catalog)) return null;
+  return catalog.find(item => String(item?.id || '').trim().toUpperCase() === wanted) || null;
+}
+
+function clearRarityClass(node) {
+  if (!node?.classList) return;
+  node.classList.remove(...RARITY_CLASSES, 'rarity-surface');
+  delete node.dataset.effectiveRarity;
+}
+
+function applyProgressionCardRarity(root, catalog) {
+  for (const card of root.querySelectorAll('.item-card[data-open]')) {
+    const itemId = card.dataset.physicalItemId;
+    if (!itemId) {
+      clearRarityClass(card);
+      continue;
+    }
+    const item = catalogItemById(catalog, itemId);
+    if (item?.tier) applyRarityClass(card, item.tier);
+    else clearRarityClass(card);
+  }
+}
+
 function applyToolRarity(root, state, catalog) {
   for (const card of root.querySelectorAll('.sb-tool-card[data-sb-tool-crop]')) {
     applyRarityClass(card, toolRarityForCrop(state, card.dataset.sbToolCrop, catalog));
@@ -120,6 +145,7 @@ export function applyRarityBackgrounds(root = document) {
   const state = readState();
   const catalog = readCachedCatalog()?.items || [];
   applySetupRarity(root, state, catalog);
+  applyProgressionCardRarity(root, catalog);
   applyToolRarity(root, state, catalog);
   applyVacuumRarity(root, state);
 }
@@ -146,11 +172,16 @@ async function ensureCatalog() {
   }
 }
 
+const RARITY_SURFACE_SELECTOR = '.slot-card, [data-item-editor], .item-card[data-open], .sb-tool-card, [data-tool-editor], [data-vacuum-panel]';
+
 function mutationNeedsRarity(mutations) {
-  return mutations.some(mutation => [...mutation.addedNodes].some(node => node instanceof Element && (
-    node.matches?.('.slot-card, [data-item-editor], .sb-tool-card, [data-tool-editor], [data-vacuum-panel]')
-    || node.querySelector?.('.slot-card, [data-item-editor], .sb-tool-card, [data-tool-editor], [data-vacuum-panel]')
-  )));
+  return mutations.some(mutation => {
+    if (mutation.type === 'attributes' && mutation.attributeName === 'data-physical-item-id') return true;
+    return [...mutation.addedNodes].some(node => node instanceof Element && (
+      node.matches?.(RARITY_SURFACE_SELECTOR)
+      || node.querySelector?.(RARITY_SURFACE_SELECTOR)
+    ));
+  });
 }
 
 function boot() {
@@ -163,7 +194,12 @@ function boot() {
   if (app && typeof MutationObserver !== 'undefined') {
     new MutationObserver(mutations => {
       if (mutationNeedsRarity(mutations)) schedule();
-    }).observe(app, { childList: true, subtree: true });
+    }).observe(app, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['data-physical-item-id'],
+    });
   }
 }
 

@@ -91,6 +91,13 @@ test('name normalization is deterministic without fuzzy substring guessing', () 
   assert.equal(normalizeItemName("Farmer’s Boots"), 'farmers boots');
 });
 
+
+test('resolved physical progression cards expose their exact item id for the rarity layer', () => {
+  const source = readFileSync(new URL('../src/item-art-coverage.js', import.meta.url), 'utf8');
+  assert.match(source, /card\.dataset\.physicalItemId\s*=\s*record\.id/);
+  assert.match(source, /delete card\.dataset\.physicalItemId/);
+});
+
 test('chip/card art is pinned directly beside its title even under redesign specificity', () => {
   const css = readFileSync(new URL('../src/item-art-coverage.css', import.meta.url), 'utf8');
   assert.match(css, /\.skyblock-redesign \.item-card \.card-head[\s\S]*?display:\s*flex\s*!important/);
