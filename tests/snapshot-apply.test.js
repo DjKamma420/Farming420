@@ -147,7 +147,7 @@ test('tool counters, enchantments, reforge, gem and recomb land on that tool', (
   assert.equal(tool['tool-gem-perfect-peridot-on-farming-tool'], 1);
 });
 
-test('Accessory Bag sync imports Recombobulator and Enrichment state without guessing rarity', () => {
+test('Accessory Bag sync imports Recombobulator state and ignores Enrichments', () => {
   const state = emptyState();
   applySnapshotToProgress(state, snapshotWith({
     items: [{
@@ -163,7 +163,6 @@ test('Accessory Bag sync imports Recombobulator and Enrichment state without gue
 
   assert.deepEqual(state.profile.accessoryItems.HELIANTHUS_RELIC, {
     recombobulated: true,
-    enrichment: 'magic_find',
     source: 'hypixel-sync',
   });
 
@@ -179,7 +178,6 @@ test('manual accessory state survives a sync that does not contain the item', ()
   applySnapshotToProgress(state, snapshotWith({ items: [] }));
   assert.deepEqual(state.profile.accessoryItems.HELIANTHUS_RELIC, {
     recombobulated: true,
-    enrichment: 'speed',
     source: 'manual',
   });
 });

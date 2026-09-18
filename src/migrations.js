@@ -158,6 +158,26 @@ function migrateAccessoryItemState(state) {
   }
 }
 
+/**
+ * Schema 6 -> 7
+ *
+ * Enrichments are not part of Farming420's farming model. Remove the obsolete
+ * per-accessory enrichment values and account-wide override while preserving
+ * Recombobulator state and its sync/manual provenance.
+ */
+function removeAccessoryEnrichmentState(state) {
+  const profile = state.profile ||= {};
+  delete profile.enrichmentSpeedOverride;
+  if (!profile.accessoryItems || typeof profile.accessoryItems !== 'object' || Array.isArray(profile.accessoryItems)) {
+    profile.accessoryItems = {};
+    return;
+  }
+  for (const itemState of Object.values(profile.accessoryItems)) {
+    if (!itemState || typeof itemState !== 'object' || Array.isArray(itemState)) continue;
+    delete itemState.enrichment;
+  }
+}
+
 const MIGRATIONS = [
   {
     to: 2,
@@ -183,6 +203,11 @@ const MIGRATIONS = [
     to: 6,
     description: 'Add physical accessory Recombobulator and Enrichment state.',
     run: migrateAccessoryItemState,
+  },
+  {
+    to: 7,
+    description: 'Remove obsolete accessory Enrichment state while keeping Recombobulators.',
+    run: removeAccessoryEnrichmentState,
   },
 ];
 

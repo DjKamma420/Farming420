@@ -20,7 +20,6 @@ test('item normalization keeps raw farming-relevant item facts without calculati
         attributes: { example: 4 },
         farming_for_dummies_count: 5,
         rarity_upgrades: 1,
-        talisman_enrichment: 'magic_find',
         farmed_cultivating: 12345678,
         levelable_overclocks: 3,
       },
@@ -35,7 +34,6 @@ test('item normalization keeps raw farming-relevant item facts without calculati
   assert.deepEqual(item.gems, { PERIDOT_0: 'PERFECT' });
   assert.equal(item.farmingForDummies, 5);
   assert.equal(item.recombobulated, 1);
-  assert.equal(item.talismanEnrichment, 'magic_find');
   assert.equal(item.cultivatingCounter, 12345678);
   assert.equal(item.overclockerLevel, 3);
 });
