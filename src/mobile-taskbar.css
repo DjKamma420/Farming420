@@ -1,56 +1,55 @@
+/*
+ * Mobile navigation intentionally remains a left-side rail.
+ *
+ * The previous phone layout converted the rail into an icon-only bottom
+ * taskbar and hid all labels. That made similarly shaped item icons difficult
+ * to distinguish and removed the navigation groups that explain the structure.
+ * Keep this file as the narrow-screen fine-tuning layer, but do not move the
+ * navigation away from the side.
+ */
 @media (max-width: 650px) {
   .skyblock-redesign .sidebar.sb-rail {
-    height: 56px;
-    padding: 4px 6px;
+    display: flex;
+    position: sticky;
+    top: 0;
+    bottom: auto;
+    left: 0;
+    right: auto;
+    width: 148px;
+    height: 100vh;
+    padding: 5px;
   }
 
   .skyblock-redesign .sb-rail nav {
+    display: grid;
     gap: 2px;
-    align-items: center;
+    align-items: initial;
+    max-height: 100vh;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
-  /* Flatten desktop navigation groups into one compact horizontal taskbar. */
   .skyblock-redesign .sb-rail .nav-group-addon {
-    display: contents;
+    display: block;
   }
 
   .skyblock-redesign .sb-rail .nav-group-title-addon {
-    display: none !important;
+    display: block !important;
   }
-
-  /* "What to enter" was hidden here as not worth a permanent taskbar slot, and
-     that made the page unreachable on a phone: nothing else in the app links
-     to it, so 75 interactive elements and 63 folded entries had no entry point
-     at all. The taskbar already scrolls horizontally -- twelve 44px slots
-     overflow a 412px phone as it is -- so the slot it was saving did not
-     exist. It scrolls with the rest instead. */
 
   .skyblock-redesign .sb-rail .nav-link {
-    flex: 0 0 44px;
-    width: 44px;
-    height: 44px;
-    padding: 3px;
+    flex: none;
+    width: 100%;
+    height: auto;
+    min-height: 38px;
+    padding: 4px 6px;
   }
 
-  .skyblock-redesign .sb-nav-icon {
-    width: 28px;
-    height: 28px;
-    font-size: 15px;
-  }
-
-  .skyblock-redesign .sb-nav-icon img {
-    width: 27px;
-    height: 27px;
-  }
-
-  .skyblock-redesign .sb-rail .nav-link.active::before {
-    left: 8px;
-    right: 8px;
-    bottom: -5px;
-    height: 3px;
+  .skyblock-redesign .sb-nav-label {
+    display: block !important;
   }
 
   .skyblock-redesign .content {
-    padding-bottom: 72px;
+    padding-bottom: 40px;
   }
 }
