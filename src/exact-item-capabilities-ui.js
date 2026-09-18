@@ -155,7 +155,7 @@ function replaceGemstoneControls(raw, slotId, editor, item, capabilities) {
       gems[Number(event.target.dataset.gemIndex)] = event.target.value || '';
       patchSlot(next, slotId, { gems });
       save(next);
-      window.location.reload();
+      window.dispatchEvent(new Event('farming420:state-changed'));
     }));
   }
   return changed;
