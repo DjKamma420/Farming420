@@ -586,7 +586,8 @@ function drawer() {
   const item = UPGRADES.find(x=>x.id===state.drawer);
   if (!item) return '';
   const level = currentLevel(item);
-  const max = Number(item.max||1);
+  const min = Math.max(1, Number(item.min || 1));
+  const max = Math.max(min, Number(item.max||1));
   const store = itemStore(item);
   const storageId = entryStorageId(item);
   const cost = store.costs[storageId] ?? '';
@@ -596,7 +597,7 @@ function drawer() {
     <div class="drawer-badges">${badge(item.status,item.status==='VERIFY'?'verify':'soft')} ${isCropScopedItem(item)?badge(crop().name,'soft'):(item.cropScope!=='Any'?badge(item.cropScope,'soft'):'')} ${item.modeScope!=='Any'?badge(item.modeScope,'soft'):''}</div>
     ${isSynced(item) ? '<div class="drawer-synced">Farming420 worked this value out for you, from your profile sync and your active setup. Editing it here overrides it until the next sync or setup change.</div>' : ''}
     <div class="drawer-section"><h3>Ownership & Level</h3>
-      ${max>1 ? `<div class="stepper"><button data-step="-1" data-id="${item.id}">−</button><strong>${level}/${max}</strong><button data-step="1" data-id="${item.id}">+</button><button class="ghost small" data-max="${item.id}">Max</button></div>` : `<label class="switch-row"><span>Owned</span><input type="checkbox" data-owned="${item.id}" ${isOwned(item)?'checked':''}></label>`}
+      ${max > 1 && min < max ? `<div class="stepper"><button data-step="-1" data-id="${item.id}">−</button><strong>${level}/${max}</strong><button data-step="1" data-id="${item.id}">+</button><button class="ghost small" data-max="${item.id}">Max</button></div>` : `<label class="switch-row"><span>${min === max && max > 1 ? `Owned at ${esc(toRoman(max))}` : 'Owned'}</span><input type="checkbox" data-owned="${item.id}" ${isOwned(item)?'checked':''}></label>`}
     </div>
     <div class="drawer-section"><h3>Evaluation</h3><div class="detail-grid"><div><span>Next step</span><strong>+${gainFor(item).toLocaleString('en-US')}</strong></div><div><span>Relative effect</span><strong>${relativeGainPct(item).toFixed(2)}%</strong></div></div>
       <label>Next cost (Coins)<input type="number" data-cost="${item.id}" value="${esc(cost)}" placeholder="optional"></label>
