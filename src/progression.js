@@ -55,6 +55,18 @@ export const ARMOR_CHAIN = Object.freeze([
  */
 export const ENCHANT_LADDERS = Object.freeze([
   {
+    id: 'efficiency',
+    name: 'Efficiency',
+    scope: 'Farming tool',
+    tag: 'Utility',
+    perLevel: 'Improves block-breaking speed; no direct Farming Fortune',
+    max: 'V on Farming Tools',
+    steps: [
+      { levels: 'I-V', from: 'Enchantment Table / combining books' },
+    ],
+    note: 'Keep it separate from Fortune scoring. It is a break-speed enchant, not a crop-yield stat.',
+  },
+  {
     id: 'harvesting',
     name: 'Harvesting',
     scope: 'Farming tool',
