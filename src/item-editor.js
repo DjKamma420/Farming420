@@ -14,6 +14,7 @@
 import {
   VERIFIED_FARMING_ENCHANT_META,
   canonicalEnchantId,
+  enchantMetadata,
   enchantPresentation,
 } from './enchant-presentation.js';
 import { FARMING_TOOL_REFORGES } from './farming-reforges.js';
@@ -188,10 +189,11 @@ export function enchantRowsFor(slotId, item) {
   return rows;
 }
 
-function clampLevel(level, maxLevel) {
+function clampLevel(level, maxLevel, minLevel = 1) {
   const value = Math.floor(Math.max(0, Number(level) || 0));
-  if (!Number.isFinite(value)) return 0;
-  return maxLevel ? Math.min(value, maxLevel) : value;
+  if (!Number.isFinite(value) || value <= 0) return 0;
+  const capped = maxLevel ? Math.min(value, maxLevel) : value;
+  return Math.max(Math.max(1, Number(minLevel) || 1), capped);
 }
 
 /**
@@ -210,14 +212,14 @@ export function withEnchantToggled(item, enchantId, on) {
     }
     return next;
   }
-  if (!(Number(next[id]) > 0)) next[id] = 1;
+  if (!(Number(next[id]) > 0)) next[id] = enchantMetadata(id)?.minLevel || 1;
   return next;
 }
 
 export function withEnchantLevel(item, enchantId, level, maxLevel = null) {
   const next = { ...(item?.enchantments || {}) };
   const id = String(enchantId);
-  const value = clampLevel(level, maxLevel);
+  const value = clampLevel(level, maxLevel, enchantMetadata(id)?.minLevel || 1);
   if (value <= 0) return withEnchantToggled(item, id, false);
   next[id] = value;
   return next;
