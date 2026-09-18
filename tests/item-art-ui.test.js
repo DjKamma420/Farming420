@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 
 import {
   activeSetupFromStoredState,
@@ -50,6 +51,12 @@ test('setup art resolves from real skyblockId and never display-name guesses', (
     packHash: 'pack-hash',
   });
   assert.equal(setupItemAsset(manifest, state, 'chestplate'), null);
+});
+
+test('manual equipment ids use their exact head model before the letter fallback', () => {
+  const source = readFileSync(new URL('../src/item-art-ui.js', import.meta.url), 'utf8');
+  assert.match(source, /item\.skullTexture \|\| knownSkyblockHeadTexture\(item\.skyblockId\)/);
+  assert.match(source, /const skull = skullNode\(textureId, item\)/);
 });
 
 test('invalid or missing setup state degrades to no asset', () => {
