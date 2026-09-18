@@ -436,7 +436,8 @@ function clearExclusivePeers(item) {
 }
 
 function toolEntryLine(item) {
-  const max = Number(item.max || 1);
+  const min = Math.max(1, Number(item.min || 1));
+  const max = Math.max(min, Number(item.max || 1));
   const level = currentLevel(item);
   const on = isOwned(item);
   const control = levelControlFor(max);
@@ -447,16 +448,16 @@ function toolEntryLine(item) {
     ? ''
     : control === 'select'
       ? `<select class="enchant-level" data-tool-level="${esc(item.id)}" ${on ? '' : 'disabled'}>
-          ${Array.from({ length: max }, (_, index) => index + 1).map(value =>
+          ${Array.from({ length: max - min + 1 }, (_, index) => index + min).map(value =>
             `<option value="${value}" ${value === level ? 'selected' : ''}>${esc(toRoman(value))}</option>`).join('')}
         </select>`
-      : `<input class="enchant-level" type="number" min="1" max="${max}" value="${level || 1}" data-tool-level="${esc(item.id)}" ${on ? '' : 'disabled'}>`;
+      : `<input class="enchant-level" type="number" min="${min}" max="${max}" value="${level || min}" data-tool-level="${esc(item.id)}" ${on ? '' : 'disabled'}>`;
 
   return `<div class="enchant-line enchant-${esc(state)} ${on ? 'on' : 'off'}" data-tool-row="${esc(item.id)}">
       ${leverInput('data-tool-toggle', item.id, '', on, `${item.name} on this tool`)}
-      <span class="enchant-name">${esc(item.name)}</span>
+      <span class="enchant-name">${esc(item.name)}${item.optionTag ? `<em class="enchant-tag">${esc(item.optionTag)}</em>` : ''}</span>
       ${levelControl || '<span></span>'}
-      <span class="enchant-max">${max > 1 ? `max ${control === 'number' ? max : esc(toRoman(max))}` : gain ? `+${gain} FF` : 'owned or not'}</span>
+      <span class="enchant-max">${min === max && max > 1 ? `only ${esc(toRoman(max))}` : max > 1 ? `max ${control === 'number' ? max : esc(toRoman(max))}` : gain ? `+${gain} FF` : 'owned or not'}</span>
     </div>`;
 }
 
@@ -487,7 +488,7 @@ function bindToolPanel() {
     if (!item) return;
     if (event.target.checked) clearExclusivePeers(item);
     // Turning a part on starts it at its first level, never at its maximum.
-    setEntryLevel(item, event.target.checked ? Math.max(1, currentLevel(item)) : 0);
+    setEntryLevel(item, event.target.checked ? Math.max(Number(item.min || 1), currentLevel(item)) : 0);
     rerender();
   }));
   document.querySelectorAll('[data-tool-level]').forEach(el => el.addEventListener('change', event => {
@@ -764,12 +765,13 @@ function leverInput(attribute, slotId, key, checked, label) {
 }
 
 function enchantLine(slotId, row) {
+  const minLevel = Math.max(1, Number(row.minLevel || 1));
   const levels = row.maxLevel
-    ? Array.from({ length: row.maxLevel }, (_, index) => index + 1)
+    ? Array.from({ length: row.maxLevel - minLevel + 1 }, (_, index) => index + minLevel)
     : [...new Set([row.level, 1, 2, 3, 4, 5].filter(value => value > 0))].sort((a, b) => a - b);
   return `<div class="enchant-line enchant-${esc(row.state)} ${row.active ? 'on' : 'off'}" data-ench-row="${esc(row.storageKey)}">
       ${leverInput('data-ench-toggle', slotId, row.storageKey, row.active, `${row.label} on this item`)}
-      <span class="enchant-name">${esc(row.label)}${row.kind === 'ultimate' ? '<em class="enchant-tag">ultimate</em>' : ''}${row.known ? '' : '<em class="enchant-tag unknown">not verified</em>'}</span>
+      <span class="enchant-name">${esc(row.label)}${row.kind === 'ultimate' ? '<em class="enchant-tag">ultimate</em>' : ''}${row.strategy === 'secret' ? '<em class="enchant-tag secret">secret strat</em>' : ''}${row.known ? '' : '<em class="enchant-tag unknown">not verified</em>'}</span>
       <select class="enchant-level" data-ench-select="${esc(slotId)}" data-ench-key="${esc(row.storageKey)}" data-ench-max="${row.maxLevel || 0}" ${row.active ? '' : 'disabled'}>
         ${levels.map(level => `<option value="${level}" ${level === row.level ? 'selected' : ''}>${esc(toRoman(level))}</option>`).join('')}
       </select>
