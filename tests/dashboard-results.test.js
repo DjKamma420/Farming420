@@ -4,16 +4,11 @@ import { readFileSync } from 'node:fs';
 
 const app = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
 const activityModeUi = readFileSync(new URL('../src/activity-mode-ui.js', import.meta.url), 'utf8');
+const computedStatsUi = readFileSync(new URL('../src/computed-stats-ui.js', import.meta.url), 'utf8');
 
 function dashboardSource() {
   const match = app.match(/function dashboard\(\) \{([\s\S]*?)\n\}\n\nfunction accountPage\(\)/);
   assert.ok(match, 'dashboard() source not found');
-  return match[1];
-}
-
-function statsStripSource() {
-  const match = activityModeUi.match(/function renderStatsStrip\(raw\) \{([\s\S]*?)\n\}\n\nfunction simplifySetupEditor/);
-  assert.ok(match, 'renderStatsStrip() source not found');
   return match[1];
 }
 
@@ -39,15 +34,19 @@ test('dashboard separates global Fortune from per-crop totals', () => {
   assert.doesNotMatch(source, /data-open=|data-page=/, 'dashboard results must not contain editing/navigation actions');
 });
 
-test('top stats strip uses global Fortune instead of the selected crop total', () => {
-  const source = statsStripSource();
-
-  assert.match(source, /<span>Global FF<\/span>/);
-  assert.match(source, /stats\.globalFortune/);
-  assert.doesNotMatch(source, /stats\.effectiveFortune/);
-  assert.doesNotMatch(source, /Farm FF/);
+test('topbar does not duplicate the dashboard stat results', () => {
+  assert.doesNotMatch(app, /class="fortune-pill"/);
+  assert.doesNotMatch(activityModeUi, /function renderStatsStrip\(/);
+  assert.match(computedStatsUi, /function removeTopbarStats\(\)/);
+  assert.match(computedStatsUi, /querySelector\('\.computed-stats-strip'\)\?\.remove\(\)/);
+  assert.match(computedStatsUi, /querySelector\('\.fortune-pill'\)\?\.remove\(\)/);
 });
 
-test('base topbar fallback is global Fortune too', () => {
-  assert.ok(app.includes('<div class="fortune-pill"><span>Global FF</span><strong>${Number(state.profile.globalFortune || 0).toLocaleString'));
+test('activity switch exposes three fully named phases', () => {
+  assert.match(activityModeUi, />Farming<\/button>/);
+  assert.match(activityModeUi, />Spawning<\/button>/);
+  assert.match(activityModeUi, />Killing<\/button>/);
+  assert.doesNotMatch(activityModeUi, />Farm<\/button>|>Spawn<\/button>|>Kill<\/button>|>Pest<\/button>/);
+  assert.match(activityModeUi, /data-activity-mode="pest-spawn"/);
+  assert.match(activityModeUi, /data-activity-mode="pest-kill"/);
 });
