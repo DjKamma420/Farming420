@@ -18,7 +18,17 @@ test('ordinary app renders preserve scroll and the operated control stays viewpo
   assert.match(source, /viewportTop: element\.getBoundingClientRect\(\)\.top/);
   assert.match(source, /const delta = element\.getBoundingClientRect\(\)\.top - anchor\.viewportTop/);
   assert.match(source, /window\.scrollBy\(0, delta\)/);
-  assert.match(source, /requestAnimationFrame\(attempt\)/);
+  assert.match(source, /function currentScrollAnchor\(\)/);
+  assert.doesNotMatch(source, /function consumeScrollAnchor\(\)/);
+  assert.match(source, /new MutationObserver\(\(\) => scheduleScrollAnchorRestore\(\)\)/);
+  assert.match(source, /scheduleScrollAnchorRestore\(activeScrollAnchor\)/);
+});
+
+test('relative scroll anchoring survives repeated renders from one interaction', () => {
+  const source = read('app.js');
+  assert.match(source, /const relativeAnchor = preserveScroll \? currentScrollAnchor\(\)/);
+  assert.match(source, /restoreRelativeScrollAnchor\(relativeAnchor\);[\s\S]*scheduleScrollAnchorRestore\(relativeAnchor\)/);
+  assert.match(source, /anchor !== currentScrollAnchor\(\)/);
 });
 
 test('tool workspace controls update state without hard page reloads', () => {
