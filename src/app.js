@@ -470,7 +470,7 @@ function toolEntryLine(item) {
 
   return `<div class="enchant-line enchant-${esc(state)} ${on ? 'on' : 'off'}" data-tool-row="${esc(item.id)}">
       ${leverInput('data-tool-toggle', item.id, '', on, `${item.name} on this tool`)}
-      <span class="enchant-name">${esc(item.name)}${item.optionTag ? `<em class="enchant-tag">${esc(item.optionTag)}</em>` : ''}</span>
+      <span class="enchant-name">${esc(item.name)}${item.optionTag ? `<em class="enchant-tag">${esc(item.optionTag)}</em>` : ''}${item.notes ? `<small class="enchant-note">${esc(item.notes)}</small>` : ''}</span>
       ${levelControl || '<span></span>'}
       <span class="enchant-max">${min === max && max > 1 ? `only ${esc(toRoman(max))}` : max > 1 ? `max ${control === 'number' ? max : esc(toRoman(max))}` : gain ? `+${gain} FF` : 'owned or not'}</span>
     </div>`;
@@ -787,7 +787,7 @@ function enchantLine(slotId, row) {
     : [...new Set([row.level, 1, 2, 3, 4, 5].filter(value => value > 0))].sort((a, b) => a - b);
   return `<div class="enchant-line enchant-${esc(row.state)} ${row.active ? 'on' : 'off'}" data-ench-row="${esc(row.storageKey)}">
       ${leverInput('data-ench-toggle', slotId, row.storageKey, row.active, `${row.label} on this item`)}
-      <span class="enchant-name">${esc(row.label)}${row.kind === 'ultimate' ? '<em class="enchant-tag">ultimate</em>' : ''}${row.strategy === 'secret' ? '<em class="enchant-tag secret">secret strat</em>' : ''}${row.known ? '' : '<em class="enchant-tag unknown">not verified</em>'}</span>
+      <span class="enchant-name">${esc(row.label)}${row.kind === 'ultimate' ? '<em class="enchant-tag">ultimate</em>' : ''}${row.strategy === 'secret' ? '<em class="enchant-tag secret">secret strat</em>' : ''}${row.known ? '' : '<em class="enchant-tag unknown">not verified</em>'}${row.note ? `<small class="enchant-note">${esc(row.note)}</small>` : ''}</span>
       <select class="enchant-level" data-ench-select="${esc(slotId)}" data-ench-key="${esc(row.storageKey)}" data-ench-max="${row.maxLevel || 0}" ${row.active ? '' : 'disabled'}>
         ${levels.map(level => `<option value="${level}" ${level === row.level ? 'selected' : ''}>${esc(toRoman(level))}</option>`).join('')}
       </select>
