@@ -50,11 +50,25 @@
 }
 
 .coverage-skull-art {
+  position: relative;
   width: 78%;
   height: 78%;
+}
+
+.coverage-skull-layer {
+  position: absolute;
+  inset: 0;
   background-repeat: no-repeat;
   background-size: 800% 800%;
+  image-rendering: pixelated;
+}
+
+.coverage-skull-face {
   background-position: 14.2857% 14.2857%;
+}
+
+.coverage-skull-hat {
+  background-position: 71.4286% 14.2857%;
 }
 
 .coverage-material-art {
