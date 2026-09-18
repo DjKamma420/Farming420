@@ -26,30 +26,9 @@ function shortValue(value) {
   return Number.isInteger(number) ? String(number) : number.toFixed(1).replace(/\.0$/, '');
 }
 
-function replaceTopbar(raw) {
-  const cropId = raw.selectedCrop || 'melon';
-  const stats = computeStatTotals(raw, cropId);
-  const existing = document.querySelector('.fortune-pill');
-  if (!existing) return;
-
-  let strip = document.querySelector('.computed-stats-strip');
-  if (!strip) {
-    strip = document.createElement('div');
-    strip.className = 'computed-stats-strip';
-    existing.replaceWith(strip);
-  }
-
-  const incomplete = stats.incomplete;
-  strip.innerHTML = `
-    <div class="computed-stat" title="Automatically calculated Global Farming Fortune">
-      <span>Global FF</span><strong>${shortValue(stats.globalFortune)}</strong>${incomplete.globalFortune.length ? '<em>~</em>' : ''}
-    </div>
-    <div class="computed-stat" title="Automatically calculated Overbloom for the current crop/tool/setup">
-      <span>OB</span><strong>${shortValue(stats.overbloom)}</strong>${incomplete.overbloom.length ? '<em>~</em>' : ''}
-    </div>
-    <div class="computed-stat" title="Automatically calculated Bonus Pest Chance for the current setup">
-      <span>BPC</span><strong>${shortValue(stats.bonusPestChance)}</strong>${incomplete.bonusPestChance.length ? '<em>~</em>' : ''}
-    </div>`;
+function removeTopbarStats() {
+  document.querySelector('.computed-stats-strip')?.remove();
+  document.querySelector('.fortune-pill')?.remove();
 }
 
 function replaceGlobalInput(raw) {
@@ -155,7 +134,7 @@ function apply() {
   try {
     const raw = load();
     const changed = syncDerivedCache(raw);
-    replaceTopbar(raw);
+    removeTopbarStats();
     replaceGlobalInput(raw);
     replaceCropInput(raw);
     replacePlannerOverbloom(raw);
