@@ -45,9 +45,8 @@ export function removeDuplicateNavigation(root = globalThis.document) {
 export function installNavigationDedupe({ root = globalThis.document } = {}) {
   if (!root) return;
   const changed = canonicalizeStoredPage();
-  if (changed && globalThis.location?.reload) {
-    globalThis.location.reload();
-    return;
+  if (changed) {
+    globalThis.dispatchEvent?.(new Event('farming420:state-changed'));
   }
 
   removeDuplicateNavigation(root);
