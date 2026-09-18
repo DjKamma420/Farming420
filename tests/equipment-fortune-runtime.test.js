@@ -11,6 +11,10 @@ import {
   minimumGreenThumbLevel,
   rootedFortuneForPiece,
   rootedFortuneForPieces,
+  thornyArmorBonusOverbloom,
+  thornyBaseOverbloomForPieces,
+  thornyFortuneForPieces,
+  thornyPieceCount,
 } from '../src/equipment-fortune.js';
 
 const piece = overrides => ({
@@ -50,6 +54,24 @@ test('Rooted fortune is derived from each effective item rarity', () => {
     piece({ rarity: 'MYTHIC' }),
     piece({ rarity: 'LEGENDARY' }),
   ]), 72);
+});
+
+test('Thorny sums item-local Farming Fortune and base Overbloom', () => {
+  const pieces = [
+    piece({ rarity: 'EPIC', reforge: 'thorny' }),
+    piece({ rarity: 'LEGENDARY', reforge: 'thorny' }),
+    piece({ rarity: 'MYTHIC', reforge: 'thorny' }),
+    piece({ rarity: 'LEGENDARY', reforge: 'rooted' }),
+  ];
+  assert.equal(thornyPieceCount(pieces), 3);
+  assert.equal(thornyFortuneForPieces(pieces), 30);
+  assert.equal(thornyBaseOverbloomForPieces(pieces), 3.75);
+});
+
+test('each Thorny equipment piece receives the armor-Thorns Overbloom bonus', () => {
+  const pieces = Array.from({ length: 4 }, () => piece({ rarity: 'MYTHIC', reforge: 'thorny' }));
+  assert.equal(thornyArmorBonusOverbloom(pieces, 17), 6.8);
+  assert.equal(thornyArmorBonusOverbloom(pieces, 16), 6.4);
 });
 
 test('Green Thumb sums actual levels across equipped pieces', () => {
