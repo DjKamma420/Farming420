@@ -65,6 +65,10 @@ test('a decoded item becomes an item record with its colour codes stripped', () 
     gems: { PERIDOT_0: 'PERFECT' },
     recombobulated: 1,
     itemUuid: 'uuid-1',
+    itemModel: 'minecraft:player_head',
+    vanillaId: 397,
+    damage: 3,
+    displayColor: 16770305,
   }));
   assert.equal(record.displayName, 'Helianthus Helmet');
   assert.equal(record.skyblockId, 'HELIANTHUS_HELMET');
@@ -74,6 +78,10 @@ test('a decoded item becomes an item record with its colour codes stripped', () 
   assert.equal(record.recombobulated, true);
   assert.equal(record.source, ITEM_SOURCE.SYNC);
   assert.equal(record.itemUuid, 'uuid-1');
+  assert.equal(record.itemModel, 'minecraft:player_head');
+  assert.equal(record.vanillaId, 397);
+  assert.equal(record.damage, 3);
+  assert.equal(record.displayColor, 16770305);
 });
 
 test('recombobulated is false when the counter is absent or zero', () => {
