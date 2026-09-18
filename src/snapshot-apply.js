@@ -58,8 +58,16 @@ const SUNSET_ID = 'armor-enchant-sunset-v-day-overbloom';
 const ARMOR_PERIDOT_ID = 'armor-gem-perfect-peridot-on-full-armor';
 const upgradeById = new Map(UPGRADES.map(item => [item.id, item]));
 
+const TURBO_PROGRESS_ID = 'tool-enchant-turbo-crop';
+const SHARED_TURBO_CROPS = Object.freeze(new Set(['sunflower', 'moonflower']));
+
+export function turboProgressEntryId(cropId) {
+  return SHARED_TURBO_CROPS.has(cropId) ? `${TURBO_PROGRESS_ID}:${cropId}` : TURBO_PROGRESS_ID;
+}
+
 function maxFor(itemId) {
-  return Number(upgradeById.get(itemId)?.max || 1);
+  const canonicalId = String(itemId || '').startsWith(`${TURBO_PROGRESS_ID}:`) ? TURBO_PROGRESS_ID : itemId;
+  return Number(upgradeById.get(canonicalId)?.max || 1);
 }
 
 export function stripFormatting(value) {
@@ -224,7 +232,7 @@ function applyToolItem(state, cropIds, item, autoApplied, applied) {
     for (const [enchant, itemId] of Object.entries(TOOL_ENCHANTS)) {
       applyValue(store, scope, itemId, item.enchantments?.[enchant], applied);
     }
-    applyValue(store, scope, 'tool-enchant-turbo-crop', turboCropLevelFor(item.enchantments, cropId), applied);
+    applyValue(store, scope, turboProgressEntryId(cropId), turboCropLevelFor(item.enchantments, cropId), applied);
 
     const reforgeId = TOOL_REFORGES[String(item.reforge || '').toLowerCase()];
     if (reforgeId) applyValue(store, scope, reforgeId, 1, applied);
