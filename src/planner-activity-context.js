@@ -11,8 +11,15 @@ import { computeStatTotals } from './computed-stats.js';
 
 export const FORTUNE_BASE_BY_ACTIVITY = Object.freeze({
   [ACTIVITY_MODE.FARM]: 100,
-  [ACTIVITY_MODE.PEST]: 600,
+  [ACTIVITY_MODE.PEST_SPAWN]: 100,
+  [ACTIVITY_MODE.PEST_KILL]: 600,
 });
+
+const PLANNER_ACTIVITY_MODES = Object.freeze([
+  ACTIVITY_MODE.FARM,
+  ACTIVITY_MODE.PEST_SPAWN,
+  ACTIVITY_MODE.PEST_KILL,
+]);
 
 function ensureProfile(state) {
   state.profile ||= {};
@@ -77,8 +84,8 @@ export function plannerActivityContext(state, cropId = state?.selectedCrop || 'm
 /**
  * Revenue baselines are activity-specific. Older builds stored one flat pair
  * per crop, so migrate that pair once into whichever activity mode was active
- * when it was last written. The other mode deliberately starts empty rather
- * than inheriting a farming rate that describes a different loadout.
+ * when it was last written. The other modes deliberately start empty rather
+ * than inheriting a rate that describes a different loadout.
  */
 export function plannerEconomicsRoot(state, cropId = state?.selectedCrop || 'melon') {
   const profile = ensureProfile(state);
@@ -87,17 +94,17 @@ export function plannerEconomicsRoot(state, cropId = state?.selectedCrop || 'mel
 
   if (!root.byActivity || typeof root.byActivity !== 'object') {
     const legacyMode = normalizeActivityMode(root.activityMode);
-    root.byActivity = {
-      [ACTIVITY_MODE.FARM]: { normalCropCoinsPerHour: 0, rareCropCoinsPerHour: 0 },
-      [ACTIVITY_MODE.PEST]: { normalCropCoinsPerHour: 0, rareCropCoinsPerHour: 0 },
-    };
+    root.byActivity = Object.fromEntries(PLANNER_ACTIVITY_MODES.map(mode => [
+      mode,
+      { normalCropCoinsPerHour: 0, rareCropCoinsPerHour: 0 },
+    ]));
     root.byActivity[legacyMode] = {
       normalCropCoinsPerHour: Math.max(0, Number(root.normalCropCoinsPerHour || 0)),
       rareCropCoinsPerHour: Math.max(0, Number(root.rareCropCoinsPerHour || 0)),
     };
   }
 
-  for (const mode of [ACTIVITY_MODE.FARM, ACTIVITY_MODE.PEST]) {
+  for (const mode of PLANNER_ACTIVITY_MODES) {
     root.byActivity[mode] ||= {};
     root.byActivity[mode].normalCropCoinsPerHour = Math.max(0, Number(root.byActivity[mode].normalCropCoinsPerHour || 0));
     root.byActivity[mode].rareCropCoinsPerHour = Math.max(0, Number(root.byActivity[mode].rareCropCoinsPerHour || 0));
