@@ -645,7 +645,7 @@ function cropFocusCard() {
 }
 
 function cropsPage() {
-  return `${pageHeader('Crops', 'One crop, one workspace', 'Each crop combines its progression, crop-specific Fortune and physical farming tool.')}
+  return `${pageHeader('Crops', 'Crop progression', 'Select a crop to track only the Fortune and progression that belong directly to that crop. Tool and loadout settings live on their own pages.')}
     <div class="crop-grid">
       ${CROPS.map(c => {
         const selected = c.id===state.selectedCrop;
@@ -656,13 +656,22 @@ function cropsPage() {
       }).join('')}
     </div>
     <div class="crop-detail-panel">
-      <div class="section-row"><div><div class="eyebrow">Active crop</div><h2>${esc(crop().name)}</h2><p>${esc(crop().tool)}</p></div>
+      <div class="section-row"><div><div class="eyebrow">Active crop</div><h2>${esc(crop().name)}</h2><p>Crop-specific progression and Fortune</p></div>
       <label class="inline-input">Crop Fortune<input type="number" id="cropFortune" value="${Number(state.profile.cropFortune[state.selectedCrop]||0)}"></label></div>
       ${inputHint('input:cropFortune', `Crop-specific Fortune for ${crop().name}, kept separate from your global total.`)}
-      <div class="layer-tabs"><span>Crop progression</span><span>Tool</span><span>Account effects are inherited automatically</span></div>
+      <div class="crop-scope-addon">
+        <div>
+          <div class="eyebrow">This page</div>
+          <strong>Only bonuses that belong to ${esc(crop().name)}</strong>
+          <p>Tool reforges, enchantments and gemstones are edited under Tools. Armor, equipment and pets are edited in Setups.</p>
+        </div>
+        <div class="crop-related-actions-addon">
+          <button class="ghost" data-page="tools">Open ${esc(crop().tool)}</button>
+          <button class="ghost" data-page="setups">Open active setup</button>
+        </div>
+      </div>
+      <div class="section-row crop-progression-head-addon"><div><h2>${esc(crop().name)} progression</h2><p>Only crop-scoped sources are listed here.</p></div></div>
       <div class="card-grid">${visibleUpgrades('crops').filter(appliesToCrop).map(x=>card(x)).join('')}</div>
-      <div class="section-row"><div><h2>${esc(crop().tool)}</h2><p>Tool upgrades belong to the physical tool layer and are not mixed with account progression.</p></div><button class="ghost" data-page="tools">Open tool layer</button></div>
-      <div class="card-grid">${visibleUpgrades('tools').slice(0,8).map(x=>card(x,true)).join('')}</div>
     </div>`;
 }
 
