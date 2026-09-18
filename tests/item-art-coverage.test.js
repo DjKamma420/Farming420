@@ -3,6 +3,7 @@ import test from 'node:test';
 import { readFileSync } from 'node:fs';
 
 import {
+  RECOMBOBULATOR_ITEM_ID,
   REFORGE_ITEM_IDS,
   TOOL_PROGRESS_ITEM_IDS,
   catalogItemById,
@@ -44,6 +45,21 @@ test('the five farming reforges point at their actual physical item ids', () => 
 test('tool progression resolves Recombobulator as a physical item', () => {
   assert.equal(TOOL_PROGRESS_ITEM_IDS['Recombobulator 3000'], 'RECOMBOBULATOR_3000');
   assert.ok(skinTextureUrl(catalogItemById(catalog, 'RECOMBOBULATOR_3000')).endsWith('c'.repeat(64)));
+});
+
+test('every Recombobulator selector gets the same physical item visual aid', () => {
+  const source = readFileSync(new URL('../src/item-art-coverage.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../src/item-art-coverage.css', import.meta.url), 'utf8');
+
+  assert.equal(RECOMBOBULATOR_ITEM_ID, 'RECOMBOBULATOR_3000');
+  assert.match(source, /\\[data-accessory-recomb\\]/);
+  assert.match(source, /\\[data-slot-recomb\\]/);
+  assert.match(source, /\\[data-vacuum-recomb\\]/);
+  assert.match(source, /\\[data-tool-recomb\\]/);
+  assert.match(source, /function decorateRecombobulatorControls/);
+  assert.match(source, /decorateRecombobulatorControls\\(items\\)/);
+  assert.match(css, /\\.recombobulator-choice-copy[\\s\\S]*?padding-left:\\s*52px/);
+  assert.match(css, /\\.recombobulator-choice-copy > \\.coverage-item-art[\\s\\S]*?width:\\s*40px/);
 });
 
 test('known accessory and equipment ids get exact art while live Hypixel skin still wins', () => {
