@@ -21,11 +21,10 @@ import { isArmorItem } from './armor-item-art.js';
  * DIAMOND_LOTUS contains LOTUS, so the general token must never be tested
  * before the specific one.
  *
- * BLOSSOM is a stand-in and is marked as one. The Blossom equipment has no
- * item of its own in the pack; `bachelors_rose` is a real blossom from the
- * Garden's own wild-rose line, which is in-family and reads better than a
- * letter badge. Its proper picture is the item's head texture, and that path
- * takes precedence whenever the sync supplies one.
+ * BLOSSOM is a last-resort stand-in. The shipped pack has no Blossom equipment
+ * item, so `bachelors_rose` remains behind the exact head-model path. The
+ * item's live NBT/Hypixel skin wins first; the verified id-backed head fallback
+ * wins next; this representative is only used if neither exact source resolves.
  */
 export const SET_ART = Object.freeze([
   ['CONDENSED_HELIANTHUS', 'condensed_helianthus'],
