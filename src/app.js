@@ -134,6 +134,159 @@ let readOnlyState = false;
 let migrationApplied = false;
 let state = loadState();
 
+let activeScrollAnchor = null;
+let scrollAnchorRestoreFrame = 0;
+const SCROLL_ANCHOR_MAX_AGE_MS = 1800;
+const SCROLL_ANCHOR_CONTROL_SELECTOR = 'button, input, select, textarea, a, label, [role="button"], [role="radio"]';
+
+function scrollAnchorElement(target) {
+  if (!target?.closest) return null;
+  let element = target.closest(SCROLL_ANCHOR_CONTROL_SELECTOR) || target;
+  if (element?.tagName === 'LABEL') {
+    element = element.querySelector('input, select, textarea, button') || element;
+  }
+  return element instanceof Element ? element : null;
+}
+
+function scrollAnchorPath(root, element) {
+  const path = [];
+  let node = element;
+  while (node && node !== root) {
+    const parent = node.parentElement;
+    if (!parent) return null;
+    path.unshift(Array.prototype.indexOf.call(parent.children, node));
+    node = parent;
+  }
+  return node === root ? path : null;
+}
+
+function describeScrollAnchor(root, element) {
+  return {
+    tag: element.tagName.toLowerCase(),
+    id: element.id || '',
+    attrs: [...element.attributes]
+      .filter(attr => attr.name.startsWith('data-') || ['name', 'value', 'type'].includes(attr.name))
+      .map(attr => [attr.name, attr.value]),
+    path: scrollAnchorPath(root, element),
+  };
+}
+
+function matchesScrollAnchor(element, descriptor) {
+  if (!(element instanceof Element) || element.tagName.toLowerCase() !== descriptor.tag) return false;
+  return (descriptor.attrs || []).every(([name, value]) => element.getAttribute(name) === value);
+}
+
+function resolveScrollAnchor(root, descriptor) {
+  if (!root || !descriptor) return null;
+
+  if (descriptor.id) {
+    const byId = document.getElementById(descriptor.id);
+    if (byId && root.contains(byId) && matchesScrollAnchor(byId, descriptor)) return byId;
+  }
+
+  if (descriptor.attrs?.length) {
+    for (const candidate of root.querySelectorAll(descriptor.tag)) {
+      if (matchesScrollAnchor(candidate, descriptor)) return candidate;
+    }
+  }
+
+  let node = root;
+  for (const index of descriptor.path || []) {
+    node = node?.children?.[index] || null;
+    if (!node) return null;
+  }
+  return matchesScrollAnchor(node, descriptor) ? node : null;
+}
+
+function currentScrollAnchor() {
+  if (!activeScrollAnchor) return null;
+  if (Date.now() - activeScrollAnchor.capturedAt <= SCROLL_ANCHOR_MAX_AGE_MS) return activeScrollAnchor;
+  activeScrollAnchor = null;
+  return null;
+}
+
+function clearScrollAnchor() {
+  activeScrollAnchor = null;
+  if (scrollAnchorRestoreFrame) {
+    cancelAnimationFrame(scrollAnchorRestoreFrame);
+    scrollAnchorRestoreFrame = 0;
+  }
+}
+
+function restoreRelativeScrollAnchor(anchor = currentScrollAnchor()) {
+  if (!anchor || anchor !== currentScrollAnchor() || anchor.page !== state.page) return false;
+
+  const root = document.getElementById('app');
+  const element = resolveScrollAnchor(root, anchor.descriptor);
+  if (!element) return false;
+
+  const delta = element.getBoundingClientRect().top - anchor.viewportTop;
+  if (Math.abs(delta) < 0.5) return true;
+
+  const main = document.querySelector('#app .main');
+  const overflowY = main ? getComputedStyle(main).overflowY : '';
+  const mainScrolls = Boolean(
+    main
+    && main.scrollHeight > main.clientHeight + 1
+    && /auto|scroll|overlay/.test(overflowY),
+  );
+
+  if (mainScrolls) main.scrollTop += delta;
+  else window.scrollBy(0, delta);
+  return true;
+}
+
+function scheduleScrollAnchorRestore(anchor = currentScrollAnchor()) {
+  if (!anchor) return;
+
+  queueMicrotask(() => {
+    if (anchor === currentScrollAnchor()) restoreRelativeScrollAnchor(anchor);
+  });
+
+  if (scrollAnchorRestoreFrame) return;
+  scrollAnchorRestoreFrame = requestAnimationFrame(() => {
+    scrollAnchorRestoreFrame = 0;
+    if (anchor !== currentScrollAnchor()) return;
+    restoreRelativeScrollAnchor(anchor);
+    requestAnimationFrame(() => {
+      if (anchor === currentScrollAnchor()) restoreRelativeScrollAnchor(anchor);
+    });
+  });
+}
+
+function rememberScrollAnchor(target) {
+  const root = document.getElementById('app');
+  const element = scrollAnchorElement(target);
+  if (!root || !element || !root.contains(element)) return;
+
+  activeScrollAnchor = {
+    page: state.page,
+    capturedAt: Date.now(),
+    viewportTop: element.getBoundingClientRect().top,
+    descriptor: describeScrollAnchor(root, element),
+  };
+  scheduleScrollAnchorRestore(activeScrollAnchor);
+}
+
+function captureInteractionScrollAnchor(event) {
+  rememberScrollAnchor(event.target);
+}
+
+if (typeof document !== 'undefined') {
+  for (const type of ['click', 'change', 'input']) {
+    document.addEventListener(type, captureInteractionScrollAnchor, true);
+  }
+
+  const appRoot = document.getElementById('app');
+  if (appRoot && typeof MutationObserver !== 'undefined') {
+    new MutationObserver(() => scheduleScrollAnchorRestore()).observe(appRoot, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+    });
+  }
+}
+
 function saveState() {
   if (readOnlyState) return;
   state.schemaVersion = DATA_SCHEMA_VERSION;
@@ -264,11 +417,12 @@ function card(item, compact=false) {
   const status = statusClass(item);
   const gain = gainFor(item);
   const cropLimited = item.cropScope !== 'Any';
+  const isShard = item.section === 'shards' || item.category === 'Attribute Shard';
   return `
-    <button class="item-card ${status} ${compact ? 'compact' : ''}" data-open="${esc(item.id)}">
+    <button class="item-card ${status} ${isShard ? 'shard-card' : ''} ${compact ? 'compact' : ''}" data-open="${esc(item.id)}">
       <div class="card-layer"></div>
       <div class="card-head">
-        ${item.packAsset ? `<span class="card-portrait" data-pack-asset="${esc(item.packAsset)}"></span>` : ''}
+        ${item.packAsset || isShard ? `<span class="card-portrait${isShard ? ' shard-portrait' : ''}"${item.packAsset ? ` data-pack-asset="${esc(item.packAsset)}"` : ''}></span>` : ''}
         <div>
           <div class="eyebrow">${esc(item.category)}</div>
           <div class="item-title">${esc(item.name)}</div>
@@ -282,6 +436,7 @@ function card(item, compact=false) {
       </div>
       <div class="progress"><i data-progress="${Math.min(100,(level/max)*100)}"></i></div>
       <div class="chips">
+        ${item.attribute ? badge(item.attribute, 'soft') : ''}
         ${isCropScopedItem(item) ? badge(crop().name, 'soft') : (cropLimited ? badge(item.cropScope, 'soft') : '')}
         ${item.hypercharge ? badge('Hypercharge', 'soft') : ''}
         ${item.modeScope !== 'Any' ? badge(item.modeScope, 'soft') : ''}
@@ -294,12 +449,14 @@ function shell(content) {
   return `
   <div class="app-shell">
     <aside class="sidebar">
+      <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="primaryNav" aria-label="Open navigation"><span aria-hidden="true">⋮</span></button>
       <div class="brand">
         <div class="brand-mark">F4</div>
         <div><strong>Farming420</strong><span>SkyBlock Farming Planner</span></div>
       </div>
-      <nav>
+      <nav id="primaryNav" aria-label="Main navigation">
         ${NAV.map(([id,label]) => `<button class="nav-link ${state.page===id?'active':''}" data-page="${id}">${esc(label)}</button>`).join('')}
+        <button class="nav-link" type="button" data-nav-id="settings" data-open-settings>Settings</button>
       </nav>
       <div class="side-foot">
         <div class="mini-label">Profile</div>
@@ -318,7 +475,6 @@ function shell(content) {
           </select>
         </div>
         <div class="search-wrap"><input id="search" placeholder="Search item, upgrade or effect…" value="${esc(state.search)}" /></div>
-        <div class="fortune-pill"><span>Effective</span><strong>${effectiveFortune().toLocaleString('en-US')} FF</strong></div>
       </header>
       <section class="content">${content}</section>
     </main>
@@ -334,49 +490,33 @@ function dashboard() {
   const mode = activityModeForState(state);
   const selectedCrop = crop();
   const stats = computeStatTotals(state, selectedCrop.id, mode);
-  const fortuneIncomplete = stats.incomplete.globalFortune.length
-    + stats.incomplete.cropFortune.length
-    + stats.incomplete.pestFortune.length;
   const marker = count => count ? ' ~' : '';
   const number = value => Number(value || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
   const cropRows = CROPS.map(entry => {
     const values = computeStatTotals(state, entry.id, mode);
-    const incomplete = values.incomplete.globalFortune.length
-      + values.incomplete.cropFortune.length
-      + values.incomplete.pestFortune.length
+    const totalFortune = values.globalFortune + values.cropFortune;
+    const totalIncomplete = values.incomplete.globalFortune.length
+      + values.incomplete.cropFortune.length;
+    const incomplete = totalIncomplete
       + values.incomplete.overbloom.length
       + values.incomplete.bonusPestChance.length;
     return `
       <article class="stat-card dashboard-crop-result ${entry.id === selectedCrop.id ? 'selected' : ''}">
         <span>${esc(entry.name)}</span>
-        <strong>${number(values.effectiveFortune)} FF${marker(
-          values.incomplete.globalFortune.length
-          + values.incomplete.cropFortune.length
-          + values.incomplete.pestFortune.length
-        )}</strong>
-        <small>Crop FF ${number(values.cropFortune)} · Pest FF ${number(values.pestFortune)}</small>
+        <strong>${number(totalFortune)} FF${marker(totalIncomplete)}</strong>
+        <small>Global FF ${number(values.globalFortune)} · Crop FF ${number(values.cropFortune)}</small>
         <small>Overbloom ${number(values.overbloom)}${marker(values.incomplete.overbloom.length)} · BPC ${number(values.bonusPestChance)}${marker(values.incomplete.bonusPestChance.length)}</small>
-        ${incomplete ? '<small>~ enthält noch nicht vollständig modellierte Quellen</small>' : '<small>vollständig aus bekannten Quellen berechnet</small>'}
+        ${incomplete ? '<small>~ contains sources that are not fully modeled yet</small>' : '<small>fully calculated from known sources</small>'}
       </article>`;
   }).join('');
 
   return `
-    ${pageHeader('Dashboard', 'Calculated Farming Stats', `Read-only result overview · ${activityLabel(mode)} · ${selectedCrop.name}. Configuration stays in the dedicated tabs.`)}
+    ${pageHeader('Dashboard', 'Calculated Farming Stats', `Read-only result overview · ${activityLabel(mode)}. Global values are shown above; crop totals are listed below.`)}
     <div class="card-grid dashboard-results-grid">
-      <article class="stat-card">
-        <span>Effective Farming Fortune</span>
-        <strong>${number(stats.effectiveFortune)}${marker(fortuneIncomplete)}</strong>
-        <small>Global + Crop + Pest Fortune for the active context</small>
-      </article>
       <article class="stat-card">
         <span>Global Farming Fortune</span>
         <strong>${number(stats.globalFortune)}${marker(stats.incomplete.globalFortune.length)}</strong>
-        <small>Account-wide Fortune used by this set</small>
-      </article>
-      <article class="stat-card">
-        <span>${esc(selectedCrop.name)} Crop Fortune</span>
-        <strong>${number(stats.cropFortune)}${marker(stats.incomplete.cropFortune.length)}</strong>
-        <small>Crop- and tool-specific Fortune</small>
+        <small>Account-wide Fortune before crop-specific Fortune is added</small>
       </article>
       <article class="stat-card">
         <span>Pest Fortune</span>
@@ -398,7 +538,7 @@ function dashboard() {
     <div class="section-row">
       <div>
         <h2>All crops</h2>
-        <p>Same calculation model across every crop. The selected crop is highlighted by context in the header.</p>
+        <p>Each crop total is Global Farming Fortune + that crop's own Crop Fortune. The selected crop is highlighted.</p>
       </div>
     </div>
     <div class="card-grid dashboard-crop-results">${cropRows}</div>
@@ -504,7 +644,7 @@ function cropFocusCard() {
 }
 
 function cropsPage() {
-  return `${pageHeader('Crops', 'One crop, one workspace', 'Each crop combines its progression, crop-specific Fortune and physical farming tool.')}
+  return `${pageHeader('Crops', 'Crop progression', 'Select a crop to track only the Fortune and progression that belong directly to that crop. Tool and loadout settings live on their own pages.')}
     <div class="crop-grid">
       ${CROPS.map(c => {
         const selected = c.id===state.selectedCrop;
@@ -515,13 +655,22 @@ function cropsPage() {
       }).join('')}
     </div>
     <div class="crop-detail-panel">
-      <div class="section-row"><div><div class="eyebrow">Active crop</div><h2>${esc(crop().name)}</h2><p>${esc(crop().tool)}</p></div>
+      <div class="section-row"><div><div class="eyebrow">Active crop</div><h2>${esc(crop().name)}</h2><p>Crop-specific progression and Fortune</p></div>
       <label class="inline-input">Crop Fortune<input type="number" id="cropFortune" value="${Number(state.profile.cropFortune[state.selectedCrop]||0)}"></label></div>
       ${inputHint('input:cropFortune', `Crop-specific Fortune for ${crop().name}, kept separate from your global total.`)}
-      <div class="layer-tabs"><span>Crop progression</span><span>Tool</span><span>Account effects are inherited automatically</span></div>
+      <div class="crop-scope-addon">
+        <div>
+          <div class="eyebrow">This page</div>
+          <strong>Only bonuses that belong to ${esc(crop().name)}</strong>
+          <p>Tool reforges, enchantments and gemstones are edited under Tools. Armor, equipment and pets are edited in Setups.</p>
+        </div>
+        <div class="crop-related-actions-addon">
+          <button class="ghost" data-page="tools">Open ${esc(crop().tool)}</button>
+          <button class="ghost" data-page="setups">Open active setup</button>
+        </div>
+      </div>
+      <div class="section-row crop-progression-head-addon"><div><h2>${esc(crop().name)} progression</h2><p>Only crop-scoped sources are listed here.</p></div></div>
       <div class="card-grid">${visibleUpgrades('crops').filter(appliesToCrop).map(x=>card(x)).join('')}</div>
-      <div class="section-row"><div><h2>${esc(crop().tool)}</h2><p>Tool upgrades belong to the physical tool layer and are not mixed with account progression.</p></div><button class="ghost" data-page="tools">Open tool layer</button></div>
-      <div class="card-grid">${visibleUpgrades('tools').slice(0,8).map(x=>card(x,true)).join('')}</div>
     </div>`;
 }
 
@@ -584,18 +733,7 @@ function toolEntryLine(item) {
 }
 
 function toolItemPanel() {
-  const tool = crop().tool;
-  const filled = toolPanelEntryIds().filter(id => isOwned(TOOL_PANEL_ENTRIES.get(id))).length;
-
   return `<div class="item-editor rarity-unknown" data-tool-editor="1">
-    <header class="item-editor-head">
-      <div class="item-portrait"><span class="item-portrait-fallback" aria-hidden="true">${esc(tool.slice(0, 2).toUpperCase())}</span></div>
-      <div class="item-identity">
-        <div class="eyebrow">Tool · ${esc(crop().name)}</div>
-        <strong class="item-title">${esc(tool)}</strong>
-        <span class="item-rarity">${filled}/${toolPanelEntryIds().length} parts set</span>
-      </div>
-    </header>
     ${TOOL_PANEL.map(group => `<section class="item-editor-section">
       <div class="section-row"><div><h3>${esc(group.title)}</h3><p>${esc(group.note)}</p></div></div>
       <div class="enchant-grid">${group.entries.map(id => toolEntryLine(TOOL_PANEL_ENTRIES.get(id))).join('')}</div>
@@ -623,11 +761,12 @@ function bindToolPanel() {
 
 function genericSectionPage(section, kicker, title, text) {
   const items = visibleUpgrades(section);
+  const gridClass = section === 'shards' ? 'card-grid shard-gallery' : 'card-grid';
   return `${pageHeader(kicker,title,text)}
     <div class="filter-line">${badge(`${items.length} entries`,'soft')}</div>
     ${section === 'tools' && !state.search.trim() ? toolItemPanel() : ''}
     ${section === 'tools' ? '<div class="section-row"><div><h2>Every scored tool entry</h2><p>The same values, with the Fortune each one contributes and the source behind it.</p></div></div>' : ''}
-    <div class="card-grid">${items.map(x=>card(x)).join('') || '<div class="empty">No matches.</div>'}</div>`;
+    <div class="${gridClass}">${items.map(x=>card(x)).join('') || '<div class="empty">No matches.</div>'}</div>`;
 }
 
 function plannerPage() {
@@ -920,15 +1059,7 @@ function slotEditor(slotId) {
   const filled = Boolean(item.displayName);
 
   return `<div class="item-editor ${esc(rarityClass(item.rarity))}" data-item-editor="${esc(slotId)}">
-    <header class="item-editor-head">
-      <div class="item-portrait" data-item-art-slot="${esc(slotId)}">
-        <span class="item-portrait-fallback" aria-hidden="true">${esc(slot.label.slice(0, 2).toUpperCase())}</span>
-      </div>
-      <div class="item-identity">
-        <div class="eyebrow">${esc(slot.group)} · ${esc(slot.label)}</div>
-        <strong class="item-title">${esc(item.displayName || 'Choose an item')}</strong>
-        <span class="item-rarity">${esc(item.rarity || 'rarity unknown')}${item.source === ITEM_SOURCE.SYNC ? ' · synced' : ''}</span>
-      </div>
+    <header class="item-editor-head item-editor-actions">
       <button class="ghost small" data-slot-clear="${esc(slotId)}" ${filled ? '' : 'disabled'}>Clear slot</button>
     </header>
 
@@ -1237,7 +1368,18 @@ function bindGuide() {
   }));
 }
 
-function render() {
+function render({ preserveScroll = true } = {}) {
+  // Most state changes only alter a control/card. Replacing #app is still the
+  // core render model, but it must not behave like navigation: keep the right
+  // content pane and the navigation rail exactly where the user left them.
+  const relativeAnchor = preserveScroll ? currentScrollAnchor() : (clearScrollAnchor(), null);
+  const scrollState = preserveScroll ? {
+    main: document.querySelector('#app .main')?.scrollTop || 0,
+    nav: document.querySelector('#app .sidebar nav')?.scrollTop || 0,
+    windowX: window.scrollX,
+    windowY: window.scrollY,
+  } : null;
+
   let content = '';
   switch(state.page) {
     case 'dashboard': content = dashboard(); break;
@@ -1267,11 +1409,47 @@ function render() {
   if (['setups', 'accessories'].includes(state.page)) ensureItemCatalog();
   if (state.page === 'tools') bindToolPanel();
   if (state.page === 'guide') bindGuide();
+
+  if (scrollState) {
+    const main = document.querySelector('#app .main');
+    const nav = document.querySelector('#app .sidebar nav');
+    if (main) main.scrollTop = scrollState.main;
+    if (nav) nav.scrollTop = scrollState.nav;
+    window.scrollTo(scrollState.windowX, scrollState.windowY);
+    restoreRelativeScrollAnchor(relativeAnchor);
+    scheduleScrollAnchorRestore(relativeAnchor);
+  }
+}
+
+function closeNavigation() {
+  const sidebar = document.querySelector('#app .sidebar');
+  const toggle = document.querySelector('#app [data-nav-toggle]');
+  if (!sidebar || !toggle) return;
+  sidebar.classList.remove('nav-open');
+  toggle.setAttribute('aria-expanded', 'false');
+  toggle.setAttribute('aria-label', 'Open navigation');
 }
 
 function bind() {
   document.querySelectorAll('[data-progress]').forEach(el => { el.style.width = `${el.dataset.progress}%`; });
-  document.querySelectorAll('[data-page]').forEach(el => el.addEventListener('click', () => { state.page=el.dataset.page; state.drawer=null; saveState(); render(); }));
+
+  const sidebar = document.querySelector('#app .sidebar');
+  const navToggle = document.querySelector('#app [data-nav-toggle]');
+  navToggle?.addEventListener('click', () => {
+    const open = !sidebar?.classList.contains('nav-open');
+    sidebar?.classList.toggle('nav-open', open);
+    navToggle.setAttribute('aria-expanded', String(open));
+    navToggle.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
+  });
+
+  document.querySelectorAll('[data-page]').forEach(el => el.addEventListener('click', () => {
+    state.page=el.dataset.page;
+    state.drawer=null;
+    closeNavigation();
+    saveState();
+    render({ preserveScroll: false });
+  }));
+  document.querySelectorAll('[data-open-settings]').forEach(el => el.addEventListener('click', closeNavigation));
   document.querySelectorAll('[data-open]').forEach(el => el.addEventListener('click', () => { state.drawer=el.dataset.open; saveState(); render(); }));
   // The backdrop closes the drawer, but a click on the drawer itself must not:
   // it bubbles up to the backdrop, so the target is checked explicitly.
