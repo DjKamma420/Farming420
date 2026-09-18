@@ -71,7 +71,18 @@ function physicalNameCandidates(entry) {
   const name = clean(entry?.name);
   if (!name) return [];
   const values = [name];
-  if (entry?.category === 'Attribute Shard' && name.includes(' - ')) values.unshift(name.split(' - ')[0]);
+  if (entry?.category === 'Attribute Shard') {
+    const primaryName = name.includes(' - ') ? name.split(' - ')[0].trim() : name;
+    if (primaryName && primaryName !== name) values.unshift(primaryName);
+
+    const currentName = primaryName.replace(/\s+\(formerly [^)]+\)\s*$/i, '').trim();
+    if (currentName && currentName !== primaryName) values.unshift(currentName);
+
+    const alternatives = currentName.match(/^(.+?)\s+or\s+(.+?)\s+shard$/i);
+    if (alternatives) {
+      values.unshift(`${alternatives[1]} Shard`, `${alternatives[2]} Shard`);
+    }
+  }
   for (const suffix of [' contribution', ' effect', ' temporary stack']) {
     if (name.toLowerCase().endsWith(suffix)) values.unshift(name.slice(0, -suffix.length));
   }
