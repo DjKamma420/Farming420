@@ -10,6 +10,9 @@ import {
   greenThumbMarginalPerLevel,
   greenThumbTotalLevel,
   rootedFortuneForPieces,
+  thornyArmorBonusOverbloom,
+  thornyBaseOverbloomForPieces,
+  thornyFortuneForPieces,
 } from './equipment-fortune.js';
 import {
   helianthusBaseFortune,
@@ -21,6 +24,7 @@ import {
   perfectPeridotCountOnArmor,
   perfectPeridotFortuneOnArmor,
   sunsetTotalLevel,
+  thornsTotalLevel,
 } from './armor-fortune.js';
 
 const AUTO_SOURCE = 'hypixel-sync';
@@ -42,11 +46,19 @@ const TOOL_REFORGES = Object.freeze({
   beady: 'vacuum-reforge-beady-pest-only-farming-fortune',
 });
 
-const EQUIPMENT_REFORGES = Object.freeze({ rooted: 'equipment-reforge-rooted-on-full-equipment' });
+const EQUIPMENT_REFORGES = Object.freeze({
+  rooted: 'equipment-reforge-rooted-on-full-equipment',
+  thornyFortune: 'equipment-reforge-thorny-on-full-mythic-equipment-ff',
+  thornyBaseOverbloom: 'equipment-reforge-thorny-on-full-mythic-equipment-overbloom',
+  thornyArmorBonusOverbloom: 'equipment-reforge-thorny-thorns-overbloom',
+});
 const EQUIPMENT_ENCHANTS = Object.freeze({ green_thumb: 'equipment-enchant-green-thumb-v-on-equipment' });
 
 const BLOSSOM_BASE_ID = 'equipment-blossom-set-base-stats';
 const ROOTED_ID = EQUIPMENT_REFORGES.rooted;
+const THORNY_FORTUNE_ID = EQUIPMENT_REFORGES.thornyFortune;
+const THORNY_BASE_OVERBLOOM_ID = EQUIPMENT_REFORGES.thornyBaseOverbloom;
+const THORNY_ARMOR_BONUS_ID = EQUIPMENT_REFORGES.thornyArmorBonusOverbloom;
 const GREEN_THUMB_ID = EQUIPMENT_ENCHANTS.green_thumb;
 const HELIANTHUS_BASE_ID = 'armor-helianthus-armor-base-stats';
 const HELIANTHUS_FEAST_ID = 'armor-helianthus-feast-set-bonus';
@@ -263,7 +275,7 @@ function applyArmorDerived(pieces, state, autoApplied, applied, skipped) {
   }
 }
 
-function applyEquipmentDerived(pieces, state, snapshot, autoApplied, applied, skipped) {
+function applyEquipmentDerived(pieces, armorPieces, state, snapshot, autoApplied, applied, skipped) {
   if (!pieces.length) return;
   const scope = autoApplied.account ||= {};
   const store = state.profile;
@@ -283,15 +295,32 @@ function applyEquipmentDerived(pieces, state, snapshot, autoApplied, applied, sk
     }
   }
 
-  const rootedPieces = pieces.filter(piece => String(piece?.reforge || '').toLowerCase() === 'rooted');
-  if (!rootedPieces.length) return;
-  if (rootedPieces.some(piece => !String(piece?.rarity || '').trim())) {
-    applyValue(store, scope, ROOTED_ID, rootedPieces.length, applied);
-    skipped.push('Rooted was detected on equipped equipment, but at least one Rooted piece has unknown rarity, so its Farming Fortune was not guessed.');
-    return;
+  const thornyPieces = pieces.filter(piece => String(piece?.reforge || '').toLowerCase() === 'thorny');
+  if (thornyPieces.length) {
+    if (thornyPieces.some(piece => !String(piece?.rarity || '').trim())) {
+      applyValue(store, scope, THORNY_FORTUNE_ID, thornyPieces.length, applied);
+      applyValue(store, scope, THORNY_BASE_OVERBLOOM_ID, thornyPieces.length, applied);
+      skipped.push('Thorny was detected on equipped equipment, but at least one Thorny piece has unknown rarity, so its base Farming Fortune and Overbloom were not guessed.');
+    } else {
+      applyDynamicValue(store, scope, THORNY_FORTUNE_ID, thornyPieces.length, thornyFortuneForPieces(thornyPieces), applied);
+      applyDynamicValue(store, scope, THORNY_BASE_OVERBLOOM_ID, thornyPieces.length, thornyBaseOverbloomForPieces(thornyPieces), applied);
+    }
+    const armorThorns = thornsTotalLevel(armorPieces);
+    if (armorThorns > 0) {
+      applyDynamicValue(store, scope, THORNY_ARMOR_BONUS_ID, 1, thornyArmorBonusOverbloom(thornyPieces, armorThorns), applied);
+    }
   }
-  const rootedGain = rootedFortuneForPieces(rootedPieces);
-  if (rootedGain > 0) applyDynamicValue(store, scope, ROOTED_ID, rootedPieces.length, rootedGain, applied);
+
+  const rootedPieces = pieces.filter(piece => String(piece?.reforge || '').toLowerCase() === 'rooted');
+  if (rootedPieces.length) {
+    if (rootedPieces.some(piece => !String(piece?.rarity || '').trim())) {
+      applyValue(store, scope, ROOTED_ID, rootedPieces.length, applied);
+      skipped.push('Rooted was detected on equipped equipment, but at least one Rooted piece has unknown rarity, so its Farming Fortune was not guessed.');
+    } else {
+      const rootedGain = rootedFortuneForPieces(rootedPieces);
+      if (rootedGain > 0) applyDynamicValue(store, scope, ROOTED_ID, rootedPieces.length, rootedGain, applied);
+    }
+  }
 }
 
 export function applySnapshotToProgress(state, snapshot) {
@@ -333,7 +362,7 @@ export function applySnapshotToProgress(state, snapshot) {
   applyArmorDerived(armorSource.pieces, state, autoApplied, applied, skipped);
 
   const equipmentSource = gearPiecesFor(state, snapshot, SETUP_EQUIPMENT_SLOTS, isEquipmentContainer);
-  applyEquipmentDerived(equipmentSource.pieces, state, snapshot, autoApplied, applied, skipped);
+  applyEquipmentDerived(equipmentSource.pieces, armorSource.pieces, state, snapshot, autoApplied, applied, skipped);
 
   if (items.length && !applied.some(entry => entry.id.startsWith('tool-'))) {
     unmatchedTools.push('No decoded item matched a known farming tool name, so no tool progress was filled in.');
