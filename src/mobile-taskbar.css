@@ -26,7 +26,7 @@
   flex: 0 0 36px;
   width: 36px;
   height: 36px;
-  margin: 0 auto 6px;
+  margin: 0 0 6px;
   padding: 0;
   display: grid;
   place-items: center;
@@ -51,7 +51,7 @@
 }
 
 .skyblock-redesign .sidebar.sb-rail.nav-open {
-  width: 164px;
+  width: 144px;
   padding: 6px;
   overflow: hidden;
   box-shadow: 9px 0 26px rgba(0,0,0,.58);
@@ -133,7 +133,7 @@
   }
 
   .skyblock-redesign .sidebar.sb-rail.nav-open {
-    width: min(158px, calc(100vw - 14px));
+    width: min(138px, calc(100vw - 14px));
     padding: 4px;
   }
 
