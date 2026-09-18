@@ -198,6 +198,7 @@ Examples:
 
 - Blessed vs Bountiful on one tool.
 - Rooted vs Thorny on one equipment piece.
+- A Thorns V Century/Raffle Pufferfish Hat vs the farming helmet it replaces. With four Thorny equipment pieces, the event hat's fifth Thorns tier is only +0.4 Overbloom beyond a Thorns IV helmet; compare the complete state, not the headline +2.0 contribution from all five tiers.
 - Mossy vs Mantid on one armor piece.
 - Elephant vs Mooshroom Cow as active pet.
 - Green Bandana vs another pet item.
