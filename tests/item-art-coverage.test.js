@@ -42,6 +42,14 @@ test('tool progression resolves Recombobulator as a physical item', () => {
   assert.ok(skinTextureUrl(catalogItemById(catalog, 'RECOMBOBULATOR_3000')).endsWith('c'.repeat(64)));
 });
 
+test('known equipment gets exact id-backed art while live Hypixel skin still wins', () => {
+  const fallback = skinTextureUrl({ id: 'BLOSSOM_CLOAK', skin: null });
+  assert.ok(fallback.endsWith('8453a8084b7773c1b2bb6213901da8cfb50de5e5d0c8c524ff4fad0e182ea68b'));
+
+  const live = 'f'.repeat(64);
+  assert.ok(skinTextureUrl({ id: 'BLOSSOM_CLOAK', skin: live }).endsWith(live));
+});
+
 test('invalid skin hashes are never emitted as remote texture urls', () => {
   assert.equal(skinTextureUrl({ skin: 'not-a-hash' }), null);
   assert.equal(skinTextureUrl({}), null);
