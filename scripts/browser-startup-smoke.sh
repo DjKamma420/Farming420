@@ -115,4 +115,16 @@ if grep -q 'MutationObserver' "$SETUPS_DOM"; then
   exit 1
 fi
 
-echo "Browser smoke test passed: Dashboard and tool-style Setups picker both render in headless Chrome."
+HELMET_LINE="$(grep 'data-slot="helmet"' "$SETUPS_DOM" | head -n 1 || true)"
+if [[ "$HELMET_LINE" != *"rarity-mythic"* || "$HELMET_LINE" != *'data-effective-rarity="MYTHIC"'* ]]; then
+  echo "Recombobulated Legendary setup armor did not render with the canonical Mythic rarity background" >&2
+  echo "$HELMET_LINE" >&2
+  exit 1
+fi
+if [[ "$HELMET_LINE" == *"rarity-divine"* ]]; then
+  echo "Recombobulated setup armor was promoted twice (Legendary -> Mythic -> Divine)" >&2
+  echo "$HELMET_LINE" >&2
+  exit 1
+fi
+
+echo "Browser smoke test passed: Dashboard, Setups picker, and canonical recombobulated rarity background render in headless Chrome."
