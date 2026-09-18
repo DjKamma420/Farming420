@@ -3,6 +3,7 @@ import { UPGRADES } from './data.js';
 import { itemForSetupSlot } from './item-art-ui.js';
 import { loadItemCatalog } from './item-catalog.js';
 import { armorItemSvgMarkup, isArmorItem } from './armor-item-art.js';
+import { exactItemRenderUrl } from './exact-item-renderer.js';
 import { packArtNodeFor } from './pack-item-art.js';
 import { knownSkyblockHeadTexture } from './skull-art.js';
 
@@ -62,7 +63,7 @@ export function catalogItemById(catalog, skyblockId) {
 export function skinTextureUrl(item) {
   // Live Hypixel metadata wins. The id-based table only fills the manual/offline
   // gap where a setup knows the exact item id but carries no skin field.
-  const hash = String(item?.skin || knownSkyblockHeadTexture(item?.id) || '').trim().toLowerCase();
+  const hash = String(item?.skullTexture || item?.skin || knownSkyblockHeadTexture(item?.id) || '').trim().toLowerCase();
   return /^[0-9a-f]{32,128}$/.test(hash)
     ? `https://textures.minecraft.net/texture/${hash}`
     : null;
@@ -110,15 +111,35 @@ export function catalogItemForUpgrade(catalog, entry) {
   return best.length === 1 ? best[0] : null;
 }
 
-function armorMaterialNode(item, label) {
+function armorFallbackNode(item, label) {
   const markup = armorItemSvgMarkup(item);
   if (!markup) return null;
   const span = document.createElement('span');
-  span.className = 'coverage-item-art coverage-material-art coverage-armor-art';
+  span.className = 'coverage-item-art coverage-material-art coverage-armor-art coverage-armor-fallback';
   span.setAttribute('role', 'img');
-  span.setAttribute('aria-label', `${label || item?.name || 'SkyBlock armour'} item model`);
+  span.setAttribute('aria-label', `${label || item?.name || 'SkyBlock armour'} fallback model`);
   span.innerHTML = markup;
   return span;
+}
+
+function armorMaterialNode(item, label) {
+  const exactUrl = exactItemRenderUrl(item);
+  if (!exactUrl) return armorFallbackNode(item, label);
+
+  const image = document.createElement('img');
+  image.className = 'coverage-item-art coverage-material-art coverage-armor-art coverage-exact-item-art';
+  image.src = exactUrl;
+  image.alt = '';
+  image.loading = 'lazy';
+  image.decoding = 'async';
+  image.dataset.itemRenderer = 'skycrypt';
+  image.setAttribute('role', 'img');
+  image.setAttribute('aria-label', `${label || item?.name || 'SkyBlock armour'} exact item render`);
+  image.addEventListener('error', () => {
+    const fallback = armorFallbackNode(item, label);
+    if (fallback && image.isConnected) image.replaceWith(fallback);
+  }, { once: true });
+  return image;
 }
 
 function genericMaterialSvg(item, label) {
@@ -203,7 +224,16 @@ function decorateSetupItems(catalog, rawState) {
     const setupItem = itemForSetupSlot(rawState, slotId);
     if (!setupItem?.skyblockId) return;
     const record = catalogItemById(catalog, setupItem.skyblockId);
-    const node = itemArtNode(record, setupItem.displayName || record?.name || slotId);
+    if (!record) return;
+    const renderItem = {
+      ...record,
+      ...setupItem,
+      id: record.id,
+      name: record.name,
+      material: setupItem.itemModel || record.material,
+      color: record.color,
+    };
+    const node = itemArtNode(renderItem, setupItem.displayName || record.name || slotId);
     if (node) putArt(container, node, `setup:${record.id}`);
   });
 }
