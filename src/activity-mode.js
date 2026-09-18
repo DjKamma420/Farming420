@@ -4,8 +4,9 @@ export const ACTIVITY_MODE = Object.freeze({
   FARM: 'farm',
   PEST_SPAWN: 'pest-spawn',
   PEST_KILL: 'pest-kill',
-  // Legacy alias for code and stored UI state written by the old two-set model.
-  PEST: 'pest-spawn',
+  // Legacy code alias: the old PEST mode was the Vacuum/loot calculation
+  // path, so existing callers must keep receiving Killing semantics.
+  PEST: 'pest-kill',
 });
 
 export const ACTIVITY_SETUP_ID = Object.freeze({
