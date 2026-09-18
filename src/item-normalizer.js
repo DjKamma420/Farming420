@@ -80,7 +80,6 @@ export function normalizeDecodedItem(item, context = {}) {
     attributes: numberMap(extra.attributes),
     farmingForDummies: numberOrNull(extra.farming_for_dummies_count),
     recombobulated: numberOrNull(extra.rarity_upgrades),
-    talismanEnrichment: stringOrNull(extra.talisman_enrichment),
     cultivatingCounter: numberOrNull(extra.farmed_cultivating),
     overclockerLevel: numberOrNull(extra.levelable_overclocks),
     itemTier: numberOrNull(extra.item_tier),
