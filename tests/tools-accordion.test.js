@@ -65,3 +65,16 @@ test('tool cards and shared item editors stay compact', () => {
   assert.match(editor, /\.item-editor \{[^}]*padding:\s*14px/);
   assert.match(editor, /\.item-portrait \{\s*width:\s*58px;\s*height:\s*58px/);
 });
+
+
+test('tools page removes the three redundant surfaces from the annotated mobile view', () => {
+  const src = read('skyblock-redesign.js');
+  const css = read('skyblock-redesign.css').replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.match(src, /content\.classList\.add\('sb-tools-page'\)/);
+  assert.match(css, /\.sb-tools-page > \.page-head \{[^}]*display:\s*none/);
+  assert.match(css, /\.sb-tools-page \.sb-tool-card\.selected \{[^}]*display:\s*none/);
+  assert.doesNotMatch(
+    src,
+    /Every current Farming Tool reforge stays selectable\. The recommendation changes by goal instead of hiding non-meta choices\./,
+  );
+});
