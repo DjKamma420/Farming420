@@ -21,7 +21,7 @@ export const TOOL_PROGRESS_ITEM_IDS = Object.freeze({
 });
 
 const CARD_ITEM_ID_OVERRIDES = Object.freeze({
-  'accessory-relic-of-power-perfect-peridot-effect': 'RELIC_OF_POWER',
+  'accessory-relic-of-power-perfect-peridot-effect': 'POWER_RELIC',
   'accessory-fermento-artifact': 'FERMENTO_ARTIFACT',
   'accessory-helianthus-relic': 'HELIANTHUS_RELIC',
   'buff-booster-cookie-farming-wisdom-contribution': 'BOOSTER_COOKIE',
@@ -88,8 +88,8 @@ function physicalNameCandidates(entry) {
  */
 export function catalogItemForUpgrade(catalog, entry) {
   if (!Array.isArray(catalog) || !entry) return null;
-  const override = CARD_ITEM_ID_OVERRIDES[entry.id];
-  if (override) return catalogItemById(catalog, override);
+  const exactItemId = entry.physicalItemId || CARD_ITEM_ID_OVERRIDES[entry.id];
+  if (exactItemId) return catalogItemById(catalog, exactItemId);
   if (!entry.packAsset && !PHYSICAL_CARD_CATEGORIES.has(entry.category)) return null;
 
   const candidates = physicalNameCandidates(entry);
@@ -232,6 +232,22 @@ function decorateProgressionCards(catalog) {
   });
 }
 
+function decorateAccessoryCatalog(catalog) {
+  document.querySelectorAll('[data-accessory-item-id]').forEach(card => {
+    const itemId = String(card.dataset.accessoryItemId || '').trim().toUpperCase();
+    const record = catalogItemById(catalog, itemId);
+    if (!record) {
+      delete card.dataset.physicalItemId;
+      return;
+    }
+    if (card.dataset.physicalItemId !== record.id) card.dataset.physicalItemId = record.id;
+    const portrait = card.querySelector('.card-head > .card-portrait');
+    if (!portrait || portrait.querySelector(':scope > .official-item-art, :scope > .coverage-item-art')) return;
+    const node = itemArtNode(record, record.name || itemId);
+    if (node) putArt(portrait, node, `accessory:${record.id}`, { prepend: false });
+  });
+}
+
 function decorateDrawer(catalog, rawState) {
   const drawer = document.querySelector('.drawer');
   if (!drawer) return;
@@ -317,6 +333,7 @@ export async function applyItemArtCoverage(root = document, rawState = readState
     if (!items.length) return 0;
     decorateSetupItems(items, rawState);
     decorateProgressionCards(items);
+    decorateAccessoryCatalog(items);
     decorateDrawer(items, rawState);
     decorateReforges(items);
     decorateToolProgression(items);
