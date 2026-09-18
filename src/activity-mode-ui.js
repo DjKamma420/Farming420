@@ -16,6 +16,8 @@ import {
 let scheduled = false;
 let applying = false;
 
+const MODE_SWITCH_PAGES = new Set(['dashboard', 'setups', 'planner']);
+
 function load() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
 }
@@ -130,8 +132,18 @@ function setMode(mode) {
 function injectHeaderSwitch(raw) {
   const topbar = document.querySelector('.topbar');
   if (!topbar) return;
-  const mode = activityModeForState(raw);
+  const page = String(raw?.page || '');
   let control = topbar.querySelector('.activity-mode-switch');
+
+  // The phase selector belongs only where the selected loadout changes what is
+  // being edited or calculated. Shared sources such as Tools, Shards, Account,
+  // Crops and Buffs are configured once and must not look phase-specific.
+  if (!MODE_SWITCH_PAGES.has(page)) {
+    control?.remove();
+    return;
+  }
+
+  const mode = activityModeForState(raw);
   if (!control) {
     control = document.createElement('div');
     control.className = 'activity-mode-switch';
@@ -163,7 +175,7 @@ function simplifySetupEditor(raw) {
   const tabs = content.querySelector('.setup-tabs');
   if (tabs && tabs.dataset.modeSurface !== mode) {
     tabs.dataset.modeSurface = mode;
-    tabs.innerHTML = `<div class="mode-editor-banner"><strong>${esc(activityLabel(mode))}</strong> is being edited. Armor, equipment and pet selections are stored separately for Farming, Pest Spawning and Pest Killing. Change the active phase with the switch in the header.</div>`;
+    tabs.innerHTML = `<div class="mode-editor-banner"><strong>${esc(activityLabel(mode))}</strong> is being edited. Loadout gear is phase-specific. Shared sources such as crop Tools, Shards, Account upgrades and Buffs are configured once and are not switched here.</div>`;
   }
 
   const nameInput = content.querySelector('#setupName');
