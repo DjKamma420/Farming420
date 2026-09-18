@@ -12,6 +12,8 @@ export const ACCESSORY_CAPABILITY_SOURCES = Object.freeze({
   recombobulator: 'https://hypixel.net/threads/a-list-of-everything-a-recombobulator-3000-does.5965625/',
   enrichments: 'https://hypixel.net/threads/how-to-enrichments.5759931/',
   enrichmentCatalog: 'https://hypixel.net/threads/a-guide-on-what-to-buy-in-the-bits-shop-and-how-useful-the-items-are.4545881/',
+  pestDropSystem: 'https://hypixel.net/threads/skyblock-patch-notes-0-19-7-garden-pests.5537683/',
+  pestOverbloomUpdate: 'https://hypixel.net/threads/pest-farming-nerf.6097800/',
 });
 
 export const ACCESSORY_ENRICHMENTS = Object.freeze([
