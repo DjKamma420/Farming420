@@ -71,6 +71,10 @@
   background-position: 71.4286% 14.2857%;
 }
 
+.coverage-exact-item-art {
+  object-fit: contain;
+}
+
 .coverage-material-art {
   width: 78%;
   height: 78%;
