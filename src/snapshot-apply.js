@@ -222,6 +222,7 @@ function syncAccessoryItemStates(state, snapshot) {
   // A fresh sync owns only records previously written by a sync. Manual item
   // state survives when the current API payload does not contain that accessory.
   for (const [itemId, itemState] of Object.entries(accessoryItems)) {
+    if (itemState && typeof itemState === 'object') delete itemState.enrichment;
     if (itemState?.source === AUTO_SOURCE) delete accessoryItems[itemId];
   }
 
