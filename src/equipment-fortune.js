@@ -1,6 +1,9 @@
 import {
   GREEN_THUMB_FORTUNE_PER_LEVEL_PER_UNIQUE_VISITOR,
   ROOTED_FORTUNE_BY_RARITY,
+  THORNY_FORTUNE_BY_RARITY,
+  THORNY_OVERBLOOM_BY_RARITY,
+  THORNY_OVERBLOOM_PER_ARMOR_THORNS_TIER,
 } from '../research/equipment-fortune.js';
 import { effectiveSetupItemRarity } from './setup-rarity.js';
 
@@ -40,6 +43,40 @@ export function rootedFortuneForPiece(piece) {
 
 export function rootedFortuneForPieces(pieces) {
   return (pieces || []).reduce((sum, piece) => sum + rootedFortuneForPiece(piece), 0);
+}
+
+export function thornyPieceCount(pieces) {
+  return (pieces || []).filter(piece => String(piece?.reforge || '').toLowerCase() === 'thorny').length;
+}
+
+export function thornyFortuneForPiece(piece) {
+  if (String(piece?.reforge || '').toLowerCase() !== 'thorny') return 0;
+  const rarity = effectiveSetupItemRarity(piece);
+  return Number(THORNY_FORTUNE_BY_RARITY[rarity] || 0);
+}
+
+export function thornyFortuneForPieces(pieces) {
+  return (pieces || []).reduce((sum, piece) => sum + thornyFortuneForPiece(piece), 0);
+}
+
+export function thornyBaseOverbloomForPiece(piece) {
+  if (String(piece?.reforge || '').toLowerCase() !== 'thorny') return 0;
+  const rarity = effectiveSetupItemRarity(piece);
+  return Number(THORNY_OVERBLOOM_BY_RARITY[rarity] || 0);
+}
+
+export function thornyBaseOverbloomForPieces(pieces) {
+  return (pieces || []).reduce((sum, piece) => sum + thornyBaseOverbloomForPiece(piece), 0);
+}
+
+export function thornyArmorBonusOverbloom(equipmentPieces, totalArmorThornsTier) {
+  const thornsTiers = Math.max(0, Number(totalArmorThornsTier) || 0);
+  const value = thornyPieceCount(equipmentPieces)
+    * thornsTiers
+    * THORNY_OVERBLOOM_PER_ARMOR_THORNS_TIER;
+  // Keep decimal stat totals stable for storage/tests instead of exposing
+  // floating-point artifacts such as 6.800000000000001.
+  return Math.round(value * 1e10) / 1e10;
 }
 
 export function greenThumbTotalLevel(pieces) {
