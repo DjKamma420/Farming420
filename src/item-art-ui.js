@@ -1,6 +1,6 @@
 import { STORAGE_KEY } from './config.js';
 import { itemAssetForSkyblockId, loadItemAssetManifest } from './item-assets.js';
-import { knownSkyblockHeadTexture, skullTextureUrl } from './skull-art.js';
+import { knownSkyblockHeadTexture, knownSkyblockRenderedIcon, skullTextureUrl } from './skull-art.js';
 
 let manifest = null;
 let manifestRequested = false;
@@ -106,6 +106,22 @@ function skullNode(textureId, item, onError = null) {
   return node;
 }
 
+function remoteIconNode(url, item, onError = null) {
+  if (!url) return null;
+  const img = document.createElement('img');
+  img.className = 'official-item-art exact-remote-item-art';
+  img.src = url;
+  img.alt = item?.displayName ? `${item.displayName} item icon` : 'SkyBlock item icon';
+  img.loading = 'eager';
+  img.decoding = 'async';
+  img.referrerPolicy = 'no-referrer';
+  img.addEventListener('error', () => {
+    img.remove();
+    if (typeof onError === 'function') onError();
+  }, { once: true });
+  return img;
+}
+
 function imageNode(asset, item, onError = null) {
   const img = document.createElement('img');
   img.className = 'official-item-art';
@@ -159,13 +175,37 @@ export function renderSetupItemArt({ root = document, rawState = readState(), ma
     }
 
     const textureId = item.skullTexture || knownSkyblockHeadTexture(item.skyblockId);
-    const identity = textureId
-      ? `skull:${textureId}`
-      : item.skyblockId ? `item:${item.skyblockId}` : `name:${item.displayName || slotId}`;
+    const renderedIconUrl = item.skullTexture ? null : knownSkyblockRenderedIcon(item.skyblockId);
+    const identity = renderedIconUrl
+      ? `rendered:${String(item.skyblockId || '').toUpperCase()}`
+      : textureId
+        ? `skull:${textureId}`
+        : item.skyblockId ? `item:${item.skyblockId}` : `name:${item.displayName || slotId}`;
     if ((card.classList.contains('has-official-item-art') || card.classList.contains('has-item-art-fallback')) && card.dataset.renderedItemArt === identity) return;
     removeRenderedArt(card);
 
     const asset = item.skyblockId ? itemAssetForSkyblockId(manifestValue, item.skyblockId) : null;
+
+    if (renderedIconUrl) {
+      const exact = remoteIconNode(renderedIconUrl, item, () => {
+        const skullFallback = skullNode(textureId, item, () => showFallback(card, item.displayName || slotId, identity));
+        if (skullFallback) {
+          card.prepend(skullFallback);
+          card.classList.add('has-official-item-art');
+          card.dataset.renderedItemArt = `skull:${textureId}`;
+        } else {
+          showFallback(card, item.displayName || slotId, identity);
+        }
+      });
+      if (exact) {
+        card.prepend(exact);
+        card.classList.add('has-official-item-art');
+        card.dataset.renderedItemArt = identity;
+        rendered += 1;
+        return;
+      }
+    }
+
     const skull = skullNode(textureId, item, () => showFallback(card, item.displayName || slotId, identity));
     if (skull) {
       card.prepend(skull);
