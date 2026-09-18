@@ -705,39 +705,54 @@
 }
 
 
-/* Named side navigation: labels stay visible at every viewport size. */
-.skyblock-redesign body {
+/* Named side navigation: labels stay visible at every viewport size.
+ *
+ * The rail is viewport-fixed. The document itself never scrolls; only .main
+ * does. This avoids sticky-position edge cases and keeps the navigation still
+ * while the right-hand page is scrolled.
+ */
+html.skyblock-redesign,
+html.skyblock-redesign body {
+  height: 100%;
+  overflow: hidden;
+}
+
+.skyblock-redesign #app,
+.skyblock-redesign .app-shell {
   height: 100dvh;
+  min-height: 0;
   overflow: hidden;
 }
 
 .skyblock-redesign .app-shell {
+  display: block;
+}
+
+.skyblock-redesign .sidebar.sb-rail {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: 156px;
   height: 100dvh;
-  min-height: 0;
-  grid-template-columns: 176px minmax(0, 1fr);
+  padding: 8px 6px;
   overflow: hidden;
+  z-index: 20;
 }
 
 .skyblock-redesign .main {
+  width: calc(100% - 156px);
   height: 100dvh;
+  min-width: 0;
   min-height: 0;
+  margin-left: 156px;
+  overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior-y: contain;
 }
 
-.skyblock-redesign .sidebar.sb-rail {
-  position: sticky;
-  top: 0;
-  align-self: start;
-  width: 176px;
-  height: 100dvh;
-  overflow: hidden;
-}
-
 .skyblock-redesign .sb-rail .brand {
   justify-content: flex-start;
-  gap: 10px;
-  padding-inline: 6px;
+  gap: 8px;
+  padding: 4px 4px 10px;
 }
 
 .skyblock-redesign .sb-rail .brand > div:last-child {
@@ -761,25 +776,33 @@
   display: none;
 }
 
+.skyblock-redesign .sb-rail nav {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
 .skyblock-redesign .sb-rail .nav-group-addon {
   min-width: 0;
 }
 
 .skyblock-redesign .sb-rail .nav-group-title-addon {
-  padding: 9px 8px 3px;
+  padding: 8px 6px 3px;
   text-align: left;
-  font-size: 9px;
-  letter-spacing: .06em;
+  font-size: 8px;
+  letter-spacing: .04em;
 }
 
 .skyblock-redesign .sb-rail .nav-link {
   width: 100%;
-  min-height: 44px;
+  min-height: 42px;
   height: auto;
   margin: 0;
-  padding: 5px 8px;
-  grid-template-columns: 34px minmax(0, 1fr);
-  gap: 10px;
+  padding: 4px 6px;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 7px;
   place-items: initial;
   align-items: center;
   text-align: left;
@@ -799,9 +822,9 @@
   border: 0;
   border-radius: 0;
   box-shadow: none;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.15;
   pointer-events: auto;
   white-space: normal;
 }
@@ -811,55 +834,56 @@
 }
 
 .skyblock-redesign .sb-rail .nav-link.active::before {
-  left: -10px;
+  left: -7px;
 }
 
 @media (max-width: 920px) {
-  .skyblock-redesign .app-shell {
-    grid-template-columns: 152px minmax(0, 1fr);
-  }
-
   .skyblock-redesign .sidebar.sb-rail {
-    width: 152px;
+    width: 136px;
     padding-inline: 5px;
   }
 
+  .skyblock-redesign .main {
+    width: calc(100% - 136px);
+    margin-left: 136px;
+  }
+
   .skyblock-redesign .sb-rail .nav-link {
-    width: 100%;
-    grid-template-columns: 30px minmax(0, 1fr);
-    gap: 8px;
-    padding-inline: 7px;
+    grid-template-columns: 28px minmax(0, 1fr);
+    gap: 6px;
+    padding-inline: 5px;
   }
 
   .skyblock-redesign .sb-nav-icon {
-    width: 30px;
-    height: 30px;
-  }
-
-  .skyblock-redesign .sb-nav-icon img {
     width: 28px;
     height: 28px;
   }
 
+  .skyblock-redesign .sb-nav-icon img {
+    width: 26px;
+    height: 26px;
+  }
+
   .skyblock-redesign .sb-nav-label {
-    font-size: 11px;
+    font-size: 10px;
   }
 }
 
 @media (max-width: 650px) {
-  .skyblock-redesign .app-shell {
-    display: grid;
-    grid-template-columns: 124px minmax(0, 1fr);
-  }
-
   .skyblock-redesign .sidebar.sb-rail {
-    position: sticky;
-    inset: 0 auto auto 0;
-    width: 124px;
+    display: flex;
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: 108px;
     height: 100dvh;
     padding: 4px;
     border-top: 0;
     border-right: 2px solid #283b2d;
+  }
+
+  .skyblock-redesign .main {
+    width: calc(100% - 108px);
+    margin-left: 108px;
   }
 
   .skyblock-redesign .sb-rail .brand {
@@ -868,7 +892,9 @@
 
   .skyblock-redesign .sb-rail nav {
     display: grid;
+    align-content: start;
     gap: 2px;
+    min-height: 0;
     max-height: 100dvh;
     padding: 4px 0;
     overflow-x: hidden;
@@ -881,46 +907,46 @@
 
   .skyblock-redesign .sb-rail .nav-group-title-addon {
     display: block !important;
-    padding: 7px 6px 2px;
-    font-size: 8px;
+    padding: 6px 4px 2px;
+    font-size: 7px;
   }
 
   .skyblock-redesign .sb-rail .nav-link {
     width: 100%;
-    min-height: 38px;
+    min-height: 36px;
     height: auto;
-    padding: 4px 6px;
-    grid-template-columns: 26px minmax(0, 1fr);
-    gap: 6px;
+    padding: 3px 4px;
+    grid-template-columns: 24px minmax(0, 1fr);
+    gap: 4px;
   }
 
   .skyblock-redesign .sb-nav-icon {
-    width: 26px;
-    height: 26px;
-    font-size: 13px;
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
   }
 
   .skyblock-redesign .sb-nav-icon img {
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
   }
 
   .skyblock-redesign .sb-nav-label {
     display: block !important;
-    font-size: 10px;
-    line-height: 1.15;
+    font-size: 9px;
+    line-height: 1.1;
   }
 
   .skyblock-redesign .sb-rail .nav-link.active::before {
-    left: -5px;
+    left: -4px;
     right: auto;
-    top: 6px;
-    bottom: 6px;
+    top: 5px;
+    bottom: 5px;
     width: 3px;
     height: auto;
   }
 
   .skyblock-redesign .content {
-    padding: 18px 10px 40px;
+    padding: 16px 8px 36px;
   }
 }
