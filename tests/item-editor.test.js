@@ -37,7 +37,7 @@ test('every setup slot knows which enchantment family it belongs to', () => {
 
 test('a slot offers exactly the verified enchantments that apply to it', () => {
   const helmet = enchantRowsFor('helmet', {});
-  assert.deepEqual(helmet.map(row => row.id), ['pesterminator', 'sunset']);
+  assert.deepEqual(helmet.map(row => row.id), ['pesterminator', 'thorns', 'sunset']);
   assert.deepEqual(enchantRowsFor('equipment1', {}).map(row => row.id), ['green_thumb']);
   // Pets take no enchantments, so the editor shows the section as absent rather
   // than as an empty box waiting to be filled.
