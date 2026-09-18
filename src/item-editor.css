@@ -283,6 +283,16 @@
 }
 
 .enchant-tag.unknown { border-color: #795027; color: #ffd39c; }
+.enchant-tag.secret { border-color: #8b6a29; color: #ffe0a1; }
+
+.enchant-note {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.35;
+}
 
 .enchant-line select { padding: 7px 8px; text-align: center; }
 .enchant-line select:disabled { opacity: .45; }
