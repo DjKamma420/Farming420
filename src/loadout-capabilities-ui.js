@@ -143,6 +143,7 @@ function vacuumLevel(bucket, item) {
 
 function writeVacuumEntry(item, patch) {
   const raw = load();
+  const totalPestFortune = Number(killStats.globalFortune || 0) + Number(killStats.pestFortune || 0);
   const bucket = ensureVacuumBucket(raw);
   Object.assign(bucket.levels, patch.levels || {});
   Object.assign(bucket.owned, patch.owned || {});
@@ -202,7 +203,7 @@ function renderVacuumSurface(raw) {
     reforge || '',
     spawnStats.effectiveFortune,
     spawnStats.bonusPestChance,
-    killStats.effectiveFortune,
+    totalPestFortune,
     killStats.pestFortune,
     killStats.overbloom,
     entries.map(item => `${item.id}:${vacuumLevel(bucket, item)}`).join('|'),
@@ -218,7 +219,7 @@ function renderVacuumSurface(raw) {
     <section class="pest-loadout-stats" aria-label="Pest loadout totals">
       <div class="pest-loadout-stat"><span>Spawning Farming Fortune</span><strong>${Number(spawnStats.effectiveFortune || 0).toLocaleString('en-US')}</strong></div>
       <div class="pest-loadout-stat"><span>Bonus Pest Chance</span><strong>${Number(spawnStats.bonusPestChance || 0).toLocaleString('en-US')}</strong></div>
-      <div class="pest-loadout-stat"><span>Total Pest Fortune</span><strong>${Number(killStats.effectiveFortune || 0).toLocaleString('en-US')}</strong><small>Pest-only: +${Number(killStats.pestFortune || 0).toLocaleString('en-US')}</small></div>
+      <div class="pest-loadout-stat"><span>Total Pest Fortune</span><strong>${totalPestFortune.toLocaleString('en-US')}</strong><small>Global + Pest-only (+${Number(killStats.pestFortune || 0).toLocaleString('en-US')})</small></div>
       <div class="pest-loadout-stat"><span>Pest Overbloom</span><strong>${Number(killStats.overbloom || 0).toLocaleString('en-US')}</strong></div>
     </section>
     <section class="item-editor-section">
