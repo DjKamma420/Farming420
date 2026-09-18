@@ -38,7 +38,8 @@ const FARMING_ARMOR_NAME_PREFIXES = Object.freeze([
   'farm suit ', 'farm armor ', 'pumpkin ', 'melon ',
 ]);
 const FARMING_STANDALONE_ARMOR_IDS = new Set([
-  'RANCHERS_BOOTS', 'FARMER_BOOTS', 'ENCHANTED_JACK_O_LANTERN', 'PUFFERFISH_HAT', 'PUFFERFISH_HELMET',
+  'RANCHERS_BOOTS', 'FARMER_BOOTS', 'ENCHANTED_JACK_O_LANTERN',
+  'PUFFERFISH_HAT', 'PUFFERFISH_HELMET', 'PUFFERFISH_HAT_CELEBRATION',
 ]);
 
 const FARMING_EQUIPMENT_PREFIXES = Object.freeze([
@@ -58,6 +59,14 @@ const FARMING_STANDALONE_EQUIPMENT_IDS = new Set([
 const FARMING_STANDALONE_EQUIPMENT_NAMES = new Set([
   'pest vest', "zorro's cape", 'zorros cape',
 ]);
+
+export function intrinsicEnchantmentsForCatalogItem(item) {
+  const id = String(item?.id || item?.skyblockId || '').trim().toUpperCase();
+  // The Century/Raffle reward is a distinct Pufferfish Hat variant that comes
+  // with Thorns V. The normal craftable PUFFERFISH_HAT must never inherit it.
+  if (id === 'PUFFERFISH_HAT_CELEBRATION') return { thorns: 5 };
+  return {};
+}
 
 export function isFarmingArmorCatalogItem(item) {
   if (!item || typeof item !== 'object') return false;
