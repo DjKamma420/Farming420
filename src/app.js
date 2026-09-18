@@ -1237,7 +1237,17 @@ function bindGuide() {
   }));
 }
 
-function render() {
+function render({ preserveScroll = true } = {}) {
+  // Most state changes only alter a control/card. Replacing #app is still the
+  // core render model, but it must not behave like navigation: keep the right
+  // content pane and the navigation rail exactly where the user left them.
+  const scrollState = preserveScroll ? {
+    main: document.querySelector('#app .main')?.scrollTop || 0,
+    nav: document.querySelector('#app .sidebar nav')?.scrollTop || 0,
+    windowX: window.scrollX,
+    windowY: window.scrollY,
+  } : null;
+
   let content = '';
   switch(state.page) {
     case 'dashboard': content = dashboard(); break;
@@ -1267,11 +1277,19 @@ function render() {
   if (['setups', 'accessories'].includes(state.page)) ensureItemCatalog();
   if (state.page === 'tools') bindToolPanel();
   if (state.page === 'guide') bindGuide();
+
+  if (scrollState) {
+    const main = document.querySelector('#app .main');
+    const nav = document.querySelector('#app .sidebar nav');
+    if (main) main.scrollTop = scrollState.main;
+    if (nav) nav.scrollTop = scrollState.nav;
+    window.scrollTo(scrollState.windowX, scrollState.windowY);
+  }
 }
 
 function bind() {
   document.querySelectorAll('[data-progress]').forEach(el => { el.style.width = `${el.dataset.progress}%`; });
-  document.querySelectorAll('[data-page]').forEach(el => el.addEventListener('click', () => { state.page=el.dataset.page; state.drawer=null; saveState(); render(); }));
+  document.querySelectorAll('[data-page]').forEach(el => el.addEventListener('click', () => { state.page=el.dataset.page; state.drawer=null; saveState(); render({ preserveScroll: false }); }));
   document.querySelectorAll('[data-open]').forEach(el => el.addEventListener('click', () => { state.drawer=el.dataset.open; saveState(); render(); }));
   // The backdrop closes the drawer, but a click on the drawer itself must not:
   // it bubbles up to the backdrop, so the target is checked explicitly.
