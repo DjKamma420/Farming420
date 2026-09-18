@@ -264,11 +264,12 @@ function card(item, compact=false) {
   const status = statusClass(item);
   const gain = gainFor(item);
   const cropLimited = item.cropScope !== 'Any';
+  const isShard = item.section === 'shards' || item.category === 'Attribute Shard';
   return `
-    <button class="item-card ${status} ${compact ? 'compact' : ''}" data-open="${esc(item.id)}">
+    <button class="item-card ${status} ${isShard ? 'shard-card' : ''} ${compact ? 'compact' : ''}" data-open="${esc(item.id)}">
       <div class="card-layer"></div>
       <div class="card-head">
-        ${item.packAsset ? `<span class="card-portrait" data-pack-asset="${esc(item.packAsset)}"></span>` : ''}
+        ${item.packAsset || isShard ? `<span class="card-portrait${isShard ? ' shard-portrait' : ''}"${item.packAsset ? ` data-pack-asset="${esc(item.packAsset)}"` : ''}></span>` : ''}
         <div>
           <div class="eyebrow">${esc(item.category)}</div>
           <div class="item-title">${esc(item.name)}</div>
@@ -282,6 +283,7 @@ function card(item, compact=false) {
       </div>
       <div class="progress"><i data-progress="${Math.min(100,(level/max)*100)}"></i></div>
       <div class="chips">
+        ${item.attribute ? badge(item.attribute, 'soft') : ''}
         ${isCropScopedItem(item) ? badge(crop().name, 'soft') : (cropLimited ? badge(item.cropScope, 'soft') : '')}
         ${item.hypercharge ? badge('Hypercharge', 'soft') : ''}
         ${item.modeScope !== 'Any' ? badge(item.modeScope, 'soft') : ''}
@@ -623,11 +625,12 @@ function bindToolPanel() {
 
 function genericSectionPage(section, kicker, title, text) {
   const items = visibleUpgrades(section);
+  const gridClass = section === 'shards' ? 'card-grid shard-gallery' : 'card-grid';
   return `${pageHeader(kicker,title,text)}
     <div class="filter-line">${badge(`${items.length} entries`,'soft')}</div>
     ${section === 'tools' && !state.search.trim() ? toolItemPanel() : ''}
     ${section === 'tools' ? '<div class="section-row"><div><h2>Every scored tool entry</h2><p>The same values, with the Fortune each one contributes and the source behind it.</p></div></div>' : ''}
-    <div class="card-grid">${items.map(x=>card(x)).join('') || '<div class="empty">No matches.</div>'}</div>`;
+    <div class="${gridClass}">${items.map(x=>card(x)).join('') || '<div class="empty">No matches.</div>'}</div>`;
 }
 
 function plannerPage() {
