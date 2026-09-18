@@ -64,6 +64,36 @@ export const KNOWN_FARMING_EQUIPMENT_RENDERED_ICONS = Object.freeze({
   PESTHUNTERS_NECKLACE: 'https://skyah.net/icons/items/pesthunters_necklace.webp',
 });
 
+const FARMING_ARMOR_RENDERED_ICON_PREFIXES = Object.freeze([
+  'FARMHAND_', 'HAYMAKER_', 'SPROUT_', 'TATER_',
+  'FARM_SUIT_', 'FARM_ARMOR_', 'PUMPKIN_', 'MELON_',
+  'CROPIE_', 'SQUASH_', 'FERMENTO_', 'HELIANTHUS_',
+]);
+
+const FARMING_ARMOR_RENDERED_ICON_SUFFIXES = new Set([
+  'HELMET', 'CHESTPLATE', 'LEGGINGS', 'BOOTS',
+]);
+
+const FARMING_STANDALONE_RENDERED_ICON_IDS = new Set([
+  'RANCHERS_BOOTS',
+  'FARMER_BOOTS',
+  'ENCHANTED_JACK_O_LANTERN',
+  'PUFFERFISH_HAT',
+]);
+
+function isKnownFarmingArmorRenderedIconId(id) {
+  if (FARMING_STANDALONE_RENDERED_ICON_IDS.has(id)) return true;
+  for (const prefix of FARMING_ARMOR_RENDERED_ICON_PREFIXES) {
+    if (!id.startsWith(prefix)) continue;
+    return FARMING_ARMOR_RENDERED_ICON_SUFFIXES.has(id.slice(prefix.length));
+  }
+  return false;
+}
+
+function skyAhRenderedIconUrl(id) {
+  return `https://skyah.net/icons/items/${id.toLowerCase()}.webp`;
+}
+
 export const KNOWN_FARMING_EQUIPMENT_HEAD_TEXTURES = Object.freeze({
   LOTUS_NECKLACE: 'ad83aa25c11acfce7442ff0129fd70bb42ca0de63ba2115169966cc351f1716b',
   LOTUS_CLOAK: 'ee40d7762d2b7aed5d925d17f7b3c1451e709c2537a5546b1ce6e0d8ee2757d4',
@@ -92,6 +122,7 @@ const KNOWN_HEAD_ID_ALIASES = Object.freeze({
   PESTHUNTER_BELT: 'PESTHUNTERS_BELT',
   PESTHUNTER_GLOVES: 'PESTHUNTERS_GLOVES',
   ZORRO_CAPE: 'ZORROS_CAPE',
+  PUFFERFISH_HELMET: 'PUFFERFISH_HAT',
 });
 
 export function knownSkyblockHeadTexture(skyblockId) {
@@ -106,8 +137,11 @@ export function knownSkyblockRenderedIcon(skyblockId) {
   const raw = String(skyblockId || '').trim().toUpperCase();
   if (!raw) return null;
   const id = KNOWN_HEAD_ID_ALIASES[raw] || raw;
-  const url = KNOWN_FARMING_EQUIPMENT_RENDERED_ICONS[id] || null;
-  return url && /^https:\/\/skyah\.net\/icons\/items\/[a-z0-9_]+\.webp$/.test(url) ? url : null;
+  const explicit = KNOWN_FARMING_EQUIPMENT_RENDERED_ICONS[id] || null;
+  if (explicit) {
+    return /^https:\/\/skyah\.net\/icons\/items\/[a-z0-9_]+\.webp$/.test(explicit) ? explicit : null;
+  }
+  return isKnownFarmingArmorRenderedIconId(id) ? skyAhRenderedIconUrl(id) : null;
 }
 
 function firstString(value) {
