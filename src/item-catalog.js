@@ -42,14 +42,18 @@ const FARMING_STANDALONE_ARMOR_IDS = new Set([
 ]);
 
 const FARMING_EQUIPMENT_PREFIXES = Object.freeze([
-  'LOTUS_', 'BLOSSOM_', 'PESTHUNTER_',
+  'LOTUS_', 'BLOSSOM_', 'PESTHUNTERS_',
+  // Keep the old singular family token accepted for restored/manual data.
+  'PESTHUNTER_',
 ]);
 const FARMING_EQUIPMENT_NAME_PREFIXES = Object.freeze([
   // LOTUS_* was renamed to Peony in 2026; the internal ids deliberately stayed LOTUS_*.
   'lotus ', 'peony ', 'blossom ', 'pesthunter',
 ]);
 const FARMING_STANDALONE_EQUIPMENT_IDS = new Set([
-  'PEST_VEST', 'ZORRO_CAPE',
+  'PEST_VEST', 'ZORROS_CAPE',
+  // Historical Farming420 typo kept only for old saved profiles.
+  'ZORRO_CAPE',
 ]);
 const FARMING_STANDALONE_EQUIPMENT_NAMES = new Set([
   'pest vest', "zorro's cape", 'zorros cape',
