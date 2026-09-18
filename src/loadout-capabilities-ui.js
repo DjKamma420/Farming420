@@ -161,7 +161,7 @@ function writeVacuumReforge(reforgeId) {
 }
 
 function renderVacuumSurface(raw) {
-  if (raw.page !== 'tools' || activityModeForState(raw) !== ACTIVITY_MODE.PEST) return;
+  if (raw.page !== 'tools' || activityModeForState(raw) !== ACTIVITY_MODE.PEST_KILL) return;
   const content = document.querySelector('.content');
   if (!content) return;
 
@@ -174,7 +174,7 @@ function renderVacuumSurface(raw) {
   const title = content.querySelector('.page-head h1');
   const description = content.querySelector('.page-head p');
   if (title && title.textContent !== 'Vacuum') title.textContent = 'Vacuum';
-  if (description && description.textContent !== 'Pest Set uses the Vacuum layer instead of the crop farming tool.') {
+  if (description && description.textContent !== 'Pest Killing Set uses the Vacuum layer instead of the crop farming tool.') {
     description.textContent = 'Pest Set uses the Vacuum layer instead of the crop farming tool.';
   }
 
@@ -200,7 +200,7 @@ function renderVacuumSurface(raw) {
   panel.innerHTML = `
     <header class="item-editor-head">
       <div class="item-portrait"><span class="item-portrait-fallback">VA</span></div>
-      <div class="item-identity"><div class="eyebrow">Pest Set</div><strong class="item-title">Vacuum</strong><span class="item-rarity">Used instead of the farming tool</span></div>
+      <div class="item-identity"><div class="eyebrow">Pest Killing Set</div><strong class="item-title">Vacuum</strong><span class="item-rarity">Used instead of the farming tool</span></div>
     </header>
     <section class="item-editor-section">
       <div class="section-row"><div><h3>Vacuum reforge</h3><p>A Vacuum can have exactly one reforge. Beady gives Pest-only Farming Fortune; Buzzing is the damage reforge.</p></div></div>
