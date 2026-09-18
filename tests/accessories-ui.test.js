@@ -43,11 +43,11 @@ test('conditional physical accessories stay in the accessories section', () => {
 });
 
 
-test('accessory cards expose item-local Recombobulator and Enrichment controls', () => {
+test('accessory cards expose only item-local Recombobulator controls', () => {
   const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   assert.match(source, /data-accessory-recomb=/);
-  assert.match(source, /data-accessory-enrichment=/);
-  assert.match(source, /ACCESSORY_ENRICHMENTS\.map/);
+  assert.doesNotMatch(source, /data-accessory-enrichment=/);
+  assert.doesNotMatch(source, /ACCESSORY_ENRICHMENTS/);
   assert.match(source, /EPIC → LEGENDARY/);
   assert.match(source, /farmingAccessoryByItemId/);
   assert.equal(ACCESSORY_CAPABILITIES_VERIFIED, '2026-09-18');
@@ -70,21 +70,14 @@ test('accessory cards are articles so nested controls remain valid interactive H
 });
 
 
-test('Enrichment selector is rendered only when the concrete accessory is eligible', () => {
+
+test('Accessories page contains no Enrichment controls or bonus summary', () => {
   const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const start = source.indexOf('function accessoryCatalogCard');
-  const end = source.indexOf('function accessoriesPage', start);
+  const end = source.indexOf('function cropFocusCard', start);
   const block = source.slice(start, end);
-  assert.match(block, /capability\.canEnrich \? `?<label class="accessory-upgrade-row accessory-enrichment-row">/);
-  assert.doesNotMatch(block, /data-accessory-enrichment=.*disabled/);
-});
-
-test('Accessories page exposes account-wide Speed from all enrichments with an automatic/manual boundary', () => {
-  const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
-  assert.match(source, /farmingEnrichmentSummary\(state\.profile\)/);
-  assert.match(source, /Farming-relevant Enrichment bonus/);
-  assert.match(source, /full Accessory Bag sync/);
-  assert.match(source, /Non-farming accessories are included/);
-  assert.match(source, /data-enrichment-speed-override/);
-  assert.match(source, /enrichmentSpeedOverride = raw === '' \? null/);
+  assert.doesNotMatch(block, /Enrichment/);
+  assert.doesNotMatch(block, /enrichment/i);
+  assert.doesNotMatch(block, /data-enrichment/);
+  assert.match(block, /Recombobulator 3000/);
 });
