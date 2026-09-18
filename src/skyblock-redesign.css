@@ -706,12 +706,31 @@
 
 
 /* Named side navigation: labels stay visible at every viewport size. */
+.skyblock-redesign body {
+  height: 100dvh;
+  overflow: hidden;
+}
+
 .skyblock-redesign .app-shell {
-  grid-template-columns: 220px minmax(0, 1fr);
+  height: 100dvh;
+  min-height: 0;
+  grid-template-columns: 176px minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.skyblock-redesign .main {
+  height: 100dvh;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
 }
 
 .skyblock-redesign .sidebar.sb-rail {
-  width: 220px;
+  position: sticky;
+  top: 0;
+  align-self: start;
+  width: 176px;
+  height: 100dvh;
   overflow: hidden;
 }
 
@@ -797,12 +816,12 @@
 
 @media (max-width: 920px) {
   .skyblock-redesign .app-shell {
-    grid-template-columns: 184px minmax(0, 1fr);
+    grid-template-columns: 152px minmax(0, 1fr);
   }
 
   .skyblock-redesign .sidebar.sb-rail {
-    width: 184px;
-    padding-inline: 6px;
+    width: 152px;
+    padding-inline: 5px;
   }
 
   .skyblock-redesign .sb-rail .nav-link {
@@ -830,15 +849,15 @@
 @media (max-width: 650px) {
   .skyblock-redesign .app-shell {
     display: grid;
-    grid-template-columns: 148px minmax(0, 1fr);
+    grid-template-columns: 124px minmax(0, 1fr);
   }
 
   .skyblock-redesign .sidebar.sb-rail {
     position: sticky;
     inset: 0 auto auto 0;
-    width: 148px;
-    height: 100vh;
-    padding: 5px;
+    width: 124px;
+    height: 100dvh;
+    padding: 4px;
     border-top: 0;
     border-right: 2px solid #283b2d;
   }
@@ -850,7 +869,7 @@
   .skyblock-redesign .sb-rail nav {
     display: grid;
     gap: 2px;
-    max-height: 100vh;
+    max-height: 100dvh;
     padding: 4px 0;
     overflow-x: hidden;
     overflow-y: auto;
