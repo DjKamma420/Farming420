@@ -25,10 +25,10 @@ function cropArtTable() {
 
 
 function cropSpriteTable() {
-  const block = redesign.match(/const CROP_SPRITES = Object\\.freeze\\(\\{([\\s\\S]*?)\\n\\}\\);/);
+  const block = redesign.match(/const CROP_SPRITES = Object\.freeze\(\{([\s\S]*?)\n\}\);/);
   assert.ok(block, 'CROP_SPRITES table not found');
   const table = {};
-  for (const m of block[1].matchAll(/^\\s*'?([\\w-]+)'?:\\s*'([^']+)'/gm)) {
+  for (const m of block[1].matchAll(/^\s*'?([\w-]+)'?:\s*'([^']+)'/gm)) {
     table[m[1]] = m[2];
   }
   return table;
