@@ -430,7 +430,7 @@ function accessoriesPage() {
       || `${item.name} ${item.itemId} ${item.effect} ${item.condition}`.toLowerCase().includes(term)),
   })).filter(group => group.items.length);
 
-  return `${pageHeader('Accessories', 'Farming Accessories', 'Accessory progression keeps the physical item and its Recombobulator state. Enrichments are intentionally ignored because they do not contribute a relevant farming value.')}
+  return `${pageHeader('Accessories', 'Farming Accessories', 'Accessory progression keeps the physical item, effective rarity and Recombobulator state.')}
     <div class="accessory-model-note">
       <strong>Exact item model and rarity</strong>
       <span>Live Hypixel item metadata wins. Exact current player-head hashes are used as an offline fallback. A Recombobulator raises the accessory by exactly one rarity and is tracked per physical accessory.</span>
@@ -1251,7 +1251,6 @@ function bind() {
     state.profile.accessoryItems ||= {};
     const next = { ...(state.profile.accessoryItems[accessory.itemId] || {}) };
     next.recombobulated = Boolean(event.target.checked);
-    delete next.enrichment;
     next.source = 'manual';
     state.profile.accessoryItems[accessory.itemId] = next;
     saveState();
