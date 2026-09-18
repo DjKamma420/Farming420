@@ -60,7 +60,7 @@ test('v1 account-scoped crop and tool entries move onto the selected setup', () 
   assert.equal(profile.levels[FARMING_LEVEL_ID], 50);
   assert.equal(profile.levels[CROP_UPGRADE_ID], undefined);
   assert.equal(profile.levels[TOOL_LEVEL_ID], undefined);
-  assert.deepEqual(result.applied, [2, 3, 4, 5, 6]);
+  assert.deepEqual(result.applied, [2, 3, 4, 5, 6, 7]);
 });
 
 test('v1 tool entries stored inside a crop bucket move to the physical tool bucket', () => {
@@ -105,7 +105,7 @@ test('schema 2 gains a null normalized snapshot without changing existing profil
     },
   };
   const result = migrateState(state);
-  assert.deepEqual(result.applied, [3, 4, 5, 6]);
+  assert.deepEqual(result.applied, [3, 4, 5, 6, 7]);
   assert.equal(result.state.profile.normalizedSnapshot, null);
   assert.equal(result.state.profile.name, 'Existing profile');
   assert.equal(result.state.profile.levels[FARMING_LEVEL_ID], 52);
@@ -117,7 +117,7 @@ test('schema 3 keeps an existing normalized snapshot untouched', () => {
     schemaVersion: 3,
     profile: { normalizedSnapshot: snapshot },
   });
-  assert.deepEqual(result.applied, [4, 5, 6]);
+  assert.deepEqual(result.applied, [4, 5, 6, 7]);
   assert.deepEqual(result.state.profile.normalizedSnapshot, snapshot, 'the snapshot survives the setup migration');
 });
 
@@ -130,7 +130,7 @@ test('schema 4 adds setups without touching existing progression', () => {
       normalizedSnapshot: null,
     },
   });
-  assert.deepEqual(result.applied, [4, 5, 6]);
+  assert.deepEqual(result.applied, [4, 5, 6, 7]);
   assert.equal(result.state.profile.name, 'Existing profile');
   assert.equal(result.state.profile.levels[FARMING_LEVEL_ID], 52);
   assert.equal(result.state.profile.setups.list.length, 3);
@@ -157,18 +157,26 @@ test('setups a player already has are normalized, not replaced', () => {
 
 test('schema 5 adds empty accessory item state without inventing upgrades', () => {
   const result = migrateState({ schemaVersion: 5, profile: { name: 'Existing profile' } });
-  assert.deepEqual(result.applied, [6]);
+  assert.deepEqual(result.applied, [6, 7]);
   assert.deepEqual(result.state.profile.accessoryItems, {});
   assert.equal(result.state.profile.name, 'Existing profile');
 });
 
-test('schema 6 preserves existing accessory item state', () => {
+test('schema 6 removes obsolete enrichment state but preserves Recombobulators', () => {
   const result = migrateState({
     schemaVersion: 6,
-    profile: { accessoryItems: { HELIANTHUS_RELIC: { recombobulated: true, enrichment: 'magic_find' } } },
+    profile: {
+      enrichmentSpeedOverride: 12,
+      accessoryItems: {
+        HELIANTHUS_RELIC: { recombobulated: true, enrichment: 'magic_find', source: 'manual' },
+        MAGIC_8_BALL: { recombobulated: false, enrichment: 'speed', source: 'hypixel-sync' },
+      },
+    },
   });
-  assert.deepEqual(result.applied, []);
-  assert.deepEqual(result.state.profile.accessoryItems.HELIANTHUS_RELIC, { recombobulated: true, enrichment: 'magic_find' });
+  assert.deepEqual(result.applied, [7]);
+  assert.equal(result.state.profile.enrichmentSpeedOverride, undefined);
+  assert.deepEqual(result.state.profile.accessoryItems.HELIANTHUS_RELIC, { recombobulated: true, source: 'manual' });
+  assert.deepEqual(result.state.profile.accessoryItems.MAGIC_8_BALL, { recombobulated: false, source: 'hypixel-sync' });
 });
 
 test('migration is idempotent', () => {
@@ -210,7 +218,7 @@ test('an unknown crop bucket is kept and reported instead of dropped', () => {
 
 test('a state without a schema version is treated as the oldest schema', () => {
   const result = migrateState({ profile: { levels: { [CROP_UPGRADE_ID]: 4 } } });
-  assert.deepEqual(result.applied, [2, 3, 4, 5, 6]);
+  assert.deepEqual(result.applied, [2, 3, 4, 5, 6, 7]);
   assert.equal(result.state.profile.cropProgress.melon.levels[CROP_UPGRADE_ID], 4);
   assert.equal(result.state.profile.normalizedSnapshot, null);
 });
