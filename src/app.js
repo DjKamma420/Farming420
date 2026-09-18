@@ -48,6 +48,7 @@ import {
   setupSummary,
 } from './setups.js';
 import {
+  intrinsicEnchantmentsForCatalogItem,
   itemsForSlot,
   loadItemCatalog,
   readCachedCatalog,
@@ -859,7 +860,10 @@ function leverInput(attribute, slotId, key, checked, label) {
 
 function enchantLine(slotId, row) {
   const levels = row.maxLevel
-    ? Array.from({ length: row.maxLevel }, (_, index) => index + 1)
+    ? [...new Set([
+      ...Array.from({ length: row.maxLevel }, (_, index) => index + 1),
+      row.level,
+    ].filter(value => value > 0))].sort((a, b) => a - b)
     : [...new Set([row.level, 1, 2, 3, 4, 5].filter(value => value > 0))].sort((a, b) => a - b);
   return `<div class="enchant-line enchant-${esc(row.state)} ${row.active ? 'on' : 'off'}" data-ench-row="${esc(row.storageKey)}">
       ${leverInput('data-ench-toggle', slotId, row.storageKey, row.active, `${row.label} on this item`)}
@@ -1029,9 +1033,11 @@ function bindSetups() {
   });
   document.querySelector(`[data-slot-item="${slotId}"]`)?.addEventListener('change', event => {
     const chosen = itemsForSlot(itemCatalog, slotId).find(entry => entry.id === event.target.value);
+    const changingItem = Boolean(chosen?.id && chosen.id !== currentItem().skyblockId);
     patch({
       skyblockId: chosen?.id ?? null,
       displayName: chosen?.name ?? currentItem().displayName,
+      enchantments: changingItem ? intrinsicEnchantmentsForCatalogItem(chosen) : currentItem().enchantments,
       // Hypixel's own item resource carries the base tier, so picking an item
       // from the list colours it correctly without anyone typing a rarity. A
       // recombobulator raises the shown rarity, which the editor states
