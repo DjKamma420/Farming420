@@ -132,16 +132,23 @@ function setMode(mode) {
 function injectHeaderSwitch(raw) {
   const topbar = document.querySelector('.topbar');
   if (!topbar) return;
+  const main = topbar.closest('.main');
   const page = String(raw?.page || '');
   let control = topbar.querySelector('.activity-mode-switch');
 
   // The phase selector belongs only where the selected loadout changes what is
-  // being edited or calculated. Shared sources such as Tools, Shards, Account,
-  // Crops and Buffs are configured once and must not look phase-specific.
+  // being edited or calculated. Shared pages must not keep an empty sticky
+  // topbar on phones: that bar was the large black block covering the top of
+  // Tools and the other shared workspaces.
   if (!MODE_SWITCH_PAGES.has(page)) {
     control?.remove();
+    topbar.classList.add('activity-mode-topbar-empty');
+    main?.classList.add('activity-mode-page-shared');
     return;
   }
+
+  topbar.classList.remove('activity-mode-topbar-empty');
+  main?.classList.remove('activity-mode-page-shared');
 
   const mode = activityModeForState(raw);
   if (!control) {

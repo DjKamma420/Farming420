@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 
 const activityUi = readFileSync(new URL('../src/activity-mode-ui.js', import.meta.url), 'utf8');
 const loadoutUi = readFileSync(new URL('../src/loadout-capabilities-ui.js', import.meta.url), 'utf8');
+const activityCss = readFileSync(new URL('../src/activity-mode-ui.css', import.meta.url), 'utf8');
 
 test('phase selector is limited to contexts where the selected loadout matters', () => {
   assert.match(activityUi, /const MODE_SWITCH_PAGES = new Set\(\['dashboard', 'setups', 'planner'\]\)/);
@@ -29,4 +30,13 @@ test('Pests workspace combines Spawning and Killing totals and owns the Vacuum',
   for (const label of ['Bonus Pest Chance', 'Total Pest Fortune', 'Pest Overbloom', 'Vacuum · Killing only']) {
     assert.match(loadoutUi, new RegExp(label));
   }
+});
+
+
+test('shared mobile pages collapse the empty sticky topbar instead of reserving black space', () => {
+  assert.match(activityUi, /topbar\.classList\.add\('activity-mode-topbar-empty'\)/);
+  assert.match(activityUi, /main\?\.classList\.add\('activity-mode-page-shared'\)/);
+  assert.match(activityUi, /topbar\.classList\.remove\('activity-mode-topbar-empty'\)/);
+  assert.match(activityCss, /@media \(max-width: 780px\)[\s\S]*\.activity-mode-topbar-empty\s*\{[\s\S]*display:\s*none\s*!important;/);
+  assert.match(activityCss, /\.activity-mode-page-shared \.content\s*\{[\s\S]*padding-top:\s*10px;/);
 });
