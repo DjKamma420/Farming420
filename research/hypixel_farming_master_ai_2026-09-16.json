@@ -2,7 +2,7 @@
   "meta": {
     "title": "Hypixel SkyBlock Farming Master Knowledge Base",
     "format_version": "1.0.0-repo",
-    "as_of": "2026-09-16",
+    "as_of": "2026-09-18",
     "target_reader": "AI/optimizer",
     "status": "canonical research entry point; newer verified live behavior overrides this file",
     "source_chat_artifact": "hypixel_farming_master_ai_2026-09-16.json",
@@ -134,7 +134,29 @@
     "field_mouse_feast_rare_crop_base_probability": 0.30,
     "chocolate_century_cake_farming_fortune": 5,
     "celestial_mason_jar_farming_fortune": 15,
-    "harvest_harbinger_potion_farming_fortune": 50
+    "harvest_harbinger_potion_farming_fortune": 50,
+    "thorny": {
+      "farming_fortune_by_rarity": {"COMMON":2,"UNCOMMON":4,"RARE":6,"EPIC":8,"LEGENDARY":10,"MYTHIC":12},
+      "base_overbloom_by_rarity": {"COMMON":0.25,"UNCOMMON":0.5,"RARE":0.75,"EPIC":1,"LEGENDARY":1.25,"MYTHIC":1.5},
+      "armor_thorns_overbloom_per_tier_per_thorny_piece": 0.1,
+      "formula": "thorny_equipment_piece_count * total_worn_armor_thorns_tiers * 0.1",
+      "source": "https://hypixel.net/threads/list-of-item-in-skyblock-update-1-81.6151548/",
+      "official_mechanic_source": "https://hypixel.net/threads/hypixel-skyblock-0-26-1-new-player-improvements-harvest-feast-changes-healing-revamp-and-more.6127383/",
+      "last_verified": "2026-09-18"
+    },
+    "pufferfish_hat_celebration": {
+      "item_id": "PUFFERFISH_HAT_CELEBRATION",
+      "ordinary_item_id": "PUFFERFISH_HAT",
+      "intrinsic_thorns_level": 5,
+      "four_thorny_total_contribution_from_hat_tiers": 2.0,
+      "four_thorny_increment_over_thorns_iv_helmet": 0.4,
+      "rule": "Evaluate as a complete helmet replacement; never treat the +2.0 contribution from all five tiers as the marginal gain.",
+      "sources": [
+        "https://hypixel.net/threads/hypixel-skyblock-0-21-2-year-400-raffle-event.5841821/",
+        "https://hypixel.net/threads/skyblock-year-500-century-celebration.6114883/"
+      ],
+      "last_verified": "2026-09-18"
+    }
   },
   "permanent_and_account_progress": [
     {"id":"farming_skill","value":"up to +240 FF","cost_axis":"time","wisdom_can_accelerate":true},
@@ -165,7 +187,7 @@
     "crop_fever": {"role":"temporary proc; FF + rare-drop behavior; model uptime/rolls rather than permanent FF"},
     "pesterminator": {"role":"Armor Farming/Pest enchant","status":"resolve current 2026 full level table before exact ranking"},
     "green_thumb": {"role":"Equipment Fortune scaling with unique Visitors","status":"reverify current cap"},
-    "thorns": {"direct_farming_stat":0,"indirect":"Thorny equipment Overbloom synergy"},
+    "thorns": {"normal_max_level":4,"event_exception":{"item_id":"PUFFERFISH_HAT_CELEBRATION","level":5},"direct_farming_stat":0,"indirect":"Each Thorny equipment piece grants +0.1 Overbloom per worn armor Thorns tier","last_verified":"2026-09-18"},
     "replenish": {"direct_stat":0,"role":"sustainable replant throughput"},
     "delicate": {"direct_stat":0,"role":"farm integrity"}
   },
@@ -244,7 +266,7 @@
   "meta_strategy": {
     "normal_crop":"Maximize successful breaks/sec plus effective FF and matching Crop Fortune; use Sundial + full modern Farming boots in endgame",
     "pest_spawn":"Prioritize BPC/cooldown using Mantid/Squeaky/Vermin and appropriate pet/loadout",
-    "pest_loot":"Prioritize Overbloom/Pest Overbloom; Thorny + Thorns can matter",
+    "pest_loot":"Prioritize Overbloom/Pest Overbloom; Thorny + Thorns can matter. The Thorns V celebration Pufferfish Hat is a niche swap candidate only after subtracting the replaced helmet's full stats and set effects.",
     "contest":"Prepared burst + sustained active-crop farming",
     "greenhouse":"Optimize yield against growth/water/maintenance schedule",
     "feast":"Optimize Overbloom, Rare Crops, Seasoning/Kernels and event progression",
@@ -259,7 +281,6 @@
   "research_gaps": [
     "current Pesterminator full level table",
     "final live Helianthus piece stats/set effects",
-    "exact current Thorny rarity table",
     "all 0.27 Farming-relevant Shards and exact scaling",
     "Dark Cacao Truffle exact 0.27 live stat type",
     "Hypercharge exact whitelist",

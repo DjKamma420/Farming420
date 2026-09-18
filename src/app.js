@@ -1,4 +1,12 @@
 import { CROPS, UPGRADES, HIDDEN_INTERACTIONS, COMING_SOON } from './data.js';
+import { FARMING_ACCESSORY_GROUPS, farmingAccessoryByItemId } from './farming-accessories.js';
+import {
+  ACCESSORY_ENRICHMENTS,
+  accessoryCapabilityState,
+  canEnrichAccessory,
+  farmingEnrichmentSummary,
+  normalizeAccessoryEnrichment,
+} from './accessory-capabilities.js';
 import { DATA_SCHEMA_VERSION, STORAGE_KEY } from './config.js';
 import { ensureProgressBucket, migrateState, toolKeyForCropId } from './migrations.js';
 import { applySnapshotToProgress, isAutoApplied, turboProgressEntryId } from './snapshot-apply.js';
@@ -41,6 +49,7 @@ import {
   setupSummary,
 } from './setups.js';
 import {
+  intrinsicEnchantmentsForCatalogItem,
   itemsForSlot,
   loadItemCatalog,
   readCachedCatalog,
@@ -58,6 +67,7 @@ import {
 const NAV = [
   ['dashboard', 'Dashboard'],
   ['account', 'Account'],
+  ['accessories', 'Accessories'],
   ['crops', 'Crops'],
   ['tools', 'Tools'],
   ['setups', 'Setups'],
@@ -90,6 +100,8 @@ const defaultState = {
     owned: {},
     costs: {},
     manualGain: {},
+    accessoryItems: {},
+    enrichmentSpeedOverride: null,
   }
 };
 
@@ -369,7 +381,7 @@ function accountPage() {
   const groups = [
     ['Account & Skill',['Account/Skill','Account Upgrade','Anita']],
     ['Garden',['Garden','Greenhouse']],
-    ['Accessories & permanent items',['Accessory','Consumable','Jacob Accessory','Chocolate Factory']]
+    ['Permanent account items',['Consumable','Chocolate Factory']]
   ];
   return `${pageHeader('Account', 'Global Account Progression', 'Progress that is not bound to one crop or one physical farming tool.')}
     <div class="input-strip">
@@ -377,6 +389,119 @@ function accountPage() {
       ${inputHint('input:globalFortune', 'Used only for relative upgrade evaluation. Ownership remains a separate state.')}
     </div>
     ${groups.map(([title,cats]) => `<div class="group"><div class="section-row"><div><h2>${title}</h2></div></div><div class="card-grid">${visibleUpgrades('account').filter(x=>cats.includes(x.category)).map(x=>card(x)).join('')}</div></div>`).join('')}`;
+}
+
+function accessoryItemState(accessory) {
+  return state.profile.accessoryItems?.[accessory.itemId] || {};
+}
+
+function accessoryCatalogRecord(accessory) {
+  return itemCatalog.find(item => String(item?.id || '').toUpperCase() === accessory.itemId) || null;
+}
+
+function accessoryCatalogCard(accessory) {
+  const upgrade = accessory.upgradeId
+    ? UPGRADES.find(item => item.id === accessory.upgradeId)
+    : null;
+  const status = upgrade ? statusClass(upgrade) : '';
+  const itemState = accessoryItemState(accessory);
+  const capability = accessoryCapabilityState(accessory, itemState, accessoryCatalogRecord(accessory));
+  const synced = itemState.source === 'hypixel-sync';
+  const enrichment = capability.enrichment || '';
+  const rarityText = itemState.recombobulated && capability.baseRarity !== capability.effectiveRarity
+    ? `${capability.baseRarity} → ${capability.effectiveRarity}`
+    : capability.effectiveRarity;
+  const enrichmentHint = capability.canEnrich
+    ? `${capability.effectiveRarity} is eligible. One Enrichment can be active on this accessory.`
+    : capability.baseRarity === 'EPIC' && capability.canRecombobulate && !itemState.recombobulated
+      ? 'Recombobulate EPIC → LEGENDARY to unlock Enrichments.'
+      : `${capability.effectiveRarity || capability.baseRarity} is below the LEGENDARY Enrichment requirement.`;
+  const stateBadge = synced
+    ? badge('profile sync', 'synced')
+    : upgrade
+      ? badge(isMaxed(upgrade) ? 'owned' : 'not set', isMaxed(upgrade) ? 'maxed' : 'missing')
+      : badge('manual state', 'soft');
+
+  return `<article class="item-card accessory-catalog-card ${status}" data-accessory-item-id="${esc(accessory.itemId)}">
+    <div class="card-layer"></div>
+    <div class="card-head">
+      <span class="card-portrait accessory-portrait" aria-hidden="true"></span>
+      <div>
+        <div class="eyebrow">${esc(rarityText)} · ${esc(accessory.itemId)}</div>
+        <div class="item-title">${esc(accessory.name)}</div>
+      </div>
+      ${stateBadge}
+    </div>
+    <p class="accessory-effect">${esc(accessory.effect)}</p>
+    <div class="chips">
+      ${badge(accessory.condition, 'soft')}
+      ${badge(itemState.recombobulated ? 'recombobulated' : 'base rarity', itemState.recombobulated ? 'owned' : 'soft')}
+      ${badge(capability.canEnrich ? 'enrichment ready' : 'no enrichment yet', capability.canEnrich ? 'maxed' : 'soft')}
+    </div>
+    <div class="accessory-upgrades">
+      <label class="accessory-upgrade-row">
+        <span><strong>Recombobulator 3000</strong><small>Raises this accessory by exactly one rarity.</small></span>
+        <input type="checkbox" data-accessory-recomb="${esc(accessory.itemId)}" ${itemState.recombobulated ? 'checked' : ''} ${capability.canRecombobulate ? '' : 'disabled'}>
+      </label>
+      ${capability.canEnrich ? `<label class="accessory-upgrade-row accessory-enrichment-row">
+        <span><strong>Enrichment</strong><small>${esc(enrichmentHint)}</small></span>
+        <select data-accessory-enrichment="${esc(accessory.itemId)}">
+          <option value="">— none —</option>
+          ${ACCESSORY_ENRICHMENTS.map(option => `<option value="${esc(option.id)}" ${option.id === enrichment ? 'selected' : ''}>${esc(option.name)} · ${esc(option.bonus)}</option>`).join('')}
+        </select>
+      </label>` : ''}
+      ${upgrade ? `<button class="ghost small accessory-progression-btn" type="button" data-open="${esc(upgrade.id)}">Open calculator progression</button>` : ''}
+    </div>
+  </article>`;
+}
+
+function accessoriesPage() {
+  const term = state.search.trim().toLowerCase();
+  const enrichmentSummary = farmingEnrichmentSummary(state.profile);
+  const enrichmentSource = enrichmentSummary.hasOverride
+    ? 'manual total override'
+    : enrichmentSummary.hasAccessoryBagData
+      ? 'full Accessory Bag sync'
+      : enrichmentSummary.manualKnownEnrichedAccessories > 0
+        ? 'manually configured Farming accessories'
+        : 'not set';
+  const detectedCounts = ACCESSORY_ENRICHMENTS
+    .filter(option => Number(enrichmentSummary.counts[option.id] || 0) > 0)
+    .map(option => badge(`${option.name} ×${enrichmentSummary.counts[option.id]}`, option.farmingRelevant ? 'maxed' : 'soft'))
+    .join('');
+  const groups = FARMING_ACCESSORY_GROUPS.map(group => ({
+    ...group,
+    items: group.items.filter(item => !term
+      || `${item.name} ${item.itemId} ${item.effect} ${item.condition}`.toLowerCase().includes(term)),
+  })).filter(group => group.items.length);
+
+  return `${pageHeader('Accessories', 'Farming Accessories', 'Each Accessory keeps its own rarity upgrades. Recombobulation changes the effective rarity; Enrichments appear only when that concrete accessory is eligible.')}
+    <section class="accessory-enrichment-summary">
+      <div class="accessory-enrichment-stat">
+        <div class="eyebrow">Farming-relevant Enrichment bonus</div>
+        <strong>+${Number(enrichmentSummary.speed).toLocaleString('en-US')} Speed</strong>
+        <small>Source: ${esc(enrichmentSource)}</small>
+      </div>
+      <label class="accessory-enrichment-override">
+        <span><strong>Manual total Speed from Enrichments</strong><small>Leave blank to use the full synced Accessory Bag automatically. This is a total override, not an extra bonus.</small></span>
+        <input type="number" min="0" step="1" inputmode="numeric" data-enrichment-speed-override value="${enrichmentSummary.hasOverride ? esc(enrichmentSummary.override) : ''}" placeholder="${Number(enrichmentSummary.detectedSpeed).toLocaleString('en-US')}">
+      </label>
+      <div class="accessory-enrichment-detected">
+        <strong>Detected across all accessories</strong>
+        <span>Non-farming accessories are included. Only Speed is used as a farming-relevant Enrichment stat; Magic Find is not treated as a pest-farming bonus.</span>
+        <div class="chips">${detectedCounts || badge('no enrichments detected', 'soft')}</div>
+      </div>
+    </section>
+    <div class="accessory-model-note">
+      <strong>Exact item model and rarity rules</strong>
+      <span>Live Hypixel item metadata wins. Exact current player-head hashes are used as an offline fallback. A Recombobulator raises one rarity; an EPIC accessory therefore becomes LEGENDARY and can receive one Enrichment, while a recombobulated RARE accessory is only EPIC.</span>
+    </div>
+    ${groups.length ? groups.map(group => `
+      <section class="accessory-group" data-accessory-group="${esc(group.id)}">
+        <div class="section-row"><div><h2>${esc(group.title)}</h2><p>${esc(group.note)}</p></div></div>
+        <div class="card-grid accessory-grid">${group.items.map(accessoryCatalogCard).join('')}</div>
+      </section>
+    `).join('') : '<div class="empty">No farming accessories match the current search.</div>'}`;
 }
 
 function cropFocusCard() {
@@ -784,7 +909,10 @@ function leverInput(attribute, slotId, key, checked, label) {
 function enchantLine(slotId, row) {
   const minLevel = Math.max(1, Number(row.minLevel || 1));
   const levels = row.maxLevel
-    ? Array.from({ length: row.maxLevel - minLevel + 1 }, (_, index) => index + minLevel)
+    ? [...new Set([
+      ...Array.from({ length: row.maxLevel - minLevel + 1 }, (_, index) => index + minLevel),
+      row.level,
+    ].filter(value => value > 0))].sort((a, b) => a - b)
     : [...new Set([row.level, 1, 2, 3, 4, 5].filter(value => value > 0))].sort((a, b) => a - b);
   return `<div class="enchant-line enchant-${esc(row.state)} ${row.active ? 'on' : 'off'}" data-ench-row="${esc(row.storageKey)}">
       ${leverInput('data-ench-toggle', slotId, row.storageKey, row.active, `${row.label} on this item`)}
@@ -954,9 +1082,11 @@ function bindSetups() {
   });
   document.querySelector(`[data-slot-item="${slotId}"]`)?.addEventListener('change', event => {
     const chosen = itemsForSlot(itemCatalog, slotId).find(entry => entry.id === event.target.value);
+    const changingItem = Boolean(chosen?.id && chosen.id !== currentItem().skyblockId);
     patch({
       skyblockId: chosen?.id ?? null,
       displayName: chosen?.name ?? currentItem().displayName,
+      enchantments: changingItem ? intrinsicEnchantmentsForCatalogItem(chosen) : currentItem().enchantments,
       // Hypixel's own item resource carries the base tier, so picking an item
       // from the list colours it correctly without anyone typing a rarity. A
       // recombobulator raises the shown rarity, which the editor states
@@ -1005,8 +1135,8 @@ function bindSetups() {
 }
 
 /**
- * The official item list is fetched once per session when the Setups page is
- * first opened, so the app does not pay for it on every start.
+ * The official item list is fetched once per session when an item-aware page
+ * first opens, so the app does not pay for it on every start.
  */
 async function ensureItemCatalog() {
   if (catalogRequested) return;
@@ -1015,7 +1145,7 @@ async function ensureItemCatalog() {
   itemCatalog = result.items;
   catalogNotice = result.error;
   // Only repaint when there is something new to show.
-  if (state.page === 'setups' && (result.items.length || result.error)) render();
+  if (['setups', 'accessories'].includes(state.page) && (result.items.length || result.error)) render();
 }
 
 // --- Guide 0-60 -------------------------------------------------------------
@@ -1134,6 +1264,7 @@ function render() {
   switch(state.page) {
     case 'dashboard': content = dashboard(); break;
     case 'account': content = accountPage(); break;
+    case 'accessories': content = accessoriesPage(); break;
     case 'crops': content = cropsPage(); break;
     // The heading says what the page is; the picker and the editor below both
     // name the selected tool, so repeating it a third time here added nothing.
@@ -1154,10 +1285,8 @@ function render() {
   }
   document.getElementById('app').innerHTML = shell(content);
   bind();
-  if (state.page === 'setups') {
-    bindSetups();
-    ensureItemCatalog();
-  }
+  if (state.page === 'setups') bindSetups();
+  if (['setups', 'accessories'].includes(state.page)) ensureItemCatalog();
   if (state.page === 'tools') bindToolPanel();
   if (state.page === 'guide') bindGuide();
 }
@@ -1185,24 +1314,60 @@ function bind() {
   const cf = document.getElementById('cropFortune');
   if (cf) cf.addEventListener('change', e => { state.profile.cropFortune[state.selectedCrop]=Number(e.target.value||0); saveState(); render(); });
 
+  document.querySelector('[data-enrichment-speed-override]')?.addEventListener('change', event => {
+    const raw = String(event.target.value || '').trim();
+    state.profile.enrichmentSpeedOverride = raw === '' ? null : Math.max(0, Number(raw) || 0);
+    saveState();
+    render();
+  });
+
+  document.querySelectorAll('[data-accessory-recomb]').forEach(el => el.addEventListener('change', event => {
+    const accessory = farmingAccessoryByItemId(event.target.dataset.accessoryRecomb);
+    if (!accessory) return;
+    state.profile.accessoryItems ||= {};
+    const next = { ...(state.profile.accessoryItems[accessory.itemId] || {}) };
+    next.recombobulated = Boolean(event.target.checked);
+    next.source = 'manual';
+    if (!canEnrichAccessory(accessory, next)) next.enrichment = null;
+    state.profile.accessoryItems[accessory.itemId] = next;
+    saveState();
+    render();
+  }));
+  document.querySelectorAll('[data-accessory-enrichment]').forEach(el => el.addEventListener('change', event => {
+    const accessory = farmingAccessoryByItemId(event.target.dataset.accessoryEnrichment);
+    if (!accessory) return;
+    state.profile.accessoryItems ||= {};
+    const next = { ...(state.profile.accessoryItems[accessory.itemId] || {}) };
+    if (!canEnrichAccessory(accessory, next)) return;
+    next.enrichment = normalizeAccessoryEnrichment(event.target.value);
+    next.source = 'manual';
+    state.profile.accessoryItems[accessory.itemId] = next;
+    saveState();
+    render();
+  }));
+
   document.querySelectorAll('[data-step]').forEach(el => el.addEventListener('click', () => {
     const item = UPGRADES.find(x=>x.id===el.dataset.id); if (!item) return;
     const store = itemStore(item);
     const storageId = entryStorageId(item);
     const next = currentLevel(item) + Number(el.dataset.step);
     const min = Math.max(1, Number(item.min || 1));
-    store.levels[storageId] = next <= 0 ? 0 : Math.max(min, Math.min(Number(item.max||1), next));
-    store.owned[storageId] = store.levels[storageId] > 0;
+    const nextLevel = next <= 0 ? 0 : Math.max(min, Math.min(Number(item.max||1), next));
+    if (nextLevel > 0) clearExclusivePeers(item);
+    store.levels[storageId] = nextLevel;
+    store.owned[storageId] = nextLevel > 0;
     saveState(); render();
   }));
   document.querySelectorAll('[data-max]').forEach(el => el.addEventListener('click', () => {
     const item = UPGRADES.find(x=>x.id===el.dataset.max); if (!item) return;
+    clearExclusivePeers(item);
     const store = itemStore(item);
     const storageId = entryStorageId(item);
     store.levels[storageId]=Number(item.max||1); store.owned[storageId]=true; saveState(); render();
   }));
   document.querySelectorAll('[data-owned]').forEach(el => el.addEventListener('change', e => {
     const item = UPGRADES.find(x=>x.id===e.target.dataset.owned); if (!item) return;
+    if (e.target.checked) clearExclusivePeers(item);
     const store = itemStore(item);
     const storageId = entryStorageId(item);
     store.owned[storageId]=e.target.checked;

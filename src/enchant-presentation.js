@@ -54,7 +54,7 @@ export const VERIFIED_FARMING_ENCHANT_META = Object.freeze({
   thorns: meta(4, ['armor'], {
     strategy: 'secret',
     note: 'Secret farming interaction: Thorns tiers add Overbloom only when the worn equipment uses the Thorny reforge.',
-    source: 'https://hypixelskyblock.minecraft.wiki/w/Thorns',
+    source: 'https://hypixel.net/threads/hypixel-skyblock-0-26-1-new-player-improvements-harvest-feast-changes-healing-revamp-and-more.6127383/',
   }),
   green_thumb: meta(5, ['equipment']),
   crop_fever: meta(5, ['farming-tool'], {

@@ -12,6 +12,7 @@ import {
   perfectPeridotCountOnArmor,
   perfectPeridotFortuneOnArmor,
   sunsetTotalLevel,
+  thornsTotalLevel,
 } from '../src/armor-fortune.js';
 
 const piece = (name, overrides = {}) => ({
@@ -79,6 +80,15 @@ test('Sunset is tracked as per-piece levels without turning it into Farming Fort
     piece('Helianthus Helmet', { enchantments: { sunset: 5 } }),
     piece('Helianthus Chestplate', { enchantments: { sunset: 2 } }),
   ]), 7);
+});
+
+test('Thorns keeps the legitimate event-item level V for Thorny calculations', () => {
+  assert.equal(thornsTotalLevel([
+    piece('Pufferfish Hat', { enchantments: { thorns: 5 } }),
+    piece('Helianthus Chestplate', { enchantments: { thorns: 4 } }),
+    piece('Helianthus Leggings', { enchantments: { thorns: 4 } }),
+    piece('Helianthus Boots', { enchantments: { thorns: 4 } }),
+  ]), 17);
 });
 
 test('Perfect Peridot is counted per gemstone slot and scales with effective host rarity', () => {

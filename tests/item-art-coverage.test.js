@@ -18,6 +18,7 @@ const catalog = [
   { id: 'BOOSTER_COOKIE', name: 'Booster Cookie', material: 'COOKIE', skin: null },
   { id: 'MOSQUITO_SHARD', name: 'Mosquito Shard', material: 'SKULL_ITEM', skin: 'd'.repeat(64) },
   { id: 'FERMENTO_ARTIFACT', name: 'Fermento Artifact', material: 'SKULL_ITEM', skin: 'e'.repeat(64) },
+  { id: 'POWER_RELIC', name: 'Relic of Power', material: 'SKULL_ITEM', skin: '1'.repeat(64) },
 ];
 
 test('official item ids resolve exactly and never through substring collisions', () => {
@@ -42,7 +43,11 @@ test('tool progression resolves Recombobulator as a physical item', () => {
   assert.ok(skinTextureUrl(catalogItemById(catalog, 'RECOMBOBULATOR_3000')).endsWith('c'.repeat(64)));
 });
 
-test('known equipment gets exact id-backed art while live Hypixel skin still wins', () => {
+test('known accessory and equipment ids get exact art while live Hypixel skin still wins', () => {
+  const accessoryFallback = skinTextureUrl({ id: 'HELIANTHUS_RELIC', skin: null });
+  assert.ok(accessoryFallback.endsWith('2e6c711f74f92bcbe486ec7e67810a16f0d1eaaac39b80d7a650cd81d611a2e7'));
+
+
   const fallback = skinTextureUrl({ id: 'BLOSSOM_CLOAK', skin: null });
   assert.ok(fallback.endsWith('8453a8084b7773c1b2bb6213901da8cfb50de5e5d0c8c524ff4fad0e182ea68b'));
 
@@ -71,6 +76,15 @@ test('catalog head art renders both the face and hat layers', () => {
   assert.match(css, /\.coverage-skull-hat[\s\S]*?71\.4286% 14\.2857%/);
 });
 
+
+test('setup portraits have exactly one writer', () => {
+  const coverage = readFileSync(new URL('../src/item-art-coverage.js', import.meta.url), 'utf8');
+  const setupArt = readFileSync(new URL('../src/item-art-ui.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(coverage, /decorateSetupItems\(/);
+  assert.doesNotMatch(coverage, /\.slot-portrait, \[data-item-art-slot\]/);
+  assert.match(setupArt, /root\.querySelectorAll\('\.slot-portrait, \[data-item-art-slot\]'\)/);
+});
+
 test('physical progression cards resolve exact names and deliberate suffix stripping', () => {
   const shard = catalogItemForUpgrade(catalog, {
     id: 'pest-mosquito-shard-enchanted-farmer',
@@ -92,6 +106,25 @@ test('physical progression cards resolve exact names and deliberate suffix strip
     category: 'Accessory',
   });
   assert.equal(fermento?.id, 'FERMENTO_ARTIFACT');
+});
+
+test('explicit physical item ids override display wording for accessory art', () => {
+  const relic = catalogItemForUpgrade(catalog, {
+    id: 'accessory-relic-of-power-perfect-peridot-effect',
+    physicalItemId: 'POWER_RELIC',
+    name: 'Relic of Power + Perfect Peridot effect',
+    category: 'Accessory',
+  });
+  assert.equal(relic?.id, 'POWER_RELIC');
+});
+
+test('accessory catalog cards are decorated by exact item id', () => {
+  const source = readFileSync(new URL('../src/item-art-coverage.js', import.meta.url), 'utf8');
+  assert.match(source, /function decorateAccessoryCatalog/);
+  assert.match(source, /dataset\.accessoryItemId/);
+  assert.match(source, /catalogItemById\(catalog, itemId\)/);
+  assert.match(source, /catalogRecord \|\|/);
+  assert.match(source, /decorateAccessoryCatalog\(items\)/);
 });
 
 test('abstract stat cards do not steal vaguely similar item art', () => {

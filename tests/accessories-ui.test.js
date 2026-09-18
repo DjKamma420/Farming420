@@ -1,0 +1,90 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import { readFileSync } from 'node:fs';
+
+import { UPGRADES } from '../src/data.js';
+import { FARMING_ACCESSORIES } from '../src/farming-accessories.js';
+import { ACCESSORY_CAPABILITIES_VERIFIED } from '../src/accessory-capabilities.js';
+
+test('every calculator-linked accessory resolves to the same exact physical item id', () => {
+  const upgrades = new Map(UPGRADES.map(item => [item.id, item]));
+  for (const accessory of FARMING_ACCESSORIES.filter(item => item.upgradeId)) {
+    const upgrade = upgrades.get(accessory.upgradeId);
+    assert.ok(upgrade, `missing upgrade ${accessory.upgradeId}`);
+    assert.equal(upgrade.section, 'accessories');
+    assert.equal(upgrade.physicalItemId, accessory.itemId);
+  }
+});
+
+test('the main navigation exposes accessories as its own page', () => {
+  const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  assert.match(source, /\['accessories', 'Accessories'\]/);
+  assert.match(source, /case 'accessories': content = accessoriesPage\(\);/);
+  assert.match(source, /function accessoriesPage\(\)/);
+  assert.match(source, /data-accessory-item-id=/);
+  assert.doesNotMatch(source, /Accessories & permanent items/);
+});
+
+test('all generic drawer activation paths enforce exclusive accessory families', () => {
+  const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  assert.match(source, /if \(nextLevel > 0\) clearExclusivePeers\(item\)/);
+  const maxHandler = source.slice(source.indexOf("document.querySelectorAll('[data-max]')"), source.indexOf("document.querySelectorAll('[data-owned]')"));
+  assert.match(maxHandler, /clearExclusivePeers\(item\)/);
+  assert.match(source, /if \(e\.target\.checked\) clearExclusivePeers\(item\)/);
+});
+
+test('conditional physical accessories stay in the accessories section', () => {
+  const byId = new Map(UPGRADES.map(item => [item.id, item]));
+  assert.equal(byId.get('temporary-atmospheric-filter-spring')?.physicalItemId, 'ATMOSPHERIC_FILTER');
+  assert.equal(byId.get('temporary-atmospheric-filter-spring')?.section, 'accessories');
+  assert.equal(byId.get('temporary-magic-8-ball-ff-roll')?.physicalItemId, 'MAGIC_8_BALL');
+  assert.equal(byId.get('temporary-magic-8-ball-ff-roll')?.section, 'accessories');
+  assert.equal(byId.get('accessory-relic-of-power-perfect-peridot-effect')?.physicalItemId, 'POWER_RELIC');
+});
+
+
+test('accessory cards expose item-local Recombobulator and Enrichment controls', () => {
+  const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  assert.match(source, /data-accessory-recomb=/);
+  assert.match(source, /data-accessory-enrichment=/);
+  assert.match(source, /ACCESSORY_ENRICHMENTS\.map/);
+  assert.match(source, /EPIC → LEGENDARY/);
+  assert.match(source, /farmingAccessoryByItemId/);
+  assert.equal(ACCESSORY_CAPABILITIES_VERIFIED, '2026-09-18');
+});
+
+test('accessory state is persistent and the Accessories page loads the official item catalog', () => {
+  const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  assert.match(source, /accessoryItems: \{\}/);
+  assert.match(source, /state\.profile\.accessoryItems/);
+  assert.match(source, /\['setups', 'accessories'\]\.includes\(state\.page\)/);
+});
+
+test('accessory cards are articles so nested controls remain valid interactive HTML', () => {
+  const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const start = source.indexOf('function accessoryCatalogCard');
+  const end = source.indexOf('function accessoriesPage', start);
+  const block = source.slice(start, end);
+  assert.match(block, /<article class="item-card accessory-catalog-card/);
+  assert.doesNotMatch(block, /const tag = upgrade/);
+});
+
+
+test('Enrichment selector is rendered only when the concrete accessory is eligible', () => {
+  const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const start = source.indexOf('function accessoryCatalogCard');
+  const end = source.indexOf('function accessoriesPage', start);
+  const block = source.slice(start, end);
+  assert.match(block, /capability\.canEnrich \? `?<label class="accessory-upgrade-row accessory-enrichment-row">/);
+  assert.doesNotMatch(block, /data-accessory-enrichment=.*disabled/);
+});
+
+test('Accessories page exposes account-wide Speed from all enrichments with an automatic/manual boundary', () => {
+  const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  assert.match(source, /farmingEnrichmentSummary\(state\.profile\)/);
+  assert.match(source, /Farming-relevant Enrichment bonus/);
+  assert.match(source, /full Accessory Bag sync/);
+  assert.match(source, /Non-farming accessories are included/);
+  assert.match(source, /data-enrichment-speed-override/);
+  assert.match(source, /enrichmentSpeedOverride = raw === '' \? null/);
+});

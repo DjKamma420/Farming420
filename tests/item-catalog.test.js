@@ -7,6 +7,7 @@ import {
   catalogIsStale,
   enchantmentOptions,
   gemOptions,
+  intrinsicEnchantmentsForCatalogItem,
   itemsForSlot,
   loadItemCatalog,
   reduceItemResource,
@@ -97,6 +98,12 @@ test('current Pesthunter and Zorro ids stay selectable in their equipment slots'
   assert.deepEqual(itemsForSlot(catalog, 'equipment2').map(item => item.id).sort(), ['PESTHUNTERS_CLOAK', 'PEST_VEST', 'ZORROS_CAPE']);
   assert.deepEqual(itemsForSlot(catalog, 'equipment3').map(item => item.id), ['PESTHUNTERS_BELT']);
   assert.deepEqual(itemsForSlot(catalog, 'equipment4').map(item => item.id), ['PESTHUNTERS_GLOVES']);
+});
+
+test('only the celebration Pufferfish Hat seeds intrinsic Thorns V', () => {
+  assert.deepEqual(intrinsicEnchantmentsForCatalogItem({ id: 'PUFFERFISH_HAT_CELEBRATION' }), { thorns: 5 });
+  assert.deepEqual(intrinsicEnchantmentsForCatalogItem({ id: 'PUFFERFISH_HAT' }), {});
+  assert.deepEqual(intrinsicEnchantmentsForCatalogItem(null), {});
 });
 
 test('a slot with no official category falls back to free text', () => {

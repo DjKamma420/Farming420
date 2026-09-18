@@ -16,6 +16,16 @@ export const EXCLUSIVE_ENTRY_GROUPS = Object.freeze([
     maxActive: 1,
     members: Object.freeze(FARMING_TOOL_REFORGES.map(reforge => `tool-reforge-${reforge.id}-reforge`)),
   }),
+  Object.freeze({
+    id: 'crop-fortune-accessory',
+    label: 'Crop Fortune accessory progression',
+    itemClass: 'accessory-family',
+    maxActive: 1,
+    members: Object.freeze([
+      'accessory-fermento-artifact',
+      'accessory-helianthus-relic',
+    ]),
+  }),
 ]);
 
 const groupByEntryId = new Map(

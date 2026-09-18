@@ -41,6 +41,19 @@ test('any two current farming tool reforges conflict on the same physical tool',
   }
 });
 
+test('upgraded Crop Fortune accessories cannot be active as additive peers', () => {
+  const group = EXCLUSIVE_ENTRY_GROUPS.find(entry => entry.id === 'crop-fortune-accessory');
+  assert.ok(group);
+  assert.equal(group.itemClass, 'accessory-family');
+  assert.deepEqual(group.members, [
+    'accessory-fermento-artifact',
+    'accessory-helianthus-relic',
+  ]);
+  const violations = exclusiveSelectionViolations(group.members);
+  assert.equal(violations.length, 1);
+  assert.equal(violations[0].groupId, 'crop-fortune-accessory');
+});
+
 test('a vacuum reforge is not falsely exclusive with a separate farming tool reforge', () => {
   assert.deepEqual(exclusiveSelectionViolations([
     'tool-reforge-bountiful-reforge',

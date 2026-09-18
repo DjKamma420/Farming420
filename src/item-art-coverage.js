@@ -1,6 +1,5 @@
 import { STORAGE_KEY } from './config.js';
 import { UPGRADES } from './data.js';
-import { itemForSetupSlot } from './item-art-ui.js';
 import { loadItemCatalog } from './item-catalog.js';
 import { armorItemSvgMarkup, isArmorItem } from './armor-item-art.js';
 import { packArtNodeFor } from './pack-item-art.js';
@@ -21,7 +20,7 @@ export const TOOL_PROGRESS_ITEM_IDS = Object.freeze({
 });
 
 const CARD_ITEM_ID_OVERRIDES = Object.freeze({
-  'accessory-relic-of-power-perfect-peridot-effect': 'RELIC_OF_POWER',
+  'accessory-relic-of-power-perfect-peridot-effect': 'POWER_RELIC',
   'accessory-fermento-artifact': 'FERMENTO_ARTIFACT',
   'accessory-helianthus-relic': 'HELIANTHUS_RELIC',
   'buff-booster-cookie-farming-wisdom-contribution': 'BOOSTER_COOKIE',
@@ -88,8 +87,8 @@ function physicalNameCandidates(entry) {
  */
 export function catalogItemForUpgrade(catalog, entry) {
   if (!Array.isArray(catalog) || !entry) return null;
-  const override = CARD_ITEM_ID_OVERRIDES[entry.id];
-  if (override) return catalogItemById(catalog, override);
+  const exactItemId = entry.physicalItemId || CARD_ITEM_ID_OVERRIDES[entry.id];
+  if (exactItemId) return catalogItemById(catalog, exactItemId);
   if (!entry.packAsset && !PHYSICAL_CARD_CATEGORIES.has(entry.category)) return null;
 
   const candidates = physicalNameCandidates(entry);
@@ -194,20 +193,6 @@ function putArt(container, node, identity, { prepend = true } = {}) {
   return true;
 }
 
-function decorateSetupItems(catalog, rawState) {
-  document.querySelectorAll('.slot-portrait, [data-item-art-slot]').forEach(container => {
-    if (container.querySelector(':scope > .official-item-art, :scope > .skull-art')) return;
-    const slotId = container.dataset.slot
-      || container.dataset.itemArtSlot
-      || container.closest('[data-slot]')?.dataset.slot;
-    const setupItem = itemForSetupSlot(rawState, slotId);
-    if (!setupItem?.skyblockId) return;
-    const record = catalogItemById(catalog, setupItem.skyblockId);
-    const node = itemArtNode(record, setupItem.displayName || record?.name || slotId);
-    if (node) putArt(container, node, `setup:${record.id}`);
-  });
-}
-
 function decorateProgressionCards(catalog) {
   document.querySelectorAll('.item-card[data-open]').forEach(card => {
     const entry = UPGRADES.find(item => item.id === card.dataset.open);
@@ -229,6 +214,22 @@ function decorateProgressionCards(catalog) {
     if (!portrait.querySelector(':scope > .official-item-art, :scope > .coverage-item-art')) {
       putArt(portrait, node, `card:${record.id}`, { prepend: false });
     }
+  });
+}
+
+function decorateAccessoryCatalog(catalog) {
+  document.querySelectorAll('[data-accessory-item-id]').forEach(card => {
+    const itemId = String(card.dataset.accessoryItemId || '').trim().toUpperCase();
+    const catalogRecord = catalogItemById(catalog, itemId);
+    const record = catalogRecord || {
+      id: itemId,
+      name: card.querySelector('.item-title')?.textContent?.trim() || itemId,
+    };
+    if (card.dataset.physicalItemId !== record.id) card.dataset.physicalItemId = record.id;
+    const portrait = card.querySelector('.card-head > .card-portrait');
+    if (!portrait || portrait.querySelector(':scope > .official-item-art, :scope > .coverage-item-art')) return;
+    const node = itemArtNode(record, record.name || itemId);
+    if (node) putArt(portrait, node, `accessory:${record.id}`, { prepend: false });
   });
 }
 
@@ -315,8 +316,8 @@ export async function applyItemArtCoverage(root = document, rawState = readState
   try {
     const items = await ensureCatalog();
     if (!items.length) return 0;
-    decorateSetupItems(items, rawState);
     decorateProgressionCards(items);
+    decorateAccessoryCatalog(items);
     decorateDrawer(items, rawState);
     decorateReforges(items);
     decorateToolProgression(items);
@@ -343,8 +344,8 @@ function boot() {
       const relevant = mutations.some(mutation => [...mutation.addedNodes].some(node =>
         node instanceof Element
         && !node.matches?.('.coverage-item-art')
-        && (node.matches?.('.item-card, .drawer, .slot-portrait, [data-item-art-slot], .sb-reforge-card, .workspace-level-row')
-          || node.querySelector?.('.item-card, .drawer, .slot-portrait, [data-item-art-slot], .sb-reforge-card, .workspace-level-row'))));
+        && (node.matches?.('.item-card, .drawer, .sb-reforge-card, .workspace-level-row')
+          || node.querySelector?.('.item-card, .drawer, .sb-reforge-card, .workspace-level-row'))));
       if (relevant) queueApply();
     }).observe(root, { childList: true, subtree: true });
   }

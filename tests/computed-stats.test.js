@@ -68,6 +68,30 @@ test('unmodeled configured source is flagged incomplete instead of using manual 
   ]);
 });
 
+test('derived Thorny totals keep Farming Fortune and both Overbloom parts separate', () => {
+  const state = baseState();
+  const values = {
+    'equipment-reforge-thorny-on-full-mythic-equipment-ff': 48,
+    'equipment-reforge-thorny-on-full-mythic-equipment-overbloom': 6,
+    'equipment-reforge-thorny-thorns-overbloom': 6.8,
+  };
+  for (const [id, value] of Object.entries(values)) {
+    state.profile.levels[id] = id.endsWith('-ff') ? 4 : 1;
+    state.profile.owned[id] = true;
+    state.profile.manualGain[id] = value;
+    state.profile.autoApplied.account ||= {};
+    state.profile.autoApplied.account[id] = { value: state.profile.levels[id], manualGain: value, source: 'hypixel-sync' };
+  }
+  const entries = [
+    { id: 'equipment-reforge-thorny-on-full-mythic-equipment-ff', metric: 'Crop Yield', section: 'gear', cropScope: 'Any', status: 'ACTIVE', max: 4, stepGain: 0 },
+    { id: 'equipment-reforge-thorny-on-full-mythic-equipment-overbloom', metric: 'Rare Crops', section: 'gear', cropScope: 'Any', status: 'ACTIVE', max: 4, stepGain: 0 },
+    { id: 'equipment-reforge-thorny-thorns-overbloom', metric: 'Rare Crops', section: 'gear', cropScope: 'Any', status: 'ACTIVE', max: 1, stepGain: 0 },
+  ];
+  const totals = computeTotalsFromEntries(state, entries, 'melon');
+  assert.equal(totals.globalFortune, 48);
+  assert.equal(totals.overbloom, 12.8);
+});
+
 test('derived cache overwrites legacy manual global and crop end values', () => {
   const state = baseState();
   state.profile.levels['account-skill-farming-skill-level'] = 10;

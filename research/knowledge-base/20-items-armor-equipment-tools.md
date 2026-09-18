@@ -231,9 +231,32 @@ Calculate each equipment piece separately from its real rarity.
 
 ### Thorny
 
-The Farming Fortune index lists +2/+4/+6/+8/+10/+12 FF by rarity. The Overbloom page additionally lists +0.25 to +1.5 base Overbloom depending on rarity and +0.1 Overbloom per Thorns tier.
+Current live values by rarity are +2/+4/+6/+8/+10/+12 Farming Fortune and +0.25/+0.5/+0.75/+1/+1.25/+1.5 base Overbloom. In addition, each equipped Thorny equipment piece grants +0.1 Overbloom per Thorns tier across the currently worn armor.
 
-Therefore Thorny evaluation requires the worn armor's actual Thorns tiers. It is not just a static equipment reforge.
+Use the item-local formula:
+
+```text
+thorny_bonus_overbloom
+= thorny_equipment_piece_count
+* sum(worn_armor_thorns_levels)
+* 0.1
+```
+
+This makes armor Thorns a cross-slot dependency rather than an armor stat by itself.
+
+#### Pufferfish Hat celebration variant
+
+There are two distinct Pufferfish Hat item IDs. The ordinary `PUFFERFISH_HAT` must not be credited with the event enchant. The Century/Raffle reward `PUFFERFISH_HAT_CELEBRATION` comes with Thorns V, above the normal current Thorns IV maximum. Hypixel listed the same `Pufferfish Hat (Thorns V)` reward again for the Year 500 Century Celebration in 2026.
+
+With four Thorny equipment pieces, the celebration hat's Thorns V supplies +2.0 Overbloom through the Thorny bonus. Compared with wearing a normal Thorns IV helmet, however, the event hat's unique incremental advantage is only +0.4 Overbloom. Evaluate the complete helmet swap: lost base/set Farming Fortune, armor reforge, gemstones, Pest stats and other effects can outweigh that extra tier.
+
+Sources:
+- https://hypixel.net/threads/hypixel-skyblock-0-26-1-new-player-improvements-harvest-feast-changes-healing-revamp-and-more.6127383/
+- https://hypixel.net/threads/list-of-item-in-skyblock-update-1-81.6151548/
+- https://hypixel.net/threads/hypixel-skyblock-0-21-2-year-400-raffle-event.5841821/
+- https://hypixel.net/threads/skyblock-year-500-century-celebration.6114883/
+Last verified: 2026-09-18
+Status: ACTIVE; Pest-loot gear-swap snapshot timing remains VERIFY.
 
 ### Squeaky
 

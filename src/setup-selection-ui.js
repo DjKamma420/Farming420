@@ -6,6 +6,7 @@ import {
   normalizeSetups,
 } from './setups.js';
 import {
+  intrinsicEnchantmentsForCatalogItem,
   itemsForSlot,
   loadItemCatalog,
   readCachedCatalog,
@@ -267,6 +268,7 @@ function buildClosedItemPicker(editor, slotId, item) {
         skyblockId: chosen.id,
         displayName: chosen.name,
         rarity: chosen.tier || null,
+        enchantments: intrinsicEnchantmentsForCatalogItem(chosen),
         source: ITEM_SOURCE.MANUAL,
       };
     });

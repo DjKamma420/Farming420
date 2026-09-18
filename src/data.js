@@ -292,7 +292,7 @@ export const UPGRADES = [
     "manualDefault": null,
     "rawMarginal": 30,
     "hypercharge": false,
-    "notes": "Highest accessory in Cropie/Squash/Fermento line; do not stack lower line members.",
+    "notes": "Cropie → Squash → Fermento → Helianthus progression. Helianthus replaces this bonus when upgraded; do not stack tiers.",
     "source": "https://wiki.eliteskyblock.com/Farming_Fortune",
     "workbookRank": 14
   },
@@ -311,7 +311,7 @@ export const UPGRADES = [
     "manualDefault": null,
     "rawMarginal": 40,
     "hypercharge": false,
-    "notes": "+40 FF while breaking crops.",
+    "notes": "Final tier of the Cropie → Squash → Fermento → Helianthus accessory progression; +40 FF while breaking crops.",
     "source": "https://hypixel-skyblock.fandom.com/wiki/Farming_Fortune",
     "workbookRank": 13
   },
