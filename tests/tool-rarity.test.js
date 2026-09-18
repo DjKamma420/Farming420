@@ -136,3 +136,13 @@ test('tool Recombobulator toggle, rarity color and gemstone rarity use the same 
   assert.match(src, /recombobulated: entryEnabled\(bucket, RECOMB_ID\)/);
   assert.match(src, /data-tool-recomb \$\{entryEnabled\(bucket, RECOMB_ID\)\?'checked':''\}/);
 });
+
+
+test('Melon Dicer Mk. III uses the current EPIC base rarity, not the legacy Legendary rarity', () => {
+  const workspace = readFileSync(new URL('../src/workspace-ui.js', import.meta.url), 'utf8');
+  const backgrounds = readFileSync(new URL('../src/rarity-background-ui.js', import.meta.url), 'utf8');
+  assert.match(workspace, /farmingToolTierRarity\(tier\) \|\| catalogItem\?\.tier/);
+  assert.match(backgrounds, /farmingToolTierRarity\(tier\) \|\| item\?\.tier/);
+  assert.equal(deriveRarity({ base: 'EPIC', recombobulated: false }), 'EPIC');
+  assert.equal(deriveRarity({ base: 'EPIC', recombobulated: true }), 'LEGENDARY');
+});
