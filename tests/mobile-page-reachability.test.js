@@ -32,36 +32,44 @@ test('no stylesheet hides a nav link for a specific page', () => {
   assert.deepEqual(offenders, [], `a nav link is hidden by CSS:\n${offenders.join('\n')}`);
 });
 
-test('the mobile navigation stays on the side with visible labels', () => {
+test('the mobile navigation stays fixed on the side with visible labels', () => {
   const mobile = read('src/mobile-taskbar.css');
 
-  assert.match(mobile, /\.sidebar\.sb-rail \{[^}]*position:\s*sticky/);
-  assert.match(mobile, /\.sidebar\.sb-rail \{[^}]*bottom:\s*auto/);
+  assert.match(mobile, /\.sidebar\.sb-rail \{[^}]*position:\s*fixed/);
+  assert.match(mobile, /\.sidebar\.sb-rail \{[^}]*inset:\s*0 auto 0 0/);
   assert.match(mobile, /\.sb-rail nav \{[^}]*overflow-y:\s*auto/);
   assert.match(mobile, /\.sb-nav-label \{[^}]*display:\s*block\s*!important/);
 
-  assert.doesNotMatch(mobile, /\.sidebar\.sb-rail \{[^}]*position:\s*fixed/);
-  assert.doesNotMatch(mobile, /\.sidebar\.sb-rail \{[^}]*bottom:\s*0/);
+  assert.doesNotMatch(mobile, /\.sidebar\.sb-rail \{[^}]*position:\s*sticky/);
   assert.doesNotMatch(mobile, /nav-link:nth-child\([^)]*\)\s*\{[^}]*display:\s*none/);
 });
 
-test('content scroll is isolated from the side navigation', () => {
+test('content scroll is isolated from the fixed side navigation', () => {
   const redesign = read('src/skyblock-redesign.css');
 
-  assert.match(redesign, /\.skyblock-redesign body \{[^}]*height:\s*100dvh;[^}]*overflow:\s*hidden/);
+  assert.match(redesign, /html\.skyblock-redesign,\s*html\.skyblock-redesign body \{[^}]*overflow:\s*hidden/);
   assert.match(redesign, /\.skyblock-redesign \.app-shell \{[^}]*height:\s*100dvh;[^}]*overflow:\s*hidden/);
+  assert.match(redesign, /\.skyblock-redesign \.sidebar\.sb-rail \{[^}]*position:\s*fixed;[^}]*inset:\s*0 auto 0 0/);
   assert.match(redesign, /\.skyblock-redesign \.main \{[^}]*height:\s*100dvh;[^}]*overflow-y:\s*auto/);
-  assert.match(redesign, /\.skyblock-redesign \.sidebar\.sb-rail \{[^}]*height:\s*100dvh;[^}]*overflow:\s*hidden/);
 });
 
 test('named side rail stays compact at desktop and mobile widths', () => {
   const redesign = read('src/skyblock-redesign.css');
   const mobile = read('src/mobile-taskbar.css');
 
-  assert.match(redesign, /grid-template-columns:\s*176px minmax\(0, 1fr\)/);
-  assert.match(redesign, /grid-template-columns:\s*152px minmax\(0, 1fr\)/);
-  assert.match(redesign, /grid-template-columns:\s*124px minmax\(0, 1fr\)/);
-  assert.match(mobile, /width:\s*124px/);
+  assert.match(redesign, /width:\s*156px/);
+  assert.match(redesign, /margin-left:\s*156px/);
+  assert.match(redesign, /width:\s*136px/);
+  assert.match(redesign, /margin-left:\s*136px/);
+  assert.match(redesign, /width:\s*108px/);
+  assert.match(redesign, /margin-left:\s*108px/);
+  assert.match(mobile, /width:\s*108px/);
+});
+
+test('navigation CSS is cache-busted in the page shell', () => {
+  const index = read('index.html');
+  assert.match(index, /src\/skyblock-redesign\.css\?v=20260918-5/);
+  assert.match(index, /src\/mobile-taskbar\.css\?v=20260918-5/);
 });
 
 test('the setup page keeps its own direct navigation entry', () => {
