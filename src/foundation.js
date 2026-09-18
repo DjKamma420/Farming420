@@ -388,40 +388,14 @@ async function forceReloadApp() {
   window.location.replace(url.href);
 }
 
-function bindTopbarControls() {
-  const topbar = document.querySelector('.topbar');
-  if (!topbar) return;
+function bindAppControls() {
+  const app = document.getElementById('app');
+  if (!app) return;
 
-  let settingsButton = topbar.querySelector('[data-open-settings]');
-  if (!settingsButton) {
-    settingsButton = document.createElement('button');
-    settingsButton.type = 'button';
-    settingsButton.className = 'settings-entry';
-    settingsButton.dataset.openSettings = '1';
-    settingsButton.setAttribute('aria-label', 'Open settings');
-    settingsButton.innerHTML = '<span aria-hidden="true">⚙</span><span class="settings-entry-label">Settings</span>';
-    topbar.appendChild(settingsButton);
-  }
-  if (!settingsButton.dataset.settingsBound) {
+  const settingsButton = app.querySelector('[data-open-settings]');
+  if (settingsButton && !settingsButton.dataset.settingsBound) {
     settingsButton.dataset.settingsBound = '1';
     settingsButton.addEventListener('click', openSettings);
-  }
-
-  let reloadButton = topbar.querySelector('[data-force-reload]');
-  if (!reloadButton) {
-    reloadButton = document.createElement('button');
-    reloadButton.type = 'button';
-    reloadButton.className = 'settings-entry';
-    reloadButton.dataset.forceReload = '1';
-    reloadButton.setAttribute('aria-label', 'Reload latest app version');
-    reloadButton.innerHTML = '<span aria-hidden="true">↻</span><span class="settings-entry-label">Reload</span>';
-    topbar.appendChild(reloadButton);
-  }
-  if (!reloadButton.dataset.reloadBound) {
-    reloadButton.dataset.reloadBound = '1';
-    reloadButton.addEventListener('click', () => {
-      void forceReloadApp();
-    });
   }
 }
 
@@ -430,6 +404,6 @@ window.addEventListener('beforeinstallprompt', event => {
   deferredInstallPrompt = event;
 });
 
-const observer = new MutationObserver(bindTopbarControls);
+const observer = new MutationObserver(bindAppControls);
 observer.observe(document.getElementById('app'), { childList: true, subtree: true });
-bindTopbarControls();
+bindAppControls();
