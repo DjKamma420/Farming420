@@ -2,23 +2,17 @@
  * Set art from the shipped pack, for gear the official item resource cannot
  * picture.
  *
- * When an item carries no head texture, the coverage layer falls back to a
- * hand-drawn outline filled with one flat colour -- and for equipment, which
- * has no outline at all, to a two-letter badge. That is what the Mossy
- * Helianthus set and the Blossom equipment were showing: a grey T-shirt and
- * "CLTB".
- *
- * The pack does not ship armour or equipment pieces, but it does ship the
- * item each set is built from. Those read instantly and correctly: a
- * Helianthus flower for Helianthus armour, the Fermento fruit for Fermento,
- * the four Lotus flowers for the four Lotus equipment tiers. One icon serves a
- * whole set, which loses nothing here because the slot already prints HELMET,
- * CHESTPLATE or CLOAK beside it.
+ * Armour is deliberately excluded from set stand-ins. Hypixel's item resource
+ * exposes the real helmet skin or the vanilla armour material plus leather dye,
+ * and those are closer to the in-game model than a Cropie/Fermento/Helianthus
+ * ingredient icon. Set representatives remain useful for equipment and abstract
+ * upgrade rows where no stronger model source exists.
  *
  * This module is the art table and the lookup. It owns no DOM beyond the one
  * node it returns.
  */
 import { ITEM_ASSET_BASE_URL, loadItemAssetManifest } from './item-assets.js';
+import { isArmorItem } from './armor-item-art.js';
 
 /**
  * Set token to pack key, most specific first.
@@ -75,7 +69,7 @@ function haystack(item) {
 
 /** The pack key for an item's set, or null when no set matches. */
 export function packArtKeyFor(item) {
-  if (!item) return null;
+  if (!item || isArmorItem(item)) return null;
   const text = haystack(item);
   if (!text.replace(/[\s_]/g, '')) return null;
   for (const [token, key] of SET_ART) {

@@ -2,6 +2,7 @@ import { STORAGE_KEY } from './config.js';
 import { UPGRADES } from './data.js';
 import { itemForSetupSlot } from './item-art-ui.js';
 import { loadItemCatalog } from './item-catalog.js';
+import { armorItemSvgMarkup, isArmorItem } from './armor-item-art.js';
 import { packArtNodeFor } from './pack-item-art.js';
 import { knownSkyblockHeadTexture } from './skull-art.js';
 
@@ -109,45 +110,20 @@ export function catalogItemForUpgrade(catalog, entry) {
   return best.length === 1 ? best[0] : null;
 }
 
-function parseColor(value) {
-  const parts = String(value || '').split(',').map(Number);
-  if (parts.length !== 3 || parts.some(part => !Number.isFinite(part) || part < 0 || part > 255)) return null;
-  return `rgb(${parts.map(part => Math.round(part)).join(', ')})`;
-}
-
-function materialColor(item) {
-  const custom = parseColor(item?.color);
-  if (custom) return custom;
-  const material = String(item?.material || '');
-  if (material.startsWith('GOLD_')) return '#ffd84a';
-  if (material.startsWith('DIAMOND_')) return '#56e3e6';
-  if (material.startsWith('IRON_')) return '#d6dddd';
-  if (material.startsWith('CHAINMAIL_')) return '#a7b0b0';
-  if (material.startsWith('LEATHER_')) return '#a46d45';
-  return '#9fb8a7';
-}
-
-function armorSvg(category, color, label) {
-  const paths = {
-    HELMET: '<path d="M3 3h10v3H2V4h1zm-1 3h3v7H2zm9 0h3v7h-3zM5 10h6v4H5z"/>',
-    CHESTPLATE: '<path d="M2 3h4l2 2 2-2h4l1 4-3 1v6H4V8L1 7zm4 0h4v3H6z"/>',
-    LEGGINGS: '<path d="M3 3h10v5h-2v6H7V9H5v5H2V8h1z"/>',
-    BOOTS: '<path d="M2 3h5v7H5v2h3v2H2zm7 0h5v11H8v-2h3v-2H9z"/>',
-  };
-  const path = paths[String(category || '').toUpperCase()];
-  if (!path) return null;
+function armorMaterialNode(item, label) {
+  const markup = armorItemSvgMarkup(item);
+  if (!markup) return null;
   const span = document.createElement('span');
-  span.className = 'coverage-item-art coverage-material-art';
+  span.className = 'coverage-item-art coverage-material-art coverage-armor-art';
   span.setAttribute('role', 'img');
-  span.setAttribute('aria-label', `${label || 'SkyBlock armour'} item icon`);
-  span.innerHTML = `<svg viewBox="0 0 16 16" aria-hidden="true" shape-rendering="crispEdges"><g fill="${color}">${path}</g><path d="M1 2h14v13H1z" fill="none" stroke="rgba(255,255,255,.16)" stroke-width=".45"/></svg>`;
+  span.setAttribute('aria-label', `${label || item?.name || 'SkyBlock armour'} item model`);
+  span.innerHTML = markup;
   return span;
 }
 
 function genericMaterialSvg(item, label) {
   const material = String(item?.material || '').toUpperCase();
-  const category = String(item?.category || '').toUpperCase();
-  const armour = armorSvg(category, materialColor(item), label);
+  const armour = armorMaterialNode(item, label);
   if (armour) return armour;
 
   let shape = null;
@@ -175,12 +151,23 @@ export function itemArtNode(item, label = '') {
   if (url) {
     const span = document.createElement('span');
     span.className = 'coverage-item-art coverage-skull-art';
-    span.style.backgroundImage = `url("${url}")`;
     span.setAttribute('role', 'img');
-    span.setAttribute('aria-label', `${label || item.name || 'SkyBlock item'} texture`);
+    span.setAttribute('aria-label', `${label || item.name || 'SkyBlock item'} head texture`);
+    for (const layerName of ['face', 'hat']) {
+      const layer = document.createElement('span');
+      layer.className = `coverage-skull-layer coverage-skull-${layerName}`;
+      layer.style.backgroundImage = `url("${url}")`;
+      span.append(layer);
+    }
     return span;
   }
-  // Real set art from the shipped pack, before the hand-drawn outline.
+
+  // Hypixel does not currently ship Resource Pack models for armour. The
+  // official item resource does publish the actual item material and leather
+  // dye, so armour must use that model instead of a Cropie/Fermento/etc. crop
+  // icon that merely shares the set name.
+  if (isArmorItem(item)) return armorMaterialNode(item, label);
+
   const packNode = packArtNodeFor(item, label);
   if (packNode) return packNode;
   return genericMaterialSvg(item, label);
