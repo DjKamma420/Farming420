@@ -16,6 +16,7 @@ const catalog = [
   { id: 'RANCHERS_BOOTS', name: "Rancher's Boots", category: 'BOOTS' },
   { id: 'FARMER_BOOTS', name: 'Farmer Boots', category: 'BOOTS' },
   { id: 'PUFFERFISH_HAT', name: 'Pufferfish Hat', category: 'HELMET' },
+  { id: 'PUFFERFISH_HAT_CELEBRATION', name: 'Pufferfish Hat', category: 'HELMET' },
   { id: 'SUPERIOR_DRAGON_HELMET', name: 'Superior Dragon Helmet', category: 'HELMET' },
   { id: 'RABBIT_HELMET', name: 'Rabbit Helmet', category: 'HELMET' },
   { id: 'YOUNG_DRAGON_BOOTS', name: 'Young Dragon Boots', category: 'BOOTS' },
@@ -30,6 +31,7 @@ test('armor slots expose farming armor and farming-relevant standalone helmets/b
     'HELIANTHUS_HELMET',
     'ENCHANTED_JACK_O_LANTERN',
     'PUFFERFISH_HAT',
+    'PUFFERFISH_HAT_CELEBRATION',
     'SQUASH_HELMET',
   ]);
   assert.deepEqual(itemsForSlot(catalog, 'boots').map(item => item.id), [
@@ -37,6 +39,10 @@ test('armor slots expose farming armor and farming-relevant standalone helmets/b
     'RANCHERS_BOOTS',
     'TATER_BOOTS',
   ]);
+});
+
+test('the Century/Raffle Pufferfish Hat variant stays selectable for the Thorny strategy', () => {
+  assert.equal(isFarmingArmorCatalogItem({ id: 'PUFFERFISH_HAT_CELEBRATION', name: 'Pufferfish Hat' }), true);
 });
 
 test('Lantern Helmet is kept because it is farming-relevant and has two Peridot sockets', () => {

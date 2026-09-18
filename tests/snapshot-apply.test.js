@@ -373,6 +373,39 @@ test('switching the active setup re-derives from the newly active one', () => {
   assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], undefined, 'the pest setup is empty');
 });
 
+test('Thorny reads all active armor Thorns tiers including the event Pufferfish Hat V', () => {
+  const thorny = slot => ({
+    displayName: `Mythic Thorny ${slot}`,
+    rarity: 'MYTHIC',
+    reforge: 'thorny',
+    enchantments: {},
+    gems: [],
+  });
+  const state = stateWithSetup({
+    helmet: setupPiece('Pufferfish Hat', { skyblockId: 'PUFFERFISH_HAT_CELEBRATION', enchantments: { thorns: 5 }, reforge: null }),
+    chestplate: setupPiece('Helianthus Chestplate', { enchantments: { thorns: 4 }, reforge: null }),
+    leggings: setupPiece('Helianthus Leggings', { enchantments: { thorns: 4 }, reforge: null }),
+    boots: setupPiece('Helianthus Boots', { enchantments: { thorns: 4 }, reforge: null }),
+    equipment1: thorny('Necklace'),
+    equipment2: thorny('Cloak'),
+    equipment3: thorny('Belt'),
+    equipment4: thorny('Bracelet'),
+  });
+
+  applySnapshotToProgress(state, snapshotWith());
+
+  assert.equal(state.profile.levels['equipment-reforge-thorny-on-full-mythic-equipment-ff'], 4);
+  assert.equal(state.profile.manualGain['equipment-reforge-thorny-on-full-mythic-equipment-ff'], 48);
+  assert.equal(state.profile.levels['equipment-reforge-thorny-on-full-mythic-equipment-overbloom'], 4);
+  assert.equal(state.profile.manualGain['equipment-reforge-thorny-on-full-mythic-equipment-overbloom'], 6);
+  assert.equal(state.profile.levels['equipment-reforge-thorny-thorns-overbloom'], 1);
+  assert.equal(state.profile.manualGain['equipment-reforge-thorny-thorns-overbloom'], 6.8);
+
+  state.profile.setups.list[0].slots.helmet.enchantments.thorns = 4;
+  applySnapshotToProgress(state, snapshotWith());
+  assert.equal(state.profile.manualGain['equipment-reforge-thorny-thorns-overbloom'], 6.4);
+});
+
 test("Perfect Peridot is read per slot from the setup editor's list shape", () => {
   const withGem = name => setupPiece(name, { gems: ['PERFECT PERIDOT'] });
   const state = stateWithSetup({

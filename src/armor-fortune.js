@@ -106,6 +106,16 @@ export function sunsetTotalLevel(pieces) {
   }, 0);
 }
 
+export function thornsTotalLevel(pieces) {
+  return (pieces || []).reduce((sum, piece) => {
+    const level = Number(piece?.enchantments?.thorns || 0);
+    if (!Number.isFinite(level) || level <= 0) return sum;
+    // Normal current enchanting stops at IV, but Century/Raffle Pufferfish Hats
+    // legitimately carry Thorns V, so the runtime must preserve that event item.
+    return sum + Math.min(5, Math.floor(level));
+  }, 0);
+}
+
 function perfectPeridotCountOnPiece(piece) {
   const gems = piece?.gems;
   if (Array.isArray(gems)) {
