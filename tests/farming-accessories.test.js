@@ -32,6 +32,17 @@ test('all current farming accessory progression families are represented', () =>
     'PESTHUNTER_ARTIFACT',
     'PESTHUNTER_RELIC',
   ]);
+  assert.deepEqual(groups.get('greenhouse').items.map(item => item.itemId), [
+    'BIOANALYSIS_TALISMAN',
+    'BIOANALYSIS_RING',
+    'BIOANALYSIS_ARTIFACT',
+  ]);
+  assert.deepEqual(groups.get('visitors').items.map(item => item.itemId), [
+    'COPPER_TALISMAN',
+    'COPPER_RING',
+    'COPPER_ARTIFACT',
+  ]);
+  assert.equal(FARMING_ACCESSORIES.length, 22);
 });
 
 test('Relic of Power uses the live SkyBlock id', () => {
