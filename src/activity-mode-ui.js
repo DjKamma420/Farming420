@@ -141,53 +141,16 @@ function injectHeaderSwitch(raw) {
   if (control.dataset.mode === mode) return;
 
   control.dataset.mode = mode;
-  control.setAttribute('aria-label', 'Active calculation set');
+  control.setAttribute('aria-label', 'Active farming phase');
   control.innerHTML = `
     <span>Set</span>
-    <button type="button" data-activity-mode="farm" class="${mode === ACTIVITY_MODE.FARM ? 'active' : ''}" aria-pressed="${mode === ACTIVITY_MODE.FARM}">Farm</button>
-    <button type="button" data-activity-mode="pest-spawn" class="${mode === ACTIVITY_MODE.PEST_SPAWN ? 'active' : ''}" aria-pressed="${mode === ACTIVITY_MODE.PEST_SPAWN}">Spawn</button>
-    <button type="button" data-activity-mode="pest-kill" class="${mode === ACTIVITY_MODE.PEST_KILL ? 'active' : ''}" aria-pressed="${mode === ACTIVITY_MODE.PEST_KILL}">Kill</button>`;
+    <button type="button" data-activity-mode="farm" class="${mode === ACTIVITY_MODE.FARM ? 'active' : ''}" aria-pressed="${mode === ACTIVITY_MODE.FARM}">Farming</button>
+    <button type="button" data-activity-mode="pest-spawn" class="${mode === ACTIVITY_MODE.PEST_SPAWN ? 'active' : ''}" aria-pressed="${mode === ACTIVITY_MODE.PEST_SPAWN}">Spawning</button>
+    <button type="button" data-activity-mode="pest-kill" class="${mode === ACTIVITY_MODE.PEST_KILL ? 'active' : ''}" aria-pressed="${mode === ACTIVITY_MODE.PEST_KILL}">Killing</button>`;
   control.querySelectorAll('[data-activity-mode]').forEach(button => button.addEventListener('click', () => {
     if (button.dataset.activityMode === mode) return;
     setMode(button.dataset.activityMode);
   }));
-}
-
-function renderStatsStrip(raw) {
-  const strip = document.querySelector('.computed-stats-strip');
-  if (!strip) return;
-  const mode = activityModeForState(raw);
-  const cropId = selectedCropId(raw);
-  const stats = computeStatTotals(raw, cropId, mode);
-  const unresolvedFortune = stats.incomplete.globalFortune.length
-    + stats.incomplete.cropFortune.length
-    + stats.incomplete.pestFortune.length;
-  const signature = [
-    mode,
-    stats.effectiveFortune,
-    stats.pestFortune,
-    stats.overbloom,
-    stats.bonusPestChance,
-    unresolvedFortune,
-    stats.incomplete.overbloom.length,
-    stats.incomplete.bonusPestChance.length,
-  ].join(':');
-  if (strip.dataset.activityStats === signature) return;
-  strip.dataset.activityStats = signature;
-
-  strip.innerHTML = `
-    <div class="computed-stat" title="Fortune from the active ${esc(activityLabel(mode))}">
-      <span>${mode === ACTIVITY_MODE.PEST_KILL ? 'Kill FF' : mode === ACTIVITY_MODE.PEST_SPAWN ? 'Spawn FF' : 'Farm FF'}</span><strong>${Number(stats.effectiveFortune || 0).toLocaleString('en-US')}</strong>${unresolvedFortune ? '<em>~</em>' : ''}
-    </div>
-    ${mode === ACTIVITY_MODE.PEST_KILL ? `<div class="computed-stat" title="Farming Fortune that applies to Pest/Vacuum drops only. It is separate from crop Fortune.">
-      <span>Pest Drop FF</span><strong>${Number(stats.pestFortune || 0).toLocaleString('en-US')}</strong>${stats.incomplete.pestFortune.length ? '<em>~</em>' : ''}
-    </div>` : ''}
-    <div class="computed-stat" title="Overbloom for the active set. Pest-loot Overbloom is counted only in the Killing Set.">
-      <span>OB</span><strong>${Number(stats.overbloom || 0).toLocaleString('en-US')}</strong>${stats.incomplete.overbloom.length ? '<em>~</em>' : ''}
-    </div>
-    <div class="computed-stat" title="Bonus Pest Chance is a spawning stat and is counted only in the Spawning Set.">
-      <span>BPC</span><strong>${Number(stats.bonusPestChance || 0).toLocaleString('en-US')}</strong>${stats.incomplete.bonusPestChance.length ? '<em>~</em>' : ''}
-    </div>`;
 }
 
 function simplifySetupEditor(raw) {
@@ -283,7 +246,6 @@ function apply() {
   try {
     const raw = load();
     injectHeaderSwitch(raw);
-    renderStatsStrip(raw);
     simplifySetupEditor(raw);
     renderDashboardCandidate(raw);
     renderPlanner(raw);
