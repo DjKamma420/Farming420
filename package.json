@@ -1,6 +1,6 @@
 {
   "name": "farming420",
-  "version": "0.39.1",
+  "version": "0.40.0",
   "private": true,
   "type": "module",
   "description": "Profile-aware Hypixel SkyBlock farming progression and profit planner",
