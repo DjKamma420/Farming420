@@ -29,8 +29,16 @@ test('a texture id is read from the url the skull carries', () => {
   assert.equal(textureIdFromProperty(property(`http://textures.minecraft.net/texture/${ID}`)), ID);
 });
 
-test('current farming equipment ids have exact verified head models', () => {
+test('current farming armor and equipment ids have exact verified head models', () => {
   const expected = {
+    CROPIE_HELMET: 'e4bacb96734e244b9f7331d453e686fa2e32522a411aa568f960e741d74b3289',
+    FERMENTO_HELMET: '5086ddbe960f33480ca229da7402391ab417d32ebb21770430ea610de5801fe3',
+    HELIANTHUS_HELMET: '46e48a6eff318dcda57d5d76a9b2656be25973e3d472b6d2e446a8e60f60a78a',
+    MELON_HELMET: '8208669e699d6f0d3a77f74b2b27228ce51b9359678d26f9c3408764b2e779aa',
+    PUMPKIN_HELMET: '2f92489725093d51dd18a259382fa0207a20a94495883d9f4b1fd97a8a11b9f0',
+    SQUASH_HELMET: 'de1087c0c519a9a1dcee4325410b19a1be4855eac5a662ae1b523329f90faecd',
+    ENCHANTED_JACK_O_LANTERN: '8a06221ca4a7355f34098692e4da691fef06abac0bf9041d573a13d62cc3091',
+    PUFFERFISH_HAT: '44f7f2203e3a850b6c83dce47fd6714a62e4d7648c16ed1fd9dc8168ab3c484f',
     LOTUS_NECKLACE: 'ad83aa25c11acfce7442ff0129fd70bb42ca0de63ba2115169966cc351f1716b',
     LOTUS_CLOAK: 'ee40d7762d2b7aed5d925d17f7b3c1451e709c2537a5546b1ce6e0d8ee2757d4',
     LOTUS_BELT: '4ce8d19b0163d1eadde563377394b05de63427c6e3f8a949e0dfa32bb20d7f2d',
@@ -58,6 +66,7 @@ test('current farming equipment ids have exact verified head models', () => {
     );
   }
   assert.equal(knownSkyblockHeadTexture('ZORRO_CAPE'), expected.ZORROS_CAPE, 'old saved typo remains renderable');
+  assert.equal(knownSkyblockHeadTexture('PUFFERFISH_HELMET'), expected.PUFFERFISH_HAT, 'legacy pufferfish id remains renderable');
   assert.equal(knownSkyblockHeadTexture('NOT_REAL'), null);
 });
 
@@ -154,12 +163,15 @@ test('the art layer cannot add a second picture to the same slot', () => {
   assert.doesNotMatch(source, /querySelectorAll\('\.slot-card\[data-slot\]/);
 });
 
-test('the page is allowed to load head textures, and only from Mojang', () => {
+test('the page allows Mojang skins and the exact external item renderer as image sources', () => {
   const indexHtml = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const csp = indexHtml.match(/Content-Security-Policy"\s+content="([^"]+)"/)?.[1] ?? '';
   const imgSrc = csp.match(/img-src ([^;]+)/)?.[1] ?? '';
   assert.match(imgSrc, /https:\/\/textures\.minecraft\.net/);
-  // Displaying is all that is needed. The host sends no CORS header, so the
-  // pixels are never read back, and it has no business in connect-src.
-  assert.doesNotMatch(csp.match(/connect-src ([^;]+)/)?.[1] ?? '', /textures\.minecraft\.net/);
+  assert.match(imgSrc, /https:\/\/sky\.shiiyu\.moe/);
+  // Displaying is all that is needed. Neither image host is fetched through JS,
+  // so neither belongs in connect-src.
+  const connectSrc = csp.match(/connect-src ([^;]+)/)?.[1] ?? '';
+  assert.doesNotMatch(connectSrc, /textures\.minecraft\.net/);
+  assert.doesNotMatch(connectSrc, /sky\.shiiyu\.moe/);
 });
