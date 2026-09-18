@@ -225,6 +225,14 @@
   text-align: right;
 }
 
+.skyblock-redesign .sb-tools-page > .page-head {
+  display: none;
+}
+
+.skyblock-redesign .sb-tools-page .sb-tool-card.selected {
+  display: none;
+}
+
 .skyblock-redesign .sb-tool-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));

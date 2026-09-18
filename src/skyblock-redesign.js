@@ -326,6 +326,7 @@ function toolPicker() {
   if (!content) return;
   const head = content.querySelector('.page-head');
   if (!head) return;
+  content.classList.add('sb-tools-page');
   // Hidden, never removed. enhancements.js recreates this strip whenever it is
   // missing, so removing it starts a fight between two observers that rebuild
   // and delete the same node until the tab dies.
@@ -408,7 +409,7 @@ function reforgePanel() {
 
   const panel = document.createElement('section');
   panel.className = 'sb-reforge-panel item-editor-section';
-  panel.innerHTML = `<div class="sb-block-title"><div><span class="eyebrow">Reforge</span><h3>Pick what is actually on the tool</h3><p>Every current Farming Tool reforge stays selectable. The recommendation changes by goal instead of hiding non-meta choices.</p></div></div>
+  panel.innerHTML = `<div class="sb-block-title"><div><span class="eyebrow">Reforge</span><h3>Pick what is actually on the tool</h3></div></div>
     <div class="sb-goal-tabs" role="group" aria-label="Reforge recommendation goal">${GOALS.map(([id, label]) => `<button class="${goal === id ? 'active' : ''}" data-sb-goal="${id}">${label}</button>`).join('')}</div>
     <div class="sb-recommendation">Recommended for <strong>${crop.name}</strong> · <strong>${GOALS.find(([id]) => id === goal)?.[1] || 'Coins'}</strong>: <span>${REFORGES.find(reforge => reforge.id === recommended)?.label}</span></div>
     <div class="sb-reforge-grid" role="radiogroup" aria-label="Reforge on this tool">
