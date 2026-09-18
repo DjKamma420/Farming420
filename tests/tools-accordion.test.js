@@ -123,3 +123,16 @@ test('the open tool and its editor render as one connected accordion frame', () 
   assert.match(css, /\.sb-tool-grid > \.sb-docked-editor::before \{[^}]*content:\s*none/s);
   assert.match(css, /\.sb-reforge-panel \{[^}]*margin:\s*0;[^}]*padding:\s*0;[^}]*border:\s*0;[^}]*background:\s*transparent;[^}]*box-shadow:\s*none/s);
 });
+
+
+test('rarity styling cannot redraw a seam between an expanded tool and its editor', () => {
+  const css = read('rarity-background-ui.css').replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.match(
+    css,
+    /\.sb-tool-card\.rarity-surface\.selected\[aria-expanded="true"\] \{[^}]*outline:\s*0;[^}]*box-shadow:\s*none/s,
+  );
+  assert.match(
+    css,
+    /\.sb-tool-grid > \.sb-docked-editor\.rarity-surface \{[^}]*box-shadow:\s*0 10px 24px rgba\(0, 0, 0, \.18\)/s,
+  );
+});
