@@ -37,17 +37,17 @@ jobs:
                       src/nbt.js src/item-normalizer.js src/profile-items.js \
                       src/profile-normalizer.js src/profile-sync.js src/scopes.js \
                       src/credentials.js src/hypixel-client.js src/live-sync.js src/snapshot-apply.js src/help-locations.js \
-                      src/setups.js src/item-catalog.js src/progression.js \
+                      src/setups.js src/item-catalog.js src/progression.js src/update-manager.js \
                       src/styles.css src/enhancements.css src/foundation.css \
                       assets/icon.svg \
                       AGENTS.md README.md \
                       docs/PRODUCT_SPEC.md docs/PROFILE_DATA_MATRIX.md docs/PROFILE_MODEL.md docs/MATH_MODEL.md docs/FINDING_VALUES.md \
                       docs/VERIFIED_MECHANICS.md docs/FARMING_HISTORY.md docs/RENDER_FREEZE_SAFETY.md \
-                      scripts/browser-startup-smoke.sh; do
+                      scripts/browser-startup-smoke.sh scripts/prepare-pages-deploy.js; do
             test -f "$file" || { echo "missing required file: $file"; exit 1; }
           done
 
-      - name: Check the service worker caches every shipped app file
+      - name: Validate service-worker retirement mode
         run: node scripts/check-sw-manifest.js
 
       - name: Browser startup smoke test
