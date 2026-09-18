@@ -47,6 +47,26 @@ test('encoded inventory normalization preserves generic enchantments and ignores
   assert.equal(items[0].gems.PERIDOT_0, 'PERFECT');
 });
 
+test('item normalization preserves rendering metadata from the concrete NBT instance', () => {
+  const item = normalizeDecodedItem({
+    id: 300,
+    Damage: 0,
+    tag: {
+      ItemModel: 'minecraft:leather_leggings',
+      display: {
+        Name: '§6Helianthus Leggings',
+        color: 16770305,
+      },
+      ExtraAttributes: { id: 'HELIANTHUS_LEGGINGS' },
+    },
+  });
+
+  assert.equal(item.itemModel, 'minecraft:leather_leggings');
+  assert.equal(item.displayColor, 16770305);
+  assert.equal(item.vanillaId, 300);
+  assert.equal(item.damage, 0);
+});
+
 test('unknown enchantment names are preserved instead of filtered by an app allowlist', () => {
   const item = normalizeDecodedItem({
     tag: { ExtraAttributes: { id: 'TEST_ITEM', enchantments: { future_farming_enchant: 7 } } },
