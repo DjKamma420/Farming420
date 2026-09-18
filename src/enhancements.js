@@ -17,6 +17,7 @@ const GROUPS = [
   ['Specialized', ['chips', 'shards', 'pests']],
   ['Analysis', ['planner', 'research', 'coming']],
   ['Getting started', ['guide', 'setup']],
+  ['System', ['settings']],
 ];
 
 const HUBS = [
@@ -48,7 +49,7 @@ function groupSidebar(root) {
     group.appendChild(title);
 
     for (const id of ids) {
-      const button = nav.querySelector(`[data-page="${id}"]`);
+      const button = nav.querySelector(`[data-page="${id}"], [data-nav-id="${id}"]`);
       if (button) group.appendChild(button);
     }
     nav.appendChild(group);

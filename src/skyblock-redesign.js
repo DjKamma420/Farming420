@@ -263,7 +263,7 @@ function decorateNavigation() {
   if (!sidebar) return;
   sidebar.classList.add('sb-rail');
   sidebar.querySelectorAll('.nav-link').forEach(button => {
-    const page = button.dataset.page;
+    const page = button.dataset.page || button.dataset.navId;
     const label = button.textContent.trim();
     button.dataset.label = label;
     if (button.querySelector('.sb-nav-icon')) return;
@@ -277,7 +277,7 @@ function decorateNavigation() {
       image.loading = 'lazy';
       icon.append(image);
     } else {
-      icon.textContent = label.slice(0, 1);
+      icon.textContent = page === 'settings' ? '⚙' : label.slice(0, 1);
     }
     const text = document.createElement('span');
     text.className = 'sb-nav-label';

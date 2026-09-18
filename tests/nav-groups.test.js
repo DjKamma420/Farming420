@@ -11,10 +11,12 @@ import { readFileSync } from 'node:fs';
 const enhancements = readFileSync(new URL('../src/enhancements.js', import.meta.url), 'utf8');
 const app = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
 
-function navPages() {
+function navEntries() {
   const block = app.match(/const NAV = \[([\s\S]*?)\n\];/);
   assert.ok(block, 'NAV table not found in app.js');
-  return [...block[1].matchAll(/\[\s*'([\w-]+)'/g)].map(m => m[1]);
+  const pages = [...block[1].matchAll(/\[\s*'([\w-]+)'/g)].map(m => m[1]);
+  const utilities = [...app.matchAll(/data-nav-id="([\w-]+)"/g)].map(m => m[1]);
+  return [...pages, ...utilities];
 }
 
 function groupedPages() {
@@ -27,14 +29,14 @@ function groupedPages() {
 }
 
 test('every nav page is in exactly one group', () => {
-  const pages = navPages();
+  const pages = navEntries();
   const grouped = groupedPages();
   const missing = pages.filter(page => !grouped.includes(page));
   assert.deepEqual(missing, [], `ungrouped pages sit in front of the groups: ${missing.join(', ')}`);
 });
 
 test('no group lists a page that the nav does not have', () => {
-  const pages = navPages();
+  const pages = navEntries();
   const unknown = groupedPages().filter(page => !pages.includes(page));
   assert.deepEqual(unknown, [], `grouped but not in NAV: ${unknown.join(', ')}`);
 });

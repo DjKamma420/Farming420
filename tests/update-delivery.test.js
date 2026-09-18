@@ -66,12 +66,13 @@ test('runtime update path is versionless and retires the old service worker', ()
 });
 
 
-test('top bar always exposes Settings and a local-data-safe force reload', () => {
+test('Settings lives in the collapsible navigation and keeps safe force reload inside Settings', () => {
   const app = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const foundation = readFileSync(new URL('../src/foundation.js', import.meta.url), 'utf8');
 
-  assert.match(app, /data-open-settings/);
-  assert.match(app, /data-force-reload/);
+  assert.match(app, /data-nav-toggle/);
+  assert.match(app, /data-nav-id="settings" data-open-settings/);
+  assert.doesNotMatch(app, /data-force-reload/);
   assert.match(foundation, /async function forceReloadApp\(\)/);
   assert.match(foundation, /name\.startsWith\('farming420-'\)/);
   assert.match(foundation, /url\.searchParams\.set\('reload'/);
