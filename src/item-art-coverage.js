@@ -163,10 +163,21 @@ export function itemArtNode(item, label = '') {
     span.className = 'coverage-item-art coverage-skull-art';
     span.setAttribute('role', 'img');
     span.setAttribute('aria-label', `${label || item.name || 'SkyBlock item'} head texture`);
+    let failed = false;
+    const fail = () => {
+      if (failed) return;
+      failed = true;
+      span.remove();
+    };
     for (const layerName of ['face', 'hat']) {
-      const layer = document.createElement('span');
+      const layer = document.createElement('img');
       layer.className = `coverage-skull-layer coverage-skull-${layerName}`;
-      layer.style.backgroundImage = `url("${url}")`;
+      layer.src = url;
+      layer.alt = '';
+      layer.loading = 'lazy';
+      layer.decoding = 'async';
+      layer.draggable = false;
+      layer.addEventListener('error', fail, { once: true });
       span.append(layer);
     }
     return span;
