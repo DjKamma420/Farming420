@@ -50,6 +50,13 @@ test('current farming equipment ids have exact verified head models', () => {
   for (const [id, hash] of Object.entries(expected)) {
     assert.equal(knownSkyblockHeadTexture(id), hash, id);
   }
+  for (const suffix of ['NECKLACE', 'CLOAK', 'BELT', 'GLOVES']) {
+    assert.equal(
+      knownSkyblockHeadTexture(`PESTHUNTER_${suffix}`),
+      expected[`PESTHUNTERS_${suffix}`],
+      `old singular Pesthunter ${suffix.toLowerCase()} id remains renderable`,
+    );
+  }
   assert.equal(knownSkyblockHeadTexture('ZORRO_CAPE'), expected.ZORROS_CAPE, 'old saved typo remains renderable');
   assert.equal(knownSkyblockHeadTexture('NOT_REAL'), null);
 });
