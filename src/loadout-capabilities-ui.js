@@ -161,7 +161,7 @@ function writeVacuumReforge(reforgeId) {
 }
 
 function renderVacuumSurface(raw) {
-  if (raw.page !== 'tools' || activityModeForState(raw) !== ACTIVITY_MODE.PEST) return;
+  if (raw.page !== 'tools' || activityModeForState(raw) !== ACTIVITY_MODE.PEST_KILL) return;
   const content = document.querySelector('.content');
   if (!content) return;
 
