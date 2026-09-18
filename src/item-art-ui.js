@@ -70,7 +70,7 @@ function showFallback(container, label, identity) {
   return node;
 }
 
-function skullNode(textureId, item) {
+function skullNode(textureId, item, onError = null) {
   const url = skullTextureUrl(textureId);
   if (!url) return null;
 
@@ -80,18 +80,28 @@ function skullNode(textureId, item) {
   node.setAttribute('role', 'img');
   node.setAttribute('aria-label', item?.displayName ? `${item.displayName} head texture` : 'SkyBlock head texture');
 
-  for (const layer of ['skull-face', 'skull-hat']) {
-    const element = document.createElement('span');
-    element.className = `skull-layer ${layer}`;
-    element.style.backgroundImage = `url("${url}")`;
-    node.append(element);
-  }
+  // Use real image elements rather than CSS background-image. The CSP permits
+  // Mojang in img-src, while a dynamically assigned background style is a much
+  // more fragile path on mobile/WebView. Both images show the same skin sheet;
+  // CSS shifts one to the face square and the other to the hat square.
+  let failed = false;
+  const fail = () => {
+    if (failed) return;
+    failed = true;
+    node.remove();
+    if (typeof onError === 'function') onError();
+  };
 
-  const probe = new Image();
-  probe.addEventListener('load', () => {
-    node.classList.add(probe.naturalHeight >= probe.naturalWidth ? 'skull-square' : 'skull-legacy');
-  }, { once: true });
-  probe.src = url;
+  for (const layer of ['skull-face', 'skull-hat']) {
+    const image = document.createElement('img');
+    image.className = `skull-layer ${layer}`;
+    image.src = url;
+    image.alt = '';
+    image.decoding = 'async';
+    image.draggable = false;
+    image.addEventListener('error', fail, { once: true });
+    node.append(image);
+  }
 
   return node;
 }
@@ -156,7 +166,7 @@ export function renderSetupItemArt({ root = document, rawState = readState(), ma
     removeRenderedArt(card);
 
     const asset = item.skyblockId ? itemAssetForSkyblockId(manifestValue, item.skyblockId) : null;
-    const skull = skullNode(textureId, item);
+    const skull = skullNode(textureId, item, () => showFallback(card, item.displayName || slotId, identity));
     if (skull) {
       card.prepend(skull);
       card.classList.add('has-official-item-art');
