@@ -55,3 +55,13 @@ test('backup restore and local reset repaint without a hard reload', () => {
   assert.doesNotMatch(ordinarySettingsWrites, /location\.(?:reload|replace)\s*\(/);
   assert.match(ordinarySettingsWrites, /farming420:state-changed/);
 });
+
+
+test('scroll restoration survives post-render enhancement mutations', () => {
+  const source = read('app.js');
+  assert.match(source, /function restoreScrollState\(scrollState\)/);
+  assert.match(
+    source,
+    /restoreScrollState\(scrollState\);\s*requestAnimationFrame\(\(\) => \{\s*restoreScrollState\(scrollState\);\s*requestAnimationFrame\(\(\) => restoreScrollState\(scrollState\)\);\s*\}\);/,
+  );
+});
