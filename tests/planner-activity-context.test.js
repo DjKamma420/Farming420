@@ -30,17 +30,19 @@ function state(activeId = 'normal') {
       setups: {
         activeId,
         list: [
-          { id: 'normal', name: 'Farm Set', slots: {} },
-          { id: 'pest', name: 'Pest Set', slots: {} },
+          { id: 'normal', name: 'Farming Set', slots: {} },
+          { id: 'pest', name: 'Pest Spawning Set', slots: {} },
+          { id: 'pest-kill', name: 'Pest Killing Set', slots: {} },
         ],
       },
     },
   };
 }
 
-test('planner shares the same 100 Farm / 600 Pest Fortune bases as activity calculations', () => {
+test('planner uses crop Fortune scaling for Farm/Spawn and Pest scaling for Kill', () => {
   assert.equal(FORTUNE_BASE_BY_ACTIVITY[ACTIVITY_MODE.FARM], 100);
-  assert.equal(FORTUNE_BASE_BY_ACTIVITY[ACTIVITY_MODE.PEST], 600);
+  assert.equal(FORTUNE_BASE_BY_ACTIVITY[ACTIVITY_MODE.PEST_SPAWN], 100);
+  assert.equal(FORTUNE_BASE_BY_ACTIVITY[ACTIVITY_MODE.PEST_KILL], 600);
 });
 
 test('planner routes Vacuum progress to vacuumProgress instead of the crop tool bucket', () => {
@@ -62,7 +64,7 @@ test('planner routes Vacuum progress to vacuumProgress instead of the crop tool 
   assert.equal(plannerProgressBucket(raw, farmingTool, 'melon'), raw.profile.toolProgress['melon-dicer']);
 });
 
-test('planner candidate filtering follows Farm/Pest activity scope', () => {
+test('planner candidate filtering follows Farm/Spawn/Kill activity scope', () => {
   const farmingTool = {
     id: 'tool-reforge-blessed-reforge', section: 'tools', modeScope: 'Any', cropScope: 'Any',
   };
@@ -74,12 +76,16 @@ test('planner candidate filtering follows Farm/Pest activity scope', () => {
   assert.equal(plannerItemApplies(farm, farmingTool, 'melon'), true);
   assert.equal(plannerItemApplies(farm, vacuum, 'melon'), false);
 
-  const pest = state('pest');
-  assert.equal(plannerItemApplies(pest, farmingTool, 'melon'), false);
-  assert.equal(plannerItemApplies(pest, vacuum, 'melon'), true);
+  const spawn = state('pest');
+  assert.equal(plannerItemApplies(spawn, farmingTool, 'melon'), true);
+  assert.equal(plannerItemApplies(spawn, vacuum, 'melon'), false);
+
+  const kill = state('pest-kill');
+  assert.equal(plannerItemApplies(kill, farmingTool, 'melon'), false);
+  assert.equal(plannerItemApplies(kill, vacuum, 'melon'), true);
 });
 
-test('Farm and Pest revenue baselines are stored separately', () => {
+test('Farm, Spawn and Kill revenue baselines are stored separately', () => {
   const raw = state('normal');
   setPlannerEconomicsValue(raw, 'melon', ACTIVITY_MODE.FARM, 'normalCropCoinsPerHour', 20_000_000);
   setPlannerEconomicsValue(raw, 'melon', ACTIVITY_MODE.FARM, 'rareCropCoinsPerHour', 2_000_000);
@@ -88,14 +94,20 @@ test('Farm and Pest revenue baselines are stored separately', () => {
     normalCropCoinsPerHour: 20_000_000,
     rareCropCoinsPerHour: 2_000_000,
   });
-  assert.deepEqual(plannerEconomicsBucket(raw, 'melon', ACTIVITY_MODE.PEST), {
+  assert.deepEqual(plannerEconomicsBucket(raw, 'melon', ACTIVITY_MODE.PEST_SPAWN), {
+    normalCropCoinsPerHour: 0,
+    rareCropCoinsPerHour: 0,
+  });
+  assert.deepEqual(plannerEconomicsBucket(raw, 'melon', ACTIVITY_MODE.PEST_KILL), {
     normalCropCoinsPerHour: 0,
     rareCropCoinsPerHour: 0,
   });
 
-  setPlannerEconomicsValue(raw, 'melon', ACTIVITY_MODE.PEST, 'normalCropCoinsPerHour', 12_000_000);
+  setPlannerEconomicsValue(raw, 'melon', ACTIVITY_MODE.PEST_SPAWN, 'normalCropCoinsPerHour', 15_000_000);
+  setPlannerEconomicsValue(raw, 'melon', ACTIVITY_MODE.PEST_KILL, 'normalCropCoinsPerHour', 12_000_000);
   assert.equal(plannerEconomicsBucket(raw, 'melon', ACTIVITY_MODE.FARM).normalCropCoinsPerHour, 20_000_000);
-  assert.equal(plannerEconomicsBucket(raw, 'melon', ACTIVITY_MODE.PEST).normalCropCoinsPerHour, 12_000_000);
+  assert.equal(plannerEconomicsBucket(raw, 'melon', ACTIVITY_MODE.PEST_SPAWN).normalCropCoinsPerHour, 15_000_000);
+  assert.equal(plannerEconomicsBucket(raw, 'melon', ACTIVITY_MODE.PEST_KILL).normalCropCoinsPerHour, 12_000_000);
 });
 
 test('legacy flat economics migrate only to the activity that owned them', () => {
