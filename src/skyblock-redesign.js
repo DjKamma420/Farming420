@@ -58,32 +58,39 @@ const NAV_ART = Object.freeze({
 });
 
 /**
- * Art for each crop, in preference order.
+ * Direct crop sprites for crops whose shipped SkyBlock pack has no plain crop
+ * item. These are the vanilla Minecraft 1.21.4 item sprites, embedded so the
+ * PWA keeps working offline and crop tiles never have to borrow a tool icon.
  *
- * Thirteen crop tiles were drawing bare letters -- W, C, P, Pu, Mu, WR and the
- * rest. The pack ships SkyBlock's own items only, so there is no plain wheat,
- * melon or cocoa texture in it; what it does have is each crop's own SkyBlock
- * produce, and those are used wherever one exists.
- *
- * Wheat, potato, melon, sugar cane and cocoa have no produce texture at all, so
- * they fall back to that crop's Mk. I tool. That is a deliberate second choice:
- * it repeats the art the Tools page uses, but the crop tile names the tool
- * directly beside it, and a recognisable tool beats a letter.
- *
- * Every key is checked against the shipped manifest by `tests/crop-art.test.js`,
- * because a name that matches nothing degrades silently back to the letter.
+ * Tool artwork belongs on the Tools page only. A crop tile must depict the
+ * crop itself (or a crop-specific produce item when no plain sprite exists).
+ */
+export const CROP_SPRITES = Object.freeze({
+  wheat: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAFVBMVEUAAADcu2XNsVmmlVONdz1/ajNWUTi//tJYAAAAAXRSTlMAQObYZgAAAGZJREFUeNpjAAMHBghINYCwEoJdGVjAAk7OwWChEBUTE7CUiYiKihuIYSTs5JIApFkNjZyMw4AMZkVhlTCQSJigCZhmTU0OSwlgYGALMktLYEsDCiirJTCAAItpGAOEkQZlsDFAZABzGQ//xG79GgAAAABJRU5ErkJggg==',
+  carrot: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAIVBMVEUAAAD/wXf/pz//jgkzvjDTag0fmhysOQADZwN1KAIAUACpRFtLAAAAAXRSTlMAQObYZgAAAFlJREFUeNpjQAYsbjBWSgOYyeaR0ubBAAIZHikJYMbkiLYVIJrdSHVWWwOIoagcuQIkVCpoWtkBkipSDp3FAZIJMq1kYAAxTCMngBnF4SAapHYmAwTMZEAFAGk6EunKqLlxAAAAAElFTkSuQmCC',
+  potato: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAHlBMVEUAAAD40IbpumLZqlHIlzqvhESddy6GaT6aVQBtNwHFP2iqAAAAAXRSTlMAQObYZgAAAE1JREFUeNpjIBZ0dIApjo5k1wYQoy3YxNgDJGCkZGziCWS0KAoZm1QCGc2KwsZumUDGlCDjkLQJQMa0EBO3mQxAwFkaBqRBYOZM7NYAALqVD4xVPZDMAAAAAElFTkSuQmCC',
+  melon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAJ1BMVEUAAADWtpvGknijmyDKcV2EiSDBPC2/MSNZZhpETw6vFgt6GA5ZGA+tCklkAAAAAXRSTlMAQObYZgAAAFlJREFUeNpjwAEioDS7cgOEUV5kARFYXQhhlFUtjAALlB9fGAliVK0qLwQx2JcfX+UIYpTvKl8uPIGBgVW9vNzRAsjgNBIUFO0EqZ1sHNo5AcTgnDlzArK9AEOXFtSZFIaKAAAAAElFTkSuQmCC',
+  'sugar-cane': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAFVBMVEUAAACX9UR8zDVgoChHgh47YxgqTA05cuPmAAAAAXRSTlMAQObYZgAAAFJJREFUeNpjwA4Y1SC0mmICmGYyEVFQBDGYnYSThMBiiqaKZmAR4WA3sICxqVKqEZB2MQlWdk4DMlLcjMxANANLignEGLYUNzANFAIKQIRQLQYAwrcKiGdI1UwAAAAASUVORK5CYII=',
+  'cocoa-beans': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAD1BMVEUAAACXZ0ZwRCVMKxMwGgqFR7udAAAAAXRSTlMAQObYZgAAAEZJREFUeNpjIAAYBaAMQxUIX4HZBMwwMmBwADOcHZQZwHIsTCJMIgwMDEwKLA5MJiCGMAMTWBGzCoMiRLELizKIAWZitQ8ALQUExfBLcFMAAAAASUVORK5CYII=',
+  'nether-wart': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAXklEQVR42mNgGAVYwT57r//LVA1AmAFEx4hKgTDxBkA1gw0AafYTFANh4g2AaUK2HdlQopwP1Qi3HSROlFdAGmCacRlGVBggG0RyICLbRlYsIMcE1CDSYgHdFcMcAAAMflPjVS1cZAAAAABJRU5ErkJggg==',
+});
+
+/**
+ * Crop-specific SkyBlock art used only when a direct vanilla crop sprite is
+ * not appropriate or available. This table deliberately contains no hoes,
+ * dicers, knives or choppers.
  */
 export const CROP_ART = Object.freeze({
-  wheat: ['theoretical_hoe_wheat_1'],
-  carrot: ['carrot_bait'],
-  potato: ['theoretical_hoe_potato_1'],
+  wheat: [],
+  carrot: [],
+  potato: [],
   pumpkin: ['polished_pumpkin'],
-  melon: ['melon_dicer'],
+  melon: [],
   mushroom: ['glowing_mushroom'],
   cactus: ['potted_cactus'],
-  'sugar-cane': ['theoretical_hoe_cane_1'],
-  'cocoa-beans': ['coco_chopper'],
-  'nether-wart': ['mutant_nether_wart'],
+  'sugar-cane': [],
+  'cocoa-beans': [],
+  'nether-wart': [],
   sunflower: ['compacted_sunflower'],
   moonflower: ['compacted_moonflower'],
   'wild-rose': ['compacted_wild_rose'],
@@ -170,7 +177,8 @@ function currentGoal() {
  * rules already; a second crop-art table would be the third of that kind.
  */
 export function cropArtUrl(cropId) {
-  return assetByCandidates(CROP_ART[String(cropId || '').trim().toLowerCase()] || []);
+  const id = String(cropId || '').trim().toLowerCase();
+  return CROP_SPRITES[id] || assetByCandidates(CROP_ART[id] || []);
 }
 
 function assetByCandidates(candidates = []) {
@@ -302,7 +310,7 @@ function decorateCropIcons() {
   for (const icon of document.querySelectorAll('.crop-icon')) {
     if (icon.querySelector('.sb-crop-art')) continue;
     const cropId = icon.closest('[data-crop]')?.dataset.crop || activeCropId();
-    const url = assetByCandidates(CROP_ART[cropId] || []);
+    const url = cropArtUrl(cropId);
     if (!url) continue;
 
     const letter = document.createElement('span');
