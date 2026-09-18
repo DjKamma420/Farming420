@@ -56,6 +56,10 @@ export const KNOWN_FARMING_EQUIPMENT_HEAD_TEXTURES = Object.freeze({
 const KNOWN_HEAD_ID_ALIASES = Object.freeze({
   // Keep old manually saved Farming420 ids renderable after correcting the
   // historical singular id typo in the catalogue filter.
+  PESTHUNTER_NECKLACE: 'PESTHUNTERS_NECKLACE',
+  PESTHUNTER_CLOAK: 'PESTHUNTERS_CLOAK',
+  PESTHUNTER_BELT: 'PESTHUNTERS_BELT',
+  PESTHUNTER_GLOVES: 'PESTHUNTERS_GLOVES',
   ZORRO_CAPE: 'ZORROS_CAPE',
 });
 
