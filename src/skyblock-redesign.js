@@ -139,6 +139,7 @@ function toolArtForTier(cropId, tier) {
 
 let manifest = null;
 let applying = false;
+let collapsedToolKey = null;
 
 function readState() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
@@ -320,6 +321,18 @@ function decorateCropIcons() {
 }
 
 
+function handleToolCardClick(cropId) {
+  const clickedKey = toolKeyForCropId(cropId);
+  const selectedKey = toolKeyForCropId(activeCropId());
+  if (clickedKey === selectedKey) {
+    collapsedToolKey = collapsedToolKey === selectedKey ? null : selectedKey;
+    dockToolEditor();
+    return;
+  }
+  collapsedToolKey = null;
+  setCrop(cropId);
+}
+
 function toolPicker() {
   if (pageId() !== 'tools') return;
   const content = document.querySelector('.content');
@@ -357,7 +370,7 @@ function toolPicker() {
   section.dataset.sbSignature = signature;
   if (existing) existing.replaceWith(section);
   else head.insertAdjacentElement('afterend', section);
-  section.querySelectorAll('[data-sb-tool-crop]').forEach(button => button.addEventListener('click', () => setCrop(button.dataset.sbToolCrop)));
+  section.querySelectorAll('[data-sb-tool-crop]').forEach(button => button.addEventListener('click', () => handleToolCardClick(button.dataset.sbToolCrop)));
 }
 
 /**
@@ -383,7 +396,17 @@ function dockToolEditor() {
   const selected = grid.querySelector('.sb-tool-card.selected')
     || grid.querySelector('.sb-tool-card');
   if (!selected) return;
+  const selectedKey = toolKeyForCropId(selected.dataset.sbToolCrop);
+  const collapsed = collapsedToolKey === selectedKey;
+  grid.querySelectorAll('.sb-tool-card').forEach(button => {
+    const expanded = button === selected && !collapsed;
+    const nextValue = expanded ? 'true' : 'false';
+    if (button.getAttribute('aria-expanded') !== nextValue) button.setAttribute('aria-expanded', nextValue);
+  });
   if (!editor.classList.contains('sb-docked-editor')) editor.classList.add('sb-docked-editor');
+  if (editor.classList.contains('sb-tool-editor-collapsed') !== collapsed) {
+    editor.classList.toggle('sb-tool-editor-collapsed', collapsed);
+  }
   if (selected.nextElementSibling === editor) return;
   selected.insertAdjacentElement('afterend', editor);
 }
