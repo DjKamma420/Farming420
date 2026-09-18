@@ -125,6 +125,45 @@
   transform: translateY(-50%);
 }
 
+/* Every Recombobulator selector shows the physical Recombobulator 3000 next
+   to the copy. This covers Accessories, Setups, Tools and Vacuum with one
+   consistent visual cue while leaving the checkbox/toggle behavior unchanged. */
+.recombobulator-choice-copy {
+  position: relative;
+  min-height: 44px;
+  padding-left: 52px !important;
+}
+
+.recombobulator-choice-copy > .coverage-item-art {
+  position: absolute;
+  left: 2px;
+  top: 50%;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  transform: translateY(-50%);
+}
+
+.recombobulator-choice-copy > .coverage-item-art.coverage-skull-art,
+.recombobulator-choice-copy > .coverage-item-art.coverage-material-art {
+  width: 40px;
+  height: 40px;
+}
+
+@media (max-width: 700px) {
+  .recombobulator-choice-copy {
+    min-height: 40px;
+    padding-left: 46px !important;
+  }
+
+  .recombobulator-choice-copy > .coverage-item-art,
+  .recombobulator-choice-copy > .coverage-item-art.coverage-skull-art,
+  .recombobulator-choice-copy > .coverage-item-art.coverage-material-art {
+    width: 36px;
+    height: 36px;
+  }
+}
+
 /* The setup portraits already own the right size/border. Coverage art simply
    occupies that box when the shipped Hypixel pack has no matching item model. */
 .slot-portrait > .coverage-item-art,
