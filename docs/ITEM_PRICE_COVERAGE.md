@@ -12,8 +12,8 @@ exists rather than a guess from comparing two names.
 | Priced from research | 12 |
 | Covered by another entry | 2 |
 | Earned, not bought (needs a time figure) | 11 |
-| No price research linked yet | 60 |
-| **Total** | **85** |
+| No price research linked yet | 65 |
+| **Total** | **90** |
 
 `unknown != 0` holds: an unpriced entry carries `coins: null` and a reason,
 never zero, because zero would make it look free and win every ranking.
@@ -86,7 +86,7 @@ stone or a gemstone tier needs a line in the link table in
 |---|---|
 | Exportable item (selected crop) | `permanent-crop-item-exportable-item-selected-crop` |
 
-### Tool layer (10)
+### Tool layer (15)
 
 | Entry | id |
 |---|---|
@@ -100,6 +100,11 @@ stone or a gemstone tier needs a line in the link table in
 | Perfect Peridot on Farming Tool | `tool-gem-perfect-peridot-on-farming-tool` |
 | Recombobulator effect on tool stats | `tool-recombobulator-effect-on-tool-stats` |
 | Beady - Pest-only Farming Fortune | `vacuum-reforge-beady-pest-only-farming-fortune` |
+| Efficiency | `tool-enchant-efficiency-v` |
+| Feast | `tool-enchant-feast-v` |
+| Crop Fever | `tool-enchant-crop-fever-v` |
+| Replenish | `tool-enchant-replenish` |
+| Delicate | `tool-enchant-delicate-v` |
 
 ### Garden Chips (10)
 
