@@ -39,7 +39,7 @@ function esc(value = '') {
 }
 function readState() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch { return null; } }
 function writeState(state) { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-function reload() { window.location.reload(); }
+function announceStateChange() { window.dispatchEvent(new Event('farming420:state-changed')); }
 function cropForState(state) { return CROPS.find(crop => crop.id === state?.selectedCrop) || CROPS[0]; }
 function toolBucket(state, cropId) {
   state.profile ||= {};
@@ -180,7 +180,7 @@ function gemstoneSection(bucket, catalogItem) {
 function writeTool(mutator) {
   const state = readState(); if (!state) return;
   const crop = cropForState(state); const bucket = toolBucket(state, crop.id);
-  mutator(bucket, state, crop); writeState(state); reload();
+  mutator(bucket, state, crop); writeState(state); announceStateChange();
 }
 function enhanceTools(root) {
   const editor = root.querySelector('[data-tool-editor="1"]');
