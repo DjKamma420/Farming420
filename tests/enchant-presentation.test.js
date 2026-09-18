@@ -17,6 +17,7 @@ test('verified farming enchant maxima are explicit sourced enchant mechanics', (
     bug_blender: 5,
     cultivating: 10,
     dedication: 4,
+    efficiency: 5,
     delicate: 5,
     feast: 5,
     harvesting: 6,
@@ -75,6 +76,7 @@ test('compatibility and niche-strategy metadata stay explicit', () => {
   assert.equal(enchantMetadata('thorns').maxLevel, 4);
   assert.equal(enchantMetadata('thorns').strategy, 'secret');
   assert.equal(enchantMetadata('delicate').minLevel, 5);
+  assert.equal(enchantMetadata('efficiency').strategy, 'utility');
   assert.deepEqual(enchantMetadata('bug_blender').appliesTo, ['vacuum']);
   assert.deepEqual(enchantMetadata('green_thumb').appliesTo, ['equipment']);
 });
