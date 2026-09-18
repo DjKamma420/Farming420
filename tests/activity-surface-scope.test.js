@@ -25,6 +25,7 @@ test('Pests workspace combines Spawning and Killing totals and owns the Vacuum',
   assert.match(loadoutUi, /statsForMode\(raw, cropId, ACTIVITY_MODE\.PEST_KILL\)/);
   assert.match(loadoutUi, /setActivityModeOnState\(scoped, mode\)/);
   assert.match(loadoutUi, /applySnapshotToProgress\(scoped,/);
+  assert.match(loadoutUi, /const totalPestFortune = Number\(killStats\.globalFortune \|\| 0\) \+ Number\(killStats\.pestFortune \|\| 0\)/);
   for (const label of ['Bonus Pest Chance', 'Total Pest Fortune', 'Pest Overbloom', 'Vacuum · Killing only']) {
     assert.match(loadoutUi, new RegExp(label));
   }
