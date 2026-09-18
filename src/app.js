@@ -134,8 +134,9 @@ let readOnlyState = false;
 let migrationApplied = false;
 let state = loadState();
 
-let pendingScrollAnchor = null;
-const SCROLL_ANCHOR_MAX_AGE_MS = 1500;
+let activeScrollAnchor = null;
+let scrollAnchorRestoreFrame = 0;
+const SCROLL_ANCHOR_MAX_AGE_MS = 1800;
 const SCROLL_ANCHOR_CONTROL_SELECTOR = 'button, input, select, textarea, a, label, [role="button"], [role="radio"]';
 
 function scrollAnchorElement(target) {
@@ -170,17 +171,22 @@ function describeScrollAnchor(root, element) {
   };
 }
 
+function matchesScrollAnchor(element, descriptor) {
+  if (!(element instanceof Element) || element.tagName.toLowerCase() !== descriptor.tag) return false;
+  return (descriptor.attrs || []).every(([name, value]) => element.getAttribute(name) === value);
+}
+
 function resolveScrollAnchor(root, descriptor) {
   if (!root || !descriptor) return null;
 
   if (descriptor.id) {
     const byId = document.getElementById(descriptor.id);
-    if (byId && root.contains(byId)) return byId;
+    if (byId && root.contains(byId) && matchesScrollAnchor(byId, descriptor)) return byId;
   }
 
   if (descriptor.attrs?.length) {
     for (const candidate of root.querySelectorAll(descriptor.tag)) {
-      if (descriptor.attrs.every(([name, value]) => candidate.getAttribute(name) === value)) return candidate;
+      if (matchesScrollAnchor(candidate, descriptor)) return candidate;
     }
   }
 
@@ -189,7 +195,63 @@ function resolveScrollAnchor(root, descriptor) {
     node = node?.children?.[index] || null;
     if (!node) return null;
   }
-  return node instanceof Element ? node : null;
+  return matchesScrollAnchor(node, descriptor) ? node : null;
+}
+
+function currentScrollAnchor() {
+  if (!activeScrollAnchor) return null;
+  if (Date.now() - activeScrollAnchor.capturedAt <= SCROLL_ANCHOR_MAX_AGE_MS) return activeScrollAnchor;
+  activeScrollAnchor = null;
+  return null;
+}
+
+function clearScrollAnchor() {
+  activeScrollAnchor = null;
+  if (scrollAnchorRestoreFrame) {
+    cancelAnimationFrame(scrollAnchorRestoreFrame);
+    scrollAnchorRestoreFrame = 0;
+  }
+}
+
+function restoreRelativeScrollAnchor(anchor = currentScrollAnchor()) {
+  if (!anchor || anchor !== currentScrollAnchor() || anchor.page !== state.page) return false;
+
+  const root = document.getElementById('app');
+  const element = resolveScrollAnchor(root, anchor.descriptor);
+  if (!element) return false;
+
+  const delta = element.getBoundingClientRect().top - anchor.viewportTop;
+  if (Math.abs(delta) < 0.5) return true;
+
+  const main = document.querySelector('#app .main');
+  const overflowY = main ? getComputedStyle(main).overflowY : '';
+  const mainScrolls = Boolean(
+    main
+    && main.scrollHeight > main.clientHeight + 1
+    && /auto|scroll|overlay/.test(overflowY),
+  );
+
+  if (mainScrolls) main.scrollTop += delta;
+  else window.scrollBy(0, delta);
+  return true;
+}
+
+function scheduleScrollAnchorRestore(anchor = currentScrollAnchor()) {
+  if (!anchor) return;
+
+  queueMicrotask(() => {
+    if (anchor === currentScrollAnchor()) restoreRelativeScrollAnchor(anchor);
+  });
+
+  if (scrollAnchorRestoreFrame) return;
+  scrollAnchorRestoreFrame = requestAnimationFrame(() => {
+    scrollAnchorRestoreFrame = 0;
+    if (anchor !== currentScrollAnchor()) return;
+    restoreRelativeScrollAnchor(anchor);
+    requestAnimationFrame(() => {
+      if (anchor === currentScrollAnchor()) restoreRelativeScrollAnchor(anchor);
+    });
+  });
 }
 
 function rememberScrollAnchor(target) {
@@ -197,54 +259,13 @@ function rememberScrollAnchor(target) {
   const element = scrollAnchorElement(target);
   if (!root || !element || !root.contains(element)) return;
 
-  pendingScrollAnchor = {
+  activeScrollAnchor = {
     page: state.page,
     capturedAt: Date.now(),
     viewportTop: element.getBoundingClientRect().top,
     descriptor: describeScrollAnchor(root, element),
   };
-}
-
-function consumeScrollAnchor() {
-  const anchor = pendingScrollAnchor;
-  pendingScrollAnchor = null;
-  if (!anchor) return null;
-  if (Date.now() - anchor.capturedAt > SCROLL_ANCHOR_MAX_AGE_MS) return null;
-  return anchor;
-}
-
-function restoreRelativeScrollAnchor(anchor) {
-  if (!anchor || anchor.page !== state.page) return;
-
-  const attempt = () => {
-    const root = document.getElementById('app');
-    const element = resolveScrollAnchor(root, anchor.descriptor);
-    if (!element) return false;
-
-    const delta = element.getBoundingClientRect().top - anchor.viewportTop;
-    if (Math.abs(delta) < 0.5) return true;
-
-    const main = document.querySelector('#app .main');
-    const overflowY = main ? getComputedStyle(main).overflowY : '';
-    const mainScrolls = Boolean(
-      main
-      && main.scrollHeight > main.clientHeight + 1
-      && /auto|scroll|overlay/.test(overflowY),
-    );
-
-    if (mainScrolls) main.scrollTop += delta;
-    else window.scrollBy(0, delta);
-    return true;
-  };
-
-  // Feature modules decorate and move editor nodes in MutationObservers after
-  // the core render. Re-check across the next frames so their layout changes do
-  // not move the control the user just operated.
-  queueMicrotask(attempt);
-  requestAnimationFrame(() => {
-    attempt();
-    requestAnimationFrame(attempt);
-  });
+  scheduleScrollAnchorRestore(activeScrollAnchor);
 }
 
 function captureInteractionScrollAnchor(event) {
@@ -254,6 +275,15 @@ function captureInteractionScrollAnchor(event) {
 if (typeof document !== 'undefined') {
   for (const type of ['click', 'change', 'input']) {
     document.addEventListener(type, captureInteractionScrollAnchor, true);
+  }
+
+  const appRoot = document.getElementById('app');
+  if (appRoot && typeof MutationObserver !== 'undefined') {
+    new MutationObserver(() => scheduleScrollAnchorRestore()).observe(appRoot, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+    });
   }
 }
 
@@ -1334,7 +1364,7 @@ function render({ preserveScroll = true } = {}) {
   // Most state changes only alter a control/card. Replacing #app is still the
   // core render model, but it must not behave like navigation: keep the right
   // content pane and the navigation rail exactly where the user left them.
-  const relativeAnchor = preserveScroll ? consumeScrollAnchor() : (pendingScrollAnchor = null);
+  const relativeAnchor = preserveScroll ? currentScrollAnchor() : (clearScrollAnchor(), null);
   const scrollState = preserveScroll ? {
     main: document.querySelector('#app .main')?.scrollTop || 0,
     nav: document.querySelector('#app .sidebar nav')?.scrollTop || 0,
@@ -1379,6 +1409,7 @@ function render({ preserveScroll = true } = {}) {
     if (nav) nav.scrollTop = scrollState.nav;
     window.scrollTo(scrollState.windowX, scrollState.windowY);
     restoreRelativeScrollAnchor(relativeAnchor);
+    scheduleScrollAnchorRestore(relativeAnchor);
   }
 }
 
