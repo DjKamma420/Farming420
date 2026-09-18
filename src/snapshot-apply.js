@@ -32,6 +32,7 @@ const TOOL_ENCHANTS = Object.freeze({
   dedication: 'tool-enchant-dedication',
   cultivating: 'tool-enchant-cultivating-x',
   harvesting: 'tool-enchant-harvesting-vi',
+  efficiency: 'tool-enchant-efficiency-v',
   feast: 'tool-enchant-feast-v',
   replenish: 'tool-enchant-replenish',
   delicate: 'tool-enchant-delicate-v',
