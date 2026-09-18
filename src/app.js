@@ -1221,12 +1221,15 @@ function bind() {
   document.querySelectorAll('[data-step]').forEach(el => el.addEventListener('click', () => {
     const item = UPGRADES.find(x=>x.id===el.dataset.id); if (!item) return;
     const store = itemStore(item);
-    store.levels[item.id] = Math.max(0, Math.min(Number(item.max||1), currentLevel(item)+Number(el.dataset.step)));
-    store.owned[item.id] = store.levels[item.id] > 0;
+    const nextLevel = Math.max(0, Math.min(Number(item.max||1), currentLevel(item)+Number(el.dataset.step)));
+    if (nextLevel > 0) clearExclusivePeers(item);
+    store.levels[item.id] = nextLevel;
+    store.owned[item.id] = nextLevel > 0;
     saveState(); render();
   }));
   document.querySelectorAll('[data-max]').forEach(el => el.addEventListener('click', () => {
     const item = UPGRADES.find(x=>x.id===el.dataset.max); if (!item) return;
+    clearExclusivePeers(item);
     const store = itemStore(item);
     store.levels[item.id]=Number(item.max||1); store.owned[item.id]=true; saveState(); render();
   }));
