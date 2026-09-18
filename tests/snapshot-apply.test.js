@@ -120,6 +120,7 @@ test('tool counters, enchantments, reforge, gem and recomb land on that tool', (
         dedication: 4,
         cultivating: 10,
         harvesting: 6,
+        efficiency: 5,
         turbo_melon: 5,
         feast: 5,
         replenish: 1,
@@ -135,6 +136,7 @@ test('tool counters, enchantments, reforge, gem and recomb land on that tool', (
   assert.equal(tool['tool-enchant-dedication'], 4);
   assert.equal(tool['tool-enchant-cultivating-x'], 10);
   assert.equal(tool['tool-enchant-harvesting-vi'], 6);
+  assert.equal(tool['tool-enchant-efficiency-v'], 5);
   assert.equal(tool['tool-enchant-turbo-crop'], 5);
   assert.equal(tool['tool-enchant-feast-v'], 5);
   assert.equal(tool['tool-enchant-replenish'], 1);
