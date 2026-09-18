@@ -8,13 +8,13 @@ What the app can picture, what it cannot, and why. Kept honest by
 ## The precedence, strongest first
 
 1. **Player-head NBT texture** from the synced item's own tag. The item's real picture.
-2. **`skin`** from Hypixel's official item resource. Also the real picture.
-3. **Verified id-backed player-head model** for current farming equipment whose
+2. **Exact rendered item icon** for verified manual/offline gear ids. This is the
+   same route used for equipment when flat skin cropping is unreliable.
+3. **`skin`** from Hypixel's official item resource.
+4. **Verified id-backed player-head model** for current farming equipment whose
    saved/manual setup record only contains a SkyBlock id.
-4. **Exact pack texture** for the item's own id.
-5. **Set-representative pack texture** — an in-family fallback, mainly for
-   armour and legacy gaps.
-6. **Vanilla material model** — the armour outline in the material's colour.
+5. **Exact pack texture** for the item's own id.
+6. **Vanilla/material fallback.**
 7. **Letter badge.** The last resort, and a coverage failure.
 
 Live NBT and Hypixel metadata always outrank the static id-backed table. That is
@@ -43,6 +43,26 @@ uses the real id.
 Source: `NotEnoughUpdates/NotEnoughUpdates-REPO/items/*.json` and the matching
 `itemsOverlay/4790/*.snbt` entries, checked 2026-09-18.
 
+
+## Exact rendered armor icons
+
+Armor now follows the same solution used for the Pesthunter Necklace: when a
+manual/offline setup only has the exact SkyBlock id, the UI requests the
+corresponding rendered SkyAH icon instead of drawing a generic armor outline or
+substituting a crop/set material. The URL is derived only for the closed
+farming-armor families accepted by the setup catalogue and for the standalone
+farming pieces `RANCHERS_BOOTS`, `FARMER_BOOTS`,
+`ENCHANTED_JACK_O_LANTERN` and `PUFFERFISH_HAT`.
+
+Examples verified on current SkyAH item pages on 2026-09-18 include
+`FARM_SUIT_LEGGINGS`, `FARM_ARMOR_CHESTPLATE`, `MELON_BOOTS` (shown
+in-game as Tater Boots), `CROPIE_HELMET`, `SQUASH_LEGGINGS`,
+`FERMENTO_HELMET`, `HELIANTHUS_CHESTPLATE`, `RANCHERS_BOOTS` and
+`FARMER_BOOTS`.
+
+A failed remote icon still falls back to the existing head/pack/material path,
+so this does not make the setup editor depend on the remote source.
+
 ## Other exact art
 
 | What | Pack key | Count |
@@ -57,9 +77,9 @@ second copy.
 
 ## Set representatives
 
-The shipped pack still has no armour or equipment pieces. It does contain
-representative materials such as Helianthus, Fermento and Lotus flowers, so
-those remain useful below the exact head-model path.
+The shipped pack still has no armour or equipment pieces. Set materials such as
+Helianthus or Fermento are no longer used as the picture of an armor piece when
+an exact rendered armor icon is available. They remain deeper fallbacks only.
 
 The following entries in `SET_ART` are explicitly stand-ins:
 
