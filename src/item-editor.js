@@ -86,6 +86,7 @@ export const ENCHANT_LABELS = Object.freeze({
   pesterminator: 'Pesterminator',
   replenish: 'Replenish',
   sunset: 'Sunset',
+  thorns: 'Thorns',
   turbo_crop: 'Turbo-Crop',
 });
 
