@@ -64,6 +64,15 @@ test('armor uses the item model before any same-set pack stand-in', () => {
   assert.match(source, /armorItemSvgMarkup/);
 });
 
+test('armor and catalog heads prefer exact rendered images with local fallback', () => {
+  const source = readFileSync(new URL('../src/item-art-coverage.js', import.meta.url), 'utf8');
+  assert.match(source, /exactItemRenderUrl/);
+  assert.match(source, /dataset\.itemRenderer = 'skycrypt'/);
+  assert.match(source, /coverage-exact-item-art/);
+  assert.match(source, /image\.replaceWith\(fallback\)/);
+  assert.match(source, /return flatSkullNode\(url, item, label\)/);
+});
+
 test('catalog head art renders both the face and hat layers', () => {
   const source = readFileSync(new URL('../src/item-art-coverage.js', import.meta.url), 'utf8');
   const css = readFileSync(new URL('../src/item-art-coverage.css', import.meta.url), 'utf8');
