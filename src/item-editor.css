@@ -341,30 +341,19 @@
 
 .skull-layer {
   position: absolute;
-  inset: 0;
-  background-repeat: no-repeat;
-  background-size: 800% auto;
+  width: 800%;
+  max-width: none;
+  height: auto;
   image-rendering: pixelated;
-  /* Hidden until the sheet height is known, so a head never flashes as a
-     mis-cropped slice of the whole skin. */
-  opacity: 0;
+  pointer-events: none;
+  user-select: none;
 }
 
-.skull-art.skull-square .skull-layer,
-.skull-art.skull-legacy .skull-layer {
-  opacity: 1;
-}
-
-.skull-square .skull-face { background-position: 14.2857% 14.2857%; }
-.skull-square .skull-hat { background-position: 71.4286% 14.2857%; }
-
-.skull-legacy .skull-face { background-position: 14.2857% 33.3333%; }
-.skull-legacy .skull-hat { background-position: 71.4286% 33.3333%; }
-
-.skull-art .skull-hat {
-  /* The hat is the second layer and is often fully transparent. */
-  z-index: 1;
-}
+/* The skin sheet is always 64 px wide and the wanted head squares are 8 px.
+   Drawing it at 800% therefore makes one source pixel square land exactly in
+   the portrait box. These offsets work for both 64x64 and legacy 64x32 skins. */
+.skull-face { left: -100%; top: -100%; }
+.skull-hat { left: -500%; top: -100%; z-index: 1; }
 
 .slot-portrait.has-official-item-art .item-portrait-fallback,
 .item-portrait.has-official-item-art .item-portrait-fallback {
