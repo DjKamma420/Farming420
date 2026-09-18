@@ -196,7 +196,12 @@
 }
 
 .skyblock-redesign .sb-reforge-panel {
-  padding: 12px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .skyblock-redesign .sb-block-title {
@@ -396,7 +401,7 @@
 .skyblock-redesign .sb-reforge-card {
   position: relative;
   min-height: 58px;
-  padding: 6px 22px 6px 6px;
+  padding: 6px 26px 6px 6px;
   display: grid;
   grid-template-columns: 32px minmax(0,1fr);
   gap: 7px;
@@ -445,7 +450,12 @@
   text-transform: uppercase;
 }
 
-.skyblock-redesign .sb-reforge-card em ~ .sb-state-dot { top: auto; bottom: 7px; transform: none; }
+.skyblock-redesign .sb-reforge-card > .sb-state-dot {
+  right: 6px;
+  top: 50%;
+  bottom: auto;
+  transform: translateY(-50%);
+}
 
 .skyblock-redesign .setup-reforge-field {
   grid-column: 1 / -1;
@@ -717,7 +727,7 @@
    It spans the full row so the cards either side of it stay in their columns. */
 .skyblock-redesign .sb-tool-grid > .sb-docked-editor {
   grid-column: 1 / -1;
-  margin: 2px 0 8px;
+  margin: -7px 0 8px;
   border: 1px solid #4a7a57;
   border-radius: 6px;
   background: linear-gradient(180deg, #16241a, #0d150f);
@@ -730,12 +740,7 @@
 
 /* A hairline pointing back at the card it belongs to. */
 .skyblock-redesign .sb-tool-grid > .sb-docked-editor::before {
-  content: '';
-  display: block;
-  width: 34px;
-  height: 3px;
-  margin: 0 0 -3px 20px;
-  background: var(--sb-green);
+  content: none;
 }
 
 
