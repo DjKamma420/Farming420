@@ -41,8 +41,8 @@ function replaceTopbar(raw) {
 
   const incomplete = stats.incomplete;
   strip.innerHTML = `
-    <div class="computed-stat" title="Automatically calculated from configured Farming Fortune sources">
-      <span>FF</span><strong>${shortValue(stats.globalFortune)}</strong>${incomplete.globalFortune.length ? '<em>~</em>' : ''}
+    <div class="computed-stat" title="Automatically calculated Global Farming Fortune">
+      <span>Global FF</span><strong>${shortValue(stats.globalFortune)}</strong>${incomplete.globalFortune.length ? '<em>~</em>' : ''}
     </div>
     <div class="computed-stat" title="Automatically calculated Overbloom for the current crop/tool/setup">
       <span>OB</span><strong>${shortValue(stats.overbloom)}</strong>${incomplete.overbloom.length ? '<em>~</em>' : ''}

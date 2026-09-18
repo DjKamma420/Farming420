@@ -322,7 +322,7 @@ function shell(content) {
           </select>
         </div>
         <div class="search-wrap"><input id="search" placeholder="Search item, upgrade or effect…" value="${esc(state.search)}" /></div>
-        <div class="fortune-pill"><span>Effective</span><strong>${effectiveFortune().toLocaleString('en-US')} FF</strong></div>
+        <div class="fortune-pill"><span>Global FF</span><strong>${Number(state.profile.globalFortune || 0).toLocaleString('en-US')}</strong></div>
       </header>
       <section class="content">${content}</section>
     </main>
@@ -338,49 +338,33 @@ function dashboard() {
   const mode = activityModeForState(state);
   const selectedCrop = crop();
   const stats = computeStatTotals(state, selectedCrop.id, mode);
-  const fortuneIncomplete = stats.incomplete.globalFortune.length
-    + stats.incomplete.cropFortune.length
-    + stats.incomplete.pestFortune.length;
   const marker = count => count ? ' ~' : '';
   const number = value => Number(value || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
   const cropRows = CROPS.map(entry => {
     const values = computeStatTotals(state, entry.id, mode);
-    const incomplete = values.incomplete.globalFortune.length
-      + values.incomplete.cropFortune.length
-      + values.incomplete.pestFortune.length
+    const totalFortune = values.globalFortune + values.cropFortune;
+    const totalIncomplete = values.incomplete.globalFortune.length
+      + values.incomplete.cropFortune.length;
+    const incomplete = totalIncomplete
       + values.incomplete.overbloom.length
       + values.incomplete.bonusPestChance.length;
     return `
       <article class="stat-card dashboard-crop-result ${entry.id === selectedCrop.id ? 'selected' : ''}">
         <span>${esc(entry.name)}</span>
-        <strong>${number(values.effectiveFortune)} FF${marker(
-          values.incomplete.globalFortune.length
-          + values.incomplete.cropFortune.length
-          + values.incomplete.pestFortune.length
-        )}</strong>
-        <small>Crop FF ${number(values.cropFortune)} · Pest FF ${number(values.pestFortune)}</small>
+        <strong>${number(totalFortune)} FF${marker(totalIncomplete)}</strong>
+        <small>Global FF ${number(values.globalFortune)} · Crop FF ${number(values.cropFortune)}</small>
         <small>Overbloom ${number(values.overbloom)}${marker(values.incomplete.overbloom.length)} · BPC ${number(values.bonusPestChance)}${marker(values.incomplete.bonusPestChance.length)}</small>
-        ${incomplete ? '<small>~ enthält noch nicht vollständig modellierte Quellen</small>' : '<small>vollständig aus bekannten Quellen berechnet</small>'}
+        ${incomplete ? '<small>~ contains sources that are not fully modeled yet</small>' : '<small>fully calculated from known sources</small>'}
       </article>`;
   }).join('');
 
   return `
-    ${pageHeader('Dashboard', 'Calculated Farming Stats', `Read-only result overview · ${activityLabel(mode)} · ${selectedCrop.name}. Configuration stays in the dedicated tabs.`)}
+    ${pageHeader('Dashboard', 'Calculated Farming Stats', `Read-only result overview · ${activityLabel(mode)}. Global values are shown above; crop totals are listed below.`)}
     <div class="card-grid dashboard-results-grid">
-      <article class="stat-card">
-        <span>Effective Farming Fortune</span>
-        <strong>${number(stats.effectiveFortune)}${marker(fortuneIncomplete)}</strong>
-        <small>Global + Crop + Pest Fortune for the active context</small>
-      </article>
       <article class="stat-card">
         <span>Global Farming Fortune</span>
         <strong>${number(stats.globalFortune)}${marker(stats.incomplete.globalFortune.length)}</strong>
-        <small>Account-wide Fortune used by this set</small>
-      </article>
-      <article class="stat-card">
-        <span>${esc(selectedCrop.name)} Crop Fortune</span>
-        <strong>${number(stats.cropFortune)}${marker(stats.incomplete.cropFortune.length)}</strong>
-        <small>Crop- and tool-specific Fortune</small>
+        <small>Account-wide Fortune before crop-specific Fortune is added</small>
       </article>
       <article class="stat-card">
         <span>Pest Fortune</span>
@@ -402,7 +386,7 @@ function dashboard() {
     <div class="section-row">
       <div>
         <h2>All crops</h2>
-        <p>Same calculation model across every crop. The selected crop is highlighted by context in the header.</p>
+        <p>Each crop total is Global Farming Fortune + that crop's own Crop Fortune. The selected crop is highlighted.</p>
       </div>
     </div>
     <div class="card-grid dashboard-crop-results">${cropRows}</div>

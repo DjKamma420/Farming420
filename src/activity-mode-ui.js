@@ -158,16 +158,14 @@ function renderStatsStrip(raw) {
   const mode = activityModeForState(raw);
   const cropId = selectedCropId(raw);
   const stats = computeStatTotals(raw, cropId, mode);
-  const unresolvedFortune = stats.incomplete.globalFortune.length
-    + stats.incomplete.cropFortune.length
-    + stats.incomplete.pestFortune.length;
+  const unresolvedGlobalFortune = stats.incomplete.globalFortune.length;
   const signature = [
     mode,
-    stats.effectiveFortune,
+    stats.globalFortune,
     stats.pestFortune,
     stats.overbloom,
     stats.bonusPestChance,
-    unresolvedFortune,
+    unresolvedGlobalFortune,
     stats.incomplete.overbloom.length,
     stats.incomplete.bonusPestChance.length,
   ].join(':');
@@ -175,8 +173,8 @@ function renderStatsStrip(raw) {
   strip.dataset.activityStats = signature;
 
   strip.innerHTML = `
-    <div class="computed-stat" title="Fortune from the active ${esc(activityLabel(mode))}">
-      <span>${mode === ACTIVITY_MODE.PEST ? 'Pest FF' : 'Farm FF'}</span><strong>${Number(stats.effectiveFortune || 0).toLocaleString('en-US')}</strong>${unresolvedFortune ? '<em>~</em>' : ''}
+    <div class="computed-stat" title="Global Farming Fortune for the active ${esc(activityLabel(mode))}">
+      <span>Global FF</span><strong>${Number(stats.globalFortune || 0).toLocaleString('en-US')}</strong>${unresolvedGlobalFortune ? '<em>~</em>' : ''}
     </div>
     ${mode === ACTIVITY_MODE.PEST ? `<div class="computed-stat" title="Farming Fortune that applies to Pest/Vacuum drops only. It is separate from normal crop Fortune.">
       <span>Pest Drop FF</span><strong>${Number(stats.pestFortune || 0).toLocaleString('en-US')}</strong>${stats.incomplete.pestFortune.length ? '<em>~</em>' : ''}
