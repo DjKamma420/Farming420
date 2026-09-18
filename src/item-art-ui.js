@@ -198,6 +198,10 @@ async function apply() {
   if (applying) return;
   applying = true;
   try {
+    // Heads are independent of the Hypixel resource-pack manifest. Render them
+    // immediately so a slow/missing manifest can never leave a setup portrait
+    // blank. Once the manifest arrives, run a second pass for non-head items.
+    renderSetupItemArt({ manifestValue: manifest });
     const loaded = await ensureManifest();
     renderSetupItemArt({ manifestValue: loaded });
   } finally {
