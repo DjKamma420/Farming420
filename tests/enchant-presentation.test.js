@@ -23,14 +23,15 @@ test('verified farming enchant maxima are explicit sourced enchant mechanics', (
     replenish: 1,
     turbo_crop: 7,
     pesterminator: 6,
+    thorns: 4,
     green_thumb: 5,
     crop_fever: 5,
     sunset: 5,
   };
   assert.deepEqual(VERIFIED_FARMING_ENCHANT_MAX, expected);
   for (const meta of Object.values(VERIFIED_FARMING_ENCHANT_META)) {
-    assert.match(meta.source, /^https:\/\/hypixelskyblock\.minecraft\.wiki\//);
-    assert.equal(meta.lastVerified, '2026-09-16');
+    assert.match(meta.source, /^https:\/\/(hypixelskyblock\.minecraft\.wiki|hypixel\.net)\//);
+    assert.equal(meta.lastVerified, '2026-09-18');
     assert.ok(meta.appliesTo.length > 0);
   }
 });
@@ -75,6 +76,13 @@ test('Pesterminator stays item-local and uses enchant level VI', () => {
   });
   assert.equal(enchantPresentation('pesterminator', 1).state, 'active');
   assert.deepEqual(enchantMetadata('pesterminator').appliesTo, ['armor']);
+});
+
+test('Thorns IV is the normal max while the event Pufferfish Hat can preserve Thorns V', () => {
+  assert.equal(enchantPresentation('thorns', 4).state, 'maxed');
+  assert.deepEqual(enchantPresentation('thorns', 5), {
+    id: 'thorns', level: 5, maxLevel: 4, state: 'maxed',
+  });
 });
 
 test('non-max verified enchantments remain active instead of rainbow', () => {
