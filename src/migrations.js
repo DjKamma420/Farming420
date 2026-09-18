@@ -1,5 +1,5 @@
 import { CROPS, UPGRADES } from './data.js';
-import { createDefaultSetups, normalizeSetups } from './setups.js';
+import { createDefaultSetups, createSetup, normalizeSetups } from './setups.js';
 import { DATA_SCHEMA_VERSION } from './config.js';
 
 const PROGRESS_FIELDS = ['levels', 'owned', 'costs', 'manualGain'];
@@ -178,6 +178,39 @@ function removeAccessoryEnrichmentState(state) {
   }
 }
 
+/**
+ * Schema 7 -> 8
+ *
+ * Pest play now has two mechanically different gear phases: spawning and
+ * killing. The legacy `pest` setup is kept as the spawning setup so existing
+ * entered gear is preserved. A new killing setup is added empty. Custom/old
+ * setups (including Jacob Contest) are retained as data, but the activity UI
+ * exposes only the three calculation loadouts.
+ */
+function migrateThreeActivitySetups(state) {
+  const profile = state.profile ||= {};
+  const setups = normalizeSetups(profile.setups);
+
+  const farm = setups.list.find(setup => setup.id === 'normal');
+  if (farm?.name === 'Normal Farming') farm.name = 'Farming';
+
+  const spawn = setups.list.find(setup => setup.id === 'pest');
+  if (spawn?.name === 'Pest Farming') spawn.name = 'Pest Spawning';
+
+  if (!setups.list.some(setup => setup.id === 'normal')) {
+    setups.list.unshift(createSetup('normal', 'Farming'));
+  }
+  if (!setups.list.some(setup => setup.id === 'pest')) {
+    setups.list.push(createSetup('pest', 'Pest Spawning'));
+  }
+  if (!setups.list.some(setup => setup.id === 'pest-kill')) {
+    setups.list.push(createSetup('pest-kill', 'Pest Killing'));
+  }
+
+  if (!['normal', 'pest', 'pest-kill'].includes(setups.activeId)) setups.activeId = 'normal';
+  profile.setups = setups;
+}
+
 const MIGRATIONS = [
   {
     to: 2,
@@ -208,6 +241,11 @@ const MIGRATIONS = [
     to: 7,
     description: 'Remove obsolete accessory Enrichment state while keeping Recombobulators.',
     run: removeAccessoryEnrichmentState,
+  },
+  {
+    to: 8,
+    description: 'Split Pest Farming into separate spawning and killing loadouts.',
+    run: migrateThreeActivitySetups,
   },
 ];
 
