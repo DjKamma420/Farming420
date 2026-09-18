@@ -13,7 +13,7 @@ import { parseSkyBlockTooltip, recognizeSkyBlockTooltip } from './tooltip-scanne
  */
 const GROUPS = [
   ['Progress', ['dashboard', 'account', 'crops', 'tools']],
-  ['Loadout', ['setups', 'gear', 'pets', 'buffs']],
+  ['Loadout', ['setups', 'gear', 'accessories', 'pets', 'buffs']],
   ['Specialized', ['chips', 'shards', 'pests']],
   ['Analysis', ['planner', 'research', 'coming']],
   ['Getting started', ['guide', 'setup']],
