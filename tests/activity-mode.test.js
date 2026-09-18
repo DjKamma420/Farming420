@@ -46,10 +46,10 @@ test('activity mode follows farming, spawning, and killing setup ids', () => {
   assert.equal(activityModeForState({ profile: { setups: { activeId: 'pest-kill' } } }), ACTIVITY_MODE.PEST_KILL);
 });
 
-test('the legacy pest activity token remains a spawning alias', () => {
+test('the legacy pest mode token keeps old Vacuum/killing semantics', () => {
   const state = baseState();
-  assert.equal(setActivityModeOnState(state, 'pest'), ACTIVITY_MODE.PEST_SPAWN);
-  assert.equal(state.profile.setups.activeId, 'pest');
+  assert.equal(setActivityModeOnState(state, 'pest'), ACTIVITY_MODE.PEST_KILL);
+  assert.equal(state.profile.setups.activeId, 'pest-kill');
 });
 
 test('changing activity mode selects one of the three phase setups without deleting saved custom setups', () => {
