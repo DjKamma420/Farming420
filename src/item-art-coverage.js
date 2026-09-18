@@ -242,6 +242,18 @@ function decorateProgressionCards(catalog) {
   });
 }
 
+function decorateDrawer(catalog, rawState) {
+  const drawer = document.querySelector('.drawer');
+  if (!drawer) return;
+  const entry = UPGRADES.find(item => item.id === rawState?.drawer);
+  const record = catalogItemForUpgrade(catalog, entry);
+  if (record) {
+    if (drawer.dataset.physicalItemId !== record.id) drawer.dataset.physicalItemId = record.id;
+  } else {
+    delete drawer.dataset.physicalItemId;
+  }
+}
+
 function decorateReforges(catalog) {
   document.querySelectorAll('.sb-reforge-card[data-sb-reforge]').forEach(card => {
     const reforgeId = card.dataset.sbReforge;
@@ -315,6 +327,7 @@ export async function applyItemArtCoverage(root = document, rawState = readState
     if (!items.length) return 0;
     decorateSetupItems(items, rawState);
     decorateProgressionCards(items);
+    decorateDrawer(items, rawState);
     decorateReforges(items);
     decorateToolProgression(items);
     return items.length;
@@ -340,8 +353,8 @@ function boot() {
       const relevant = mutations.some(mutation => [...mutation.addedNodes].some(node =>
         node instanceof Element
         && !node.matches?.('.coverage-item-art')
-        && (node.matches?.('.item-card, .slot-portrait, [data-item-art-slot], .sb-reforge-card, .workspace-level-row')
-          || node.querySelector?.('.item-card, .slot-portrait, [data-item-art-slot], .sb-reforge-card, .workspace-level-row'))));
+        && (node.matches?.('.item-card, .drawer, .slot-portrait, [data-item-art-slot], .sb-reforge-card, .workspace-level-row')
+          || node.querySelector?.('.item-card, .drawer, .slot-portrait, [data-item-art-slot], .sb-reforge-card, .workspace-level-row'))));
       if (relevant) queueApply();
     }).observe(root, { childList: true, subtree: true });
   }
