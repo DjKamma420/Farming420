@@ -1232,6 +1232,7 @@ function bind() {
   }));
   document.querySelectorAll('[data-owned]').forEach(el => el.addEventListener('change', e => {
     const item = UPGRADES.find(x=>x.id===e.target.dataset.owned); if (!item) return;
+    if (e.target.checked) clearExclusivePeers(item);
     const store = itemStore(item);
     store.owned[item.id]=e.target.checked;
     store.levels[item.id]=e.target.checked?1:0; saveState(); render();
