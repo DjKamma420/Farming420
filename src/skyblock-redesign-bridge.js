@@ -1,7 +1,6 @@
 import { STORAGE_KEY } from './config.js';
 import { toolKeyForCropId } from './migrations.js';
 
-const GOAL_KEY = 'farming420-reforge-goal-v1';
 const REFORGE_ENTRY = Object.freeze({
   bountiful: 'tool-reforge-bountiful-reforge',
   blessed: 'tool-reforge-blessed-reforge',
@@ -48,13 +47,4 @@ document.addEventListener('click', event => {
   const reforge = event.target.closest?.('[data-sb-reforge]');
   if (reforge) selectReforge(reforge.dataset.sbReforge);
 
-  const goal = event.target.closest?.('[data-sb-goal]');
-  if (!goal) return;
-  event.preventDefault();
-  event.stopImmediatePropagation();
-  localStorage.setItem(GOAL_KEY, goal.dataset.sbGoal);
-  // Re-render the current page cleanly. This preserves the original native
-  // Reforge section for future goal changes instead of progressively replacing
-  // later tool sections.
-  document.querySelector('.nav-link[data-page="tools"]')?.click();
 }, true);
