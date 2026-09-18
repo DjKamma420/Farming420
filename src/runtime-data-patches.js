@@ -51,6 +51,50 @@ patchEntry('equipment-reforge-rooted-on-full-equipment', {
   notes: 'Rooted is item-local. Farming Fortune scales with each equipped equipment piece rarity: +6/+9/+12/+15/+18/+21 from Common through Mythic. Farming420 sums the actual equipped pieces.',
 });
 
+patchEntry('equipment-reforge-thorny-on-full-mythic-equipment-ff', {
+  name: 'Thorny on equipped equipment - Farming Fortune',
+  status: 'ACTIVE',
+  max: 4,
+  stepGain: 0,
+  rawMarginal: 0,
+  source: 'https://hypixel.net/threads/list-of-item-in-skyblock-update-1-81.6151548/',
+  lastVerified: '2026-09-18',
+  notes: 'Thorny is item-local. Farming Fortune scales per equipped piece: +2/+4/+6/+8/+10/+12 from Common through Mythic. Farming420 sums the actual equipped Thorny pieces.',
+});
+
+patchEntry('equipment-reforge-thorny-on-full-mythic-equipment-overbloom', {
+  name: 'Thorny on equipped equipment - base Overbloom',
+  status: 'ACTIVE',
+  max: 4,
+  stepGain: 0,
+  rawMarginal: 0,
+  source: 'https://hypixel.net/threads/list-of-item-in-skyblock-update-1-81.6151548/',
+  lastVerified: '2026-09-18',
+  notes: 'Thorny base Overbloom scales per equipped piece: +0.25/+0.5/+0.75/+1/+1.25/+1.5 from Common through Mythic. The separate armor-Thorns bonus is modeled independently.',
+});
+
+export const THORNY_ARMOR_BONUS_ENTRY = Object.freeze({
+  id: 'equipment-reforge-thorny-thorns-overbloom',
+  category: 'Equipment Reforge',
+  section: 'gear',
+  name: 'Thorny armor-Thorns Overbloom bonus',
+  metric: 'Rare Crops',
+  modeScope: 'Any',
+  cropScope: 'Any',
+  status: 'ACTIVE',
+  max: 1,
+  stepGain: 0,
+  manualDefault: null,
+  rawMarginal: 0,
+  hypercharge: false,
+  notes: 'Each equipped Thorny equipment piece adds +0.1 Overbloom for every Thorns tier across worn armor. Farming420 derives the total from the active equipment and armor setup.',
+  source: 'https://hypixel.net/threads/list-of-item-in-skyblock-update-1-81.6151548/',
+  lastVerified: '2026-09-18',
+  workbookRank: null,
+});
+
+upsertEntry(THORNY_ARMOR_BONUS_ENTRY);
+
 patchEntry('equipment-enchant-green-thumb-v-on-equipment', {
   name: 'Green Thumb on equipment',
   status: 'ACTIVE',
