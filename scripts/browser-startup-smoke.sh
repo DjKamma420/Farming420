@@ -84,8 +84,8 @@ if ! grep -q 'class="app-shell"' "$DASHBOARD_DOM"; then
   exit 1
 fi
 
-if ! grep -q 'Your Farming Progress' "$DASHBOARD_DOM"; then
-  echo "The app shell rendered, but the default Dashboard content is missing" >&2
+if ! grep -q 'Calculated Farming Stats' "$DASHBOARD_DOM"; then
+  echo "The app shell rendered, but the current results-only Dashboard content is missing" >&2
   sed -n '1,160p' "$DASHBOARD_DOM" >&2 || true
   exit 1
 fi
