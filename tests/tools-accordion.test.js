@@ -67,14 +67,29 @@ test('tool cards and shared item editors stay compact', () => {
 });
 
 
-test('tools page removes the three redundant surfaces from the annotated mobile view', () => {
+test('tools page keeps redundant copy hidden while the active tool remains tappable', () => {
   const src = read('skyblock-redesign.js');
   const css = read('skyblock-redesign.css').replace(/\/\*[\s\S]*?\*\//g, '');
   assert.match(src, /content\.classList\.add\('sb-tools-page'\)/);
   assert.match(css, /\.sb-tools-page > \.page-head \{[^}]*display:\s*none/);
-  assert.match(css, /\.sb-tools-page \.sb-tool-card\.selected \{[^}]*display:\s*none/);
+  assert.doesNotMatch(css, /\.sb-tools-page \.sb-tool-card\.selected \{[^}]*display:\s*none/);
   assert.doesNotMatch(
     src,
     /Every current Farming Tool reforge stays selectable\. The recommendation changes by goal instead of hiding non-meta choices\./,
   );
+});
+
+test('tapping the active tool toggles its docked editor closed and open', () => {
+  const src = read('skyblock-redesign.js');
+  const css = read('skyblock-redesign.css').replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.match(src, /let collapsedToolKey = null/);
+  assert.match(
+    src,
+    /if \(clickedKey === selectedKey\) \{[\s\S]*collapsedToolKey = collapsedToolKey === selectedKey \? null : selectedKey;[\s\S]*dockToolEditor\(\);/,
+  );
+  assert.match(
+    css,
+    /\.sb-tool-grid > \.sb-docked-editor\.sb-tool-editor-collapsed \{[^}]*display:\s*none/,
+  );
+  assert.match(src, /getAttribute\('aria-expanded'\) !== nextValue/);
 });
