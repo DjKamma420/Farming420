@@ -17,12 +17,14 @@ test('verified farming enchant maxima are explicit sourced enchant mechanics', (
     bug_blender: 5,
     cultivating: 10,
     dedication: 4,
+    efficiency: 5,
     delicate: 5,
     feast: 5,
     harvesting: 6,
     replenish: 1,
     turbo_crop: 7,
     pesterminator: 6,
+    thorns: 4,
     green_thumb: 5,
     crop_fever: 5,
     sunset: 5,
@@ -30,7 +32,7 @@ test('verified farming enchant maxima are explicit sourced enchant mechanics', (
   assert.deepEqual(VERIFIED_FARMING_ENCHANT_MAX, expected);
   for (const meta of Object.values(VERIFIED_FARMING_ENCHANT_META)) {
     assert.match(meta.source, /^https:\/\/hypixelskyblock\.minecraft\.wiki\//);
-    assert.equal(meta.lastVerified, '2026-09-16');
+    assert.equal(meta.lastVerified, '2026-09-18');
     assert.ok(meta.appliesTo.length > 0);
   }
 });
@@ -67,6 +69,16 @@ test('only one verified farming ultimate enchant may exist on one item', () => {
   assert.deepEqual(ultimateEnchantConflict({ ultimate_crop_fever: 5, ultimate_sunset: 1 }), {
     group: 'ultimate-enchantment', enchantments: ['crop_fever', 'sunset'],
   });
+});
+
+test('compatibility and niche-strategy metadata stay explicit', () => {
+  assert.deepEqual(enchantMetadata('thorns').appliesTo, ['armor']);
+  assert.equal(enchantMetadata('thorns').maxLevel, 4);
+  assert.equal(enchantMetadata('thorns').strategy, 'secret');
+  assert.equal(enchantMetadata('delicate').minLevel, 5);
+  assert.equal(enchantMetadata('efficiency').strategy, 'utility');
+  assert.deepEqual(enchantMetadata('bug_blender').appliesTo, ['vacuum']);
+  assert.deepEqual(enchantMetadata('green_thumb').appliesTo, ['equipment']);
 });
 
 test('Pesterminator stays item-local and uses enchant level VI', () => {
