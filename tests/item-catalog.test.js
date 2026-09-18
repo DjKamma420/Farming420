@@ -84,6 +84,21 @@ test('a slot offers only the items in its own categories', () => {
   assert.deepEqual(itemsForSlot(items, 'equipment4').map(item => item.id), ['LOTUS_BRACELET']);
 });
 
+test('current Pesthunter and Zorro ids stay selectable in their equipment slots', () => {
+  const catalog = [
+    { id: 'PESTHUNTERS_NECKLACE', name: "Pesthunter's Necklace", category: 'NECKLACE' },
+    { id: 'PESTHUNTERS_CLOAK', name: "Pesthunter's Cloak", category: 'CLOAK' },
+    { id: 'PESTHUNTERS_BELT', name: "Pesthunter's Belt", category: 'BELT' },
+    { id: 'PESTHUNTERS_GLOVES', name: "Pesthunter's Gloves", category: 'GLOVES' },
+    { id: 'PEST_VEST', name: 'Pest Vest', category: 'CLOAK' },
+    { id: 'ZORROS_CAPE', name: "Zorro's Cape", category: 'CLOAK' },
+  ];
+  assert.deepEqual(itemsForSlot(catalog, 'equipment1').map(item => item.id), ['PESTHUNTERS_NECKLACE']);
+  assert.deepEqual(itemsForSlot(catalog, 'equipment2').map(item => item.id).sort(), ['PESTHUNTERS_CLOAK', 'PEST_VEST', 'ZORROS_CAPE']);
+  assert.deepEqual(itemsForSlot(catalog, 'equipment3').map(item => item.id), ['PESTHUNTERS_BELT']);
+  assert.deepEqual(itemsForSlot(catalog, 'equipment4').map(item => item.id), ['PESTHUNTERS_GLOVES']);
+});
+
 test('a slot with no official category falls back to free text', () => {
   assert.equal(slotHasOfficialCategory('helmet'), true);
   assert.equal(slotHasOfficialCategory('pet'), false);
