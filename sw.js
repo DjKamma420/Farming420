@@ -1,5 +1,11 @@
-const VERSION = 'farming420-disable-sw-2026-09-16';
-
+// Legacy cleanup worker.
+//
+// Farming420 updates no longer depend on a manually bumped service-worker cache
+// version. Deployments are identified by the Git commit in deploy-version.json,
+// and src/update-manager.js retires stale workers/caches from the page as well.
+//
+// Keep this worker available so browsers that still have the old cache-first
+// worker registered can replace it once, delete its caches, and unregister.
 self.addEventListener('install', event => {
   event.waitUntil(self.skipWaiting());
 });
@@ -14,5 +20,5 @@ self.addEventListener('activate', event => {
   })());
 });
 
-// Intentionally no fetch handler. This worker exists only to remove the old
-// cache-first Farming420 PWA worker and its stale runtime caches.
+// Intentionally no fetch handler. A service worker must not pin application
+// files to a manually maintained cache generation again.

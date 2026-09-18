@@ -72,7 +72,8 @@ Use `DjKamma420/StundenplanNothing` as a structural quality reference, not as a 
 - clear top-level navigation and compact settings hub
 - local-first storage with explicit backup and restore
 - schema/version-aware migrations
-- offline service worker with coherent cache versioning
+- deployment identity derived automatically from immutable commit/build metadata; ordinary changes must never require a manually edited service-worker/cache version
+- if offline service-worker caching is reintroduced, cache generations must be coherent and automatically tied to deployment identity
 - update safety: never mix old and new application files
 - installable PWA behavior
 - mobile-first responsive design
