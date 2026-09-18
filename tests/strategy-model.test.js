@@ -60,6 +60,27 @@ test('contest strategy requires explicit contest score instead of converting pro
   assert.equal(complete.objectiveValue, 123_456);
 });
 
+test('absent explicit strategy metrics never become measured zero', () => {
+  const cases = [
+    [STRATEGY_OBJECTIVE.CONTEST_SCORE, 'contestScore'],
+    [STRATEGY_OBJECTIVE.FARMING_XP_PER_HOUR, 'farmingXpPerHour'],
+    [STRATEGY_OBJECTIVE.TOOL_XP_PER_HOUR, 'toolXpPerHour'],
+    [STRATEGY_OBJECTIVE.PROGRESSION_PER_HOUR, 'progressionPerHour'],
+  ];
+
+  for (const [objective, metric] of cases) {
+    for (const absent of [null, undefined, '']) {
+      const scenario = evaluateStrategyScenario({ objective, metrics: { [metric]: absent } });
+      assert.equal(scenario.complete, false, `${metric}=${String(absent)} must remain unknown`);
+      assert.equal(scenario.objectiveValue, null);
+    }
+
+    const measuredZero = evaluateStrategyScenario({ objective, metrics: { [metric]: 0 } });
+    assert.equal(measuredZero.complete, true, `${metric}=0 is an explicit measurement`);
+    assert.equal(measuredZero.objectiveValue, 0);
+  }
+});
+
 test('pet cardinality violations invalidate impossible simultaneous strategy state', () => {
   const scenario = evaluateStrategyScenario({
     context: STRATEGY_CONTEXT.NORMAL_CROP,

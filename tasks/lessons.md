@@ -660,3 +660,21 @@ one of them wrong.
 Rule: a numeric guard must reject absence before it coerces. And when two
 modules in the same repo do the same check, diff them -- the correct one is
 already written.
+
+
+## Fix the pattern, then audit its siblings (0.39.1)
+
+The 0.39.0 contest bug was not unique to the contest model. Its exact failure
+shape -- `Number(null) === 0` -- still existed in the generic strategy
+metric reader, where it could turn a missing objective into a complete
+zero-valued strategy.
+
+The useful follow-up was not a blind replacement of every `Number()` call.
+Some modules intentionally normalize optional economic inputs to zero, while
+others require explicit values. The audit checked the semantic boundary:
+Profit, Greenhouse and Mooshroom Cow already reject absence where unknown would
+change correctness; the strategy objective reader did not.
+
+Rule: after fixing a coercion bug, search for the coercion pattern repo-wide,
+but change only helpers whose contract says absence is unknown. Preserve a
+literal zero when zero is a valid explicit measurement.

@@ -76,6 +76,10 @@ export function strategyViolations(strategy = {}) {
 }
 
 function finite(value) {
+  // Strategy metrics are explicit measured/verified inputs. JavaScript coerces
+  // null and an empty string to 0, which would turn an unknown objective into
+  // a complete zero-valued strategy and make it eligible for ranking.
+  if (value === null || value === undefined || value === '') return null;
   const number = Number(value);
   return Number.isFinite(number) ? number : null;
 }
