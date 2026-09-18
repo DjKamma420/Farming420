@@ -923,15 +923,7 @@ function slotEditor(slotId) {
   const filled = Boolean(item.displayName);
 
   return `<div class="item-editor ${esc(rarityClass(item.rarity))}" data-item-editor="${esc(slotId)}">
-    <header class="item-editor-head">
-      <div class="item-portrait" data-item-art-slot="${esc(slotId)}">
-        <span class="item-portrait-fallback" aria-hidden="true">${esc(slot.label.slice(0, 2).toUpperCase())}</span>
-      </div>
-      <div class="item-identity">
-        <div class="eyebrow">${esc(slot.group)} · ${esc(slot.label)}</div>
-        <strong class="item-title">${esc(item.displayName || 'Choose an item')}</strong>
-        <span class="item-rarity">${esc(item.rarity || 'rarity unknown')}${item.source === ITEM_SOURCE.SYNC ? ' · synced' : ''}</span>
-      </div>
+    <header class="item-editor-head item-editor-actions">
       <button class="ghost small" data-slot-clear="${esc(slotId)}" ${filled ? '' : 'disabled'}>Clear slot</button>
     </header>
 
