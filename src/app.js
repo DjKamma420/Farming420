@@ -1293,7 +1293,7 @@ function bind() {
     state.profile.enrichmentSpeedOverride = raw === '' ? null : Math.max(0, Number(raw) || 0);
     saveState();
     render();
-  }));
+  });
 
   document.querySelectorAll('[data-accessory-recomb]').forEach(el => el.addEventListener('change', event => {
     const accessory = farmingAccessoryByItemId(event.target.dataset.accessoryRecomb);
