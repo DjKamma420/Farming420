@@ -52,14 +52,14 @@ test('every Recombobulator selector gets the same physical item visual aid', () 
   const css = readFileSync(new URL('../src/item-art-coverage.css', import.meta.url), 'utf8');
 
   assert.equal(RECOMBOBULATOR_ITEM_ID, 'RECOMBOBULATOR_3000');
-  assert.match(source, /\\[data-accessory-recomb\\]/);
-  assert.match(source, /\\[data-slot-recomb\\]/);
-  assert.match(source, /\\[data-vacuum-recomb\\]/);
-  assert.match(source, /\\[data-tool-recomb\\]/);
+  assert.match(source, /\[data-accessory-recomb\]/);
+  assert.match(source, /\[data-slot-recomb\]/);
+  assert.match(source, /\[data-vacuum-recomb\]/);
+  assert.match(source, /\[data-tool-recomb\]/);
   assert.match(source, /function decorateRecombobulatorControls/);
-  assert.match(source, /decorateRecombobulatorControls\\(items\\)/);
-  assert.match(css, /\\.recombobulator-choice-copy[\\s\\S]*?padding-left:\\s*52px/);
-  assert.match(css, /\\.recombobulator-choice-copy > \\.coverage-item-art[\\s\\S]*?width:\\s*40px/);
+  assert.match(source, /decorateRecombobulatorControls\(items\)/);
+  assert.match(css, /\.recombobulator-choice-copy[\s\S]*?padding-left:\s*52px/);
+  assert.match(css, /\.recombobulator-choice-copy > \.coverage-item-art[\s\S]*?width:\s*40px/);
 });
 
 test('known accessory and equipment ids get exact art while live Hypixel skin still wins', () => {
