@@ -321,6 +321,8 @@ function shell(content) {
         </div>
         <div class="search-wrap"><input id="search" placeholder="Search item, upgrade or effect…" value="${esc(state.search)}" /></div>
         <div class="fortune-pill"><span>Effective</span><strong>${effectiveFortune().toLocaleString('en-US')} FF</strong></div>
+        <button class="settings-entry" type="button" data-force-reload aria-label="Reload latest app version"><span aria-hidden="true">↻</span><span class="settings-entry-label">Reload</span></button>
+        <button class="settings-entry" type="button" data-open-settings aria-label="Open settings"><span aria-hidden="true">⚙</span><span class="settings-entry-label">Settings</span></button>
       </header>
       <section class="content">${content}</section>
     </main>
