@@ -24,6 +24,11 @@ export const VERIFIED_FARMING_ENCHANT_META = Object.freeze({
   bug_blender: meta(5, ['vacuum'], { source: 'https://hypixelskyblock.minecraft.wiki/w/Bug_Blender' }),
   cultivating: meta(10, ['farming-tool'], { source: 'https://hypixelskyblock.minecraft.wiki/w/Cultivating' }),
   dedication: meta(4, ['farming-tool'], { source: 'https://hypixelskyblock.minecraft.wiki/w/Dedication' }),
+  efficiency: meta(5, ['farming-tool'], {
+    strategy: 'utility',
+    note: 'Universal Tool enchant. Farming Tools cap at Efficiency V; this is break-speed utility, not Farming Fortune.',
+    source: 'https://hypixelskyblock.minecraft.wiki/w/Efficiency',
+  }),
   delicate: meta(5, ['farming-tool'], {
     minLevel: 5,
     strategy: 'contextual',
