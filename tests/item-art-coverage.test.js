@@ -18,6 +18,7 @@ const catalog = [
   { id: 'BOOSTER_COOKIE', name: 'Booster Cookie', material: 'COOKIE', skin: null },
   { id: 'MOSQUITO_SHARD', name: 'Mosquito Shard', material: 'SKULL_ITEM', skin: 'd'.repeat(64) },
   { id: 'FERMENTO_ARTIFACT', name: 'Fermento Artifact', material: 'SKULL_ITEM', skin: 'e'.repeat(64) },
+  { id: 'POWER_RELIC', name: 'Relic of Power', material: 'SKULL_ITEM', skin: '1'.repeat(64) },
 ];
 
 test('official item ids resolve exactly and never through substring collisions', () => {
@@ -92,6 +93,24 @@ test('physical progression cards resolve exact names and deliberate suffix strip
     category: 'Accessory',
   });
   assert.equal(fermento?.id, 'FERMENTO_ARTIFACT');
+});
+
+test('explicit physical item ids override display wording for accessory art', () => {
+  const relic = catalogItemForUpgrade(catalog, {
+    id: 'accessory-relic-of-power-perfect-peridot-effect',
+    physicalItemId: 'POWER_RELIC',
+    name: 'Relic of Power + Perfect Peridot effect',
+    category: 'Accessory',
+  });
+  assert.equal(relic?.id, 'POWER_RELIC');
+});
+
+test('accessory catalog cards are decorated by exact item id', () => {
+  const source = readFileSync(new URL('../src/item-art-coverage.js', import.meta.url), 'utf8');
+  assert.match(source, /function decorateAccessoryCatalog/);
+  assert.match(source, /dataset\.accessoryItemId/);
+  assert.match(source, /catalogItemById\(catalog, itemId\)/);
+  assert.match(source, /decorateAccessoryCatalog\(items\)/);
 });
 
 test('abstract stat cards do not steal vaguely similar item art', () => {
