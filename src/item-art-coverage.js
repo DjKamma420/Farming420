@@ -3,6 +3,7 @@ import { UPGRADES } from './data.js';
 import { itemForSetupSlot } from './item-art-ui.js';
 import { loadItemCatalog } from './item-catalog.js';
 import { packArtNodeFor } from './pack-item-art.js';
+import { knownSkyblockHeadTexture } from './skull-art.js';
 
 export const REFORGE_ITEM_IDS = Object.freeze({
   bountiful: 'GOLDEN_BALL',
@@ -58,7 +59,9 @@ export function catalogItemById(catalog, skyblockId) {
 }
 
 export function skinTextureUrl(item) {
-  const hash = String(item?.skin || '').trim().toLowerCase();
+  // Live Hypixel metadata wins. The id-based table only fills the manual/offline
+  // gap where a setup knows the exact item id but carries no skin field.
+  const hash = String(item?.skin || knownSkyblockHeadTexture(item?.id) || '').trim().toLowerCase();
   return /^[0-9a-f]{32,128}$/.test(hash)
     ? `https://textures.minecraft.net/texture/${hash}`
     : null;
