@@ -65,13 +65,13 @@ test('collapsed rail reserves only the handle while the open rail overlays conte
 
   assert.match(mobile, /@media \(max-width:\s*650px\)[\s\S]*\.sidebar\.sb-rail \{[^}]*width:\s*40px/);
   assert.match(mobile, /@media \(max-width:\s*650px\)[\s\S]*\.main \{[^}]*margin-left:\s*40px/);
-  assert.match(mobile, /\.sidebar\.sb-rail\.nav-open \{[^}]*width:\s*min\(158px,\s*calc\(100vw - 14px\)\)/);
+  assert.match(mobile, /\.sidebar\.sb-rail\.nav-open \{[^}]*width:\s*min\(138px,\s*calc\(100vw - 14px\)\)/);
 });
 
 test('navigation CSS is cache-busted in the page shell', () => {
   const index = read('index.html');
   assert.match(index, /src\/skyblock-redesign\.css\?v=20260918-5/);
-  assert.match(index, /src\/mobile-taskbar\.css\?v=20260918-5/);
+  assert.match(index, /src\/mobile-taskbar\.css\?v=20260918-6/);
 });
 
 test('the setup page keeps its own direct navigation entry', () => {
