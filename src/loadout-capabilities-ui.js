@@ -157,7 +157,7 @@ function writeVacuumReforge(reforgeId) {
   const bucket = ensureVacuumBucket(raw);
   applyVacuumReforge(bucket, reforgeId || null);
   save(raw);
-  window.location.reload();
+  window.dispatchEvent(new Event('farming420:state-changed'));
 }
 
 function renderVacuumSurface(raw) {
@@ -174,7 +174,7 @@ function renderVacuumSurface(raw) {
   const title = content.querySelector('.page-head h1');
   const description = content.querySelector('.page-head p');
   if (title && title.textContent !== 'Vacuum') title.textContent = 'Vacuum';
-  if (description && description.textContent !== 'Pest Killing Set uses the Vacuum layer instead of the crop farming tool.') {
+  if (description && description.textContent !== 'Pest Set uses the Vacuum layer instead of the crop farming tool.') {
     description.textContent = 'Pest Set uses the Vacuum layer instead of the crop farming tool.';
   }
 
@@ -200,16 +200,25 @@ function renderVacuumSurface(raw) {
   panel.innerHTML = `
     <header class="item-editor-head">
       <div class="item-portrait"><span class="item-portrait-fallback">VA</span></div>
-      <div class="item-identity"><div class="eyebrow">Pest Killing Set</div><strong class="item-title">Vacuum</strong><span class="item-rarity">Used instead of the farming tool</span></div>
+      <div class="item-identity"><div class="eyebrow">Pest Set</div><strong class="item-title">Vacuum</strong><span class="item-rarity">Used instead of the farming tool</span></div>
     </header>
     <section class="item-editor-section">
       <div class="section-row"><div><h3>Vacuum reforge</h3><p>A Vacuum can have exactly one reforge. Beady gives Pest-only Farming Fortune; Buzzing is the damage reforge.</p></div></div>
-      <div class="workspace-choice-list">
-        ${FARMING_REFORGES_BY_FAMILY.vacuum.map(option => `<label class="workspace-choice ${option.id === reforge ? 'selected' : ''}">
-          <input type="radio" name="vacuum-reforge" value="${esc(option.id)}" ${option.id === reforge ? 'checked' : ''}>
-          <span class="workspace-radio"></span>
-          <span class="workspace-choice-copy"><strong>${esc(option.name)}</strong><small>${esc(option.stone || '')}</small><em>${option.id === 'beady' ? '+100 Farming Fortune on Pests' : 'Doubles Vacuum damage'}</em></span>
-        </label>`).join('')}
+      <div class="sb-reforge-grid sb-reforge-grid-compact setup-reforge-grid" role="radiogroup" aria-label="Vacuum reforge">
+        ${[
+          { id: '', name: 'No reforge', stone: 'Nothing applied', itemId: '' },
+          ...FARMING_REFORGES_BY_FAMILY.vacuum,
+        ].map(option => {
+          const selected = option.id === (reforge || '');
+          const fallback = option.id ? esc(option.name.slice(0, 1).toUpperCase()) : '&ndash;';
+          return `<button type="button" class="sb-reforge-card setup-reforge-card ${selected ? 'selected' : ''} ${option.id ? '' : 'sb-reforge-none'}"
+            role="radio" aria-checked="${selected ? 'true' : 'false'}"
+            data-vacuum-reforge-choice="${esc(option.id)}" data-reforge-id="${esc(option.id)}" data-reforge-item-id="${esc(option.itemId || '')}">
+            <span class="sb-reforge-art"><span class="sb-reforge-fallback">${fallback}</span></span>
+            <span class="sb-reforge-copy"><strong>${esc(option.name)}</strong><small>${esc(option.stone || '')}</small></span>
+            <span class="sb-state-dot" aria-hidden="true"></span>
+          </button>`;
+        }).join('')}
       </div>
     </section>
     <section class="item-editor-section">
@@ -229,8 +238,9 @@ function renderVacuumSurface(raw) {
       </div>
     </section>`;
 
-  panel.querySelectorAll('input[name="vacuum-reforge"]').forEach(input => input.addEventListener('change', event => {
-    if (event.target.checked) writeVacuumReforge(event.target.value);
+  panel.querySelectorAll('[data-vacuum-reforge-choice]').forEach(button => button.addEventListener('click', event => {
+    event.preventDefault();
+    writeVacuumReforge(button.dataset.vacuumReforgeChoice || null);
   }));
   panel.querySelectorAll('[data-vacuum-toggle]').forEach(input => input.addEventListener('change', event => {
     const item = entries.find(entry => entry.id === input.dataset.vacuumToggle);
