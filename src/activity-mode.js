@@ -17,8 +17,8 @@ export const ACTIVITY_SETUP_ID = Object.freeze({
 
 export function normalizeActivityMode(value) {
   const normalized = String(value || '').trim().toLowerCase();
-  if (normalized === ACTIVITY_MODE.PEST_KILL) return ACTIVITY_MODE.PEST_KILL;
-  if (normalized === ACTIVITY_MODE.PEST_SPAWN || normalized === 'pest') return ACTIVITY_MODE.PEST_SPAWN;
+  if (normalized === ACTIVITY_MODE.PEST_KILL || normalized === 'pest') return ACTIVITY_MODE.PEST_KILL;
+  if (normalized === ACTIVITY_MODE.PEST_SPAWN) return ACTIVITY_MODE.PEST_SPAWN;
   return ACTIVITY_MODE.FARM;
 }
 
