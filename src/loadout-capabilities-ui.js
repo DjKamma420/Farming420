@@ -1,7 +1,8 @@
 import { STORAGE_KEY } from './config.js';
 import { UPGRADES } from './data.js';
-import { ACTIVITY_MODE, isVacuumItemEntry } from './activity-mode.js';
+import { ACTIVITY_MODE, isVacuumItemEntry, setActivityModeOnState } from './activity-mode.js';
 import { computeStatTotals } from './computed-stats.js';
+import { applySnapshotToProgress } from './snapshot-apply.js';
 import {
   FARMING_REFORGES_BY_FAMILY,
   VACUUM_REFORGE_EFFECT_ENTRY_IDS,
@@ -161,6 +162,16 @@ function writeVacuumReforge(reforgeId) {
   window.dispatchEvent(new Event('farming420:state-changed'));
 }
 
+function statsForMode(raw, cropId, mode) {
+  const scoped = typeof structuredClone === 'function'
+    ? structuredClone(raw)
+    : JSON.parse(JSON.stringify(raw));
+  setActivityModeOnState(scoped, mode);
+  scoped.profile ||= {};
+  scoped.profile.lastApply = applySnapshotToProgress(scoped, scoped.profile.normalizedSnapshot || {});
+  return computeStatTotals(scoped, cropId, mode);
+}
+
 function renderVacuumSurface(raw) {
   // The normal crop tool is shared by Farming and Spawning and stays on Tools.
   // Vacuum is a Killing-only Pest concern, so configure it on the Pests page
@@ -178,8 +189,8 @@ function renderVacuumSurface(raw) {
   }
 
   const cropId = raw.selectedCrop || 'melon';
-  const spawnStats = computeStatTotals(raw, cropId, ACTIVITY_MODE.PEST_SPAWN);
-  const killStats = computeStatTotals(raw, cropId, ACTIVITY_MODE.PEST_KILL);
+  const spawnStats = statsForMode(raw, cropId, ACTIVITY_MODE.PEST_SPAWN);
+  const killStats = statsForMode(raw, cropId, ACTIVITY_MODE.PEST_KILL);
   const bucket = ensureVacuumBucket(raw);
   const reforge = selectedVacuumReforge(bucket);
   // If an old build left Beady's scored flag enabled while Buzzing was selected,
