@@ -16,7 +16,7 @@
 
 import { baseRarityFromDisplayed } from './setup-rarity.js';
 
-export const SETUPS_MODEL_VERSION = 1;
+export const SETUPS_MODEL_VERSION = 2;
 
 /** The slots a setup has, in the order the editor shows them. */
 export const SETUP_SLOTS = Object.freeze([
@@ -35,13 +35,14 @@ export const SETUP_SLOTS = Object.freeze([
 export const SLOT_IDS = Object.freeze(SETUP_SLOTS.map(slot => slot.id));
 
 /**
- * The starting setups. They are the three the product spec names as separate
- * states; a player can rename, add or remove them.
+ * The three activity loadouts used by current Farming/Pest play. Farming and
+ * spawning both happen while breaking crops, but spawning optimizes BPC/cooldown
+ * while killing switches to Vacuum/loot/Overbloom mechanics.
  */
 export const DEFAULT_SETUP_TEMPLATES = Object.freeze([
-  { id: 'normal', name: 'Normal Farming' },
-  { id: 'pest', name: 'Pest Farming' },
-  { id: 'contest', name: 'Jacob Contest' },
+  { id: 'normal', name: 'Farming' },
+  { id: 'pest', name: 'Pest Spawning' },
+  { id: 'pest-kill', name: 'Pest Killing' },
 ]);
 
 /** Where a value in a slot came from, so the UI never hides a guess as a fact. */
