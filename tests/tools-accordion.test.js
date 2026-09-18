@@ -104,3 +104,21 @@ test('tapping the active tool toggles its docked editor closed and open', () => 
   );
   assert.match(src, /getAttribute\('aria-expanded'\) !== nextValue/);
 });
+
+
+test('reforge state dots stay aligned at the far edge of every card', () => {
+  const css = read('skyblock-redesign.css').replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.match(
+    css,
+    /\.sb-reforge-card > \.sb-state-dot \{[^}]*right:\s*6px;[^}]*top:\s*50%;[^}]*bottom:\s*auto;[^}]*transform:\s*translateY\(-50%\)/s,
+  );
+  assert.doesNotMatch(css, /\.sb-reforge-card em ~ \.sb-state-dot/);
+  assert.match(css, /\.sb-reforge-card \{[^}]*padding:\s*6px 26px 6px 6px/s);
+});
+
+test('the open tool frame touches the tool and reforge content has no nested frame', () => {
+  const css = read('skyblock-redesign.css').replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.match(css, /\.sb-tool-grid > \.sb-docked-editor \{[^}]*margin:\s*-7px 0 8px/s);
+  assert.match(css, /\.sb-tool-grid > \.sb-docked-editor::before \{[^}]*content:\s*none/s);
+  assert.match(css, /\.sb-reforge-panel \{[^}]*margin:\s*0;[^}]*padding:\s*0;[^}]*border:\s*0;[^}]*background:\s*transparent;[^}]*box-shadow:\s*none/s);
+});
