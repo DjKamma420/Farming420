@@ -72,7 +72,7 @@ test('tool cards and shared item editors stay compact', () => {
   const redesign = read('skyblock-redesign.css').replace(/\/\*[\s\S]*?\*\//g, '');
   const editor = read('item-editor.css').replace(/\/\*[\s\S]*?\*\//g, '');
   assert.match(redesign, /\.sb-tool-card \{[^}]*min-height:\s*58px/);
-  assert.match(redesign, /\.sb-reforge-card \{[^}]*min-height:\s*86px/);
+  assert.match(redesign, /\.sb-reforge-card \{[^}]*min-height:\s*58px/);
   assert.match(editor, /\.item-editor \{[^}]*padding:\s*14px/);
   assert.match(editor, /\.item-portrait \{\s*width:\s*58px;\s*height:\s*58px/);
 });
