@@ -7,7 +7,7 @@ import { loadItemCatalog, readCachedCatalog } from './item-catalog.js';
 import { canRecombobulateItem, catalogItemForSetupItem } from './item-capabilities.js';
 import { toolKeyForCropId } from './migrations.js';
 import { TOOL_TIER_CHAIN, highestChainTier } from './progression-chains.js';
-import { catalogItemByExactId, farmingToolSkyblockId } from './exact-farming-items.js';
+import { catalogItemByExactId, farmingToolSkyblockId, farmingToolTierRarity } from './exact-farming-items.js';
 import { deriveRarity } from './tool-rarity.js';
 import { vacuumRarity } from './vacuum-state.js';
 import { setTextIfChanged } from './set-text.js';
@@ -90,7 +90,7 @@ function toolRarityForCrop(state, cropId, catalog) {
   const tier = highestChainTier(bucket, TOOL_TIER_CHAIN);
   const skyblockId = farmingToolSkyblockId(crop.tool, tier);
   const item = catalogItemByExactId(catalog, skyblockId);
-  const base = item?.tier || bucket.toolRarity || null;
+  const base = farmingToolTierRarity(tier) || item?.tier || bucket.toolRarity || null;
   return deriveRarity({
     base,
     recombobulated: entryEnabled(bucket, RECOMB_ID),

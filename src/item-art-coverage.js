@@ -13,11 +13,20 @@ export const REFORGE_ITEM_IDS = Object.freeze({
   overpriced: 'OVERPRICED_DRINK',
 });
 
+export const RECOMBOBULATOR_ITEM_ID = 'RECOMBOBULATOR_3000';
+
 export const TOOL_PROGRESS_ITEM_IDS = Object.freeze({
   'Overclocker 3000': 'OVERCLOCKER_3000',
   'Farming for Dummies': 'FARMING_FOR_DUMMIES',
-  'Recombobulator 3000': 'RECOMBOBULATOR_3000',
+  'Recombobulator 3000': RECOMBOBULATOR_ITEM_ID,
 });
+
+const RECOMBOBULATOR_CONTROL_SELECTOR = [
+  '[data-accessory-recomb]',
+  '[data-slot-recomb]',
+  '[data-vacuum-recomb]',
+  '[data-tool-recomb]',
+].join(', ');
 
 const CARD_ITEM_ID_OVERRIDES = Object.freeze({
   'accessory-relic-of-power-perfect-peridot-effect': 'POWER_RELIC',
@@ -319,6 +328,32 @@ function decorateToolProgression(catalog) {
   });
 }
 
+function recombobulatorCopyFor(control) {
+  const row = control.closest('.accessory-upgrade-row, .item-editor-row, .workspace-level-row');
+  if (!row) return null;
+  if (row.classList.contains('accessory-upgrade-row')) return row.querySelector(':scope > span');
+  if (row.classList.contains('workspace-level-row')) return row.querySelector(':scope > div:first-child');
+  return row.querySelector(':scope > div');
+}
+
+function decorateRecombobulatorControls(catalog) {
+  const record = catalogItemById(catalog, RECOMBOBULATOR_ITEM_ID);
+  if (!record) return;
+
+  document.querySelectorAll(RECOMBOBULATOR_CONTROL_SELECTOR).forEach(control => {
+    const copy = recombobulatorCopyFor(control);
+    if (!copy) return;
+
+    copy.classList.add('recombobulator-choice-copy');
+    const row = control.closest('.accessory-upgrade-row, .item-editor-row, .workspace-level-row');
+    row?.classList.add('has-recombobulator-choice-art');
+
+    if (copy.querySelector(':scope > .coverage-item-art')) return;
+    const node = itemArtNode(record, record.name || 'Recombobulator 3000');
+    if (node) putArt(copy, node, `recomb-choice:${RECOMBOBULATOR_ITEM_ID}`);
+  });
+}
+
 let catalog = null;
 let loadPromise = null;
 let applying = false;
@@ -344,6 +379,7 @@ export async function applyItemArtCoverage(root = document, rawState = readState
     decorateDrawer(items, rawState);
     decorateReforges(items);
     decorateToolProgression(items);
+    decorateRecombobulatorControls(items);
     return items.length;
   } finally {
     applying = false;
@@ -367,8 +403,8 @@ function boot() {
       const relevant = mutations.some(mutation => [...mutation.addedNodes].some(node =>
         node instanceof Element
         && !node.matches?.('.coverage-item-art')
-        && (node.matches?.('.item-card, .drawer, .sb-reforge-card, .setup-reforge-card, .workspace-level-row')
-          || node.querySelector?.('.item-card, .drawer, .sb-reforge-card, .setup-reforge-card, .workspace-level-row'))));
+        && (node.matches?.(`.item-card, .drawer, .sb-reforge-card, .setup-reforge-card, .workspace-level-row, .item-editor-row, .accessory-upgrade-row, ${RECOMBOBULATOR_CONTROL_SELECTOR}`)
+          || node.querySelector?.(`.item-card, .drawer, .sb-reforge-card, .setup-reforge-card, .workspace-level-row, .item-editor-row, .accessory-upgrade-row, ${RECOMBOBULATOR_CONTROL_SELECTOR}`))));
       if (relevant) queueApply();
     }).observe(root, { childList: true, subtree: true });
   }

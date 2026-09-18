@@ -37,6 +37,20 @@ export const GARDEN_VACUUM_ITEMS = Object.freeze([
  */
 export const RARITY_ORDER = Object.freeze(['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY', 'MYTHIC']);
 
+// Since the Greenhouse farming-tool revamp, every specialized crop tool uses
+// the same rarity ladder by physical Mk tier. Keeping this local avoids stale
+// cached item metadata resurrecting the pre-revamp Legendary Mk. III rarity.
+export const FARMING_TOOL_TIER_RARITIES = Object.freeze({
+  1: 'UNCOMMON',
+  2: 'RARE',
+  3: 'EPIC',
+});
+
+export function farmingToolTierRarity(tier = 1) {
+  const normalizedTier = Math.max(1, Math.min(3, Math.floor(Number(tier) || 1)));
+  return FARMING_TOOL_TIER_RARITIES[normalizedTier] || null;
+}
+
 export function farmingToolSkyblockId(toolName, tier = 1) {
   const chain = FARMING_TOOL_ITEM_IDS[toolName];
   if (!chain) return null;
