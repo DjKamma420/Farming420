@@ -62,6 +62,10 @@ export function createEmptyItem() {
     gems: [],
     recombobulated: false,
     skullTexture: null,
+    itemModel: null,
+    vanillaId: null,
+    damage: null,
+    displayColor: null,
     source: ITEM_SOURCE.MANUAL,
     itemUuid: null,
   };
@@ -172,6 +176,10 @@ export function itemRecordFromDecoded(decoded) {
     gems: gemListFrom(decoded.gems),
     recombobulated,
     skullTexture: decoded.skullTexture ?? null,
+    itemModel: decoded.itemModel ?? null,
+    vanillaId: decoded.vanillaId ?? null,
+    damage: decoded.damage ?? null,
+    displayColor: decoded.displayColor ?? null,
     source: ITEM_SOURCE.SYNC,
     itemUuid: decoded.itemUuid ?? null,
   };
