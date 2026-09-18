@@ -126,4 +126,4 @@ The model layer must:
 3. use shipped pack art only when there is no skull texture;
 4. never substitute fuzzy-name matches for a different physical item.
 
-Blue™ but Yellow Abicase is intentionally not a dedicated visual card here. Hypixel's public item resource exposes the base `ABICASE` item while the named case is a variant; presenting the base texture as a guaranteed exact Yellow variant would violate the exact-model rule.
+Blue™ but Yellow Abicase grants +1.5 Farming Wisdom and is farming-relevant, but it is intentionally not rendered as a normal exact-ID card yet. Hypixel's public item resource exposes the base `ABICASE` item, while current live-auction metadata identifies the named variant with model key `BLUE_YELLOW`. Rendering the base `ABICASE` skull as if it were guaranteed to be the Yellow variant would violate the exact-model rule.
