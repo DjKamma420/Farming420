@@ -118,7 +118,7 @@ test('the editor passes the per-item gate, not a constant', () => {
   const src = readFileSync(new URL('../src/workspace-ui.js', import.meta.url), 'utf8');
   assert.match(
     src,
-    /rarityRow\(bucket, catalogItem, entryLevel\(bucket, RECOMB_ID\) > 0, canRecomb\)/,
+    /rarityRow\(bucket, catalogItem, entryEnabled\(bucket, RECOMB_ID\), canRecomb, highestChainTier\(bucket, TOOL_TIER_CHAIN\)\)/,
     'the row must receive this item\'s eligibility',
   );
   assert.match(
@@ -132,7 +132,7 @@ test('the editor passes the per-item gate, not a constant', () => {
 test('tool Recombobulator toggle, rarity color and gemstone rarity use the same persisted state', () => {
   const src = readFileSync(new URL('../src/workspace-ui.js', import.meta.url), 'utf8');
   assert.match(src, /function entryEnabled\(bucket, id\).*bucket\?\.owned\?\.\[id\] === true/);
-  assert.match(src, /rarityRow\(bucket, catalogItem, entryEnabled\(bucket, RECOMB_ID\), canRecomb\)/);
+  assert.match(src, /rarityRow\(bucket, catalogItem, entryEnabled\(bucket, RECOMB_ID\), canRecomb, highestChainTier\(bucket, TOOL_TIER_CHAIN\)\)/);
   assert.match(src, /recombobulated: entryEnabled\(bucket, RECOMB_ID\)/);
   assert.match(src, /data-tool-recomb \$\{entryEnabled\(bucket, RECOMB_ID\)\?'checked':''\}/);
 });
