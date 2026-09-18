@@ -49,6 +49,12 @@ test('rarity is expressed as the physical item background, not only text or a bo
   assert.match(cssSource, /border-color:/);
 });
 
+test('tool selection and docked editors keep the rarity background instead of generic green', () => {
+  assert.match(cssSource, /\.sb-tool-card\.rarity-surface\.selected/);
+  assert.match(cssSource, /\.sb-tool-grid > \.sb-docked-editor\.rarity-surface/);
+  assert.match(cssSource, /color-mix\(in srgb, var\(--rarity-tone\)/);
+});
+
 test('the rarity presentation is loaded after the redesign styles and item UI scripts', () => {
   const redesignCss = indexSource.indexOf('src/skyblock-redesign.css');
   const rarityCss = indexSource.indexOf('src/rarity-background-ui.css');
