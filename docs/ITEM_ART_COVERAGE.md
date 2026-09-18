@@ -9,10 +9,11 @@ which fail if a key named here stops resolving against the shipped pack.
 1. **Player-head NBT texture** from the item's own tag. The item's real picture.
 2. **`skin`** from Hypixel's official item resource. Also the real picture.
 3. **Exact pack texture** for the item's own id.
-4. **Set-representative pack texture** — one in-family item stands for a whole
-   set. Labelled as a stand-in wherever it is one.
-5. **Vanilla material model** — the armour outline in the material's colour.
-6. **Letter badge.** The last resort, and a coverage failure.
+4. **Armour item model** from the official item's category/material and leather
+   dye colour. This is used before any set representative.
+5. **Set-representative pack texture** — one in-family item stands in only when
+   the physical item has no stronger model source.
+6. **Generic material model / letter badge.** Last-resort coverage.
 
 Steps 1 and 2 need `api.hypixel.net`, which is unreachable from this
 environment and from CI. So everything measured offline is the *weaker* view:
@@ -30,12 +31,27 @@ if it resolves here it resolves live, but the reverse does not follow.
 The crop table is shared: the Pests page borrows it rather than starting a
 second copy.
 
+## Armour models
+
+As of the 2026-07 SkyBlock Resource Pack rollout, armour items do not have
+Resource Pack models. The live Hypixel item resource still exposes the data
+needed to picture the real item form:
+
+- a valid `skin` renders the player-head face plus hat layer;
+- `category` / `material` select Helmet, Chestplate, Leggings or Boots;
+- `color` supplies the exact leather dye RGB when the piece is dyed.
+
+Therefore Cropie, Squash, Fermento and Helianthus crop/ingredient textures are
+never used as armour stand-ins. Body pieces render as pixel armour in the API
+colour; head items use their Mojang skin whenever Hypixel supplies one.
+
+Source checked 2026-09-18:
+https://hypixel.net/threads/list-of-item-in-skyblock-major-update.6123513/
+
 ## Set representatives
 
-The pack ships no armour or equipment pieces, but it ships the item each set is
-built from, and those read instantly — a Helianthus flower for Helianthus
-armour, the Fermento fruit for Fermento, the four Lotus flowers for the four
-Lotus equipment tiers.
+Set representatives remain for equipment and abstract upgrade rows where no
+stronger physical model source exists.
 
 Three entries are in-family stand-ins rather than the item itself, and are
 marked as such in `SET_ART`:
@@ -61,7 +77,7 @@ These need step 1 or step 2, so this repo cannot verify them:
   gear it applies to.
 
 Farm Suit, Melon and Rabbit armour are **not entries in this app**. They exist
-only in the live setup catalogue, where steps 1, 2 and 5 already cover them.
+only in the live setup catalogue, where steps 1, 2 and 4 already cover them.
 There is nothing in the repo to hang art on, so nothing here claims to.
 
 ## The rule this file exists to enforce
