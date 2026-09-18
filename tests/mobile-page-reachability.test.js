@@ -45,6 +45,25 @@ test('the mobile navigation stays on the side with visible labels', () => {
   assert.doesNotMatch(mobile, /nav-link:nth-child\([^)]*\)\s*\{[^}]*display:\s*none/);
 });
 
+test('content scroll is isolated from the side navigation', () => {
+  const redesign = read('src/skyblock-redesign.css');
+
+  assert.match(redesign, /\.skyblock-redesign body \{[^}]*height:\s*100dvh;[^}]*overflow:\s*hidden/);
+  assert.match(redesign, /\.skyblock-redesign \.app-shell \{[^}]*height:\s*100dvh;[^}]*overflow:\s*hidden/);
+  assert.match(redesign, /\.skyblock-redesign \.main \{[^}]*height:\s*100dvh;[^}]*overflow-y:\s*auto/);
+  assert.match(redesign, /\.skyblock-redesign \.sidebar\.sb-rail \{[^}]*height:\s*100dvh;[^}]*overflow:\s*hidden/);
+});
+
+test('named side rail stays compact at desktop and mobile widths', () => {
+  const redesign = read('src/skyblock-redesign.css');
+  const mobile = read('src/mobile-taskbar.css');
+
+  assert.match(redesign, /grid-template-columns:\s*176px minmax\(0, 1fr\)/);
+  assert.match(redesign, /grid-template-columns:\s*152px minmax\(0, 1fr\)/);
+  assert.match(redesign, /grid-template-columns:\s*124px minmax\(0, 1fr\)/);
+  assert.match(mobile, /width:\s*124px/);
+});
+
 test('the setup page keeps its own direct navigation entry', () => {
   const app = read('src/app.js');
   assert.match(app, /\['setup',\s*'What to enter'\]/);

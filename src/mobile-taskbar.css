@@ -15,16 +15,16 @@
     bottom: auto;
     left: 0;
     right: auto;
-    width: 148px;
-    height: 100vh;
-    padding: 5px;
+    width: 124px;
+    height: 100dvh;
+    padding: 4px;
   }
 
   .skyblock-redesign .sb-rail nav {
     display: grid;
     gap: 2px;
     align-items: initial;
-    max-height: 100vh;
+    max-height: 100dvh;
     overflow-x: hidden;
     overflow-y: auto;
   }
