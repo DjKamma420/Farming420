@@ -6,9 +6,11 @@ import {
   FACE_OFFSET,
   HAT_OFFSET,
   HEAD_SIZE,
+  KNOWN_FARMING_EQUIPMENT_HEAD_TEXTURES,
   SKIN_SHEET_WIDTH,
   TEXTURE_HOST,
   headLayerGeometry,
+  knownSkyblockHeadTexture,
   skullTextureFromTag,
   skullTextureUrl,
   textureIdFromProperty,
@@ -25,6 +27,31 @@ test('a texture id is read from the url the skull carries', () => {
   assert.equal(textureIdFromUrl(`http://textures.minecraft.net/texture/${ID}`), ID);
   assert.equal(textureIdFromUrl(`https://textures.minecraft.net/texture/${ID.toUpperCase()}`), ID);
   assert.equal(textureIdFromProperty(property(`http://textures.minecraft.net/texture/${ID}`)), ID);
+});
+
+test('current farming equipment ids have exact verified head models', () => {
+  const expected = {
+    LOTUS_NECKLACE: 'ad83aa25c11acfce7442ff0129fd70bb42ca0de63ba2115169966cc351f1716b',
+    LOTUS_CLOAK: 'ee40d7762d2b7aed5d925d17f7b3c1451e709c2537a5546b1ce6e0d8ee2757d4',
+    LOTUS_BELT: '4ce8d19b0163d1eadde563377394b05de63427c6e3f8a949e0dfa32bb20d7f2d',
+    LOTUS_BRACELET: '5783279018cdddffa913abf3621d78f204405961f77fb96841d01b274f027cab',
+    BLOSSOM_NECKLACE: '5e8e20f1534c2a9d940bac97c4c4b29b68db6a286ad9c92ae85aee78e0486043',
+    BLOSSOM_CLOAK: '8453a8084b7773c1b2bb6213901da8cfb50de5e5d0c8c524ff4fad0e182ea68b',
+    BLOSSOM_BELT: '718c48cbf371c2daf41fc22e5a9f8a35ee6a4bb2e8bc61d6b247009be49dd25b',
+    BLOSSOM_BRACELET: 'ab1d8ff8f461340cd73c910aa6df299395f5e80ada49e430efa9c57f5bf755f4',
+    PESTHUNTERS_NECKLACE: '93d176b1c9abfc536b20a611fe479304baf5f995f4da90d634144bc4a5243830',
+    PESTHUNTERS_CLOAK: 'c7d2a356fa8f187af0b64f14015c4a31660549a59db8db1f014ecebf8b5cbb74',
+    PESTHUNTERS_BELT: '9aa9661e2c6b10aa76a6e8212732a985f2c54630585f22d9819c831ea642db41',
+    PESTHUNTERS_GLOVES: 'af2918861753fe19f28f66e8e998511f3490995abf0972a9391f00d8c530ed39',
+    PEST_VEST: '68c942255b0fef311d72fcb723087309bca9084f8c4a2c0c03b5618687f83ae4',
+    ZORROS_CAPE: '81f7226a927558d069a6ae343b4e089fbd60fc6037190097c7713208e988faae',
+  };
+  assert.deepEqual(KNOWN_FARMING_EQUIPMENT_HEAD_TEXTURES, expected);
+  for (const [id, hash] of Object.entries(expected)) {
+    assert.equal(knownSkyblockHeadTexture(id), hash, id);
+  }
+  assert.equal(knownSkyblockHeadTexture('ZORRO_CAPE'), expected.ZORROS_CAPE, 'old saved typo remains renderable');
+  assert.equal(knownSkyblockHeadTexture('NOT_REAL'), null);
 });
 
 test('anything that is not a plain hex id is refused', () => {
