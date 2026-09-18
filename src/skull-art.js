@@ -33,6 +33,12 @@ export const HAT_OFFSET = Object.freeze({ x: 40, y: 8 });
  * SkyBlock id. A live texture from the player's NBT or Hypixel item resource
  * still wins at the call site, so an upstream model change is not masked.
  */
+export const KNOWN_FARMING_EQUIPMENT_RENDERED_ICONS = Object.freeze({
+  // Exact rendered item icon, verified against the current item page.
+  // This bypasses player-skin cropping on clients where that route renders blank.
+  PESTHUNTERS_NECKLACE: 'https://skyah.net/icons/items/pesthunters_necklace.webp',
+});
+
 export const KNOWN_FARMING_EQUIPMENT_HEAD_TEXTURES = Object.freeze({
   LOTUS_NECKLACE: 'ad83aa25c11acfce7442ff0129fd70bb42ca0de63ba2115169966cc351f1716b',
   LOTUS_CLOAK: 'ee40d7762d2b7aed5d925d17f7b3c1451e709c2537a5546b1ce6e0d8ee2757d4',
@@ -69,6 +75,14 @@ export function knownSkyblockHeadTexture(skyblockId) {
   const id = KNOWN_HEAD_ID_ALIASES[raw] || raw;
   const hash = KNOWN_FARMING_EQUIPMENT_HEAD_TEXTURES[id] || null;
   return hash && /^[0-9a-f]{64}$/.test(hash) ? hash : null;
+}
+
+export function knownSkyblockRenderedIcon(skyblockId) {
+  const raw = String(skyblockId || '').trim().toUpperCase();
+  if (!raw) return null;
+  const id = KNOWN_HEAD_ID_ALIASES[raw] || raw;
+  const url = KNOWN_FARMING_EQUIPMENT_RENDERED_ICONS[id] || null;
+  return url && /^https:\/\/skyah\.net\/icons\/items\/[a-z0-9_]+\.webp$/.test(url) ? url : null;
 }
 
 function firstString(value) {
