@@ -41,6 +41,17 @@
   outline-offset: 1px;
 }
 
+/* An expanded tool and its editor are one surface. The selected-card outline
+   and standalone shadows otherwise draw a bright horizontal seam between them. */
+.skyblock-redesign .sb-tool-card.rarity-surface.selected[aria-expanded="true"] {
+  outline: 0;
+  box-shadow: none;
+}
+
+.skyblock-redesign .sb-tool-grid > .sb-docked-editor.rarity-surface {
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .18);
+}
+
 .skyblock-redesign .rarity-surface.rarity-unknown {
   --rarity-tone: #6d7d73;
 }
