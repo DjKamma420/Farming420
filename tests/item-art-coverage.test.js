@@ -72,6 +72,15 @@ test('catalog head art renders both the face and hat layers', () => {
   assert.match(css, /\.coverage-skull-hat[\s\S]*?71\.4286% 14\.2857%/);
 });
 
+
+test('setup portraits have exactly one writer', () => {
+  const coverage = readFileSync(new URL('../src/item-art-coverage.js', import.meta.url), 'utf8');
+  const setupArt = readFileSync(new URL('../src/item-art-ui.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(coverage, /decorateSetupItems\(/);
+  assert.doesNotMatch(coverage, /\.slot-portrait, \[data-item-art-slot\]/);
+  assert.match(setupArt, /root\.querySelectorAll\('\.slot-portrait, \[data-item-art-slot\]'\)/);
+});
+
 test('physical progression cards resolve exact names and deliberate suffix stripping', () => {
   const shard = catalogItemForUpgrade(catalog, {
     id: 'pest-mosquito-shard-enchanted-farmer',
