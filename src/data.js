@@ -616,6 +616,26 @@ export const UPGRADES = [
     "workbookRank": null
   },
   {
+    "id": "tool-enchant-efficiency-v",
+    "category": "Tool Enchant",
+    "section": "tools",
+    "name": "Efficiency",
+    "metric": "Break Speed",
+    "modeScope": "Any",
+    "cropScope": "Any",
+    "status": "ACTIVE",
+    "max": 5,
+    "stepGain": 0,
+    "manualDefault": null,
+    "rawMarginal": 0,
+    "hypercharge": false,
+    "optionTag": "utility / break speed",
+    "notes": "Universal Tool enchant. Farming Tools use Efficiency V as their cap. It can matter for reliable block breaking, but it is not Farming Fortune and therefore carries no fake Fortune score.",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Efficiency",
+    "lastVerified": "2026-09-18",
+    "workbookRank": null
+  },
+  {
     "id": "tool-enchant-cultivating-x",
     "category": "Tool Enchant",
     "section": "tools",
