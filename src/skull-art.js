@@ -24,6 +24,49 @@ export const HEAD_SIZE = 8;
 export const FACE_OFFSET = Object.freeze({ x: 8, y: 8 });
 export const HAT_OFFSET = Object.freeze({ x: 40, y: 8 });
 
+
+/**
+ * Exact farming-equipment player-head models verified from current SkyBlock
+ * item NBT (NotEnoughUpdates item repository, checked 2026-09-18).
+ *
+ * These are fallbacks for manually selected/saved items that only carry a
+ * SkyBlock id. A live texture from the player's NBT or Hypixel item resource
+ * still wins at the call site, so an upstream model change is not masked.
+ */
+export const KNOWN_FARMING_EQUIPMENT_HEAD_TEXTURES = Object.freeze({
+  LOTUS_NECKLACE: 'ad83aa25c11acfce7442ff0129fd70bb42ca0de63ba2115169966cc351f1716b',
+  LOTUS_CLOAK: 'ee40d7762d2b7aed5d925d17f7b3c1451e709c2537a5546b1ce6e0d8ee2757d4',
+  LOTUS_BELT: '4ce8d19b0163d1eadde563377394b05de63427c6e3f8a949e0dfa32bb20d7f2d',
+  LOTUS_BRACELET: '5783279018cdddffa913abf3621d78f204405961f77fb96841d01b274f027cab',
+
+  BLOSSOM_NECKLACE: '5e8e20f1534c2a9d940bac97c4c4b29b68db6a286ad9c92ae85aee78e0486043',
+  BLOSSOM_CLOAK: '8453a8084b7773c1b2bb6213901da8cfb50de5e5d0c8c524ff4fad0e182ea68b',
+  BLOSSOM_BELT: '718c48cbf371c2daf41fc22e5a9f8a35ee6a4bb2e8bc61d6b247009be49dd25b',
+  BLOSSOM_BRACELET: 'ab1d8ff8f461340cd73c910aa6df299395f5e80ada49e430efa9c57f5bf755f4',
+
+  PESTHUNTERS_NECKLACE: '93d176b1c9abfc536b20a611fe479304baf5f995f4da90d634144bc4a5243830',
+  PESTHUNTERS_CLOAK: 'c7d2a356fa8f187af0b64f14015c4a31660549a59db8db1f014ecebf8b5cbb74',
+  PESTHUNTERS_BELT: '9aa9661e2c6b10aa76a6e8212732a985f2c54630585f22d9819c831ea642db41',
+  PESTHUNTERS_GLOVES: 'af2918861753fe19f28f66e8e998511f3490995abf0972a9391f00d8c530ed39',
+
+  PEST_VEST: '68c942255b0fef311d72fcb723087309bca9084f8c4a2c0c03b5618687f83ae4',
+  ZORROS_CAPE: '81f7226a927558d069a6ae343b4e089fbd60fc6037190097c7713208e988faae',
+});
+
+const KNOWN_HEAD_ID_ALIASES = Object.freeze({
+  // Keep old manually saved Farming420 ids renderable after correcting the
+  // historical singular id typo in the catalogue filter.
+  ZORRO_CAPE: 'ZORROS_CAPE',
+});
+
+export function knownSkyblockHeadTexture(skyblockId) {
+  const raw = String(skyblockId || '').trim().toUpperCase();
+  if (!raw) return null;
+  const id = KNOWN_HEAD_ID_ALIASES[raw] || raw;
+  const hash = KNOWN_FARMING_EQUIPMENT_HEAD_TEXTURES[id] || null;
+  return hash && /^[0-9a-f]{64}$/.test(hash) ? hash : null;
+}
+
 function firstString(value) {
   return typeof value === 'string' && value.trim() ? value.trim() : null;
 }
