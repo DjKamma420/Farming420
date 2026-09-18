@@ -24,6 +24,13 @@ test('the main navigation exposes accessories as its own page', () => {
   assert.doesNotMatch(source, /Accessories & permanent items/);
 });
 
+test('all generic drawer activation paths enforce exclusive accessory families', () => {
+  const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  assert.match(source, /if \(nextLevel > 0\) clearExclusivePeers\(item\)/);
+  assert.match(source, /data-max[\\s\\S]*?clearExclusivePeers\(item\)/);
+  assert.match(source, /if \(e\.target\.checked\) clearExclusivePeers\(item\)/);
+});
+
 test('conditional physical accessories stay in the accessories section', () => {
   const byId = new Map(UPGRADES.map(item => [item.id, item]));
   assert.equal(byId.get('temporary-atmospheric-filter-spring')?.physicalItemId, 'ATMOSPHERIC_FILTER');
