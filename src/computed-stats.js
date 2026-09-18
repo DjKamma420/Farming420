@@ -14,7 +14,7 @@ import {
   itemAppliesToActivity,
 } from './activity-mode.js';
 
-export const COMPUTED_STATS_VERSION = 6;
+export const COMPUTED_STATS_VERSION = 7;
 
 export const STAT_AXIS = Object.freeze({
   GLOBAL_FORTUNE: 'globalFortune',
@@ -30,6 +30,9 @@ const AUTO_DYNAMIC_TOTAL = Object.freeze({
   'armor-reforge-mossy-on-full-armor': 'total',
   'armor-gem-perfect-peridot-on-full-armor': 'total',
   'equipment-reforge-rooted-on-full-equipment': 'total',
+  'equipment-reforge-thorny-on-full-mythic-equipment-ff': 'total',
+  'equipment-reforge-thorny-on-full-mythic-equipment-overbloom': 'total',
+  'equipment-reforge-thorny-thorns-overbloom': 'total',
   'equipment-enchant-green-thumb-v-on-equipment': 'per-level',
 });
 
