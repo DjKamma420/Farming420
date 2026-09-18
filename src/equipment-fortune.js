@@ -71,9 +71,12 @@ export function thornyBaseOverbloomForPieces(pieces) {
 
 export function thornyArmorBonusOverbloom(equipmentPieces, totalArmorThornsTier) {
   const thornsTiers = Math.max(0, Number(totalArmorThornsTier) || 0);
-  return thornyPieceCount(equipmentPieces)
+  const value = thornyPieceCount(equipmentPieces)
     * thornsTiers
     * THORNY_OVERBLOOM_PER_ARMOR_THORNS_TIER;
+  // Keep decimal stat totals stable for storage/tests instead of exposing
+  // floating-point artifacts such as 6.800000000000001.
+  return Math.round(value * 1e10) / 1e10;
 }
 
 export function greenThumbTotalLevel(pieces) {
