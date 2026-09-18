@@ -73,7 +73,7 @@ function appliesToCrop(item, cropId) {
 function relativeGain(item, gain, stats, mode) {
   if (!gain) return 0;
   if (item.metric === 'Crop Yield') {
-    const base = mode === ACTIVITY_MODE.PEST ? 600 : 100;
+    const base = mode === ACTIVITY_MODE.PEST_KILL ? 600 : 100;
     const denominator = base + Number(stats.effectiveFortune || 0);
     return denominator > 0 ? (gain / denominator) * 100 : 0;
   }
@@ -145,7 +145,8 @@ function injectHeaderSwitch(raw) {
   control.innerHTML = `
     <span>Set</span>
     <button type="button" data-activity-mode="farm" class="${mode === ACTIVITY_MODE.FARM ? 'active' : ''}" aria-pressed="${mode === ACTIVITY_MODE.FARM}">Farm</button>
-    <button type="button" data-activity-mode="pest" class="${mode === ACTIVITY_MODE.PEST ? 'active' : ''}" aria-pressed="${mode === ACTIVITY_MODE.PEST}">Pest</button>`;
+    <button type="button" data-activity-mode="pest-spawn" class="${mode === ACTIVITY_MODE.PEST_SPAWN ? 'active' : ''}" aria-pressed="${mode === ACTIVITY_MODE.PEST_SPAWN}">Spawn</button>
+    <button type="button" data-activity-mode="pest-kill" class="${mode === ACTIVITY_MODE.PEST_KILL ? 'active' : ''}" aria-pressed="${mode === ACTIVITY_MODE.PEST_KILL}">Kill</button>`;
   control.querySelectorAll('[data-activity-mode]').forEach(button => button.addEventListener('click', () => {
     if (button.dataset.activityMode === mode) return;
     setMode(button.dataset.activityMode);
@@ -176,15 +177,15 @@ function renderStatsStrip(raw) {
 
   strip.innerHTML = `
     <div class="computed-stat" title="Fortune from the active ${esc(activityLabel(mode))}">
-      <span>${mode === ACTIVITY_MODE.PEST ? 'Pest FF' : 'Farm FF'}</span><strong>${Number(stats.effectiveFortune || 0).toLocaleString('en-US')}</strong>${unresolvedFortune ? '<em>~</em>' : ''}
+      <span>${mode === ACTIVITY_MODE.PEST_KILL ? 'Kill FF' : mode === ACTIVITY_MODE.PEST_SPAWN ? 'Spawn FF' : 'Farm FF'}</span><strong>${Number(stats.effectiveFortune || 0).toLocaleString('en-US')}</strong>${unresolvedFortune ? '<em>~</em>' : ''}
     </div>
-    ${mode === ACTIVITY_MODE.PEST ? `<div class="computed-stat" title="Farming Fortune that applies to Pest/Vacuum drops only. It is separate from normal crop Fortune.">
+    ${mode === ACTIVITY_MODE.PEST_KILL ? `<div class="computed-stat" title="Farming Fortune that applies to Pest/Vacuum drops only. It is separate from crop Fortune.">
       <span>Pest Drop FF</span><strong>${Number(stats.pestFortune || 0).toLocaleString('en-US')}</strong>${stats.incomplete.pestFortune.length ? '<em>~</em>' : ''}
     </div>` : ''}
-    <div class="computed-stat" title="Overbloom for the active set. Pest-only Overbloom is excluded from Farm Set totals.">
+    <div class="computed-stat" title="Overbloom for the active set. Pest-loot Overbloom is counted only in the Killing Set.">
       <span>OB</span><strong>${Number(stats.overbloom || 0).toLocaleString('en-US')}</strong>${stats.incomplete.overbloom.length ? '<em>~</em>' : ''}
     </div>
-    <div class="computed-stat" title="Bonus Pest Chance produced by the currently selected Farm or Pest loadout.">
+    <div class="computed-stat" title="Bonus Pest Chance is a spawning stat and is counted only in the Spawning Set.">
       <span>BPC</span><strong>${Number(stats.bonusPestChance || 0).toLocaleString('en-US')}</strong>${stats.incomplete.bonusPestChance.length ? '<em>~</em>' : ''}
     </div>`;
 }
@@ -199,7 +200,7 @@ function simplifySetupEditor(raw) {
   const tabs = content.querySelector('.setup-tabs');
   if (tabs && tabs.dataset.modeSurface !== mode) {
     tabs.dataset.modeSurface = mode;
-    tabs.innerHTML = `<div class="mode-editor-banner"><strong>${esc(activityLabel(mode))}</strong> is being edited. Armor, equipment and pet selections are stored separately for Farm and Pest. Change the active set with the switch in the header.</div>`;
+    tabs.innerHTML = `<div class="mode-editor-banner"><strong>${esc(activityLabel(mode))}</strong> is being edited. Armor, equipment and pet selections are stored separately for Farming, Pest Spawning and Pest Killing. Change the active phase with the switch in the header.</div>`;
   }
 
   const nameInput = content.querySelector('#setupName');
@@ -223,7 +224,7 @@ function renderDashboardCandidate(raw) {
     <h2>${esc(candidate.item.name)}</h2>
     <p>+${candidate.gain.toLocaleString('en-US')} marginal stat · about ${candidate.rel.toFixed(2)}% relative gain in the current ${esc(cropName(cropId))} ${esc(activityLabel(mode))}.</p>
     <button class="primary-btn" data-mode-open="${esc(candidate.item.id)}">Open details</button>
-    <div class="planner-mode-note">Farm uses the crop farming tool. Pest uses the Vacuum instead. Armor, equipment and pet come from the selected set.</div>` : `
+    <div class="planner-mode-note">Farming and Pest Spawning use the crop farming tool. Pest Killing uses the Vacuum. Armor, equipment and pet come from the selected phase set.</div>` : `
     <div class="eyebrow">Next upgrade · ${esc(activityLabel(mode))}</div>
     <h2>No calculated upgrade</h2>
     <p>No active upgrade with a calculated marginal gain is available for this crop and set.</p>`;
