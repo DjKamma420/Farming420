@@ -17,6 +17,9 @@ const catalog = [
   { id: 'RECOMBOBULATOR_3000', name: 'Recombobulator 3000', material: 'SKULL_ITEM', skin: 'c'.repeat(64) },
   { id: 'BOOSTER_COOKIE', name: 'Booster Cookie', material: 'COOKIE', skin: null },
   { id: 'MOSQUITO_SHARD', name: 'Mosquito Shard', material: 'SKULL_ITEM', skin: 'd'.repeat(64) },
+  { id: 'EARTHWORM_SHARD', name: 'Earthworm Shard', material: 'SKULL_ITEM', skin: '2'.repeat(64) },
+  { id: 'FIREFLY_SHARD', name: 'Firefly Shard', material: 'SKULL_ITEM', skin: '3'.repeat(64) },
+  { id: 'LUNAR_MOTH_SHARD', name: 'Lunar Moth Shard', material: 'SKULL_ITEM', skin: '4'.repeat(64) },
   { id: 'FERMENTO_ARTIFACT', name: 'Fermento Artifact', material: 'SKULL_ITEM', skin: 'e'.repeat(64) },
   { id: 'POWER_RELIC', name: 'Relic of Power', material: 'SKULL_ITEM', skin: '1'.repeat(64) },
 ];
@@ -179,4 +182,32 @@ test('chip/card art is pinned directly beside its title even under redesign spec
   assert.match(css, /\.skyblock-redesign \.item-card \.card-head > div[\s\S]*?flex:\s*0 1 auto\s*!important/);
   assert.match(css, /\.item-card \.card-head > \.badge:first-of-type[\s\S]*?margin-left:\s*auto\s*!important/);
   assert.match(css, /\.skyblock-redesign \.item-card \.card-portrait[\s\S]*?width:\s*42px\s*!important/);
+});
+
+
+test('legacy and combined shard labels still resolve to current physical shard art', () => {
+  const earthworm = catalogItemForUpgrade(catalog, {
+    id: 'attribute-shard-earthworm-shard-formerly-termite',
+    name: 'Earthworm Shard (formerly Termite)',
+    category: 'Attribute Shard',
+  });
+  assert.equal(earthworm?.id, 'EARTHWORM_SHARD');
+
+  const dayNight = catalogItemForUpgrade(catalog, {
+    id: 'attribute-shard-firefly-or-lunar-moth-shard',
+    name: 'Firefly or Lunar Moth shard',
+    category: 'Attribute Shard',
+  });
+  assert.equal(dayNight?.id, 'FIREFLY_SHARD');
+  assert.ok(skinTextureUrl(dayNight).endsWith('3'.repeat(64)));
+});
+
+test('the Shards page reserves a large portrait surface for physical shard art', () => {
+  const app = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../src/item-art-coverage.css', import.meta.url), 'utf8');
+  assert.match(app, /section === 'shards' \? 'card-grid shard-gallery'/);
+  assert.match(app, /card-portrait\$\{isShard \? ' shard-portrait' : ''\}/);
+  assert.match(app, /item\.attribute \? badge\(item\.attribute, 'soft'\)/);
+  assert.match(css, /\.shard-gallery \.shard-card \.shard-portrait[\s\S]*?width:\s*76px\s*!important/);
+  assert.match(css, /\.shard-gallery \.shard-card \.shard-portrait > \.coverage-item-art[\s\S]*?width:\s*88%/);
 });
