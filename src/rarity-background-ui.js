@@ -110,7 +110,7 @@ function clearRarityClass(node) {
   delete node.dataset.effectiveRarity;
 }
 
-const CATALOG_RARITY_SURFACE_SELECTOR = '.item-card[data-open], .drawer, .sb-reforge-card, .workspace-level-row';
+const CATALOG_RARITY_SURFACE_SELECTOR = '.item-card[data-open], .accessory-catalog-card[data-accessory-item-id], .drawer, .sb-reforge-card, .workspace-level-row';
 
 function applyCatalogItemSurfaceRarity(root, catalog) {
   for (const surface of root.querySelectorAll(CATALOG_RARITY_SURFACE_SELECTOR)) {
@@ -174,7 +174,7 @@ async function ensureCatalog() {
   }
 }
 
-const RARITY_SURFACE_SELECTOR = '.slot-card, [data-item-editor], .item-card[data-open], .drawer, .sb-reforge-card, .workspace-level-row, .sb-tool-card, [data-tool-editor], [data-vacuum-panel]';
+const RARITY_SURFACE_SELECTOR = '.slot-card, [data-item-editor], .item-card[data-open], .accessory-catalog-card[data-accessory-item-id], .drawer, .sb-reforge-card, .workspace-level-row, .sb-tool-card, [data-tool-editor], [data-vacuum-panel]';
 
 function mutationNeedsRarity(mutations) {
   return mutations.some(mutation => {
