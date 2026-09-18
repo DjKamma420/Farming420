@@ -1,6 +1,6 @@
 import { STORAGE_KEY } from './config.js';
 import { itemAssetForSkyblockId, loadItemAssetManifest } from './item-assets.js';
-import { skullTextureUrl } from './skull-art.js';
+import { knownSkyblockHeadTexture, skullTextureUrl } from './skull-art.js';
 
 let manifest = null;
 let manifestRequested = false;
@@ -148,14 +148,15 @@ export function renderSetupItemArt({ root = document, rawState = readState(), ma
       return;
     }
 
-    const identity = item.skullTexture
-      ? `skull:${item.skullTexture}`
+    const textureId = item.skullTexture || knownSkyblockHeadTexture(item.skyblockId);
+    const identity = textureId
+      ? `skull:${textureId}`
       : item.skyblockId ? `item:${item.skyblockId}` : `name:${item.displayName || slotId}`;
     if ((card.classList.contains('has-official-item-art') || card.classList.contains('has-item-art-fallback')) && card.dataset.renderedItemArt === identity) return;
     removeRenderedArt(card);
 
     const asset = item.skyblockId ? itemAssetForSkyblockId(manifestValue, item.skyblockId) : null;
-    const skull = skullNode(item.skullTexture, item);
+    const skull = skullNode(textureId, item);
     if (skull) {
       card.prepend(skull);
       card.classList.add('has-official-item-art');
