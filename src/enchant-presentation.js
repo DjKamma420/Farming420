@@ -1,7 +1,7 @@
 import { UPGRADES } from './data.js';
 
 const ENCHANTMENTS_SOURCE = 'https://hypixelskyblock.minecraft.wiki/w/Enchantments';
-const VERIFIED_AT = '2026-09-16';
+const VERIFIED_AT = '2026-09-18';
 
 function meta(maxLevel, appliesTo, options = {}) {
   return Object.freeze({
@@ -27,6 +27,7 @@ export const VERIFIED_FARMING_ENCHANT_META = Object.freeze({
   replenish: meta(1, ['farming-tool'], { source: 'https://hypixelskyblock.minecraft.wiki/w/Replenish' }),
   turbo_crop: meta(7, ['farming-tool']),
   pesterminator: meta(6, ['armor']),
+  thorns: meta(4, ['armor'], { source: 'https://hypixel.net/threads/hypixel-skyblock-0-26-1-new-player-improvements-harvest-feast-changes-healing-revamp-and-more.6127383/' }),
   green_thumb: meta(5, ['equipment']),
   crop_fever: meta(5, ['farming-tool'], { kind: 'ultimate' }),
   sunset: meta(5, ['armor'], { kind: 'ultimate', source: 'https://hypixelskyblock.minecraft.wiki/w/Sunset' }),
