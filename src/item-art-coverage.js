@@ -268,21 +268,23 @@ function decorateDrawer(catalog, rawState) {
 }
 
 function decorateReforges(catalog) {
-  document.querySelectorAll('.sb-reforge-card[data-sb-reforge]').forEach(card => {
-    const reforgeId = card.dataset.sbReforge;
-    if (!reforgeId) {
+  document.querySelectorAll('.sb-reforge-card[data-sb-reforge], .setup-reforge-card[data-reforge-item-id]').forEach(card => {
+    const reforgeId = card.dataset.sbReforge || card.dataset.reforgeId || '';
+    const explicitItemId = String(card.dataset.reforgeItemId || '').trim().toUpperCase();
+    if (!reforgeId && !explicitItemId) {
       delete card.dataset.physicalItemId;
       return;
     }
-    const itemId = REFORGE_ITEM_IDS[reforgeId];
+    const itemId = explicitItemId || REFORGE_ITEM_IDS[reforgeId];
     const art = card.querySelector('.sb-reforge-art');
     if (!itemId || !art) {
       delete card.dataset.physicalItemId;
       return;
     }
 
-    // skyblock-redesign historically used fuzzy substring matching here. Remove
-    // that image first so Blessed Fruit can never silently become Blessed Bait.
+    // Resolve the physical reforge item exactly. This avoids collisions such as
+    // Blessed Fruit vs Blessed Bait and lets Armor/Equipment use the same art
+    // surface as farming-tool reforges.
     art.querySelectorAll(':scope > .sb-pack-icon').forEach(node => node.remove());
     const record = catalogItemById(catalog, itemId);
     if (!record) {
@@ -290,11 +292,10 @@ function decorateReforges(catalog) {
       return;
     }
     if (card.dataset.physicalItemId !== record.id) card.dataset.physicalItemId = record.id;
-    const node = itemArtNode(record, record.name || reforgeId);
+    const node = itemArtNode(record, record.name || reforgeId || itemId);
     if (node) putArt(art, node, `reforge:${itemId}`, { prepend: true });
   });
 }
-
 function decorateToolProgression(catalog) {
   document.querySelectorAll('.workspace-level-row').forEach(row => {
     const label = row.querySelector('strong')?.textContent?.trim();
@@ -366,8 +367,8 @@ function boot() {
       const relevant = mutations.some(mutation => [...mutation.addedNodes].some(node =>
         node instanceof Element
         && !node.matches?.('.coverage-item-art')
-        && (node.matches?.('.item-card, .drawer, .sb-reforge-card, .workspace-level-row')
-          || node.querySelector?.('.item-card, .drawer, .sb-reforge-card, .workspace-level-row'))));
+        && (node.matches?.('.item-card, .drawer, .sb-reforge-card, .setup-reforge-card, .workspace-level-row')
+          || node.querySelector?.('.item-card, .drawer, .sb-reforge-card, .setup-reforge-card, .workspace-level-row'))));
       if (relevant) queueApply();
     }).observe(root, { childList: true, subtree: true });
   }
