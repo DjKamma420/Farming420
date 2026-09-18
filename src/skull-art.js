@@ -26,13 +26,38 @@ export const HAT_OFFSET = Object.freeze({ x: 40, y: 8 });
 
 
 /**
- * Exact farming-equipment player-head models verified from current SkyBlock
- * item NBT (NotEnoughUpdates item repository, checked 2026-09-18).
+ * Exact farming player-head models verified from current SkyBlock item NBT
+ * (NotEnoughUpdates item repository, checked 2026-09-18).
  *
  * These are fallbacks for manually selected/saved items that only carry a
  * SkyBlock id. A live texture from the player's NBT or Hypixel item resource
  * still wins at the call site, so an upstream model change is not masked.
  */
+export const KNOWN_FARMING_ACCESSORY_HEAD_TEXTURES = Object.freeze({
+  CROPIE_TALISMAN: 'ac7d5520a73e1d6d785496b5f5af8c9e14b40d6f6ebd629231ddbce27d422214',
+  SQUASH_RING: 'f881a38800a1c867d2a1a8a10c8543ae8a3b8a9a87c1ac58ba1e283bb0dc3d68',
+  FERMENTO_ARTIFACT: 'e1add7231c97e77a169be764a41f981cc9f542aa8c6a1336d8be2d817211bbfd',
+  HELIANTHUS_RELIC: '2e6c711f74f92bcbe486ec7e67810a16f0d1eaaac39b80d7a650cd81d611a2e7',
+  ANITA_TALISMAN: 'bb8ec57b37fdf093fe66efe2ac070a8f5181949970a4458d56ec9701eded8cff',
+  ANITA_RING: '59a1035bc6f00fddc8e0291c38319408babc84ae10648cb5258ed8b55d60e0c3',
+  ANITA_ARTIFACT: '8feabdadd5f593771fa23c94fc6816091917371fd5a1c74723e716210d6e6efb',
+  PESTHUNTER_BADGE: 'b4f1f0cf3adb4adc6b996ff9cb4e6d9d8912e0a5ab851c366c8abbdaf8b2ef04',
+  PESTHUNTER_RING: '1d06b74d6bd02b795f7bcbf17ac3b77d3bc57b695a8d54a1770c76e84896c8f8',
+  PESTHUNTER_ARTIFACT: 'b3aefd8bca236d315920d53bea1fe4892c8f1f308d6d57630677f059a3b0293f',
+  PESTHUNTER_RELIC: '7b36c204f50a11f7fe22c1d16e6a85777b24b4ad316140c666295721214d1310',
+  BIOANALYSIS_TALISMAN: '19ca2fedab02df448906b25f25f2df2c9b9c532ce48276447113dca6825e9e05',
+  BIOANALYSIS_RING: '80b774ffeb5878d6e34e9f244642e4ee489fd1dc9a2da52b87e2ecc0449c22f9',
+  BIOANALYSIS_ARTIFACT: 'e5f2e8e4f040d1dbef5a5369bd09db86a79b81a249547e458b3cc5997e24c0eb',
+  COPPER_TALISMAN: '856cba11ca1258258e903f2586fe19ecf20f4a99ef5870347cf32c2ba76e59cf',
+  COPPER_RING: 'f83a812525faf3499c3294634398b5e0e967489f2ee63e14490c1440553af065',
+  COPPER_ARTIFACT: '2933e519fc6b29c930bf74d426a2f4888a9994fe2892c6d5585fd6a3a8e52689',
+  ATMOSPHERIC_FILTER: 'd3cf5cd92c1ba0a7d7bb1f872ccdb951ca897d340040457a324271606c5bbc56',
+  MAGIC_8_BALL: 'df2412d63dd2e0e232230abd04a8f726e51c93a72686c7dae1722c4677f9f548',
+  POWER_RELIC: 'd8fdc87023cff26356477f2e097a2de83b550d88a6f1a877da4f95c4db11567f',
+  AGARIMOO_ARTIFACT: '7f3130468ac480a427db13ad13e8ca8526b538ab7ad7d69fc9952f3c53aea8d1',
+  FARMING_TALISMAN: 'ad7a30c82dba9f5a7befd6abc16089e29256e52e06f2a85f2461acd7a557c14a',
+});
+
 export const KNOWN_FARMING_EQUIPMENT_RENDERED_ICONS = Object.freeze({
   // Exact rendered item icon, verified against the current item page.
   // This bypasses player-skin cropping on clients where that route renders blank.
@@ -73,7 +98,7 @@ export function knownSkyblockHeadTexture(skyblockId) {
   const raw = String(skyblockId || '').trim().toUpperCase();
   if (!raw) return null;
   const id = KNOWN_HEAD_ID_ALIASES[raw] || raw;
-  const hash = KNOWN_FARMING_EQUIPMENT_HEAD_TEXTURES[id] || null;
+  const hash = KNOWN_FARMING_ACCESSORY_HEAD_TEXTURES[id] || KNOWN_FARMING_EQUIPMENT_HEAD_TEXTURES[id] || null;
   return hash && /^[0-9a-f]{64}$/.test(hash) ? hash : null;
 }
 
