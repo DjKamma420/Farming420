@@ -28,6 +28,7 @@
   font-size: 12px;
   font-weight: 800;
   cursor: pointer;
+  min-width: 74px;
 }
 
 .activity-mode-switch button.active {
@@ -61,11 +62,18 @@
 }
 
 @media (max-width: 760px) {
+  .activity-mode-switch {
+    flex: 1;
+    max-width: 320px;
+  }
+
   .activity-mode-switch > span {
     display: none;
   }
 
   .activity-mode-switch button {
-    padding: 7px 8px;
+    flex: 1;
+    min-width: 0;
+    padding: 7px 6px;
   }
 }

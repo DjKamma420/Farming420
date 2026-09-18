@@ -2,18 +2,24 @@ import { createSetup, normalizeSetups } from './setups.js';
 
 export const ACTIVITY_MODE = Object.freeze({
   FARM: 'farm',
-  PEST: 'pest',
+  PEST_SPAWN: 'pest-spawn',
+  PEST_KILL: 'pest-kill',
+  // Legacy code alias: the old PEST mode was the Vacuum/loot calculation
+  // path, so existing callers must keep receiving Killing semantics.
+  PEST: 'pest-kill',
 });
 
 export const ACTIVITY_SETUP_ID = Object.freeze({
   [ACTIVITY_MODE.FARM]: 'normal',
-  [ACTIVITY_MODE.PEST]: 'pest',
+  [ACTIVITY_MODE.PEST_SPAWN]: 'pest',
+  [ACTIVITY_MODE.PEST_KILL]: 'pest-kill',
 });
 
 export function normalizeActivityMode(value) {
-  return String(value || '').toLowerCase() === ACTIVITY_MODE.PEST
-    ? ACTIVITY_MODE.PEST
-    : ACTIVITY_MODE.FARM;
+  const normalized = String(value || '').trim().toLowerCase();
+  if (normalized === ACTIVITY_MODE.PEST_KILL || normalized === 'pest') return ACTIVITY_MODE.PEST_KILL;
+  if (normalized === ACTIVITY_MODE.PEST_SPAWN) return ACTIVITY_MODE.PEST_SPAWN;
+  return ACTIVITY_MODE.FARM;
 }
 
 export function setupIdForActivity(mode) {
@@ -21,13 +27,21 @@ export function setupIdForActivity(mode) {
 }
 
 export function activityModeForState(state) {
-  return state?.profile?.setups?.activeId === ACTIVITY_SETUP_ID[ACTIVITY_MODE.PEST]
-    ? ACTIVITY_MODE.PEST
-    : ACTIVITY_MODE.FARM;
+  const activeId = state?.profile?.setups?.activeId;
+  if (activeId === ACTIVITY_SETUP_ID[ACTIVITY_MODE.PEST_KILL]) return ACTIVITY_MODE.PEST_KILL;
+  if (activeId === ACTIVITY_SETUP_ID[ACTIVITY_MODE.PEST_SPAWN]) return ACTIVITY_MODE.PEST_SPAWN;
+  return ACTIVITY_MODE.FARM;
 }
 
 export function activityLabel(mode) {
-  return normalizeActivityMode(mode) === ACTIVITY_MODE.PEST ? 'Pest Set' : 'Farm Set';
+  switch (normalizeActivityMode(mode)) {
+    case ACTIVITY_MODE.PEST_SPAWN:
+      return 'Pest Spawning Set';
+    case ACTIVITY_MODE.PEST_KILL:
+      return 'Pest Killing Set';
+    default:
+      return 'Farming Set';
+  }
 }
 
 export function setActivityModeOnState(state, mode) {
@@ -54,6 +68,11 @@ export function isPestVacuumEntry(item) {
   return scope === 'Pest Vacuum Drops' || isVacuumItemEntry(item);
 }
 
+export function usesFarmingTool(mode) {
+  const normalized = normalizeActivityMode(mode);
+  return normalized === ACTIVITY_MODE.FARM || normalized === ACTIVITY_MODE.PEST_SPAWN;
+}
+
 export function itemAppliesToActivity(item, mode) {
   const normalized = normalizeActivityMode(mode);
   const scope = String(item?.modeScope || 'Any');
@@ -63,9 +82,15 @@ export function itemAppliesToActivity(item, mode) {
     return scope === 'Any';
   }
 
-  // The Pest Set uses the vacuum instead of a crop farming tool. General
-  // account/gear effects can still apply, while event/contest-only states stay
-  // out until those contexts receive their own explicit activity mode.
+  if (normalized === ACTIVITY_MODE.PEST_SPAWN) {
+    // Spawning happens while crop farming. Keep the crop tool and general
+    // Farming effects, add spawn/BPC effects, and exclude Vacuum/loot effects.
+    if (isPestVacuumEntry(item)) return false;
+    return scope === 'Any' || scope === 'Pest Spawning';
+  }
+
+  // Killing uses the Vacuum and loot/Overbloom path. Spawn-only BPC/cooldown
+  // effects are intentionally excluded from this phase.
   if (item?.section === 'tools' && !isVacuumItemEntry(item)) return false;
-  return scope === 'Any' || scope === 'Pest Spawning' || scope === 'Pest Vacuum Drops';
+  return scope === 'Any' || scope === 'Pest Vacuum Drops';
 }

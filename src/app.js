@@ -475,7 +475,6 @@ function shell(content) {
           </select>
         </div>
         <div class="search-wrap"><input id="search" placeholder="Search item, upgrade or effect…" value="${esc(state.search)}" /></div>
-        <div class="fortune-pill"><span>Global FF</span><strong>${Number(state.profile.globalFortune || 0).toLocaleString('en-US')}</strong></div>
       </header>
       <section class="content">${content}</section>
     </main>
