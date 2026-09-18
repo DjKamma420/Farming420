@@ -47,6 +47,22 @@ test('invalid skin hashes are never emitted as remote texture urls', () => {
   assert.equal(skinTextureUrl({}), null);
 });
 
+test('armor uses the item model before any same-set pack stand-in', () => {
+  const source = readFileSync(new URL('../src/item-art-coverage.js', import.meta.url), 'utf8');
+  const armorGuard = source.indexOf('if (isArmorItem(item))');
+  const packLookup = source.indexOf('const packNode = packArtNodeFor(item, label)');
+  assert.ok(armorGuard >= 0 && packLookup > armorGuard);
+  assert.match(source, /armorItemSvgMarkup/);
+});
+
+test('catalog head art renders both the face and hat layers', () => {
+  const source = readFileSync(new URL('../src/item-art-coverage.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../src/item-art-coverage.css', import.meta.url), 'utf8');
+  assert.match(source, /\['face', 'hat'\]/);
+  assert.match(css, /\.coverage-skull-face[\s\S]*?14\.2857% 14\.2857%/);
+  assert.match(css, /\.coverage-skull-hat[\s\S]*?71\.4286% 14\.2857%/);
+});
+
 test('physical progression cards resolve exact names and deliberate suffix stripping', () => {
   const shard = catalogItemForUpgrade(catalog, {
     id: 'pest-mosquito-shard-enchanted-farmer',
