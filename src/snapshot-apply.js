@@ -3,6 +3,8 @@ import { CROPS, UPGRADES } from './data.js';
 import { ensureProgressBucket, toolKeyForCropId } from './migrations.js';
 import { activeSetup } from './setups.js';
 import { exclusiveGroupForEntry } from './exclusivity.js';
+import { FARMING_ACCESSORIES } from './farming-accessories.js';
+import { accessoryStateFromSnapshot } from './accessory-capabilities.js';
 import {
   blossomPieceCount,
   greenThumbMarginalPerLevel,
@@ -214,6 +216,21 @@ function applyToolItem(state, cropIds, item, autoApplied, applied) {
   }
 }
 
+function syncAccessoryItemStates(state, snapshot) {
+  const accessoryItems = state.profile.accessoryItems ||= {};
+
+  // A fresh sync owns only records previously written by a sync. Manual item
+  // state survives when the current API payload does not contain that accessory.
+  for (const [itemId, itemState] of Object.entries(accessoryItems)) {
+    if (itemState?.source === AUTO_SOURCE) delete accessoryItems[itemId];
+  }
+
+  for (const accessory of FARMING_ACCESSORIES) {
+    const synced = accessoryStateFromSnapshot(snapshot, accessory.itemId);
+    if (synced) accessoryItems[accessory.itemId] = synced;
+  }
+}
+
 function missingRarityFor(pieces, predicate) {
   return pieces.some(piece => predicate(piece) && !String(piece?.rarity || '').trim());
 }
@@ -288,17 +305,9 @@ function applyEquipmentDerived(pieces, armorPieces, state, snapshot, autoApplied
       applyDynamicValue(store, scope, THORNY_FORTUNE_ID, thornyPieces.length, thornyFortuneForPieces(thornyPieces), applied);
       applyDynamicValue(store, scope, THORNY_BASE_OVERBLOOM_ID, thornyPieces.length, thornyBaseOverbloomForPieces(thornyPieces), applied);
     }
-
     const armorThorns = thornsTotalLevel(armorPieces);
     if (armorThorns > 0) {
-      applyDynamicValue(
-        store,
-        scope,
-        THORNY_ARMOR_BONUS_ID,
-        1,
-        thornyArmorBonusOverbloom(thornyPieces, armorThorns),
-        applied,
-      );
+      applyDynamicValue(store, scope, THORNY_ARMOR_BONUS_ID, 1, thornyArmorBonusOverbloom(thornyPieces, armorThorns), applied);
     }
   }
 
@@ -341,6 +350,7 @@ export function applySnapshotToProgress(state, snapshot) {
   }
 
   const items = Array.isArray(snapshot?.items) ? snapshot.items : [];
+  syncAccessoryItemStates(state, snapshot);
   const unmatchedTools = [];
   for (const item of items) {
     const cropIds = cropsForToolItem(item);

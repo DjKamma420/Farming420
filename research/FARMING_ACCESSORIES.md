@@ -53,6 +53,48 @@ Sources:
 - https://hypixel-skyblock.fandom.com/wiki/Pesthunter_Artifact
 - https://hypixel-skyblock.fandom.com/wiki/Pesthunter_Relic
 
+## Greenhouse mutation progression
+
+| Item | SkyBlock ID | Greenhouse mutation chance |
+|---|---|---:|
+| Bioanalysis Talisman | `BIOANALYSIS_TALISMAN` | +5% |
+| Bioanalysis Ring | `BIOANALYSIS_RING` | +10% |
+| Bioanalysis Artifact | `BIOANALYSIS_ARTIFACT` | +15% |
+
+This is one accessory line; only the strongest owned tier should count.
+
+Exact current head textures from the Hypixel item resource:
+- `BIOANALYSIS_TALISMAN`: `19ca2fedab02df448906b25f25f2df2c9b9c532ce48276447113dca6825e9e05`
+- `BIOANALYSIS_RING`: `80b774ffeb5878d6e34e9f244642e4ee489fd1dc9a2da52b87e2ecc0449c22f9`
+- `BIOANALYSIS_ARTIFACT`: `e5f2e8e4f040d1dbef5a5369bd09db86a79b81a249547e458b3cc5997e24c0eb`
+
+Sources:
+- https://hypixel-skyblock.fandom.com/wiki/Bioanalysis_Talisman
+- https://hypixel-skyblock.fandom.com/wiki/Bioanalysis_Ring
+- https://hypixel-skyblock.fandom.com/wiki/Bioanalysis_Artifact
+- https://hypixel-skyblock.fandom.com/wiki/Module:Item/ApiData
+
+## Garden visitor progression
+
+| Item | SkyBlock ID | RARE+ visitor chance |
+|---|---|---:|
+| Copper Talisman | `COPPER_TALISMAN` | +4% |
+| Copper Ring | `COPPER_RING` | +8% |
+| Copper Artifact | `COPPER_ARTIFACT` | +12% |
+
+This is one accessory line; lower tiers do not stack with higher tiers.
+
+Exact current head textures from the Hypixel item resource:
+- `COPPER_TALISMAN`: `856cba11ca1258258e903f2586fe19ecf20f4a99ef5870347cf32c2ba76e59cf`
+- `COPPER_RING`: `f83a812525faf3499c3294634398b5e0e967489f2ee63e14490c1440553af065`
+- `COPPER_ARTIFACT`: `2933e519fc6b29c930bf74d426a2f4888a9994fe2892c6d5585fd6a3a8e52689`
+
+Sources:
+- https://hypixel-skyblock.fandom.com/wiki/Copper_Talisman
+- https://hypixel-skyblock.fandom.com/wiki/Copper_Ring
+- https://hypixel-skyblock.fandom.com/wiki/Copper_Artifact
+- https://hypixel-skyblock.fandom.com/wiki/Module:Item/ApiData
+
 ## Conditional / utility
 
 | Item | SkyBlock ID | Farming relevance |
@@ -84,4 +126,4 @@ The model layer must:
 3. use shipped pack art only when there is no skull texture;
 4. never substitute fuzzy-name matches for a different physical item.
 
-Blue™ but Yellow Abicase is intentionally not a dedicated visual card here. Hypixel's public item resource exposes the base `ABICASE` item while the named case is a variant; presenting the base texture as a guaranteed exact Yellow variant would violate the exact-model rule.
+Blue™ but Yellow Abicase grants +1.5 Farming Wisdom and is farming-relevant, but it is intentionally not rendered as a normal exact-ID card yet. Hypixel's public item resource exposes the base `ABICASE` item, while current live-auction metadata identifies the named variant with model key `BLUE_YELLOW`. Rendering the base `ABICASE` skull as if it were guaranteed to be the Yellow variant would violate the exact-model rule.

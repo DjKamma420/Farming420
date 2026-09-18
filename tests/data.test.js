@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { COMING_SOON, CROPS, HIDDEN_INTERACTIONS, UPGRADES } from '../src/data.js';
 import { toolKeyForCropId } from '../src/migrations.js';
 
-const SECTIONS = new Set(['account', 'crops', 'tools', 'gear', 'accessories', 'pets', 'chips', 'shards', 'buffs', 'pests']);
+const SECTIONS = new Set(['account', 'accessories', 'crops', 'tools', 'gear', 'pets', 'chips', 'shards', 'buffs', 'pests']);
 const CROP_NAMES = new Set(CROPS.map(entry => entry.name));
 
 test('all 13 current Garden crops are present with unique ids', () => {

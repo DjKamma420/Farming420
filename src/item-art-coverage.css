@@ -142,3 +142,51 @@
     gap: 9px !important;
   }
 }
+
+
+/* Accessories are an Accessory Bag layer, not wearable setup slots. Reference
+   cards still use the same physical-item surface and exact Hypixel art, but
+   only calculator-linked cards behave like buttons. */
+.accessory-model-note {
+  display: grid;
+  gap: 5px;
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel2);
+}
+
+.accessory-model-note span,
+.accessory-effect {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.accessory-group {
+  margin-bottom: 30px;
+}
+
+.accessory-catalog-card {
+  min-height: 168px;
+}
+
+article.accessory-catalog-card {
+  cursor: default;
+}
+
+article.accessory-catalog-card:hover {
+  transform: none;
+}
+
+.accessory-catalog-card .accessory-effect {
+  position: relative;
+  min-height: 44px;
+  margin: 16px 0 10px;
+  font-size: 12px;
+}
+
+.accessory-catalog-card .card-portrait {
+  display: grid;
+  place-items: center;
+}

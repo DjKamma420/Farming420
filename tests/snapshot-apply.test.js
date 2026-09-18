@@ -107,6 +107,43 @@ test('tool counters, enchantments, reforge, gem and recomb land on that tool', (
   assert.equal(tool['tool-gem-perfect-peridot-on-farming-tool'], 1);
 });
 
+test('Accessory Bag sync imports Recombobulator and Enrichment state without guessing rarity', () => {
+  const state = emptyState();
+  applySnapshotToProgress(state, snapshotWith({
+    items: [{
+      container: 'talisman_bag',
+      skyblockId: 'HELIANTHUS_RELIC',
+      displayName: 'Helianthus Relic',
+      recombobulated: 1,
+      talismanEnrichment: 'magic_find',
+      enchantments: {},
+      gems: {},
+    }],
+  }));
+
+  assert.deepEqual(state.profile.accessoryItems.HELIANTHUS_RELIC, {
+    recombobulated: true,
+    enrichment: 'magic_find',
+    source: 'hypixel-sync',
+  });
+
+  applySnapshotToProgress(state, snapshotWith({ items: [] }));
+  assert.equal(state.profile.accessoryItems.HELIANTHUS_RELIC, undefined, 'stale synced accessory state is cleared');
+});
+
+test('manual accessory state survives a sync that does not contain the item', () => {
+  const state = emptyState();
+  state.profile.accessoryItems = {
+    HELIANTHUS_RELIC: { recombobulated: true, enrichment: 'speed', source: 'manual' },
+  };
+  applySnapshotToProgress(state, snapshotWith({ items: [] }));
+  assert.deepEqual(state.profile.accessoryItems.HELIANTHUS_RELIC, {
+    recombobulated: true,
+    enrichment: 'speed',
+    source: 'manual',
+  });
+});
+
 test('values are clamped to each documented maximum', () => {
   const state = emptyState();
   applySnapshotToProgress(state, snapshotWith({

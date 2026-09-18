@@ -40,7 +40,7 @@ const GOALS = Object.freeze([
 const NAV_ART = Object.freeze({
   dashboard: ['garden_scythe'],
   account: ['visitors_gratitude'],
-  accessories: ['visitors_gratitude'],
+  accessories: ['honeycomb_talisman', 'visitors_gratitude'],
   crops: ['cropie'],
   tools: ['theoretical_hoe_wheat_3', 'melon_dicer_3'],
   setups: ['fermento'],

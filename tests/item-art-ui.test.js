@@ -56,7 +56,17 @@ test('setup art resolves from real skyblockId and never display-name guesses', (
 test('manual equipment ids use their exact head model before the letter fallback', () => {
   const source = readFileSync(new URL('../src/item-art-ui.js', import.meta.url), 'utf8');
   assert.match(source, /item\.skullTexture \|\| knownSkyblockHeadTexture\(item\.skyblockId\)/);
-  assert.match(source, /const skull = skullNode\(textureId, item(?:,|\))/);
+  assert.match(source, /const skull = skullNode\(textureId, item, \(\) => showFallback/);
+  assert.match(source, /document\.createElement\('img'\)/);
+  assert.doesNotMatch(source, /style\.backgroundImage/);
+});
+
+
+test('head art renders before the optional pack manifest finishes loading', () => {
+  const source = readFileSync(new URL('../src/item-art-ui.js', import.meta.url), 'utf8');
+  const firstRender = source.indexOf('renderSetupItemArt({ manifestValue: manifest })');
+  const manifestLoad = source.indexOf('const loaded = await ensureManifest()');
+  assert.ok(firstRender >= 0 && manifestLoad > firstRender);
 });
 
 test('invalid or missing setup state degrades to no asset', () => {
