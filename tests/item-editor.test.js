@@ -37,7 +37,7 @@ test('every setup slot knows which enchantment family it belongs to', () => {
 
 test('a slot offers exactly the verified enchantments that apply to it', () => {
   const helmet = enchantRowsFor('helmet', {});
-  assert.deepEqual(helmet.map(row => row.id), ['pesterminator', 'sunset']);
+  assert.deepEqual(helmet.map(row => row.id), ['pesterminator', 'thorns', 'sunset']);
   assert.deepEqual(enchantRowsFor('equipment1', {}).map(row => row.id), ['green_thumb']);
   // Pets take no enchantments, so the editor shows the section as absent rather
   // than as an empty box waiting to be filled.
@@ -79,6 +79,22 @@ test('a crop-specific Turbo enchant keeps its own storage key through an edit', 
   assert.equal(turbo.level, 5);
   assert.deepEqual(withEnchantLevel(item, turbo.storageKey, 7, turbo.maxLevel), { turbo_melon: 7 });
   assert.deepEqual(withEnchantToggled(item, turbo.storageKey, false), {});
+});
+
+test('fixed-tier Delicate never invents nonexistent levels I-IV', () => {
+  const delicate = enchantRowsFor('tool', {}).find(row => row.id === 'delicate');
+  assert.equal(delicate.minLevel, 5);
+  assert.equal(delicate.maxLevel, 5);
+  assert.deepEqual(withEnchantToggled({ enchantments: {} }, 'delicate', true), { delicate: 5 });
+  assert.deepEqual(withEnchantLevel({ enchantments: {} }, 'delicate', 2, 5), { delicate: 5 });
+});
+
+test('Thorns is exposed as an armor-only secret farming strategy', () => {
+  const thorns = enchantRowsFor('helmet', {}).find(row => row.id === 'thorns');
+  assert.ok(thorns);
+  assert.equal(thorns.strategy, 'secret');
+  assert.equal(thorns.maxLevel, 4);
+  assert.equal(enchantRowsFor('equipment1', {}).some(row => row.id === 'thorns'), false);
 });
 
 test('turning an enchantment on starts it at level 1, not at its maximum', () => {
