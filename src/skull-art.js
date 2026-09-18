@@ -26,8 +26,8 @@ export const HAT_OFFSET = Object.freeze({ x: 40, y: 8 });
 
 
 /**
- * Exact farming-equipment player-head models verified from current SkyBlock
- * item NBT (NotEnoughUpdates item repository, checked 2026-09-18).
+ * Exact farming gear player-head models verified from current SkyBlock item
+ * NBT (NotEnoughUpdates item repository, checked 2026-09-18).
  *
  * These are fallbacks for manually selected/saved items that only carry a
  * SkyBlock id. A live texture from the player's NBT or Hypixel item resource
@@ -40,6 +40,15 @@ export const KNOWN_FARMING_EQUIPMENT_RENDERED_ICONS = Object.freeze({
 });
 
 export const KNOWN_FARMING_EQUIPMENT_HEAD_TEXTURES = Object.freeze({
+  CROPIE_HELMET: 'e4bacb96734e244b9f7331d453e686fa2e32522a411aa568f960e741d74b3289',
+  FERMENTO_HELMET: '5086ddbe960f33480ca229da7402391ab417d32ebb21770430ea610de5801fe3',
+  HELIANTHUS_HELMET: '46e48a6eff318dcda57d5d76a9b2656be25973e3d472b6d2e446a8e60f60a78a',
+  MELON_HELMET: '8208669e699d6f0d3a77f74b2b27228ce51b9359678d26f9c3408764b2e779aa',
+  PUMPKIN_HELMET: '2f92489725093d51dd18a259382fa0207a20a94495883d9f4b1fd97a8a11b9f0',
+  SQUASH_HELMET: 'de1087c0c519a9a1dcee4325410b19a1be4855eac5a662ae1b523329f90faecd',
+  ENCHANTED_JACK_O_LANTERN: '8a06221ca4a7355f34098692e4da691fef06abac0bf9041d573a13d62cc3091',
+  PUFFERFISH_HAT: '44f7f2203e3a850b6c83dce47fd6714a62e4d7648c16ed1fd9dc8168ab3c484f',
+
   LOTUS_NECKLACE: 'ad83aa25c11acfce7442ff0129fd70bb42ca0de63ba2115169966cc351f1716b',
   LOTUS_CLOAK: 'ee40d7762d2b7aed5d925d17f7b3c1451e709c2537a5546b1ce6e0d8ee2757d4',
   LOTUS_BELT: '4ce8d19b0163d1eadde563377394b05de63427c6e3f8a949e0dfa32bb20d7f2d',
@@ -67,6 +76,7 @@ const KNOWN_HEAD_ID_ALIASES = Object.freeze({
   PESTHUNTER_BELT: 'PESTHUNTERS_BELT',
   PESTHUNTER_GLOVES: 'PESTHUNTERS_GLOVES',
   ZORRO_CAPE: 'ZORROS_CAPE',
+  PUFFERFISH_HELMET: 'PUFFERFISH_HAT',
 });
 
 export function knownSkyblockHeadTexture(skyblockId) {
