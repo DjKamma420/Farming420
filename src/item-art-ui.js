@@ -1,5 +1,6 @@
 import { STORAGE_KEY } from './config.js';
 import { itemAssetForSkyblockId, loadItemAssetManifest } from './item-assets.js';
+import { exactItemRenderUrl } from './exact-item-renderer.js';
 import { knownSkyblockHeadTexture, skullTextureUrl } from './skull-art.js';
 
 let manifest = null;
@@ -106,6 +107,22 @@ function skullNode(textureId, item, onError = null) {
   return node;
 }
 
+function exactImageNode(url, item, onError = null) {
+  if (!url) return null;
+  const img = document.createElement('img');
+  img.className = 'official-item-art exact-item-art';
+  img.src = url;
+  img.alt = item?.displayName ? `${item.displayName} exact item render` : 'SkyBlock item render';
+  img.loading = 'lazy';
+  img.decoding = 'async';
+  img.dataset.itemRenderer = 'skycrypt';
+  img.addEventListener('error', () => {
+    img.remove();
+    if (typeof onError === 'function') onError();
+  }, { once: true });
+  return img;
+}
+
 function imageNode(asset, item, onError = null) {
   const img = document.createElement('img');
   img.className = 'official-item-art';
@@ -166,23 +183,45 @@ export function renderSetupItemArt({ root = document, rawState = readState(), ma
     removeRenderedArt(card);
 
     const asset = item.skyblockId ? itemAssetForSkyblockId(manifestValue, item.skyblockId) : null;
-    const skull = skullNode(textureId, item, () => showFallback(card, item.displayName || slotId, identity));
-    if (skull) {
-      card.prepend(skull);
+    const exactUrl = exactItemRenderUrl({ ...item, skullTexture: textureId });
+
+    const showLocalFallback = () => {
+      const skull = skullNode(textureId, item, () => {
+        if (asset) {
+          const pack = imageNode(asset, item, () => showFallback(card, item.displayName || slotId, identity));
+          card.prepend(pack);
+          card.classList.add('has-official-item-art');
+          card.dataset.renderedItemArt = identity;
+          return;
+        }
+        showFallback(card, item.displayName || slotId, identity);
+      });
+      if (skull) {
+        card.prepend(skull);
+        card.classList.add('has-official-item-art');
+        card.dataset.renderedItemArt = identity;
+        return;
+      }
+      if (asset) {
+        const pack = imageNode(asset, item, () => showFallback(card, item.displayName || slotId, identity));
+        card.prepend(pack);
+        card.classList.add('has-official-item-art');
+        card.dataset.renderedItemArt = identity;
+        return;
+      }
+      showFallback(card, item.displayName || slotId, identity);
+    };
+
+    const exact = exactImageNode(exactUrl, item, showLocalFallback);
+    if (exact) {
+      card.prepend(exact);
       card.classList.add('has-official-item-art');
       card.dataset.renderedItemArt = identity;
       rendered += 1;
       return;
     }
-    if (asset) {
-      const img = imageNode(asset, item, () => showFallback(card, item.displayName || slotId, identity));
-      card.prepend(img);
-      card.classList.add('has-official-item-art');
-      card.dataset.renderedItemArt = identity;
-      rendered += 1;
-      return;
-    }
-    showFallback(card, item.displayName || slotId, identity);
+
+    showLocalFallback();
   });
   return rendered;
 }
