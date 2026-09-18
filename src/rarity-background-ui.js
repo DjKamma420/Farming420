@@ -110,16 +110,18 @@ function clearRarityClass(node) {
   delete node.dataset.effectiveRarity;
 }
 
-function applyProgressionCardRarity(root, catalog) {
-  for (const card of root.querySelectorAll('.item-card[data-open]')) {
-    const itemId = card.dataset.physicalItemId;
+const CATALOG_RARITY_SURFACE_SELECTOR = '.item-card[data-open], .sb-reforge-card, .workspace-level-row';
+
+function applyCatalogItemSurfaceRarity(root, catalog) {
+  for (const surface of root.querySelectorAll(CATALOG_RARITY_SURFACE_SELECTOR)) {
+    const itemId = surface.dataset.physicalItemId;
     if (!itemId) {
-      clearRarityClass(card);
+      clearRarityClass(surface);
       continue;
     }
     const item = catalogItemById(catalog, itemId);
-    if (item?.tier) applyRarityClass(card, item.tier);
-    else clearRarityClass(card);
+    if (item?.tier) applyRarityClass(surface, item.tier);
+    else clearRarityClass(surface);
   }
 }
 
@@ -145,7 +147,7 @@ export function applyRarityBackgrounds(root = document) {
   const state = readState();
   const catalog = readCachedCatalog()?.items || [];
   applySetupRarity(root, state, catalog);
-  applyProgressionCardRarity(root, catalog);
+  applyCatalogItemSurfaceRarity(root, catalog);
   applyToolRarity(root, state, catalog);
   applyVacuumRarity(root, state);
 }
@@ -172,7 +174,7 @@ async function ensureCatalog() {
   }
 }
 
-const RARITY_SURFACE_SELECTOR = '.slot-card, [data-item-editor], .item-card[data-open], .sb-tool-card, [data-tool-editor], [data-vacuum-panel]';
+const RARITY_SURFACE_SELECTOR = '.slot-card, [data-item-editor], .item-card[data-open], .sb-reforge-card, .workspace-level-row, .sb-tool-card, [data-tool-editor], [data-vacuum-panel]';
 
 function mutationNeedsRarity(mutations) {
   return mutations.some(mutation => {
