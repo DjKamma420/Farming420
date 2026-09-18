@@ -40,6 +40,7 @@ test('the mobile navigation stays fixed and exposes named tabs when opened', () 
   assert.match(mobile, /\.sidebar\.sb-rail\.nav-open > nav \{[^}]*overflow-y:\s*auto/);
   assert.match(mobile, /\.sidebar\.sb-rail\.nav-open \.sb-nav-label \{[^}]*display:\s*block\s*!important/);
   assert.match(mobile, /\.sidebar\.sb-rail:not\(\.nav-open\) > nav[^}]*display:\s*none\s*!important/);
+  assert.match(mobile, /\.nav-toggle \{[^}]*margin:\s*0 0 6px/);
 
   assert.doesNotMatch(mobile, /\.sidebar\.sb-rail \{[^}]*position:\s*sticky/);
   assert.doesNotMatch(mobile, /nav-link:nth-child\([^)]*\)\s*\{[^}]*display:\s*none/);
@@ -59,8 +60,8 @@ test('collapsed rail reserves only the handle while the open rail overlays conte
 
   assert.match(mobile, /\.sidebar\.sb-rail \{[^}]*width:\s*44px/);
   assert.match(mobile, /\.main \{[^}]*margin-left:\s*44px/);
-  assert.match(mobile, /\.sidebar\.sb-rail\.nav-open \{[^}]*width:\s*164px/);
-  assert.doesNotMatch(mobile, /\.main \{[^}]*margin-left:\s*164px/);
+  assert.match(mobile, /\.sidebar\.sb-rail\.nav-open \{[^}]*width:\s*144px/);
+  assert.doesNotMatch(mobile, /\.main \{[^}]*margin-left:\s*144px/);
 
   assert.match(mobile, /@media \(max-width:\s*650px\)[\s\S]*\.sidebar\.sb-rail \{[^}]*width:\s*40px/);
   assert.match(mobile, /@media \(max-width:\s*650px\)[\s\S]*\.main \{[^}]*margin-left:\s*40px/);
