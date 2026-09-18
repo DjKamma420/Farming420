@@ -4,10 +4,9 @@ import { readFileSync } from 'node:fs';
 import { SET_ART, packArtKeyFor } from '../src/pack-item-art.js';
 
 /**
- * Set art stands in for gear the official item resource cannot picture. A key
- * that matches nothing in the pack degrades to the hand-drawn outline, or for
- * equipment to a two-letter badge, with nothing reported -- which is the state
- * this table exists to end.
+ * Set art stands in only where no stronger physical model exists. Armour is
+ * excluded because the official item resource carries its head skin or its
+ * vanilla material and dye colour.
  */
 const manifest = JSON.parse(
   readFileSync(new URL('../assets/hypixel-pack/manifest.json', import.meta.url), 'utf8'),
@@ -18,12 +17,11 @@ test('every set art key exists in the shipped pack', () => {
   assert.deepEqual(missing, [], `set art keys matching nothing: ${missing.join(', ')}`);
 });
 
-test('the four armour pieces of a set resolve to that set', () => {
-  for (const piece of ['HELMET', 'CHESTPLATE', 'LEGGINGS', 'BOOTS']) {
-    assert.equal(packArtKeyFor({ id: `HELIANTHUS_${piece}`, name: `Helianthus ${piece}` }), 'helianthus');
-    assert.equal(packArtKeyFor({ id: `FERMENTO_${piece}`, name: `Fermento ${piece}` }), 'fermento');
-    assert.equal(packArtKeyFor({ id: `CROPIE_${piece}`, name: `Cropie ${piece}` }), 'cropie');
-    assert.equal(packArtKeyFor({ id: `SQUASH_${piece}`, name: `Squash ${piece}` }), 'squash');
+test('armor pieces never resolve to their crop ingredient as a stand-in', () => {
+  for (const set of ['HELIANTHUS', 'FERMENTO', 'CROPIE', 'SQUASH']) {
+    for (const piece of ['HELMET', 'CHESTPLATE', 'LEGGINGS', 'BOOTS']) {
+      assert.equal(packArtKeyFor({ id: `${set}_${piece}`, name: `${set} ${piece}` }), null);
+    }
   }
 });
 
@@ -44,10 +42,8 @@ test('the blossom equipment gets its stand-in', () => {
   assert.equal(packArtKeyFor({ id: 'BLOSSOM_BELT', name: 'Blossom Belt' }), 'bachelors_rose');
 });
 
-test('a reforge in the display name does not change the set', () => {
-  // The catalogue name is clean, but matching also reads the id, and a caller
-  // may pass a synced display name straight through.
-  assert.equal(packArtKeyFor({ id: 'HELIANTHUS_CHESTPLATE', name: 'Mossy Helianthus Chestplate' }), 'helianthus');
+test('a reforge in the display name does not turn armor back into set art', () => {
+  assert.equal(packArtKeyFor({ id: 'HELIANTHUS_CHESTPLATE', name: 'Mossy Helianthus Chestplate' }), null);
   assert.equal(packArtKeyFor({ id: 'BLOSSOM_CLOAK', name: 'Thorny Blossom Cloak' }), 'bachelors_rose');
 });
 
