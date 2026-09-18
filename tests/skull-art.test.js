@@ -7,10 +7,12 @@ import {
   HAT_OFFSET,
   HEAD_SIZE,
   KNOWN_FARMING_EQUIPMENT_HEAD_TEXTURES,
+  KNOWN_FARMING_EQUIPMENT_RENDERED_ICONS,
   SKIN_SHEET_WIDTH,
   TEXTURE_HOST,
   headLayerGeometry,
   knownSkyblockHeadTexture,
+  knownSkyblockRenderedIcon,
   skullTextureFromTag,
   skullTextureUrl,
   textureIdFromProperty,
@@ -59,6 +61,22 @@ test('current farming equipment ids have exact verified head models', () => {
   }
   assert.equal(knownSkyblockHeadTexture('ZORRO_CAPE'), expected.ZORROS_CAPE, 'old saved typo remains renderable');
   assert.equal(knownSkyblockHeadTexture('NOT_REAL'), null);
+});
+
+test('Pesthunter necklace has an exact rendered item icon fallback', () => {
+  assert.equal(
+    KNOWN_FARMING_EQUIPMENT_RENDERED_ICONS.PESTHUNTERS_NECKLACE,
+    'https://skyah.net/icons/items/pesthunters_necklace.webp',
+  );
+  assert.equal(
+    knownSkyblockRenderedIcon('PESTHUNTERS_NECKLACE'),
+    'https://skyah.net/icons/items/pesthunters_necklace.webp',
+  );
+  assert.equal(
+    knownSkyblockRenderedIcon('PESTHUNTER_NECKLACE'),
+    'https://skyah.net/icons/items/pesthunters_necklace.webp',
+  );
+  assert.equal(knownSkyblockRenderedIcon('NOT_REAL'), null);
 });
 
 test('anything that is not a plain hex id is refused', () => {
@@ -159,6 +177,7 @@ test('the page is allowed to load head textures, and only from Mojang', () => {
   const csp = indexHtml.match(/Content-Security-Policy"\s+content="([^"]+)"/)?.[1] ?? '';
   const imgSrc = csp.match(/img-src ([^;]+)/)?.[1] ?? '';
   assert.match(imgSrc, /https:\/\/textures\.minecraft\.net/);
+  assert.match(imgSrc, /https:\/\/skyah\.net/);
   // Displaying is all that is needed. The host sends no CORS header, so the
   // pixels are never read back, and it has no business in connect-src.
   assert.doesNotMatch(csp.match(/connect-src ([^;]+)/)?.[1] ?? '', /textures\.minecraft\.net/);
