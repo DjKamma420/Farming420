@@ -104,3 +104,22 @@ test('tapping the active tool toggles its docked editor closed and open', () => 
   );
   assert.match(src, /getAttribute\('aria-expanded'\) !== nextValue/);
 });
+
+
+test('reforge state dots stay in a dedicated far-right grid column', () => {
+  const css = read('skyblock-redesign.css').replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.match(css, /\.sb-reforge-card \{[^}]*grid-template-columns:\s*32px minmax\(0,1fr\) 14px/s);
+  assert.match(
+    css,
+    /\.sb-reforge-card > \.sb-state-dot \{[^}]*position:\s*static;[^}]*transform:\s*none;[^}]*justify-self:\s*end;[^}]*align-self:\s*center/s,
+  );
+  assert.doesNotMatch(css, /\.sb-reforge-card em ~ \.sb-state-dot/);
+});
+
+test('the open tool and its editor render as one connected accordion frame', () => {
+  const css = read('skyblock-redesign.css').replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.match(css, /\.sb-tool-card\.selected\[aria-expanded="true"\] \{[^}]*grid-column:\s*1 \/ -1;[^}]*margin-bottom:\s*-7px;[^}]*border-bottom:\s*0/s);
+  assert.match(css, /\.sb-tool-grid > \.sb-docked-editor \{[^}]*margin:\s*-7px 0 8px;[^}]*border-top:\s*0;[^}]*border-radius:\s*0 0 6px 6px/s);
+  assert.match(css, /\.sb-tool-grid > \.sb-docked-editor::before \{[^}]*content:\s*none/s);
+  assert.match(css, /\.sb-reforge-panel \{[^}]*margin:\s*0;[^}]*padding:\s*0;[^}]*border:\s*0;[^}]*background:\s*transparent;[^}]*box-shadow:\s*none/s);
+});
