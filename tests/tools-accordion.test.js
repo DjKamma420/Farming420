@@ -35,6 +35,17 @@ test('dockToolEditor runs in the apply pass', () => {
   assert.match(read('skyblock-redesign.js'), /\n\s*dockToolEditor\(\);/, 'never called');
 });
 
+test('the expanded tool editor does not repeat the selected tool identity', () => {
+  const app = read('app.js');
+  const start = app.indexOf('function toolItemPanel()');
+  const end = app.indexOf('\nfunction bindToolPanel()', start);
+  assert.ok(start >= 0 && end > start, 'toolItemPanel block not found');
+  const fn = app.slice(start, end);
+  assert.doesNotMatch(fn, /item-editor-head/);
+  assert.doesNotMatch(fn, /item-portrait/);
+  assert.doesNotMatch(fn, /item-identity/);
+});
+
 test('the docked editor spans the whole card row', () => {
   const css = read('skyblock-redesign.css').replace(/\/\*[\s\S]*?\*\//g, '');
   assert.match(
