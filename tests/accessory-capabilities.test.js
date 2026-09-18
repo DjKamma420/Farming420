@@ -7,6 +7,8 @@ import {
   accessoryEffectiveRarity,
   accessoryStateFromSnapshot,
   canEnrichAccessory,
+  enrichmentTotalsFromSnapshot,
+  farmingEnrichmentSummary,
   normalizeAccessoryEnrichment,
 } from '../src/accessory-capabilities.js';
 
@@ -55,4 +57,69 @@ test('synced Accessory Bag NBT carries recombobulation and enrichment into acces
     enrichment: 'magic_find',
     source: 'hypixel-sync',
   });
+});
+
+
+test('full Accessory Bag aggregation includes non-farming accessories', () => {
+  const totals = enrichmentTotalsFromSnapshot({
+    items: [
+      { container: 'talisman_bag', skyblockId: 'NON_FARMING_LEGENDARY', talismanEnrichment: 'speed' },
+      { container: 'talisman_bag', skyblockId: 'HELIANTHUS_RELIC', talismanEnrichment: 'speed' },
+      { container: 'talisman_bag', skyblockId: 'COMBAT_ACCESSORY', talismanEnrichment: 'critical_damage' },
+      { container: 'inventory', skyblockId: 'NOT_ACTIVE_HERE', talismanEnrichment: 'speed' },
+    ],
+  });
+  assert.equal(totals.counts.speed, 2);
+  assert.equal(totals.bonuses.speed, 2);
+  assert.equal(totals.counts.critical_damage, 1);
+  assert.equal(totals.enrichedAccessories, 3);
+});
+
+test('exact duplicate ids in the Accessory Bag are not double-counted', () => {
+  const totals = enrichmentTotalsFromSnapshot({
+    items: [
+      { container: 'talisman_bag', skyblockId: 'SAME_ID', talismanEnrichment: 'speed' },
+      { container: 'talisman_bag', skyblockId: 'SAME_ID', talismanEnrichment: 'speed' },
+    ],
+  });
+  assert.equal(totals.bonuses.speed, 1);
+});
+
+test('farming summary uses synced Speed automatically and a manual total only as override', () => {
+  const profile = {
+    normalizedSnapshot: {
+      items: [
+        { container: 'talisman_bag', skyblockId: 'NON_FARMING_ONE', talismanEnrichment: 'speed' },
+        { container: 'talisman_bag', skyblockId: 'NON_FARMING_TWO', talismanEnrichment: 'speed' },
+      ],
+    },
+    accessoryItems: {},
+    enrichmentSpeedOverride: null,
+  };
+  assert.equal(farmingEnrichmentSummary(profile).speed, 2);
+  assert.equal(farmingEnrichmentSummary(profile).hasOverride, false);
+
+  profile.enrichmentSpeedOverride = 17;
+  const overridden = farmingEnrichmentSummary(profile);
+  assert.equal(overridden.speed, 17);
+  assert.equal(overridden.detectedSpeed, 2);
+  assert.equal(overridden.hasOverride, true);
+});
+
+test('manual Farming accessory enrichments fill the gap when no full bag sync exists', () => {
+  const summary = farmingEnrichmentSummary({
+    normalizedSnapshot: null,
+    accessoryItems: {
+      HELIANTHUS_RELIC: { source: 'manual', enrichment: 'speed' },
+      MAGIC_8_BALL: { source: 'manual', enrichment: 'critical_damage' },
+    },
+  });
+  assert.equal(summary.speed, 1);
+  assert.equal(summary.manualKnownEnrichedAccessories, 2);
+  assert.equal(summary.hasAccessoryBagData, false);
+});
+
+test('only Speed is marked farming-relevant among the normal enrichment stats', () => {
+  const relevant = ACCESSORY_ENRICHMENTS.filter(entry => entry.farmingRelevant).map(entry => entry.id);
+  assert.deepEqual(relevant, ['speed']);
 });

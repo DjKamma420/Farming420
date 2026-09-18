@@ -68,3 +68,23 @@ test('accessory cards are articles so nested controls remain valid interactive H
   assert.match(block, /<article class="item-card accessory-catalog-card/);
   assert.doesNotMatch(block, /const tag = upgrade/);
 });
+
+
+test('Enrichment selector is rendered only when the concrete accessory is eligible', () => {
+  const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const start = source.indexOf('function accessoryCatalogCard');
+  const end = source.indexOf('function accessoriesPage', start);
+  const block = source.slice(start, end);
+  assert.match(block, /capability\.canEnrich \? `?<label class="accessory-upgrade-row accessory-enrichment-row">/);
+  assert.doesNotMatch(block, /data-accessory-enrichment=.*disabled/);
+});
+
+test('Accessories page exposes account-wide Speed from all enrichments with an automatic/manual boundary', () => {
+  const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  assert.match(source, /farmingEnrichmentSummary\(state\.profile\)/);
+  assert.match(source, /Farming-relevant Enrichment bonus/);
+  assert.match(source, /full Accessory Bag sync/);
+  assert.match(source, /Non-farming accessories are included/);
+  assert.match(source, /data-enrichment-speed-override/);
+  assert.match(source, /enrichmentSpeedOverride = raw === '' \? null/);
+});

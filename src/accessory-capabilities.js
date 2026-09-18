@@ -12,20 +12,22 @@ export const ACCESSORY_CAPABILITY_SOURCES = Object.freeze({
   recombobulator: 'https://hypixel.net/threads/a-list-of-everything-a-recombobulator-3000-does.5965625/',
   enrichments: 'https://hypixel.net/threads/how-to-enrichments.5759931/',
   enrichmentCatalog: 'https://hypixel.net/threads/a-guide-on-what-to-buy-in-the-bits-shop-and-how-useful-the-items-are.4545881/',
+  pestDropSystem: 'https://hypixel.net/threads/skyblock-patch-notes-0-19-7-garden-pests.5537683/',
+  pestOverbloomUpdate: 'https://hypixel.net/threads/pest-farming-nerf.6097800/',
 });
 
 export const ACCESSORY_ENRICHMENTS = Object.freeze([
-  Object.freeze({ id: 'speed', name: 'Speed', bonus: '+1 Speed' }),
-  Object.freeze({ id: 'intelligence', name: 'Intelligence', bonus: '+2 Intelligence' }),
-  Object.freeze({ id: 'critical_damage', name: 'Critical Damage', bonus: '+1 Crit Damage' }),
-  Object.freeze({ id: 'critical_chance', name: 'Critical Chance', bonus: '+1 Crit Chance' }),
-  Object.freeze({ id: 'strength', name: 'Strength', bonus: '+1 Strength' }),
-  Object.freeze({ id: 'defense', name: 'Defense', bonus: '+1 Defense' }),
-  Object.freeze({ id: 'health', name: 'Health', bonus: '+3 Health' }),
-  Object.freeze({ id: 'magic_find', name: 'Magic Find', bonus: '+0.5 Magic Find' }),
-  Object.freeze({ id: 'attack_speed', name: 'Attack Speed', bonus: '+0.5 Bonus Attack Speed' }),
-  Object.freeze({ id: 'ferocity', name: 'Ferocity', bonus: '+0.3 Ferocity' }),
-  Object.freeze({ id: 'sea_creature_chance', name: 'Sea Creature Chance', bonus: '+0.3 Sea Creature Chance' }),
+  Object.freeze({ id: 'speed', name: 'Speed', stat: 'speed', amount: 1, bonus: '+1 Speed', farmingRelevant: true }),
+  Object.freeze({ id: 'intelligence', name: 'Intelligence', stat: 'intelligence', amount: 2, bonus: '+2 Intelligence', farmingRelevant: false }),
+  Object.freeze({ id: 'critical_damage', name: 'Critical Damage', stat: 'criticalDamage', amount: 1, bonus: '+1 Crit Damage', farmingRelevant: false }),
+  Object.freeze({ id: 'critical_chance', name: 'Critical Chance', stat: 'criticalChance', amount: 1, bonus: '+1 Crit Chance', farmingRelevant: false }),
+  Object.freeze({ id: 'strength', name: 'Strength', stat: 'strength', amount: 1, bonus: '+1 Strength', farmingRelevant: false }),
+  Object.freeze({ id: 'defense', name: 'Defense', stat: 'defense', amount: 1, bonus: '+1 Defense', farmingRelevant: false }),
+  Object.freeze({ id: 'health', name: 'Health', stat: 'health', amount: 3, bonus: '+3 Health', farmingRelevant: false }),
+  Object.freeze({ id: 'magic_find', name: 'Magic Find', stat: 'magicFind', amount: 0.5, bonus: '+0.5 Magic Find', farmingRelevant: false }),
+  Object.freeze({ id: 'attack_speed', name: 'Attack Speed', stat: 'attackSpeed', amount: 0.5, bonus: '+0.5 Bonus Attack Speed', farmingRelevant: false }),
+  Object.freeze({ id: 'ferocity', name: 'Ferocity', stat: 'ferocity', amount: 0.3, bonus: '+0.3 Ferocity', farmingRelevant: false }),
+  Object.freeze({ id: 'sea_creature_chance', name: 'Sea Creature Chance', stat: 'seaCreatureChance', amount: 0.3, bonus: '+0.3 Sea Creature Chance', farmingRelevant: false }),
 ]);
 
 const NEXT_RARITY = Object.freeze({
@@ -103,5 +105,89 @@ export function accessoryStateFromSnapshot(snapshot, itemId) {
     recombobulated: Number(item.recombobulated || 0) >= 1,
     enrichment: normalizeAccessoryEnrichment(item.talismanEnrichment),
     source: 'hypixel-sync',
+  };
+}
+
+
+const ENRICHMENT_BY_ID = new Map(ACCESSORY_ENRICHMENTS.map(entry => [entry.id, entry]));
+
+/**
+ * Aggregate every enrichment found in the complete Accessory Bag snapshot.
+ * This deliberately does not restrict itself to the Farming accessory catalogue:
+ * combat/fishing/mining accessories can still carry a Speed enrichment that
+ * matters while farming.
+ */
+export function enrichmentTotalsFromSnapshot(snapshot) {
+  const items = Array.isArray(snapshot?.items) ? snapshot.items : [];
+  const counts = {};
+  const bonuses = {};
+  let enrichedAccessories = 0;
+  const seenExactIds = new Set();
+
+  for (const item of items) {
+    if (String(item?.container || '') !== 'talisman_bag') continue;
+    const itemId = String(item?.skyblockId || '').trim().toUpperCase();
+    if (itemId && seenExactIds.has(itemId)) continue;
+
+    const enrichmentId = normalizeAccessoryEnrichment(item?.talismanEnrichment);
+    if (!enrichmentId) continue;
+    if (itemId) seenExactIds.add(itemId);
+
+    const enrichment = ENRICHMENT_BY_ID.get(enrichmentId);
+    if (!enrichment) continue;
+    counts[enrichmentId] = (counts[enrichmentId] || 0) + 1;
+    bonuses[enrichment.stat] = (bonuses[enrichment.stat] || 0) + enrichment.amount;
+    enrichedAccessories += 1;
+  }
+
+  return { counts, bonuses, enrichedAccessories };
+}
+
+export function manualFarmingAccessoryEnrichmentTotals(accessoryItems, snapshot = null) {
+  const counts = {};
+  const bonuses = {};
+  let enrichedAccessories = 0;
+  const snapshotIds = new Set(
+    (Array.isArray(snapshot?.items) ? snapshot.items : [])
+      .filter(item => String(item?.container || '') === 'talisman_bag')
+      .map(item => String(item?.skyblockId || '').trim().toUpperCase())
+      .filter(Boolean),
+  );
+
+  for (const [itemId, itemState] of Object.entries(accessoryItems || {})) {
+    if (itemState?.source === 'hypixel-sync') continue;
+    if (snapshotIds.has(String(itemId).trim().toUpperCase())) continue;
+    const enrichmentId = normalizeAccessoryEnrichment(itemState?.enrichment);
+    if (!enrichmentId) continue;
+    const enrichment = ENRICHMENT_BY_ID.get(enrichmentId);
+    if (!enrichment) continue;
+    counts[enrichmentId] = (counts[enrichmentId] || 0) + 1;
+    bonuses[enrichment.stat] = (bonuses[enrichment.stat] || 0) + enrichment.amount;
+    enrichedAccessories += 1;
+  }
+
+  return { counts, bonuses, enrichedAccessories };
+}
+
+export function farmingEnrichmentSummary(profile) {
+  const snapshot = profile?.normalizedSnapshot || null;
+  const synced = enrichmentTotalsFromSnapshot(snapshot);
+  const manualKnown = manualFarmingAccessoryEnrichmentTotals(profile?.accessoryItems, snapshot);
+  const detectedSpeed = Number(synced.bonuses.speed || 0) + Number(manualKnown.bonuses.speed || 0);
+  const overrideRaw = profile?.enrichmentSpeedOverride;
+  const hasOverride = overrideRaw !== null && overrideRaw !== undefined && String(overrideRaw).trim() !== '';
+  const override = hasOverride ? Math.max(0, Number(overrideRaw) || 0) : null;
+  const counts = { ...synced.counts };
+  for (const [id, value] of Object.entries(manualKnown.counts)) counts[id] = (counts[id] || 0) + value;
+
+  return {
+    speed: override ?? detectedSpeed,
+    detectedSpeed,
+    override,
+    hasOverride,
+    counts,
+    syncedEnrichedAccessories: synced.enrichedAccessories,
+    manualKnownEnrichedAccessories: manualKnown.enrichedAccessories,
+    hasAccessoryBagData: (Array.isArray(snapshot?.items) ? snapshot.items : []).some(item => String(item?.container || '') === 'talisman_bag'),
   };
 }
