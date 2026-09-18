@@ -80,6 +80,7 @@ export const ENCHANT_LABELS = Object.freeze({
   crop_fever: 'Crop Fever',
   cultivating: 'Cultivating',
   dedication: 'Dedication',
+  efficiency: 'Efficiency',
   delicate: 'Delicate',
   feast: 'Feast',
   green_thumb: 'Green Thumb',
@@ -287,6 +288,7 @@ export const TOOL_PANEL = Object.freeze([
     control: 'level',
     entries: Object.freeze([
       'tool-enchant-harvesting-vi',
+      'tool-enchant-efficiency-v',
       'tool-enchant-cultivating-x',
       'tool-enchant-dedication',
       'tool-enchant-turbo-crop',
