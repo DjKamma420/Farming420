@@ -26,7 +26,7 @@ test('rarity presentation covers every physical farming item surface', () => {
 test('physical progression cards use the official resolved item tier and non-items stay neutral', () => {
   assert.match(uiSource, /catalogItemById/);
   assert.match(uiSource, /item\?\.tier/);
-  assert.match(uiSource, /clearRarityClass\(card\)/);
+  assert.match(uiSource, /clearRarityClass\\(surface\\)/);
   assert.match(uiSource, /attributeFilter:\s*\['data-physical-item-id'\]/);
 });
 
