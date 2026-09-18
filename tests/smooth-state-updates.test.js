@@ -10,13 +10,27 @@ test('direct card controls update app state without a hard page reload', () => {
   assert.match(source, /dispatchEvent\(new Event\('farming420:state-changed'\)\)/);
 });
 
-test('ordinary app renders preserve content and navigation scroll positions', () => {
+test('ordinary app renders preserve scroll and the operated control stays viewport-relative', () => {
   const source = read('app.js');
   assert.match(source, /function render\(\{ preserveScroll = true \} = \{\}\)/);
   assert.match(source, /document\.querySelector\('#app \.main'\)\?\.scrollTop/);
   assert.match(source, /document\.querySelector\('#app \.sidebar nav'\)\?\.scrollTop/);
-  assert.match(source, /main\.scrollTop = scrollState\.main/);
-  assert.match(source, /nav\.scrollTop = scrollState\.nav/);
+  assert.match(source, /viewportTop: element\.getBoundingClientRect\(\)\.top/);
+  assert.match(source, /const delta = element\.getBoundingClientRect\(\)\.top - anchor\.viewportTop/);
+  assert.match(source, /window\.scrollBy\(0, delta\)/);
+  assert.match(source, /requestAnimationFrame\(attempt\)/);
+});
+
+test('tool workspace controls update state without hard page reloads', () => {
+  const source = read('workspace-ui.js');
+  assert.doesNotMatch(source, /(?:window\.)?location\.reload\s*\(/);
+  assert.match(source, /dispatchEvent\(new Event\('farming420:state-changed'\)\)/);
+});
+
+test('reforge goal changes re-render in place instead of faking Tools navigation', () => {
+  const source = read('skyblock-redesign-bridge.js');
+  assert.doesNotMatch(source, /nav-link\[data-page=["']tools["']\][\s\S]*?\.click\(\)/);
+  assert.match(source, /dispatchEvent\(new Event\('farming420:state-changed'\)\)/);
 });
 
 test('real page navigation still starts the destination page at the top', () => {
