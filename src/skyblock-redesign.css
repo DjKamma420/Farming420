@@ -401,9 +401,9 @@
 .skyblock-redesign .sb-reforge-card {
   position: relative;
   min-height: 58px;
-  padding: 6px 26px 6px 6px;
+  padding: 6px;
   display: grid;
-  grid-template-columns: 32px minmax(0,1fr);
+  grid-template-columns: 32px minmax(0,1fr) 14px;
   gap: 7px;
   align-items: center;
   text-align: left;
@@ -451,10 +451,13 @@
 }
 
 .skyblock-redesign .sb-reforge-card > .sb-state-dot {
-  right: 6px;
-  top: 50%;
+  position: static;
+  right: auto;
+  top: auto;
   bottom: auto;
-  transform: translateY(-50%);
+  transform: none;
+  justify-self: end;
+  align-self: center;
 }
 
 .skyblock-redesign .setup-reforge-field {
@@ -630,7 +633,7 @@
   .skyblock-redesign .sb-reforge-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .skyblock-redesign .sb-reforge-card {
     min-height: 56px;
-    padding-right: 18px;
+    padding: 6px;
   }
 }
 
@@ -725,11 +728,20 @@
 
 /* The tool editor, docked into the card grid under the tool it belongs to.
    It spans the full row so the cards either side of it stay in their columns. */
+.skyblock-redesign .sb-tool-card.selected[aria-expanded="true"] {
+  grid-column: 1 / -1;
+  margin-bottom: -7px;
+  border-bottom: 0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
 .skyblock-redesign .sb-tool-grid > .sb-docked-editor {
   grid-column: 1 / -1;
   margin: -7px 0 8px;
   border: 1px solid #4a7a57;
-  border-radius: 6px;
+  border-top: 0;
+  border-radius: 0 0 6px 6px;
   background: linear-gradient(180deg, #16241a, #0d150f);
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.04), 0 6px 0 rgba(0,0,0,.35);
 }
