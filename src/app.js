@@ -1073,10 +1073,11 @@ function guidePage() {
     <div class="section-row"><div><h2>Enchantments by level</h2><p>Which level is reachable now, and what the next one takes.</p></div></div>
     <div class="ladder-grid">
       ${ENCHANT_LADDERS.map(ladder => `<article class="ladder">
-        <div class="eyebrow">${esc(ladder.scope)}</div>
+        <div class="eyebrow">${esc(ladder.scope)} ${ladder.tag ? badge(ladder.tag, ladder.tag === 'Secret strat' ? 'verify' : 'soft') : ''}</div>
         <h3>${esc(ladder.name)}</h3>
         <p><strong>${esc(ladder.perLevel)}</strong> · max ${esc(ladder.max)}</p>
         <ul>${ladder.steps.map(step => `<li><b>${esc(step.levels)}</b> — ${esc(step.from)}</li>`).join('')}</ul>
+        ${ladder.note ? `<p class="hint">${esc(ladder.note)}</p>` : ''}
         ${ladder.gate ? `<p class="find-warn">${esc(ladder.gate)}</p>` : ''}
       </article>`).join('')}
     </div>
