@@ -2296,3 +2296,51 @@ The remaining unsafe helper was `strategy-model.js`.
 An absent explicit metric is `null`, never zero. A literal numeric zero is
 still valid when it was actually measured or supplied. This keeps incomplete
 strategies out of comparable rankings without erasing legitimate zero results.
+
+## 0.41.0 -- the architecture diagram, checked
+
+- [x] Verify every edge of the supplied diagram against the import graph
+- [x] Redraw it correctly
+- [x] Make it impossible to get wrong again
+
+### What was wrong
+
+Twelve of twenty edges. Grouped by the kind of mistake:
+
+**Reversed.** `app.js -> revenue-planner.js`, `app.js -> profile-sync.js` and
+`profile-sync.js -> hypixel-client.js` all point the wrong way. `app.js`
+imports no enhancement module at all; twenty-four of them observe `#app` and
+patch what it rendered. And `live-sync.js` owns the API client, handing
+payloads *to* `profile-sync.js`.
+
+**Invented.** The profit adapter was drawn using live prices, computed stats
+and the pest model. It imports none of the three -- only `profit-engine.js` and
+`farming-mechanics-data.js`. The revenue planner was drawn calling
+`progression.js`; that is `app.js` and `dashboard-guide.js`.
+
+**Hops missing.** `revenue-planner -> profit adapter` skips
+`measured-baseline.js`; `profile-items -> nbt.js` skips `item-normalizer.js`.
+
+**Not a system.** "Bazaar Service" is a path on `api.hypixel.net`, fetched by
+`live-price-refresh.js` directly rather than through the API client.
+
+**A box pointing at itself.** `Application Shell [app.js] -> Dashboard UI
+[app.js]`.
+
+**Absent.** The cost table and its precedence chain, the measured baseline, the
+planner modes, the resource pack, and the two external hosts that are not
+Hypixel.
+
+### The part that will last
+
+`docs/ARCHITECTURE.md` uses module filenames as its Mermaid node ids, and
+`tests/architecture-diagram.test.js` reads them back. A solid arrow must be a
+real import. A dotted arrow must be a real *non*-import, so "observes" cannot
+silently become "calls". The observer count stated in the prose is checked
+against the actual count, and the corrections table may only name modules that
+exist.
+
+Verified by breaking it on purpose: three of the original mistakes put back,
+two tests fail, file restored.
+
+892 node + 7 python tests.
