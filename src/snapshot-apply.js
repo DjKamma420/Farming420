@@ -38,6 +38,11 @@ const TOOL_ENCHANTS = Object.freeze({
   dedication: 'tool-enchant-dedication',
   cultivating: 'tool-enchant-cultivating-x',
   harvesting: 'tool-enchant-harvesting-vi',
+  efficiency: 'tool-enchant-efficiency-v',
+  feast: 'tool-enchant-feast-v',
+  replenish: 'tool-enchant-replenish',
+  delicate: 'tool-enchant-delicate-v',
+  ultimate_crop_fever: 'tool-enchant-crop-fever-v',
 });
 
 const TOOL_REFORGES = Object.freeze({
@@ -68,8 +73,16 @@ const SUNSET_ID = 'armor-enchant-sunset-v-day-overbloom';
 const ARMOR_PERIDOT_ID = 'armor-gem-perfect-peridot-on-full-armor';
 const upgradeById = new Map(UPGRADES.map(item => [item.id, item]));
 
+const TURBO_PROGRESS_ID = 'tool-enchant-turbo-crop';
+const SHARED_TURBO_CROPS = Object.freeze(new Set(['sunflower', 'moonflower']));
+
+export function turboProgressEntryId(cropId) {
+  return SHARED_TURBO_CROPS.has(cropId) ? `${TURBO_PROGRESS_ID}:${cropId}` : TURBO_PROGRESS_ID;
+}
+
 function maxFor(itemId) {
-  return Number(upgradeById.get(itemId)?.max || 1);
+  const canonicalId = String(itemId || '').startsWith(`${TURBO_PROGRESS_ID}:`) ? TURBO_PROGRESS_ID : itemId;
+  return Number(upgradeById.get(canonicalId)?.max || 1);
 }
 
 export function stripFormatting(value) {
@@ -114,6 +127,34 @@ export function turboCropLevel(enchantments) {
   for (const [key, value] of Object.entries(enchantments)) {
     if (!key.toLowerCase().startsWith('turbo_')) continue;
     const parsed = Number(value);
+    if (Number.isFinite(parsed)) level = Math.max(level, parsed);
+  }
+  return level;
+}
+
+const TURBO_KEYS_BY_CROP = Object.freeze({
+  wheat: Object.freeze(['turbo_wheat']),
+  carrot: Object.freeze(['turbo_carrot']),
+  potato: Object.freeze(['turbo_potato']),
+  pumpkin: Object.freeze(['turbo_pumpkin']),
+  melon: Object.freeze(['turbo_melon']),
+  mushroom: Object.freeze(['turbo_mushrooms', 'turbo_mushroom']),
+  cactus: Object.freeze(['turbo_cactus', 'turbo_cacti']),
+  'sugar-cane': Object.freeze(['turbo_cane']),
+  'cocoa-beans': Object.freeze(['turbo_coco', 'turbo_cocoa']),
+  'nether-wart': Object.freeze(['turbo_warts', 'turbo_wart']),
+  sunflower: Object.freeze(['turbo_sunflower']),
+  moonflower: Object.freeze(['turbo_moonflower']),
+  'wild-rose': Object.freeze(['turbo_rose', 'turbo_wild_rose']),
+});
+
+/** Reads only the Turbo enchant that belongs to the selected crop. */
+export function turboCropLevelFor(enchantments, cropId) {
+  if (!enchantments || typeof enchantments !== 'object') return 0;
+  const keys = TURBO_KEYS_BY_CROP[cropId] || [];
+  let level = 0;
+  for (const key of keys) {
+    const parsed = Number(enchantments[key]);
     if (Number.isFinite(parsed)) level = Math.max(level, parsed);
   }
   return level;
@@ -206,7 +247,7 @@ function applyToolItem(state, cropIds, item, autoApplied, applied) {
     for (const [enchant, itemId] of Object.entries(TOOL_ENCHANTS)) {
       applyValue(store, scope, itemId, item.enchantments?.[enchant], applied);
     }
-    applyValue(store, scope, 'tool-enchant-turbo-crop', turboCropLevel(item.enchantments), applied);
+    applyValue(store, scope, turboProgressEntryId(cropId), turboCropLevelFor(item.enchantments, cropId), applied);
 
     const reforgeId = TOOL_REFORGES[String(item.reforge || '').toLowerCase()];
     if (reforgeId) applyValue(store, scope, reforgeId, 1, applied);

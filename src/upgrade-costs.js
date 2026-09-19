@@ -472,6 +472,11 @@ export const UPGRADE_COSTS = Object.freeze({
     "reason": "no price research is linked to this entry yet",
     "unit": null
   },
+  "tool-enchant-crop-fever-v": {
+    "coins": null,
+    "reason": "no price research is linked to this entry yet",
+    "unit": null
+  },
   "tool-enchant-cultivating-x": {
     "coins": 4469104,
     "items": [
@@ -496,6 +501,21 @@ export const UPGRADE_COSTS = Object.freeze({
     "unit": "coins",
     "verifiedAt": "2026-09-17"
   },
+  "tool-enchant-delicate-v": {
+    "coins": null,
+    "reason": "no price research is linked to this entry yet",
+    "unit": null
+  },
+  "tool-enchant-efficiency-v": {
+    "coins": null,
+    "reason": "no price research is linked to this entry yet",
+    "unit": null
+  },
+  "tool-enchant-feast-v": {
+    "coins": null,
+    "reason": "no price research is linked to this entry yet",
+    "unit": null
+  },
   "tool-enchant-harvesting-vi": {
     "coins": 2055320,
     "items": [
@@ -507,6 +527,11 @@ export const UPGRADE_COSTS = Object.freeze({
     ],
     "unit": "coins",
     "verifiedAt": "2026-09-17"
+  },
+  "tool-enchant-replenish": {
+    "coins": null,
+    "reason": "no price research is linked to this entry yet",
+    "unit": null
   },
   "tool-enchant-turbo-crop": {
     "coins": null,

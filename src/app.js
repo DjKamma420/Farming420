@@ -5,7 +5,7 @@ import { DATA_SCHEMA_VERSION, STORAGE_KEY } from './config.js';
 import { computeStatTotals } from './computed-stats.js';
 import { activityLabel, activityModeForState } from './activity-mode.js';
 import { ensureProgressBucket, migrateState, toolKeyForCropId } from './migrations.js';
-import { applySnapshotToProgress, isAutoApplied } from './snapshot-apply.js';
+import { applySnapshotToProgress, isAutoApplied, turboProgressEntryId } from './snapshot-apply.js';
 import { LOCATION_STATUS, isSyncFilled, locationFor, manualEntries, manualEntrySummary } from './help-locations.js';
 import {
   ARMOR_CHAIN,
@@ -308,6 +308,16 @@ function isCropScopedItem(item) {
   return item.section === 'crops' || item.section === 'tools';
 }
 
+/**
+ * Most physical-tool progress shares one store. The Eclipse Sickle is the
+ * exception only for its two crop-specific Turbo enchants: Sunflower and
+ * Moonflower share the item but not the Turbo level that applies to each crop.
+ */
+function entryStorageId(item) {
+  if (item?.id === 'tool-enchant-turbo-crop') return turboProgressEntryId(state.selectedCrop);
+  return item?.id;
+}
+
 /** The autoApplied scope key an entry is recorded under, matching itemStore. */
 function autoScopeKey(item) {
   if (item.section === 'crops') return `crop:${state.selectedCrop}`;
@@ -316,7 +326,7 @@ function autoScopeKey(item) {
 }
 
 function isSynced(item) {
-  return isAutoApplied(state, autoScopeKey(item), item.id);
+  return isAutoApplied(state, autoScopeKey(item), entryStorageId(item));
 }
 
 function itemStore(item) {
@@ -333,12 +343,14 @@ function itemStore(item) {
 
 function currentLevel(item) {
   const store = itemStore(item);
-  return Math.max(0, Math.min(Number(item.max || 1), Number(store.levels[item.id] || 0)));
+  const storageId = entryStorageId(item);
+  return Math.max(0, Math.min(Number(item.max || 1), Number(store.levels[storageId] || 0)));
 }
 
 function isOwned(item) {
   const store = itemStore(item);
-  return Boolean(store.owned[item.id]) || currentLevel(item) > 0;
+  const storageId = entryStorageId(item);
+  return Boolean(store.owned[storageId]) || currentLevel(item) > 0;
 }
 
 function isMaxed(item) {
@@ -359,7 +371,7 @@ function visibleUpgrades(section) {
 }
 
 function gainFor(item) {
-  const manual = itemStore(item).manualGain[item.id];
+  const manual = itemStore(item).manualGain[entryStorageId(item)];
   if (manual !== undefined && manual !== '' && !Number.isNaN(Number(manual))) return Number(manual);
   if (item.name === 'Switch to best farming pet') return item.rawMarginal || 0;
   return Number(item.stepGain || item.rawMarginal || 0);
@@ -386,7 +398,7 @@ function plannerCandidates() {
     .filter(item => !isMaxed(item))
     .map(item => {
       const gain = gainFor(item);
-      const cost = Number(itemStore(item).costs[item.id] || 0);
+      const cost = Number(itemStore(item).costs[entryStorageId(item)] || 0);
       const rel = relativeGainPct(item);
       const efficiency = cost > 0 ? rel / (cost / 1_000_000) : null;
       return { item, gain, rel, cost, efficiency };
@@ -684,15 +696,18 @@ const TOOL_PANEL_ENTRIES = new Map(UPGRADES.map(entry => [entry.id, entry]));
 
 function setEntryLevel(item, level) {
   const store = itemStore(item);
-  const max = Number(item.max || 1);
-  const value = Math.max(0, Math.min(max, Math.floor(Number(level) || 0)));
+  const storageId = entryStorageId(item);
+  const min = Math.max(1, Number(item.min || 1));
+  const max = Math.max(min, Number(item.max || 1));
+  const raw = Math.floor(Number(level) || 0);
+  const value = raw <= 0 ? 0 : Math.max(min, Math.min(max, raw));
   if (value <= 0) {
-    delete store.levels[item.id];
-    delete store.owned[item.id];
+    delete store.levels[storageId];
+    delete store.owned[storageId];
     return;
   }
-  store.levels[item.id] = value;
-  store.owned[item.id] = true;
+  store.levels[storageId] = value;
+  store.owned[storageId] = true;
 }
 
 /** Clears the other members of a group the game only lets you hold one of. */
@@ -708,7 +723,8 @@ function clearExclusivePeers(item) {
 }
 
 function toolEntryLine(item) {
-  const max = Number(item.max || 1);
+  const min = Math.max(1, Number(item.min || 1));
+  const max = Math.max(min, Number(item.max || 1));
   const level = currentLevel(item);
   const on = isOwned(item);
   const control = levelControlFor(max);
@@ -719,16 +735,16 @@ function toolEntryLine(item) {
     ? ''
     : control === 'select'
       ? `<select class="enchant-level" data-tool-level="${esc(item.id)}" ${on ? '' : 'disabled'}>
-          ${Array.from({ length: max }, (_, index) => index + 1).map(value =>
+          ${Array.from({ length: max - min + 1 }, (_, index) => index + min).map(value =>
             `<option value="${value}" ${value === level ? 'selected' : ''}>${esc(toRoman(value))}</option>`).join('')}
         </select>`
-      : `<input class="enchant-level" type="number" min="1" max="${max}" value="${level || 1}" data-tool-level="${esc(item.id)}" ${on ? '' : 'disabled'}>`;
+      : `<input class="enchant-level" type="number" min="${min}" max="${max}" value="${level || min}" data-tool-level="${esc(item.id)}" ${on ? '' : 'disabled'}>`;
 
   return `<div class="enchant-line enchant-${esc(state)} ${on ? 'on' : 'off'}" data-tool-row="${esc(item.id)}">
       ${leverInput('data-tool-toggle', item.id, '', on, `${item.name} on this tool`)}
-      <span class="enchant-name">${esc(item.name)}</span>
+      <span class="enchant-name">${esc(item.name)}${item.optionTag ? `<em class="enchant-tag">${esc(item.optionTag)}</em>` : ''}${item.notes ? `<small class="enchant-note">${esc(item.notes)}</small>` : ''}</span>
       ${levelControl || '<span></span>'}
-      <span class="enchant-max">${max > 1 ? `max ${control === 'number' ? max : esc(toRoman(max))}` : gain ? `+${gain} FF` : 'owned or not'}</span>
+      <span class="enchant-max">${min === max && max > 1 ? `only ${esc(toRoman(max))}` : max > 1 ? `max ${control === 'number' ? max : esc(toRoman(max))}` : gain ? `+${gain} FF` : 'owned or not'}</span>
     </div>`;
 }
 
@@ -748,7 +764,7 @@ function bindToolPanel() {
     if (!item) return;
     if (event.target.checked) clearExclusivePeers(item);
     // Turning a part on starts it at its first level, never at its maximum.
-    setEntryLevel(item, event.target.checked ? Math.max(1, currentLevel(item)) : 0);
+    setEntryLevel(item, event.target.checked ? Math.max(Number(item.min || 1), currentLevel(item)) : 0);
     rerender();
   }));
   document.querySelectorAll('[data-tool-level]').forEach(el => el.addEventListener('change', event => {
@@ -832,16 +848,18 @@ function drawer() {
   const item = UPGRADES.find(x=>x.id===state.drawer);
   if (!item) return '';
   const level = currentLevel(item);
-  const max = Number(item.max||1);
+  const min = Math.max(1, Number(item.min || 1));
+  const max = Math.max(min, Number(item.max||1));
   const store = itemStore(item);
-  const cost = store.costs[item.id] ?? '';
-  const manual = store.manualGain[item.id] ?? '';
+  const storageId = entryStorageId(item);
+  const cost = store.costs[storageId] ?? '';
+  const manual = store.manualGain[storageId] ?? '';
   return `<div class="drawer-backdrop" data-close-drawer><aside class="drawer">
     <div class="drawer-top"><div><div class="eyebrow">${esc(item.category)}</div><h2>${esc(item.name)}</h2></div><button class="close" data-close-drawer>×</button></div>
     <div class="drawer-badges">${badge(item.status,item.status==='VERIFY'?'verify':'soft')} ${isCropScopedItem(item)?badge(crop().name,'soft'):(item.cropScope!=='Any'?badge(item.cropScope,'soft'):'')} ${item.modeScope!=='Any'?badge(item.modeScope,'soft'):''}</div>
     ${isSynced(item) ? '<div class="drawer-synced">Farming420 worked this value out for you, from your profile sync and your active setup. Editing it here overrides it until the next sync or setup change.</div>' : ''}
     <div class="drawer-section"><h3>Ownership & Level</h3>
-      ${max>1 ? `<div class="stepper"><button data-step="-1" data-id="${item.id}">−</button><strong>${level}/${max}</strong><button data-step="1" data-id="${item.id}">+</button><button class="ghost small" data-max="${item.id}">Max</button></div>` : `<label class="switch-row"><span>Owned</span><input type="checkbox" data-owned="${item.id}" ${isOwned(item)?'checked':''}></label>`}
+      ${max > 1 && min < max ? `<div class="stepper"><button data-step="-1" data-id="${item.id}">−</button><strong>${level}/${max}</strong><button data-step="1" data-id="${item.id}">+</button><button class="ghost small" data-max="${item.id}">Max</button></div>` : `<label class="switch-row"><span>${min === max && max > 1 ? `Owned at ${esc(toRoman(max))}` : 'Owned'}</span><input type="checkbox" data-owned="${item.id}" ${isOwned(item)?'checked':''}></label>`}
     </div>
     <div class="drawer-section"><h3>Evaluation</h3><div class="detail-grid"><div><span>Next step</span><strong>+${gainFor(item).toLocaleString('en-US')}</strong></div><div><span>Relative effect</span><strong>${relativeGainPct(item).toFixed(2)}%</strong></div></div>
       <label>Next cost (Coins)<input type="number" data-cost="${item.id}" value="${esc(cost)}" placeholder="optional"></label>
@@ -1026,15 +1044,16 @@ function leverInput(attribute, slotId, key, checked, label) {
 }
 
 function enchantLine(slotId, row) {
+  const minLevel = Math.max(1, Number(row.minLevel || 1));
   const levels = row.maxLevel
     ? [...new Set([
-      ...Array.from({ length: row.maxLevel }, (_, index) => index + 1),
+      ...Array.from({ length: row.maxLevel - minLevel + 1 }, (_, index) => index + minLevel),
       row.level,
     ].filter(value => value > 0))].sort((a, b) => a - b)
     : [...new Set([row.level, 1, 2, 3, 4, 5].filter(value => value > 0))].sort((a, b) => a - b);
   return `<div class="enchant-line enchant-${esc(row.state)} ${row.active ? 'on' : 'off'}" data-ench-row="${esc(row.storageKey)}">
       ${leverInput('data-ench-toggle', slotId, row.storageKey, row.active, `${row.label} on this item`)}
-      <span class="enchant-name">${esc(row.label)}${row.kind === 'ultimate' ? '<em class="enchant-tag">ultimate</em>' : ''}${row.known ? '' : '<em class="enchant-tag unknown">not verified</em>'}</span>
+      <span class="enchant-name">${esc(row.label)}${row.kind === 'ultimate' ? '<em class="enchant-tag">ultimate</em>' : ''}${row.strategy === 'secret' ? '<em class="enchant-tag secret">secret strat</em>' : ''}${row.known ? '' : '<em class="enchant-tag unknown">not verified</em>'}${row.note ? `<small class="enchant-note">${esc(row.note)}</small>` : ''}</span>
       <select class="enchant-level" data-ench-select="${esc(slotId)}" data-ench-key="${esc(row.storageKey)}" data-ench-max="${row.maxLevel || 0}" ${row.active ? '' : 'disabled'}>
         ${levels.map(level => `<option value="${level}" ${level === row.level ? 'selected' : ''}>${esc(toRoman(level))}</option>`).join('')}
       </select>
@@ -1330,10 +1349,11 @@ function guidePage() {
     <div class="section-row"><div><h2>Enchantments by level</h2><p>Which level is reachable now, and what the next one takes.</p></div></div>
     <div class="ladder-grid">
       ${ENCHANT_LADDERS.map(ladder => `<article class="ladder">
-        <div class="eyebrow">${esc(ladder.scope)}</div>
+        <div class="eyebrow">${esc(ladder.scope)} ${ladder.tag ? badge(ladder.tag, ladder.tag === 'Secret strat' ? 'verify' : 'soft') : ''}</div>
         <h3>${esc(ladder.name)}</h3>
         <p><strong>${esc(ladder.perLevel)}</strong> · max ${esc(ladder.max)}</p>
         <ul>${ladder.steps.map(step => `<li><b>${esc(step.levels)}</b> — ${esc(step.from)}</li>`).join('')}</ul>
+        ${ladder.note ? `<p class="hint">${esc(ladder.note)}</p>` : ''}
         ${ladder.gate ? `<p class="find-warn">${esc(ladder.gate)}</p>` : ''}
       </article>`).join('')}
     </div>
@@ -1485,33 +1505,39 @@ function bind() {
   document.querySelectorAll('[data-step]').forEach(el => el.addEventListener('click', () => {
     const item = UPGRADES.find(x=>x.id===el.dataset.id); if (!item) return;
     const store = itemStore(item);
-    const nextLevel = Math.max(0, Math.min(Number(item.max||1), currentLevel(item)+Number(el.dataset.step)));
+    const storageId = entryStorageId(item);
+    const next = currentLevel(item) + Number(el.dataset.step);
+    const min = Math.max(1, Number(item.min || 1));
+    const nextLevel = next <= 0 ? 0 : Math.max(min, Math.min(Number(item.max||1), next));
     if (nextLevel > 0) clearExclusivePeers(item);
-    store.levels[item.id] = nextLevel;
-    store.owned[item.id] = nextLevel > 0;
+    store.levels[storageId] = nextLevel;
+    store.owned[storageId] = nextLevel > 0;
     saveState(); render();
   }));
   document.querySelectorAll('[data-max]').forEach(el => el.addEventListener('click', () => {
     const item = UPGRADES.find(x=>x.id===el.dataset.max); if (!item) return;
     clearExclusivePeers(item);
     const store = itemStore(item);
-    store.levels[item.id]=Number(item.max||1); store.owned[item.id]=true; saveState(); render();
+    const storageId = entryStorageId(item);
+    store.levels[storageId]=Number(item.max||1); store.owned[storageId]=true; saveState(); render();
   }));
   document.querySelectorAll('[data-owned]').forEach(el => el.addEventListener('change', e => {
     const item = UPGRADES.find(x=>x.id===e.target.dataset.owned); if (!item) return;
     if (e.target.checked) clearExclusivePeers(item);
     const store = itemStore(item);
-    store.owned[item.id]=e.target.checked;
-    store.levels[item.id]=e.target.checked?1:0; saveState(); render();
+    const storageId = entryStorageId(item);
+    store.owned[storageId]=e.target.checked;
+    store.levels[storageId]=e.target.checked?Math.max(1, Number(item.min || 1)):0; saveState(); render();
   }));
   document.querySelectorAll('[data-cost]').forEach(el => el.addEventListener('change', e => {
     const item = UPGRADES.find(x=>x.id===e.target.dataset.cost); if (!item) return;
-    itemStore(item).costs[item.id]=Number(e.target.value||0); saveState(); render();
+    itemStore(item).costs[entryStorageId(item)]=Number(e.target.value||0); saveState(); render();
   }));
   document.querySelectorAll('[data-manual]').forEach(el => el.addEventListener('change', e => {
     const item = UPGRADES.find(x=>x.id===e.target.dataset.manual); if (!item) return;
     const store = itemStore(item);
-    const v=e.target.value; if(v==='') delete store.manualGain[item.id]; else store.manualGain[item.id]=Number(v); saveState(); render();
+    const storageId = entryStorageId(item);
+    const v=e.target.value; if(v==='') delete store.manualGain[storageId]; else store.manualGain[storageId]=Number(v); saveState(); render();
   }));
 
   // Export/import share the versioned, validated backup format used by Settings,
