@@ -678,3 +678,30 @@ change correctness; the strategy objective reader did not.
 Rule: after fixing a coercion bug, search for the coercion pattern repo-wide,
 but change only helpers whose contract says absence is unknown. Preserve a
 literal zero when zero is a valid explicit measurement.
+
+## A diagram is an untested assertion (0.41.0)
+
+I was handed an architecture diagram and asked to find its errors. Twelve of
+its twenty edges were wrong: arrows reversed, hops missing, a box pointing at
+itself, and an external "Bazaar Service" that does not exist -- it is a path on
+`api.hypixel.net`.
+
+None of that was careless drawing. Every one of those edges is what the app
+*looks* like from the outside, and several were true at some earlier point. The
+diagram was simply the one artifact in the repo that nothing checked.
+
+What I did about it matters more than the corrections: the node ids in
+`docs/ARCHITECTURE.md` are the module filenames, and
+`tests/architecture-diagram.test.js` reads them back. A solid arrow must be a
+real import; a dotted arrow must be a real *non*-import, so the distinction
+between "calls" and "observes" cannot rot either. I proved it by putting three
+of the original mistakes back and watching two tests fail.
+
+Rule: when a document states something checkable about the code -- an edge, a
+count, a filename -- check it in a test. And verify the checker by breaking the
+document on purpose. A green test on a document nobody can break is decoration.
+
+The deeper finding: the diagram drew `app.js` as calling the planner, the sync
+and the stats. It calls none of them. Twenty-four modules observe `#app` and
+patch what it rendered, and the core imports not one of them. Getting that
+backwards hides why `docs/RENDER_FREEZE_SAFETY.md` exists at all.
