@@ -876,13 +876,18 @@ function whereToFindSection(item) {
       <p class="find-synced">${esc(location.where)}</p></div>`;
   }
   if (location.where) {
+    const caveat = location.status === LOCATION_STATUS.UNVERIFIED
+      ? `<p class="find-warn">Not yet confirmed against a current in-game capture.${location.note ? ` ${esc(location.note)}` : ''}</p>`
+      : location.status === LOCATION_STATUS.NEEDS_RESEARCH
+        ? '<p class="find-warn">This is practical lookup guidance. The exact route for this entry has not been individually verified, so use the source below for current unlock or acquisition details.</p>'
+        : '';
     return `<div class="drawer-section"><h3>Where do I find this?</h3>
       <p>${esc(location.where)}</p>
-      ${location.status === LOCATION_STATUS.UNVERIFIED ? `<p class="find-warn">Not yet confirmed against a current in-game capture.${location.note ? ` ${esc(location.note)}` : ''}</p>` : ''}
+      ${caveat}
       ${location.source ? `<a class="source-btn" href="${esc(location.source)}" target="_blank" rel="noreferrer">Open source</a>` : ''}</div>`;
   }
   return `<div class="drawer-section"><h3>Where do I find this?</h3>
-    <p class="find-warn">The in-game location for this value is not documented yet, so it is not guessed at here. The source below is the reference this entry is based on.</p>
+    <p class="find-warn">Check the relevant SkyBlock or Garden menu, item tooltip, or active-effect screen for this value. Use the source below for the current unlock or acquisition route.</p>
     ${location.note ? `<p>${esc(location.note)}</p>` : ''}
     ${location.source ? `<a class="source-btn" href="${esc(location.source)}" target="_blank" rel="noreferrer">Open source</a>` : ''}</div>`;
 }
@@ -931,7 +936,7 @@ function findRows(rows) {
             <div class="eyebrow">${esc(row.entry.category)}${row.entry.cropScope !== 'Any' ? ` \u00b7 ${esc(row.entry.cropScope)}` : ''}</div>
             <h3>${esc(row.entry.name)}</h3>
             <p>${esc(row.entry.notes || 'No additional note.')}</p>
-            ${row.location.where ? `<p class="find-where">${esc(row.location.where)}</p>` : '<p class="find-warn">In-game location not documented yet \u2014 open the source to look it up.</p>'}
+            ${row.location.where ? `<p class="find-where">${esc(row.location.where)}</p>` : '<p class="find-warn">Check the relevant SkyBlock or Garden menu, item tooltip, or active-effect screen for this value, then use the source for current unlock or acquisition details.</p>'}
           </div>
           <div class="find-side">
             ${badge(done ? 'entered' : 'open', done ? 'maxed' : 'missing')}

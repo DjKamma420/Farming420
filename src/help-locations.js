@@ -61,9 +61,75 @@ const SYNCED_LOCATION = Object.freeze({
   note: null,
 });
 
+function fallbackWhereFor(entry) {
+  if (!entry) {
+    return 'Check the relevant SkyBlock or Garden menu, item tooltip, or active-effect screen for this value. If it is not visible there, use the linked source for the current unlock or acquisition route.';
+  }
+
+  const name = entry.name || 'this upgrade';
+  const category = entry.category || '';
+
+  if (category === 'Account/Skill') {
+    return `Open the SkyBlock Menu, go to Skills, then open Farming and read the current value for ${name}. Use the linked source if you need the current leveling requirements.`;
+  }
+  if (category === 'Anita') {
+    return `Open Anita's in-game menu and look for ${name}. The purchased tier shown there is the value to enter; use the linked source for current unlock requirements.`;
+  }
+  if (category === 'Garden' || category === 'Crop Progression') {
+    return `While in The Garden, open the Garden progression or Desk menus and look for ${name}. Enter the value shown there; use the linked source if the option is locked or you need its unlock route.`;
+  }
+  if (category === 'Account Upgrade') {
+    return `Open the Community Shop account-upgrade menu and look for ${name}. Enter the purchased level shown there; use the linked source for the current upgrade requirements.`;
+  }
+  if (category === 'Greenhouse') {
+    return `In The Garden, open the Greenhouse progression screens and look for ${name}. Enter the unlocked level or reward shown there; use the linked source for the current progression requirements.`;
+  }
+  if (category === 'Accessory') {
+    return `Open your Accessory Bag and look for ${name}, then inspect its tooltip or current state. If you do not own it, use the linked source for the current acquisition or upgrade route.`;
+  }
+  if (category === 'Jacob') {
+    return `Open the Jacob's Farming Contest progression/reward screens and look for ${name}. Enter the value shown for the selected crop; use the linked source for the current unlock requirements.`;
+  }
+  if (category === 'Chocolate Factory') {
+    return `Open the Chocolate Factory menu and look for ${name}. Enter the current purchased or permanent value shown there; use the linked source for the current acquisition requirements.`;
+  }
+  if (category === 'Garden Chip') {
+    return `In The Garden, open the chip/progression interface and look for ${name}. Enter the installed or unlocked level shown there; use the linked source for the current way to obtain or upgrade it.`;
+  }
+  if (category === 'Tool Level' || category === 'Tool Tier' || category === 'Tool Level Gate' || category === 'Tool' || category === 'Tool Enchant' || category === 'Tool Reforge' || category === 'Tool Gem') {
+    return `Inspect the farming tool you actually use for this crop and read its tooltip for ${name}. If it is missing, use the linked source for the current way to apply, unlock, or obtain it.`;
+  }
+  if (category === 'Armor' || category === 'Armor Reforge' || category === 'Armor Gem' || category === 'Armor Enchant') {
+    return `Inspect the armor pieces in the setup you actually farm with and look for ${name} on their tooltips or set-bonus text. If it is missing, use the linked source for the current way to obtain or apply it.`;
+  }
+  if (category === 'Equipment' || category === 'Equipment Reforge' || category === 'Equipment Enchant') {
+    return `Inspect the equipment pieces in the setup you actually use and look for ${name} on their tooltips or bonus text. If it is missing, use the linked source for the current way to obtain or apply it.`;
+  }
+  if (category === 'Pet' || category === 'Pet Item') {
+    return `Open the Pets menu, inspect the relevant pet and its held item, and look for ${name}. If you do not have it, use the linked source for the current acquisition or upgrade route.`;
+  }
+  if (category === 'Attribute Shard') {
+    return `Inspect the shard or attribute configuration used by your farming setup and look for ${name}. If the shard is not present, use the linked source for its current drop, fusion, or acquisition details.`;
+  }
+  if (category === 'Vacuum Reforge') {
+    return `Inspect the vacuum used for Pest farming and read its tooltip for ${name}. If it is missing, use the linked source for the current way to apply or obtain that reforge.`;
+  }
+  if (category === 'Consumable' || category === 'Temporary Buff' || category === 'Mixin' || category === 'Temporary' || category === 'Harvest Feast' || category === 'Buff') {
+    return `Check your active effects/buffs and the item or menu associated with ${name}. Enter only the state that is currently active or permanently consumed; use the linked source for activation or acquisition details.`;
+  }
+  if (category === 'Pest') {
+    return `Check the Pest-specific accessory/equipment setup you actually use and look for ${name} on the relevant item or bonus text. Use the linked source if you need the current acquisition or setup requirements.`;
+  }
+  if (category === 'Permanent Crop Item') {
+    return `Check your inventory, storage, and the selected crop's progression for ${name}, then inspect the item's tooltip if owned. Use the linked source for the current unlock or acquisition route.`;
+  }
+
+  return `Check the in-game menu, item tooltip, or progression screen associated with ${name} (${category || 'this upgrade'}). If it is not owned or unlocked, use the linked source for the current acquisition or unlock route.`;
+}
+
 function fallbackFor(entry) {
   return {
-    where: null,
+    where: fallbackWhereFor(entry),
     status: LOCATION_STATUS.NEEDS_RESEARCH,
     source: entry?.source || null,
     lastVerified: null,
