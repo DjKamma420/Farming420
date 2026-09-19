@@ -137,17 +137,16 @@ function injectHeaderSwitch(raw) {
   let control = topbar.querySelector('.activity-mode-switch');
 
   // The phase selector belongs only where the selected loadout changes what is
-  // being edited or calculated. Shared pages must not keep an empty sticky
-  // topbar on phones: that bar was the large black block covering the top of
-  // Tools and the other shared workspaces.
+  // being edited or calculated. Shared pages keep the compact mobile app bar,
+  // but only as a branded header; the phase selector itself is removed.
   if (!MODE_SWITCH_PAGES.has(page)) {
     control?.remove();
-    topbar.classList.add('activity-mode-topbar-empty');
+    topbar.classList.add('activity-mode-topbar-shared');
     main?.classList.add('activity-mode-page-shared');
     return;
   }
 
-  topbar.classList.remove('activity-mode-topbar-empty');
+  topbar.classList.remove('activity-mode-topbar-shared');
   main?.classList.remove('activity-mode-page-shared');
 
   const mode = activityModeForState(raw);

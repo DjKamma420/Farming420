@@ -79,12 +79,18 @@
 }
 
 
-/* Shared pages have no Farming/Spawning/Killing control. On phones the old
-   sticky topbar was therefore an empty black overlay that still consumed its
-   full height and covered the first tool cards while scrolling. */
+/* Shared pages have no Farming/Spawning/Killing control. Keep the compact
+   mobile app bar, but make it useful instead of leaving a blank black strip. */
 @media (max-width: 780px) {
-  .activity-mode-topbar-empty {
-    display: none !important;
+  .topbar .mobile-title {
+    display: block !important;
+    flex: 0 0 auto;
+    color: var(--sb-text, #eef8ef);
+    font-weight: 900;
+  }
+
+  .activity-mode-topbar-shared {
+    display: flex !important;
   }
 
   .activity-mode-page-shared .content {
