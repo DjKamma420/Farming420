@@ -1,6 +1,4 @@
-import { setTextIfChanged } from './set-text.js';
 import { DATA_SCHEMA_VERSION, STORAGE_KEY } from './config.js';
-import { rarityClass } from './item-editor.js';
 import {
   createEmptyItem,
   ITEM_SOURCE,
@@ -8,6 +6,7 @@ import {
   normalizeSetups,
 } from './setups.js';
 import {
+  intrinsicEnchantmentsForCatalogItem,
   itemsForSlot,
   loadItemCatalog,
   readCachedCatalog,
@@ -19,29 +18,6 @@ import {
   petLevelBounds,
   petRarities,
 } from './setup-pet-catalog.js';
-
-const RARITY_UPGRADE = Object.freeze({
-  COMMON: 'UNCOMMON',
-  UNCOMMON: 'RARE',
-  RARE: 'EPIC',
-  EPIC: 'LEGENDARY',
-  LEGENDARY: 'MYTHIC',
-  MYTHIC: 'DIVINE',
-  SPECIAL: 'VERY SPECIAL',
-});
-
-const KNOWN_RARITY_CLASSES = Object.freeze([
-  'rarity-common',
-  'rarity-uncommon',
-  'rarity-rare',
-  'rarity-epic',
-  'rarity-legendary',
-  'rarity-mythic',
-  'rarity-divine',
-  'rarity-special',
-  'rarity-very-special',
-  'rarity-unknown',
-]);
 
 const REAPPLY_CLICK_SELECTOR = [
   '[data-page="setups"]',
@@ -71,18 +47,6 @@ const REAPPLY_CHANGE_SELECTOR = [
 function normalizedRarity(value) {
   return String(value || '').trim().toUpperCase().replace(/_/g, ' ') || null;
 }
-
-/** Base rarity stays stored; this is only the rarity the physical item has now. */
-export function effectiveItemRarity(item) {
-  const base = normalizedRarity(item?.rarity);
-  if (!base || !item?.recombobulated) return base;
-  return RARITY_UPGRADE[base] || base;
-}
-
-/** Idempotent DOM write used by rarity presentation. */
-// Imported *and* re-exported: a bare `export ... from` creates no local
-// binding, so this module's own calls to it would be a ReferenceError.
-export { setTextIfChanged };
 
 function readState() {
   try {
@@ -304,6 +268,7 @@ function buildClosedItemPicker(editor, slotId, item) {
         skyblockId: chosen.id,
         displayName: chosen.name,
         rarity: chosen.tier || null,
+        enchantments: intrinsicEnchantmentsForCatalogItem(chosen),
         source: ITEM_SOURCE.MANUAL,
       };
     });
@@ -360,32 +325,6 @@ export function dockSetupEditor(root = document) {
   return true;
 }
 
-function applyRarityPresentation(root, setup) {
-  if (!setup) return;
-  for (const slotId of SLOT_IDS) {
-    const item = setup.slots?.[slotId];
-    if (!item) continue;
-    const effective = effectiveItemRarity(item);
-    if (!effective) continue;
-    const card = [...root.querySelectorAll('.slot-card[data-slot]')].find(row => row.dataset.slot === slotId);
-    const editor = root.querySelector(`[data-item-editor="${slotId}"]`);
-    for (const node of [card, editor].filter(Boolean)) {
-      node.classList.remove(...KNOWN_RARITY_CLASSES);
-      node.classList.add(rarityClass(effective));
-      node.dataset.effectiveRarity = effective;
-    }
-    const rarity = editor?.querySelector('.item-rarity');
-    if (rarity) {
-      const base = normalizedRarity(item.rarity);
-      const source = item.source === ITEM_SOURCE.SYNC ? ' · synced' : '';
-      const rarityText = item.recombobulated && base !== effective
-        ? `${effective} · base ${base} + Recombobulator${source}`
-        : `${effective}${source}`;
-      setTextIfChanged(rarity, rarityText);
-    }
-  }
-}
-
 let catalogRequestStarted = false;
 function ensurePickerCatalog() {
   if (catalogRequestStarted || (readCachedCatalog()?.items || []).length) return;
@@ -412,7 +351,6 @@ export function applySetupSelectionUi(root = document) {
     else closeReforgePicker(editor, slotId, item);
     ensurePickerCatalog();
   }
-  applyRarityPresentation(app, setup);
 }
 
 let scheduled = false;

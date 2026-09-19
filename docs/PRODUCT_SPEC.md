@@ -40,7 +40,7 @@ The app must evaluate the player's current state. It must not assume that every 
 
 Examples of separate states/setups:
 
-- normal crop farming armor versus pest-focused armor
+- farming armor versus pest-spawning armor versus pest-killing/Overbloom armor
 - Rose Dragon versus Mooshroom Cow versus Hedgehog or other progression pets
 - different pet items
 - different tools and shared tools such as Eclipse Hoe
@@ -124,9 +124,9 @@ One workspace per crop. Each crop workspace contains tabs/layers for:
 
 - Progression
 - Tool
-- Normal Farming Setup
-- Pest Setup
-- Contest Setup
+- Farming Setup
+- Pest Spawning Setup
+- Pest Killing Setup
 - Profit
 
 ### Setups

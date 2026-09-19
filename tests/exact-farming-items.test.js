@@ -5,6 +5,7 @@ import {
   GARDEN_VACUUM_ITEMS,
   availableOfficialGemstoneSlots,
   farmingToolSkyblockId,
+  farmingToolTierRarity,
   gemstoneRequirementSatisfied,
   officialGemstoneUnlockCoins,
   officialGemstoneUnlockItems,
@@ -18,6 +19,13 @@ test('every modeled crop tool tier resolves to one concrete Hypixel item id', ()
   assert.equal(farmingToolSkyblockId('Pumpkin Dicer', 2), 'PUMPKIN_DICER_2');
   assert.equal(farmingToolSkyblockId('Cocoa Chopper', 3), 'COCO_CHOPPER_3');
   assert.equal(farmingToolSkyblockId('not a farming tool', 1), null);
+});
+
+test('current farming tool Mk tiers use the post-Greenhouse rarity ladder', () => {
+  assert.equal(farmingToolTierRarity(1), 'UNCOMMON');
+  assert.equal(farmingToolTierRarity(2), 'RARE');
+  assert.equal(farmingToolTierRarity(3), 'EPIC');
+  assert.equal(farmingToolTierRarity(99), 'EPIC');
 });
 
 test('official levelable_lvl requirements gate tool gemstone sockets exactly', () => {

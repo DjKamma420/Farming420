@@ -47,9 +47,26 @@ function sanitizeGems(item, slots) {
   });
 }
 
+function reforgeChoiceMarkup(slotId, option, current) {
+  const id = String(option?.id || '');
+  const selected = id === current;
+  const label = option?.name || id || 'No reforge';
+  const stone = option?.stone || (option?.currentOnly ? 'Current reforge' : 'No stone');
+  const itemId = option?.itemId || '';
+  const fallback = label === 'No reforge' ? '&ndash;' : esc(label.slice(0, 1).toUpperCase());
+  return `<button type="button" class="sb-reforge-card setup-reforge-card ${selected ? 'selected' : ''} ${id ? '' : 'sb-reforge-none'}"
+      role="radio" aria-checked="${selected ? 'true' : 'false'}"
+      data-slot-reforge-choice="${esc(slotId)}" data-reforge-id="${esc(id)}" data-reforge-item-id="${esc(itemId)}">
+    <span class="sb-reforge-art"><span class="sb-reforge-fallback">${fallback}</span></span>
+    <span class="sb-reforge-copy"><strong>${esc(label)}</strong><small>${esc(stone)}</small></span>
+    <span class="sb-state-dot" aria-hidden="true"></span>
+  </button>`;
+}
+
 function replaceReforgeControl(slotId, editor, item, capabilities) {
   const existing = editor.querySelector(`[data-slot-reforge="${slotId}"]`);
-  const field = existing?.closest('.settings-field');
+  const existingGrid = editor.querySelector(`[data-exact-reforge-grid="${slotId}"]`);
+  const field = existing?.closest('.settings-field') || existingGrid?.closest('.settings-field');
   if (!field) return;
 
   if (!capabilities.known || !capabilities.canReforge) {
@@ -57,30 +74,33 @@ function replaceReforgeControl(slotId, editor, item, capabilities) {
     return;
   }
   setHidden(field, false);
+  field.classList.add('setup-reforge-field');
 
-  let select = existing.matches('select[data-exact-reforge]') ? existing : null;
-  if (!select) {
-    select = document.createElement('select');
-    select.dataset.slotReforge = slotId;
-    select.dataset.exactReforge = '1';
-    existing.replaceWith(select);
+  let grid = existingGrid;
+  if (!grid) {
+    grid = document.createElement('div');
+    grid.className = 'sb-reforge-grid sb-reforge-grid-compact setup-reforge-grid';
+    grid.dataset.exactReforgeGrid = slotId;
+    grid.setAttribute('role', 'radiogroup');
+    grid.setAttribute('aria-label', 'Reforge on this item');
+    existing.replaceWith(grid);
   }
-  const signature = `${item?.reforge || ''}|${capabilities.reforges.map(option => option.id).join(',')}`;
-  if (select.dataset.signature === signature) return;
-  select.dataset.signature = signature;
-  const current = String(item?.reforge || '').trim().toLowerCase();
-  select.innerHTML = [
-    '<option value="">— no reforge —</option>',
-    ...capabilities.reforges.map(option => `<option value="${esc(option.id)}" ${option.id === current ? 'selected' : ''}>${esc(option.name)}${option.currentOnly ? ' (current)' : ''}</option>`),
-  ].join('');
-  select.addEventListener('change', event => {
-    const next = load();
-    patchSlot(next, slotId, { reforge: event.target.value || null });
-    save(next);
-    window.location.reload();
-  }, { once: true });
-}
 
+  const current = String(item?.reforge || '').trim().toLowerCase();
+  const signature = `${current}|${capabilities.reforges.map(option => `${option.id}:${option.itemId || ''}`).join(',')}`;
+  if (grid.dataset.signature === signature) return;
+  grid.dataset.signature = signature;
+
+  const options = [{ id: '', name: 'No reforge', stone: 'Nothing applied', itemId: '' }, ...capabilities.reforges];
+  grid.innerHTML = options.map(option => reforgeChoiceMarkup(slotId, option, current)).join('');
+  grid.querySelectorAll(`[data-slot-reforge-choice="${slotId}"]`).forEach(button => button.addEventListener('click', event => {
+    event.preventDefault();
+    const next = load();
+    patchSlot(next, slotId, { reforge: button.dataset.reforgeId || null });
+    save(next);
+    window.dispatchEvent(new Event('farming420:state-changed'));
+  }));
+}
 function configureRecomb(raw, slotId, editor, item, capabilities) {
   const checkbox = editor.querySelector(`[data-slot-recomb="${slotId}"]`);
   const row = checkbox?.closest('.item-editor-row');

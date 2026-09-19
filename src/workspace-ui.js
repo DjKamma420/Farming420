@@ -10,6 +10,7 @@ import {
   availableOfficialGemstoneSlots,
   catalogItemByExactId,
   farmingToolSkyblockId,
+  farmingToolTierRarity,
   officialGemstoneUnlockCoins,
   officialGemstoneUnlockItems,
 } from './exact-farming-items.js';
@@ -38,7 +39,7 @@ function esc(value = '') {
 }
 function readState() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch { return null; } }
 function writeState(state) { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-function reload() { window.location.reload(); }
+function announceStateChange() { window.dispatchEvent(new Event('farming420:state-changed')); }
 function cropForState(state) { return CROPS.find(crop => crop.id === state?.selectedCrop) || CROPS[0]; }
 function toolBucket(state, cropId) {
   state.profile ||= {};
@@ -51,6 +52,7 @@ function toolBucket(state, cropId) {
   return bucket;
 }
 function entryLevel(bucket, id) { return Math.max(0, Number(bucket?.levels?.[id] || 0)); }
+function entryEnabled(bucket, id) { return entryLevel(bucket, id) > 0 || bucket?.owned?.[id] === true; }
 function toolCatalogItem(crop, bucket) {
   const tier = highestChainTier(bucket, TOOL_TIER_CHAIN);
   const id = farmingToolSkyblockId(crop?.tool, tier);
@@ -132,8 +134,9 @@ function tierRow(bucket) {
  * nothing to derive from, a guess would silently change rarity-scaled Peridot
  * Fortune, and the row says so instead of pretending.
  */
-function rarityRow(bucket, catalogItem = null, recombobulated = false, canRecombobulate = true) {
-  const described = describeRarity({ base: catalogItem?.tier, recombobulated, canRecombobulate });
+function rarityRow(bucket, catalogItem = null, recombobulated = false, canRecombobulate = true, toolTier = 1) {
+  const baseRarity = farmingToolTierRarity(toolTier) || catalogItem?.tier;
+  const described = describeRarity({ base: baseRarity, recombobulated, canRecombobulate });
   if (described) {
     return `<div class="workspace-level-row"><div><strong>Item rarity</strong><small>Used for rarity-scaled Peridot values.</small></div><div class="workspace-derived"><strong data-tool-rarity-derived="${esc(described.rarity)}">${esc(described.rarity)}</strong><small>${esc(described.note)}</small></div></div>`;
   }
@@ -161,8 +164,8 @@ function gemstoneSection(bucket, catalogItem) {
   // The derived rarity is the one the item actually has; the recorded value is
   // only a fallback for when the official data has no rarity to derive from.
   const effectiveRarity = deriveRarity({
-    base: catalogItem?.tier,
-    recombobulated: entryLevel(bucket, RECOMB_ID) > 0,
+    base: farmingToolTierRarity(tier) || catalogItem?.tier,
+    recombobulated: entryEnabled(bucket, RECOMB_ID),
     canRecombobulate: canRecombobulateItem('tool', catalogItem),
   }) || bucket.toolRarity;
   const fortune = toolGemstoneFortune(bucket.gemSlots, effectiveRarity, count);
@@ -177,7 +180,7 @@ function gemstoneSection(bucket, catalogItem) {
 function writeTool(mutator) {
   const state = readState(); if (!state) return;
   const crop = cropForState(state); const bucket = toolBucket(state, crop.id);
-  mutator(bucket, state, crop); writeState(state); reload();
+  mutator(bucket, state, crop); writeState(state); announceStateChange();
 }
 function enhanceTools(root) {
   const editor = root.querySelector('[data-tool-editor="1"]');
@@ -198,7 +201,7 @@ function enhanceTools(root) {
   }
   const upgrades = sections.find(s => s.querySelector('h3')?.textContent.trim() === 'Tool upgrades');
   const canRecomb = !catalogItem || canRecombobulateItem('tool', catalogItem);
-  if (upgrades) upgrades.innerHTML = `<div class="workspace-section-head"><div><h3>Tool progression</h3><p>${catalogItem ? `Exact item: ${esc(catalogItem.name)} (${esc(catalogItem.id)}).` : 'Official item data is loading; verified offline rules are used temporarily.'}</p></div></div><div class="workspace-level-list">${tierRow(bucket)}${levelRow('Farming Tool level','Tool counter level.',TOOL_LEVEL_ID,entryLevel(bucket,TOOL_LEVEL_ID),50)}${levelRow('Overclocker 3000','Applications extending the tool-level cap.',OVERCLOCKER_ID,entryLevel(bucket,OVERCLOCKER_ID),10)}${levelRow('Farming for Dummies','Book applications on this tool.',DUMMIES_ID,entryLevel(bucket,DUMMIES_ID),5)}${rarityRow(bucket, catalogItem, entryLevel(bucket, RECOMB_ID) > 0, canRecomb)}${canRecomb ? `<label class="workspace-level-row workspace-toggle-row"><div><strong>Recombobulator 3000</strong><small>Current item state.</small></div><input type="checkbox" data-tool-recomb ${entryLevel(bucket,RECOMB_ID)>0?'checked':''}></label>` : ''}</div>`;
+  if (upgrades) upgrades.innerHTML = `<div class="workspace-section-head"><div><h3>Tool progression</h3><p>${catalogItem ? `Exact item: ${esc(catalogItem.name)} (${esc(catalogItem.id)}).` : 'Official item data is loading; verified offline rules are used temporarily.'}</p></div></div><div class="workspace-level-list">${tierRow(bucket)}${levelRow('Farming Tool level','Tool counter level.',TOOL_LEVEL_ID,entryLevel(bucket,TOOL_LEVEL_ID),50)}${levelRow('Overclocker 3000','Applications extending the tool-level cap.',OVERCLOCKER_ID,entryLevel(bucket,OVERCLOCKER_ID),10)}${levelRow('Farming for Dummies','Book applications on this tool.',DUMMIES_ID,entryLevel(bucket,DUMMIES_ID),5)}${rarityRow(bucket, catalogItem, entryEnabled(bucket, RECOMB_ID), canRecomb, highestChainTier(bucket, TOOL_TIER_CHAIN))}${canRecomb ? `<label class="workspace-level-row workspace-toggle-row"><div><strong>Recombobulator 3000</strong><small>Current item state.</small></div><input type="checkbox" data-tool-recomb ${entryEnabled(bucket, RECOMB_ID)?'checked':''}></label>` : ''}</div>`;
   const finish = sections.find(s => /Gemstone|rarity/i.test(s.querySelector('h3')?.textContent || ''));
   if (finish) finish.innerHTML = gemstoneSection(bucket, catalogItem);
   content?.querySelectorAll('.workspace-secondary-analysis').forEach(node => node.remove());

@@ -27,15 +27,18 @@ test('the synced set is derived from the apply layer, so it cannot drift', () =>
   assert.equal(syncedByLookup.length, MAPPABLE_ENTRY_IDS.size);
 });
 
-test('an entry with no documented location says so instead of inventing one', () => {
+test('an entry without a verified exact route still gives actionable lookup guidance', () => {
   const location = locationFor('accessory-fermento-artifact');
   assert.equal(location.status, LOCATION_STATUS.NEEDS_RESEARCH);
-  assert.equal(location.where, null, 'an unresearched location must stay empty');
-  assert.match(location.source, /^https?:\/\//, 'the cited source is offered instead');
+  assert.match(location.where, /Accessory Bag/i);
+  assert.doesNotMatch(location.where, /not documented/i);
+  assert.match(location.source, /^https?:\/\//, 'the cited source is still offered for exact acquisition details');
 });
 
-test('every manual entry still offers a source to look the value up in', () => {
+test('every manual entry gives guidance plus a source for exact details', () => {
   for (const row of manualEntries()) {
+    assert.ok(row.location.where, `${row.entry.id} offers no in-game lookup guidance`);
+    assert.doesNotMatch(row.location.where, /not documented/i, `${row.entry.id} still exposes the old placeholder`);
     assert.match(String(row.location.source || ''), /^https?:\/\//, `${row.entry.id} offers no source`);
   }
 });
@@ -79,10 +82,11 @@ test('the summary adds up', () => {
   assert.ok(summary.documented <= summary.manual);
 });
 
-test('an unknown id degrades gracefully rather than throwing', () => {
+test('an unknown id degrades gracefully with generic lookup guidance', () => {
   const location = locationFor('not-an-entry');
   assert.equal(location.status, LOCATION_STATUS.NEEDS_RESEARCH);
-  assert.equal(location.where, null);
+  assert.match(location.where, /SkyBlock|Garden/i);
+  assert.doesNotMatch(location.where, /not documented/i);
   assert.equal(location.source, null);
 });
 

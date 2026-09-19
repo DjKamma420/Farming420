@@ -3,16 +3,12 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 
 /**
- * Every page in the nav must be reachable on a phone.
+ * Every page in the nav must remain reachable on a phone.
  *
- * "What to enter" was hidden from the mobile taskbar as not worth a permanent
- * slot. Nothing else in the app links to it, so the page became unreachable:
- * 75 interactive elements and 63 folded entries with no entry point at all,
- * and the click sweep reported it as `UNREACHABLE: page exists but no visible
- * way to open it` for however long that rule stood.
- *
- * The taskbar already scrolls horizontally -- twelve 44px slots overflow a
- * 412px phone as it is -- so the slot the rule was saving did not exist.
+ * Mobile navigation is a collapsible left-side rail. The closed state keeps
+ * only a small three-dot handle; opening it overlays the page and exposes the
+ * full named list. The open list may scroll vertically, but no page may be
+ * dropped to make it shorter.
  */
 
 const root = new URL('../', import.meta.url);
@@ -24,8 +20,6 @@ function stylesheets() {
 }
 
 test('no stylesheet hides a nav link for a specific page', () => {
-  // A page may be de-emphasised, reordered or moved behind a scroll. It may
-  // not be the one page with no way in.
   const offenders = [];
   for (const name of stylesheets()) {
     const css = read(`src/${name}`).replace(/\/\*[\s\S]*?\*\//g, '');
@@ -38,22 +32,63 @@ test('no stylesheet hides a nav link for a specific page', () => {
   assert.deepEqual(offenders, [], `a nav link is hidden by CSS:\n${offenders.join('\n')}`);
 });
 
-test('the taskbar is allowed to scroll rather than drop entries', () => {
-  // This is what makes the rule above affordable: the nav overflows and
-  // scrolls itself, so a thirteenth page costs nothing but a swipe.
-  assert.match(read('src/styles.css'), /\.sidebar nav\{[^}]*overflow:auto/);
-  // And the taskbar rule sizes the slots without capping how many there are.
-  const taskbar = read('src/mobile-taskbar.css');
-  assert.match(taskbar, /\.sb-rail \.nav-link \{[^}]*flex: 0 0 44px/);
-  assert.doesNotMatch(taskbar, /nav-link:nth-child\([^)]*\)\s*\{[^}]*display:\s*none/);
+test('the mobile navigation stays fixed and exposes named tabs when opened', () => {
+  const mobile = read('src/mobile-taskbar.css');
+
+  assert.match(mobile, /\.sidebar\.sb-rail \{[^}]*position:\s*fixed/);
+  assert.match(mobile, /\.sidebar\.sb-rail \{[^}]*inset:\s*0 auto 0 0/);
+  assert.match(mobile, /\.sidebar\.sb-rail\.nav-open > nav \{[^}]*overflow-y:\s*auto/);
+  assert.match(mobile, /\.sidebar\.sb-rail\.nav-open \.sb-nav-label \{[^}]*display:\s*block\s*!important/);
+  assert.match(mobile, /\.sidebar\.sb-rail:not\(\.nav-open\) > nav[^}]*display:\s*none\s*!important/);
+  assert.match(mobile, /\.nav-toggle \{[^}]*margin:\s*0 0 6px/);
+
+  assert.doesNotMatch(mobile, /\.sidebar\.sb-rail \{[^}]*position:\s*sticky/);
+  assert.doesNotMatch(mobile, /nav-link:nth-child\([^)]*\)\s*\{[^}]*display:\s*none/);
 });
 
-test('the reason this page had no entry point is still true', () => {
-  // If something ever does link to "what to enter" from a page the taskbar
-  // reaches, the hide-it rule becomes defensible again -- so record why it
-  // is not defensible now, and let this fail if that changes.
+test('modal drawers render above the fixed navigation rail', () => {
+  const mobile = read('src/mobile-taskbar.css');
+
+  assert.match(mobile, /\.sidebar\.sb-rail\s*\{[\s\S]*?z-index:\s*30/);
+  assert.match(mobile, /\.drawer-backdrop\s*\{[^}]*z-index:\s*40/);
+});
+
+test('content scroll is isolated from the fixed side navigation', () => {
+  const redesign = read('src/skyblock-redesign.css');
+
+  assert.match(redesign, /html\.skyblock-redesign,\s*html\.skyblock-redesign body \{[^}]*overflow:\s*hidden/);
+  assert.match(redesign, /\.skyblock-redesign \.app-shell \{[^}]*height:\s*100dvh;[^}]*overflow:\s*hidden/);
+  assert.match(redesign, /\.skyblock-redesign \.sidebar\.sb-rail \{[^}]*position:\s*fixed;[^}]*inset:\s*0 auto 0 0/);
+  assert.match(redesign, /\.skyblock-redesign \.main \{[^}]*height:\s*100dvh;[^}]*overflow-y:\s*auto/);
+});
+
+test('collapsed rail reserves only the handle while the open rail overlays content', () => {
+  const mobile = read('src/mobile-taskbar.css');
+
+  assert.match(mobile, /\.sidebar\.sb-rail \{[^}]*width:\s*44px/);
+  assert.match(mobile, /\.main \{[^}]*margin-left:\s*44px/);
+  assert.match(mobile, /\.sidebar\.sb-rail\.nav-open \{[^}]*width:\s*144px/);
+  assert.match(mobile, /\.sidebar\.sb-rail\.nav-open \{[^}]*padding:\s*6px 4px/);
+  assert.doesNotMatch(mobile, /\.main \{[^}]*margin-left:\s*144px/);
+
+  assert.match(mobile, /@media \(max-width:\s*650px\)[\s\S]*\.sidebar\.sb-rail \{[^}]*width:\s*40px/);
+  assert.match(mobile, /@media \(max-width:\s*650px\)[\s\S]*\.main \{[^}]*margin-left:\s*40px/);
+  assert.match(mobile, /\.sidebar\.sb-rail\.nav-open \{[^}]*width:\s*min\(138px,\s*calc\(100vw - 14px\)\)/);
+  assert.match(mobile, /@media \(max-width:\s*650px\)[\s\S]*\.sidebar\.sb-rail\.nav-open \{[^}]*padding:\s*4px 2px/);
+});
+
+test('navigation CSS is cache-busted in the page shell', () => {
+  const index = read('index.html');
+  assert.match(index, /src\/skyblock-redesign\.css\?v=20260918-7/);
+  assert.match(index, /src\/mobile-taskbar\.css\?v=20260919-1/);
+});
+
+test('the setup page keeps its own direct navigation entry', () => {
+  const app = read('src/app.js');
+  assert.match(app, /\['setup',\s*'What to enter'\]/);
+
   const linkers = readdirSync(new URL('src/', root))
     .filter(name => name.endsWith('.js'))
     .filter(name => /clickPage\(['"]setup['"]\)|goToPage\(['"]setup['"]\)/.test(read(`src/${name}`)));
-  assert.deepEqual(linkers, [], 'something now links to setup; the taskbar rule can be revisited');
+  assert.deepEqual(linkers, [], 'setup gained another entry point; keep the direct nav entry unless UX is redesigned intentionally');
 });

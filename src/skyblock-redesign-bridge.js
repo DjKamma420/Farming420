@@ -53,8 +53,7 @@ document.addEventListener('click', event => {
   event.preventDefault();
   event.stopImmediatePropagation();
   localStorage.setItem(GOAL_KEY, goal.dataset.sbGoal);
-  // Re-render the current page cleanly. This preserves the original native
-  // Reforge section for future goal changes instead of progressively replacing
-  // later tool sections.
-  document.querySelector('.nav-link[data-page="tools"]')?.click();
+  // Re-render the current page without pretending the user navigated away.
+  // A fake Tools-tab click deliberately disables scroll preservation.
+  window.dispatchEvent(new Event('farming420:state-changed'));
 }, true);

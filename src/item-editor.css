@@ -56,7 +56,7 @@
 }
 
 .slot-portrait { width: 46px; height: 46px; }
-.item-portrait { width: 72px; height: 72px; }
+.item-portrait { width: 58px; height: 58px; }
 
 .item-portrait-fallback {
   font-size: 12px;
@@ -86,30 +86,38 @@
 /* --- open editor ------------------------------------------------------- */
 
 .item-editor {
-  margin-top: 20px;
+  margin-top: 12px;
   border: 1px solid color-mix(in srgb, var(--rarity, #6d7d73) 26%, var(--line));
-  border-radius: 16px;
-  padding: 20px;
+  border-radius: 12px;
+  padding: 14px;
   background:
     radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--rarity, #6d7d73) 9%, transparent), transparent 60%),
     linear-gradient(180deg, var(--panel2), var(--panel));
   box-shadow: var(--shadow);
   display: grid;
-  gap: 16px;
+  gap: 10px;
 }
 
 .item-editor-head {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
+}
+
+.item-editor-head.item-editor-actions {
+  grid-template-columns: 1fr;
+}
+
+.item-editor-head.item-editor-actions > button {
+  width: 100%;
 }
 
 .item-identity { min-width: 0; }
 
 .item-editor .item-title {
   display: block;
-  font-size: 21px;
+  font-size: 18px;
   line-height: 1.2;
   margin: 4px 0 3px;
   color: var(--rarity, var(--text));
@@ -126,8 +134,8 @@
 
 .item-editor-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
 }
 
 .item-editor .settings-field { display: grid; gap: 6px; }
@@ -156,16 +164,16 @@
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: 14px;
+  gap: 10px;
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 9px;
   background: #0a1610;
-  padding: 12px 14px;
+  padding: 9px 10px;
 }
 
 .item-editor-row strong { display: block; }
 
-.item-editor-section { display: grid; gap: 10px; }
+.item-editor-section { display: grid; gap: 8px; }
 .item-editor-section .section-row { margin: 8px 0 0; }
 .item-editor-section h3 { margin: 0 0 4px; }
 
@@ -247,11 +255,11 @@
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) 84px 92px;
   align-items: center;
-  gap: 12px;
+  gap: 9px;
   border: 1px solid var(--line);
-  border-radius: 11px;
+  border-radius: 9px;
   background: #0a1610;
-  padding: 9px 12px;
+  padding: 7px 9px;
   transition: border-color .14s, background .14s;
 }
 
@@ -324,11 +332,10 @@
  * picture is a Minecraft skin. A skin sheet is 64 wide; the face is the 8x8
  * square at (8, 8) and the hat the one at (40, 8), drawn over it.
  *
- * Scaling the sheet to 800% of the box makes one 8x8 square exactly fill it. The
- * offsets are percentages, which are measured against the rendered size, so the
- * two sheet heights in circulation need their own vertical figure: 100/7 for a
- * square 64x64 sheet and 100/3 for the legacy 64x32 one. Horizontally both are
- * 64 wide, so 100/7 and 500/7 serve either.
+ * The skin is loaded as a real <img>, then drawn at 800% width inside an
+ * overflow-hidden box. That makes one 8x8 source square fill the portrait.
+ * Pixel offsets are expressed as whole portrait widths, so the same crop works
+ * for both 64x64 and legacy 64x32 skins without probing the sheet height.
  */
 
 .skull-art {
@@ -341,30 +348,19 @@
 
 .skull-layer {
   position: absolute;
-  inset: 0;
-  background-repeat: no-repeat;
-  background-size: 800% auto;
+  width: 800%;
+  max-width: none;
+  height: auto;
   image-rendering: pixelated;
-  /* Hidden until the sheet height is known, so a head never flashes as a
-     mis-cropped slice of the whole skin. */
-  opacity: 0;
+  pointer-events: none;
+  user-select: none;
 }
 
-.skull-art.skull-square .skull-layer,
-.skull-art.skull-legacy .skull-layer {
-  opacity: 1;
-}
-
-.skull-square .skull-face { background-position: 14.2857% 14.2857%; }
-.skull-square .skull-hat { background-position: 71.4286% 14.2857%; }
-
-.skull-legacy .skull-face { background-position: 14.2857% 33.3333%; }
-.skull-legacy .skull-hat { background-position: 71.4286% 33.3333%; }
-
-.skull-art .skull-hat {
-  /* The hat is the second layer and is often fully transparent. */
-  z-index: 1;
-}
+/* The skin sheet is always 64 px wide and the wanted head squares are 8 px.
+   Drawing it at 800% therefore makes one source pixel square land exactly in
+   the portrait box. These offsets work for both 64x64 and legacy 64x32 skins. */
+.skull-face { left: -100%; top: -100%; }
+.skull-hat { left: -500%; top: -100%; z-index: 1; }
 
 .slot-portrait.has-official-item-art .item-portrait-fallback,
 .item-portrait.has-official-item-art .item-portrait-fallback {

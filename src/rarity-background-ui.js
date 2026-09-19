@@ -7,9 +7,10 @@ import { loadItemCatalog, readCachedCatalog } from './item-catalog.js';
 import { canRecombobulateItem, catalogItemForSetupItem } from './item-capabilities.js';
 import { toolKeyForCropId } from './migrations.js';
 import { TOOL_TIER_CHAIN, highestChainTier } from './progression-chains.js';
-import { catalogItemByExactId, farmingToolSkyblockId } from './exact-farming-items.js';
+import { catalogItemByExactId, farmingToolSkyblockId, farmingToolTierRarity } from './exact-farming-items.js';
 import { deriveRarity } from './tool-rarity.js';
 import { vacuumRarity } from './vacuum-state.js';
+import { setTextIfChanged } from './set-text.js';
 
 const RECOMB_ID = 'tool-recombobulator-effect-on-tool-stats';
 const RARITY_CLASSES = Object.freeze([
@@ -67,11 +68,10 @@ function applySetupRarity(root, state, catalog) {
     if (!rarityLabel) continue;
     const base = normalizeRarity(catalogItem?.tier) || normalizeRarity(item.rarity);
     const source = item.source === 'sync' ? ' · synced' : '';
-    if (item.recombobulated && base && base !== rarity) {
-      rarityLabel.textContent = `${rarity} · base ${base} + Recombobulator${source}`;
-    } else {
-      rarityLabel.textContent = `${rarity}${source}`;
-    }
+    const label = item.recombobulated && base && base !== rarity
+      ? `${rarity} · base ${base} + Recombobulator${source}`
+      : `${rarity}${source}`;
+    setTextIfChanged(rarityLabel, label);
   }
 }
 
@@ -90,12 +90,39 @@ function toolRarityForCrop(state, cropId, catalog) {
   const tier = highestChainTier(bucket, TOOL_TIER_CHAIN);
   const skyblockId = farmingToolSkyblockId(crop.tool, tier);
   const item = catalogItemByExactId(catalog, skyblockId);
-  const base = item?.tier || bucket.toolRarity || null;
+  const base = farmingToolTierRarity(tier) || item?.tier || bucket.toolRarity || null;
   return deriveRarity({
     base,
     recombobulated: entryEnabled(bucket, RECOMB_ID),
     canRecombobulate: item ? canRecombobulateItem('tool', item) : true,
   });
+}
+
+function catalogItemById(catalog, id) {
+  const wanted = String(id || '').trim().toUpperCase();
+  if (!wanted || !Array.isArray(catalog)) return null;
+  return catalog.find(item => String(item?.id || '').trim().toUpperCase() === wanted) || null;
+}
+
+function clearRarityClass(node) {
+  if (!node?.classList) return;
+  node.classList.remove(...RARITY_CLASSES, 'rarity-surface');
+  delete node.dataset.effectiveRarity;
+}
+
+const CATALOG_RARITY_SURFACE_SELECTOR = '.item-card[data-open], .accessory-catalog-card[data-accessory-item-id], .drawer, .sb-reforge-card, .workspace-level-row';
+
+function applyCatalogItemSurfaceRarity(root, catalog) {
+  for (const surface of root.querySelectorAll(CATALOG_RARITY_SURFACE_SELECTOR)) {
+    const itemId = surface.dataset.physicalItemId;
+    if (!itemId) {
+      clearRarityClass(surface);
+      continue;
+    }
+    const item = catalogItemById(catalog, itemId);
+    if (item?.tier) applyRarityClass(surface, item.tier);
+    else clearRarityClass(surface);
+  }
 }
 
 function applyToolRarity(root, state, catalog) {
@@ -120,6 +147,7 @@ export function applyRarityBackgrounds(root = document) {
   const state = readState();
   const catalog = readCachedCatalog()?.items || [];
   applySetupRarity(root, state, catalog);
+  applyCatalogItemSurfaceRarity(root, catalog);
   applyToolRarity(root, state, catalog);
   applyVacuumRarity(root, state);
 }
@@ -146,11 +174,16 @@ async function ensureCatalog() {
   }
 }
 
+const RARITY_SURFACE_SELECTOR = '.slot-card, [data-item-editor], .item-card[data-open], .accessory-catalog-card[data-accessory-item-id], .drawer, .sb-reforge-card, .workspace-level-row, .sb-tool-card, [data-tool-editor], [data-vacuum-panel]';
+
 function mutationNeedsRarity(mutations) {
-  return mutations.some(mutation => [...mutation.addedNodes].some(node => node instanceof Element && (
-    node.matches?.('.slot-card, [data-item-editor], .sb-tool-card, [data-tool-editor], [data-vacuum-panel]')
-    || node.querySelector?.('.slot-card, [data-item-editor], .sb-tool-card, [data-tool-editor], [data-vacuum-panel]')
-  )));
+  return mutations.some(mutation => {
+    if (mutation.type === 'attributes' && mutation.attributeName === 'data-physical-item-id') return true;
+    return [...mutation.addedNodes].some(node => node instanceof Element && (
+      node.matches?.(RARITY_SURFACE_SELECTOR)
+      || node.querySelector?.(RARITY_SURFACE_SELECTOR)
+    ));
+  });
 }
 
 function boot() {
@@ -163,7 +196,12 @@ function boot() {
   if (app && typeof MutationObserver !== 'undefined') {
     new MutationObserver(mutations => {
       if (mutationNeedsRarity(mutations)) schedule();
-    }).observe(app, { childList: true, subtree: true });
+    }).observe(app, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['data-physical-item-id'],
+    });
   }
 }
 

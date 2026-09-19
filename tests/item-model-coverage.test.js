@@ -30,7 +30,7 @@ test('official skin is preferred over pack and material fallbacks', () => {
   assert.equal(source.source, ITEM_MODEL_SOURCE.OFFICIAL_SKIN);
 });
 
-test('set representative covers armor/equipment missing a direct pack item', () => {
+test('armor material beats a same-set ingredient stand-in', () => {
   const manifest = {
     schemaVersion: 1,
     pack: { id: 'SkyBlock', hash: 'test' },
@@ -39,10 +39,11 @@ test('set representative covers armor/equipment missing a direct pack item', () 
   const source = itemModelSource({
     id: 'HELIANTHUS_HELMET',
     name: 'Helianthus Helmet',
+    category: 'HELMET',
     material: 'LEATHER_HELMET',
   }, manifest);
-  assert.equal(source.source, ITEM_MODEL_SOURCE.RESOURCE_PACK_SET);
-  assert.equal(source.packKey, 'helianthus');
+  assert.equal(source.source, ITEM_MODEL_SOURCE.VANILLA_MATERIAL);
+  assert.equal(source.material, 'LEATHER_HELMET');
 });
 
 test('coverage audit exposes unresolved farming items instead of hiding them', () => {

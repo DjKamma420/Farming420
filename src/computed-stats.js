@@ -14,7 +14,7 @@ import {
   itemAppliesToActivity,
 } from './activity-mode.js';
 
-export const COMPUTED_STATS_VERSION = 6;
+export const COMPUTED_STATS_VERSION = 8;
 
 export const STAT_AXIS = Object.freeze({
   GLOBAL_FORTUNE: 'globalFortune',
@@ -30,6 +30,9 @@ const AUTO_DYNAMIC_TOTAL = Object.freeze({
   'armor-reforge-mossy-on-full-armor': 'total',
   'armor-gem-perfect-peridot-on-full-armor': 'total',
   'equipment-reforge-rooted-on-full-equipment': 'total',
+  'equipment-reforge-thorny-on-full-mythic-equipment-ff': 'total',
+  'equipment-reforge-thorny-on-full-mythic-equipment-overbloom': 'total',
+  'equipment-reforge-thorny-thorns-overbloom': 'total',
   'equipment-enchant-green-thumb-v-on-equipment': 'per-level',
 });
 
@@ -87,7 +90,10 @@ function contributionFor(state, item, cropId, mode = null) {
   const axis = statAxisFor(item);
   if (!axis) return null;
 
-  if (mode && axis !== STAT_AXIS.BONUS_PEST_CHANCE && !itemAppliesToActivity(item, mode)) return null;
+  if (mode && !itemAppliesToActivity(item, mode)) return null;
+  // BPC is a spawn-phase stat. Keeping it out of Farming/Killing totals prevents
+  // the old two-set model from making those loadouts look better than they are.
+  if (mode && axis === STAT_AXIS.BONUS_PEST_CHANCE && mode !== ACTIVITY_MODE.PEST_SPAWN) return null;
 
   // The old single Perfect-Peridot row was only a placeholder. The physical
   // tool editor now stores every socket separately, including quality, unlock
@@ -160,10 +166,10 @@ export function computeTotalsFromEntries(state, entries, cropId = state?.selecte
 
 function applyDerivedMechanics(state, totals, mode, cropId) {
   const cow = mooshroomCowContribution(state);
-  const vacuumPeridot = mode === ACTIVITY_MODE.PEST
+  const vacuumPeridot = mode === ACTIVITY_MODE.PEST_KILL
     ? vacuumPeridotFortune(state?.profile?.vacuumProgress || {})
     : 0;
-  const toolPeridot = mode === ACTIVITY_MODE.FARM
+  const toolPeridot = (mode === ACTIVITY_MODE.FARM || mode === ACTIVITY_MODE.PEST_SPAWN)
     ? toolGemstoneContribution(state, cropId)
     : { active: false, value: 0, incomplete: false, filled: 0, available: 0 };
   totals.derived = {

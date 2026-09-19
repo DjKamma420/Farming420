@@ -1,8 +1,9 @@
 import { STORAGE_KEY } from './config.js';
 import { UPGRADES } from './data.js';
-import { itemForSetupSlot } from './item-art-ui.js';
 import { loadItemCatalog } from './item-catalog.js';
+import { armorItemSvgMarkup, isArmorItem } from './armor-item-art.js';
 import { packArtNodeFor } from './pack-item-art.js';
+import { knownSkyblockHeadTexture } from './skull-art.js';
 
 export const REFORGE_ITEM_IDS = Object.freeze({
   bountiful: 'GOLDEN_BALL',
@@ -12,14 +13,23 @@ export const REFORGE_ITEM_IDS = Object.freeze({
   overpriced: 'OVERPRICED_DRINK',
 });
 
+export const RECOMBOBULATOR_ITEM_ID = 'RECOMBOBULATOR_3000';
+
 export const TOOL_PROGRESS_ITEM_IDS = Object.freeze({
   'Overclocker 3000': 'OVERCLOCKER_3000',
   'Farming for Dummies': 'FARMING_FOR_DUMMIES',
-  'Recombobulator 3000': 'RECOMBOBULATOR_3000',
+  'Recombobulator 3000': RECOMBOBULATOR_ITEM_ID,
 });
 
+const RECOMBOBULATOR_CONTROL_SELECTOR = [
+  '[data-accessory-recomb]',
+  '[data-slot-recomb]',
+  '[data-vacuum-recomb]',
+  '[data-tool-recomb]',
+].join(', ');
+
 const CARD_ITEM_ID_OVERRIDES = Object.freeze({
-  'accessory-relic-of-power-perfect-peridot-effect': 'RELIC_OF_POWER',
+  'accessory-relic-of-power-perfect-peridot-effect': 'POWER_RELIC',
   'accessory-fermento-artifact': 'FERMENTO_ARTIFACT',
   'accessory-helianthus-relic': 'HELIANTHUS_RELIC',
   'buff-booster-cookie-farming-wisdom-contribution': 'BOOSTER_COOKIE',
@@ -58,7 +68,9 @@ export function catalogItemById(catalog, skyblockId) {
 }
 
 export function skinTextureUrl(item) {
-  const hash = String(item?.skin || '').trim().toLowerCase();
+  // Live Hypixel metadata wins. The id-based table only fills the manual/offline
+  // gap where a setup knows the exact item id but carries no skin field.
+  const hash = String(item?.skin || knownSkyblockHeadTexture(item?.id) || '').trim().toLowerCase();
   return /^[0-9a-f]{32,128}$/.test(hash)
     ? `https://textures.minecraft.net/texture/${hash}`
     : null;
@@ -68,7 +80,18 @@ function physicalNameCandidates(entry) {
   const name = clean(entry?.name);
   if (!name) return [];
   const values = [name];
-  if (entry?.category === 'Attribute Shard' && name.includes(' - ')) values.unshift(name.split(' - ')[0]);
+  if (entry?.category === 'Attribute Shard') {
+    const primaryName = name.includes(' - ') ? name.split(' - ')[0].trim() : name;
+    if (primaryName && primaryName !== name) values.unshift(primaryName);
+
+    const currentName = primaryName.replace(/\s+\(formerly [^)]+\)\s*$/i, '').trim();
+    if (currentName && currentName !== primaryName) values.unshift(currentName);
+
+    const alternatives = currentName.match(/^(.+?)\s+or\s+(.+?)\s+shard$/i);
+    if (alternatives) {
+      values.unshift(`${alternatives[1]} Shard`, `${alternatives[2]} Shard`);
+    }
+  }
   for (const suffix of [' contribution', ' effect', ' temporary stack']) {
     if (name.toLowerCase().endsWith(suffix)) values.unshift(name.slice(0, -suffix.length));
   }
@@ -84,8 +107,8 @@ function physicalNameCandidates(entry) {
  */
 export function catalogItemForUpgrade(catalog, entry) {
   if (!Array.isArray(catalog) || !entry) return null;
-  const override = CARD_ITEM_ID_OVERRIDES[entry.id];
-  if (override) return catalogItemById(catalog, override);
+  const exactItemId = entry.physicalItemId || CARD_ITEM_ID_OVERRIDES[entry.id];
+  if (exactItemId) return catalogItemById(catalog, exactItemId);
   if (!entry.packAsset && !PHYSICAL_CARD_CATEGORIES.has(entry.category)) return null;
 
   const candidates = physicalNameCandidates(entry);
@@ -106,45 +129,20 @@ export function catalogItemForUpgrade(catalog, entry) {
   return best.length === 1 ? best[0] : null;
 }
 
-function parseColor(value) {
-  const parts = String(value || '').split(',').map(Number);
-  if (parts.length !== 3 || parts.some(part => !Number.isFinite(part) || part < 0 || part > 255)) return null;
-  return `rgb(${parts.map(part => Math.round(part)).join(', ')})`;
-}
-
-function materialColor(item) {
-  const custom = parseColor(item?.color);
-  if (custom) return custom;
-  const material = String(item?.material || '');
-  if (material.startsWith('GOLD_')) return '#ffd84a';
-  if (material.startsWith('DIAMOND_')) return '#56e3e6';
-  if (material.startsWith('IRON_')) return '#d6dddd';
-  if (material.startsWith('CHAINMAIL_')) return '#a7b0b0';
-  if (material.startsWith('LEATHER_')) return '#a46d45';
-  return '#9fb8a7';
-}
-
-function armorSvg(category, color, label) {
-  const paths = {
-    HELMET: '<path d="M3 3h10v3H2V4h1zm-1 3h3v7H2zm9 0h3v7h-3zM5 10h6v4H5z"/>',
-    CHESTPLATE: '<path d="M2 3h4l2 2 2-2h4l1 4-3 1v6H4V8L1 7zm4 0h4v3H6z"/>',
-    LEGGINGS: '<path d="M3 3h10v5h-2v6H7V9H5v5H2V8h1z"/>',
-    BOOTS: '<path d="M2 3h5v7H5v2h3v2H2zm7 0h5v11H8v-2h3v-2H9z"/>',
-  };
-  const path = paths[String(category || '').toUpperCase()];
-  if (!path) return null;
+function armorMaterialNode(item, label) {
+  const markup = armorItemSvgMarkup(item);
+  if (!markup) return null;
   const span = document.createElement('span');
-  span.className = 'coverage-item-art coverage-material-art';
+  span.className = 'coverage-item-art coverage-material-art coverage-armor-art';
   span.setAttribute('role', 'img');
-  span.setAttribute('aria-label', `${label || 'SkyBlock armour'} item icon`);
-  span.innerHTML = `<svg viewBox="0 0 16 16" aria-hidden="true" shape-rendering="crispEdges"><g fill="${color}">${path}</g><path d="M1 2h14v13H1z" fill="none" stroke="rgba(255,255,255,.16)" stroke-width=".45"/></svg>`;
+  span.setAttribute('aria-label', `${label || item?.name || 'SkyBlock armour'} item model`);
+  span.innerHTML = markup;
   return span;
 }
 
 function genericMaterialSvg(item, label) {
   const material = String(item?.material || '').toUpperCase();
-  const category = String(item?.category || '').toUpperCase();
-  const armour = armorSvg(category, materialColor(item), label);
+  const armour = armorMaterialNode(item, label);
   if (armour) return armour;
 
   let shape = null;
@@ -172,12 +170,34 @@ export function itemArtNode(item, label = '') {
   if (url) {
     const span = document.createElement('span');
     span.className = 'coverage-item-art coverage-skull-art';
-    span.style.backgroundImage = `url("${url}")`;
     span.setAttribute('role', 'img');
-    span.setAttribute('aria-label', `${label || item.name || 'SkyBlock item'} texture`);
+    span.setAttribute('aria-label', `${label || item.name || 'SkyBlock item'} head texture`);
+    let failed = false;
+    const fail = () => {
+      if (failed) return;
+      failed = true;
+      span.remove();
+    };
+    for (const layerName of ['face', 'hat']) {
+      const layer = document.createElement('img');
+      layer.className = `coverage-skull-layer coverage-skull-${layerName}`;
+      layer.src = url;
+      layer.alt = '';
+      layer.loading = 'lazy';
+      layer.decoding = 'async';
+      layer.draggable = false;
+      layer.addEventListener('error', fail, { once: true });
+      span.append(layer);
+    }
     return span;
   }
-  // Real set art from the shipped pack, before the hand-drawn outline.
+
+  // Hypixel does not currently ship Resource Pack models for armour. The
+  // official item resource does publish the actual item material and leather
+  // dye, so armour must use that model instead of a Cropie/Fermento/etc. crop
+  // icon that merely shares the set name.
+  if (isArmorItem(item)) return armorMaterialNode(item, label);
+
   const packNode = packArtNodeFor(item, label);
   if (packNode) return packNode;
   return genericMaterialSvg(item, label);
@@ -204,26 +224,17 @@ function putArt(container, node, identity, { prepend = true } = {}) {
   return true;
 }
 
-function decorateSetupItems(catalog, rawState) {
-  document.querySelectorAll('.slot-portrait, [data-item-art-slot]').forEach(container => {
-    if (container.querySelector(':scope > .official-item-art, :scope > .skull-art')) return;
-    const slotId = container.dataset.slot
-      || container.dataset.itemArtSlot
-      || container.closest('[data-slot]')?.dataset.slot;
-    const setupItem = itemForSetupSlot(rawState, slotId);
-    if (!setupItem?.skyblockId) return;
-    const record = catalogItemById(catalog, setupItem.skyblockId);
-    const node = itemArtNode(record, setupItem.displayName || record?.name || slotId);
-    if (node) putArt(container, node, `setup:${record.id}`);
-  });
-}
-
 function decorateProgressionCards(catalog) {
   document.querySelectorAll('.item-card[data-open]').forEach(card => {
     const entry = UPGRADES.find(item => item.id === card.dataset.open);
     if (!entry) return;
     const record = catalogItemForUpgrade(catalog, entry);
-    const node = itemArtNode(record, record?.name || entry.name);
+    if (!record) {
+      delete card.dataset.physicalItemId;
+      return;
+    }
+    if (card.dataset.physicalItemId !== record.id) card.dataset.physicalItemId = record.id;
+    const node = itemArtNode(record, record.name || entry.name);
     if (!node) return;
     let portrait = card.querySelector('.card-head > .card-portrait');
     if (!portrait) {
@@ -237,35 +248,109 @@ function decorateProgressionCards(catalog) {
   });
 }
 
-function decorateReforges(catalog) {
-  document.querySelectorAll('.sb-reforge-card[data-sb-reforge]').forEach(card => {
-    const reforgeId = card.dataset.sbReforge;
-    if (!reforgeId) return;
-    const itemId = REFORGE_ITEM_IDS[reforgeId];
-    const art = card.querySelector('.sb-reforge-art');
-    if (!itemId || !art) return;
-
-    // skyblock-redesign historically used fuzzy substring matching here. Remove
-    // that image first so Blessed Fruit can never silently become Blessed Bait.
-    art.querySelectorAll(':scope > .sb-pack-icon').forEach(node => node.remove());
-    const record = catalogItemById(catalog, itemId);
-    const node = itemArtNode(record, record?.name || reforgeId);
-    if (node) putArt(art, node, `reforge:${itemId}`, { prepend: true });
+function decorateAccessoryCatalog(catalog) {
+  document.querySelectorAll('[data-accessory-item-id]').forEach(card => {
+    const itemId = String(card.dataset.accessoryItemId || '').trim().toUpperCase();
+    const catalogRecord = catalogItemById(catalog, itemId);
+    const record = catalogRecord || {
+      id: itemId,
+      name: card.querySelector('.item-title')?.textContent?.trim() || itemId,
+    };
+    if (card.dataset.physicalItemId !== record.id) card.dataset.physicalItemId = record.id;
+    const portrait = card.querySelector('.card-head > .card-portrait');
+    if (!portrait || portrait.querySelector(':scope > .official-item-art, :scope > .coverage-item-art')) return;
+    const node = itemArtNode(record, record.name || itemId);
+    if (node) putArt(portrait, node, `accessory:${record.id}`, { prepend: false });
   });
 }
 
+function decorateDrawer(catalog, rawState) {
+  const drawer = document.querySelector('.drawer');
+  if (!drawer) return;
+  const entry = UPGRADES.find(item => item.id === rawState?.drawer);
+  const record = catalogItemForUpgrade(catalog, entry);
+  if (record) {
+    if (drawer.dataset.physicalItemId !== record.id) drawer.dataset.physicalItemId = record.id;
+  } else {
+    delete drawer.dataset.physicalItemId;
+  }
+}
+
+function decorateReforges(catalog) {
+  document.querySelectorAll('.sb-reforge-card[data-sb-reforge], .setup-reforge-card[data-reforge-item-id]').forEach(card => {
+    const reforgeId = card.dataset.sbReforge || card.dataset.reforgeId || '';
+    const explicitItemId = String(card.dataset.reforgeItemId || '').trim().toUpperCase();
+    if (!reforgeId && !explicitItemId) {
+      delete card.dataset.physicalItemId;
+      return;
+    }
+    const itemId = explicitItemId || REFORGE_ITEM_IDS[reforgeId];
+    const art = card.querySelector('.sb-reforge-art');
+    if (!itemId || !art) {
+      delete card.dataset.physicalItemId;
+      return;
+    }
+
+    // Resolve the physical reforge item exactly. This avoids collisions such as
+    // Blessed Fruit vs Blessed Bait and lets Armor/Equipment use the same art
+    // surface as farming-tool reforges.
+    art.querySelectorAll(':scope > .sb-pack-icon').forEach(node => node.remove());
+    const record = catalogItemById(catalog, itemId);
+    if (!record) {
+      delete card.dataset.physicalItemId;
+      return;
+    }
+    if (card.dataset.physicalItemId !== record.id) card.dataset.physicalItemId = record.id;
+    const node = itemArtNode(record, record.name || reforgeId || itemId);
+    if (node) putArt(art, node, `reforge:${itemId}`, { prepend: true });
+  });
+}
 function decorateToolProgression(catalog) {
   document.querySelectorAll('.workspace-level-row').forEach(row => {
     const label = row.querySelector('strong')?.textContent?.trim();
     const itemId = TOOL_PROGRESS_ITEM_IDS[label];
-    if (!itemId) return;
+    if (!itemId) {
+      delete row.dataset.physicalItemId;
+      return;
+    }
     const record = catalogItemById(catalog, itemId);
-    const node = itemArtNode(record, record?.name || label);
+    if (!record) {
+      delete row.dataset.physicalItemId;
+      return;
+    }
+    if (row.dataset.physicalItemId !== record.id) row.dataset.physicalItemId = record.id;
+    const node = itemArtNode(record, record.name || label);
     if (!node) return;
     const copy = row.querySelector(':scope > div:first-child');
     if (!copy) return;
     putArt(copy, node, `tool:${itemId}`);
     row.classList.add('has-physical-item-art');
+  });
+}
+
+function recombobulatorCopyFor(control) {
+  const row = control.closest('.accessory-upgrade-row, .item-editor-row, .workspace-level-row');
+  if (!row) return null;
+  if (row.classList.contains('accessory-upgrade-row')) return row.querySelector(':scope > span');
+  if (row.classList.contains('workspace-level-row')) return row.querySelector(':scope > div:first-child');
+  return row.querySelector(':scope > div');
+}
+
+function decorateRecombobulatorControls(catalog) {
+  const record = catalogItemById(catalog, RECOMBOBULATOR_ITEM_ID);
+  if (!record) return;
+
+  document.querySelectorAll(RECOMBOBULATOR_CONTROL_SELECTOR).forEach(control => {
+    const copy = recombobulatorCopyFor(control);
+    if (!copy) return;
+
+    copy.classList.add('recombobulator-choice-copy');
+    const row = control.closest('.accessory-upgrade-row, .item-editor-row, .workspace-level-row');
+    row?.classList.add('has-recombobulator-choice-art');
+
+    if (copy.querySelector(':scope > .coverage-item-art')) return;
+    const node = itemArtNode(record, record.name || 'Recombobulator 3000');
+    if (node) putArt(copy, node, `recomb-choice:${RECOMBOBULATOR_ITEM_ID}`);
   });
 }
 
@@ -289,10 +374,12 @@ export async function applyItemArtCoverage(root = document, rawState = readState
   try {
     const items = await ensureCatalog();
     if (!items.length) return 0;
-    decorateSetupItems(items, rawState);
     decorateProgressionCards(items);
+    decorateAccessoryCatalog(items);
+    decorateDrawer(items, rawState);
     decorateReforges(items);
     decorateToolProgression(items);
+    decorateRecombobulatorControls(items);
     return items.length;
   } finally {
     applying = false;
@@ -316,8 +403,8 @@ function boot() {
       const relevant = mutations.some(mutation => [...mutation.addedNodes].some(node =>
         node instanceof Element
         && !node.matches?.('.coverage-item-art')
-        && (node.matches?.('.item-card, .slot-portrait, [data-item-art-slot], .sb-reforge-card, .workspace-level-row')
-          || node.querySelector?.('.item-card, .slot-portrait, [data-item-art-slot], .sb-reforge-card, .workspace-level-row'))));
+        && (node.matches?.(`.item-card, .drawer, .sb-reforge-card, .setup-reforge-card, .workspace-level-row, .item-editor-row, .accessory-upgrade-row, ${RECOMBOBULATOR_CONTROL_SELECTOR}`)
+          || node.querySelector?.(`.item-card, .drawer, .sb-reforge-card, .setup-reforge-card, .workspace-level-row, .item-editor-row, .accessory-upgrade-row, ${RECOMBOBULATOR_CONTROL_SELECTOR}`))));
       if (relevant) queueApply();
     }).observe(root, { childList: true, subtree: true });
   }

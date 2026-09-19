@@ -36,16 +36,15 @@ test('non-Hypixel pack URLs are rejected', () => {
   }), null);
 });
 
-test('the service-worker check survives a synced resource pack', () => {
-  // scripts/sync-hypixel-pack.py writes assets/hypixel-pack/. A directory
-  // listing that does not distinguish files from directories reports that tree
-  // as an uncached shipped file, which fails the check the first time anyone
-  // runs the sync -- including the workflow that runs it in CI.
+test('the service-worker retirement check is independent of synced resource-pack contents', () => {
+  // The current worker does not precache application files at all. The check
+  // therefore validates retirement behavior instead of enumerating assets,
+  // so adding or replacing assets/hypixel-pack cannot invalidate it.
   const checker = readFileSync(new URL('../scripts/check-sw-manifest.js', import.meta.url), 'utf8');
-  assert.match(checker, /withFileTypes: true/);
-  assert.match(checker, /entry\.isFile\(\)/);
-  assert.match(checker, /NOT_PRECACHED/);
-  assert.match(checker, /'hypixel-pack'/);
+  assert.match(checker, /APP_FILES/);
+  assert.match(checker, /self\.registration\.unregister\(\)/);
+  assert.match(checker, /farming420-/);
+  assert.doesNotMatch(checker, /readdirSync/);
 });
 
 test('the pack sync workflow opens a reviewable pull request instead of pushing', () => {

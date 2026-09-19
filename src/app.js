@@ -1,5 +1,9 @@
 import { CROPS, UPGRADES, HIDDEN_INTERACTIONS, COMING_SOON } from './data.js';
+import { FARMING_ACCESSORY_GROUPS, farmingAccessoryByItemId } from './farming-accessories.js';
+import { accessoryCapabilityState } from './accessory-capabilities.js';
 import { DATA_SCHEMA_VERSION, STORAGE_KEY } from './config.js';
+import { computeStatTotals } from './computed-stats.js';
+import { activityLabel, activityModeForState } from './activity-mode.js';
 import { ensureProgressBucket, migrateState, toolKeyForCropId } from './migrations.js';
 import { applySnapshotToProgress, isAutoApplied } from './snapshot-apply.js';
 import { LOCATION_STATUS, isSyncFilled, locationFor, manualEntries, manualEntrySummary } from './help-locations.js';
@@ -41,6 +45,7 @@ import {
   setupSummary,
 } from './setups.js';
 import {
+  intrinsicEnchantmentsForCatalogItem,
   itemsForSlot,
   loadItemCatalog,
   readCachedCatalog,
@@ -58,6 +63,7 @@ import {
 const NAV = [
   ['dashboard', 'Dashboard'],
   ['account', 'Account'],
+  ['accessories', 'Accessories'],
   ['crops', 'Crops'],
   ['tools', 'Tools'],
   ['setups', 'Setups'],
@@ -90,6 +96,7 @@ const defaultState = {
     owned: {},
     costs: {},
     manualGain: {},
+    accessoryItems: {},
   }
 };
 
@@ -126,6 +133,159 @@ function loadState() {
 let readOnlyState = false;
 let migrationApplied = false;
 let state = loadState();
+
+let activeScrollAnchor = null;
+let scrollAnchorRestoreFrame = 0;
+const SCROLL_ANCHOR_MAX_AGE_MS = 1800;
+const SCROLL_ANCHOR_CONTROL_SELECTOR = 'button, input, select, textarea, a, label, [role="button"], [role="radio"]';
+
+function scrollAnchorElement(target) {
+  if (!target?.closest) return null;
+  let element = target.closest(SCROLL_ANCHOR_CONTROL_SELECTOR) || target;
+  if (element?.tagName === 'LABEL') {
+    element = element.querySelector('input, select, textarea, button') || element;
+  }
+  return element instanceof Element ? element : null;
+}
+
+function scrollAnchorPath(root, element) {
+  const path = [];
+  let node = element;
+  while (node && node !== root) {
+    const parent = node.parentElement;
+    if (!parent) return null;
+    path.unshift(Array.prototype.indexOf.call(parent.children, node));
+    node = parent;
+  }
+  return node === root ? path : null;
+}
+
+function describeScrollAnchor(root, element) {
+  return {
+    tag: element.tagName.toLowerCase(),
+    id: element.id || '',
+    attrs: [...element.attributes]
+      .filter(attr => attr.name.startsWith('data-') || ['name', 'value', 'type'].includes(attr.name))
+      .map(attr => [attr.name, attr.value]),
+    path: scrollAnchorPath(root, element),
+  };
+}
+
+function matchesScrollAnchor(element, descriptor) {
+  if (!(element instanceof Element) || element.tagName.toLowerCase() !== descriptor.tag) return false;
+  return (descriptor.attrs || []).every(([name, value]) => element.getAttribute(name) === value);
+}
+
+function resolveScrollAnchor(root, descriptor) {
+  if (!root || !descriptor) return null;
+
+  if (descriptor.id) {
+    const byId = document.getElementById(descriptor.id);
+    if (byId && root.contains(byId) && matchesScrollAnchor(byId, descriptor)) return byId;
+  }
+
+  if (descriptor.attrs?.length) {
+    for (const candidate of root.querySelectorAll(descriptor.tag)) {
+      if (matchesScrollAnchor(candidate, descriptor)) return candidate;
+    }
+  }
+
+  let node = root;
+  for (const index of descriptor.path || []) {
+    node = node?.children?.[index] || null;
+    if (!node) return null;
+  }
+  return matchesScrollAnchor(node, descriptor) ? node : null;
+}
+
+function currentScrollAnchor() {
+  if (!activeScrollAnchor) return null;
+  if (Date.now() - activeScrollAnchor.capturedAt <= SCROLL_ANCHOR_MAX_AGE_MS) return activeScrollAnchor;
+  activeScrollAnchor = null;
+  return null;
+}
+
+function clearScrollAnchor() {
+  activeScrollAnchor = null;
+  if (scrollAnchorRestoreFrame) {
+    cancelAnimationFrame(scrollAnchorRestoreFrame);
+    scrollAnchorRestoreFrame = 0;
+  }
+}
+
+function restoreRelativeScrollAnchor(anchor = currentScrollAnchor()) {
+  if (!anchor || anchor !== currentScrollAnchor() || anchor.page !== state.page) return false;
+
+  const root = document.getElementById('app');
+  const element = resolveScrollAnchor(root, anchor.descriptor);
+  if (!element) return false;
+
+  const delta = element.getBoundingClientRect().top - anchor.viewportTop;
+  if (Math.abs(delta) < 0.5) return true;
+
+  const main = document.querySelector('#app .main');
+  const overflowY = main ? getComputedStyle(main).overflowY : '';
+  const mainScrolls = Boolean(
+    main
+    && main.scrollHeight > main.clientHeight + 1
+    && /auto|scroll|overlay/.test(overflowY),
+  );
+
+  if (mainScrolls) main.scrollTop += delta;
+  else window.scrollBy(0, delta);
+  return true;
+}
+
+function scheduleScrollAnchorRestore(anchor = currentScrollAnchor()) {
+  if (!anchor) return;
+
+  queueMicrotask(() => {
+    if (anchor === currentScrollAnchor()) restoreRelativeScrollAnchor(anchor);
+  });
+
+  if (scrollAnchorRestoreFrame) return;
+  scrollAnchorRestoreFrame = requestAnimationFrame(() => {
+    scrollAnchorRestoreFrame = 0;
+    if (anchor !== currentScrollAnchor()) return;
+    restoreRelativeScrollAnchor(anchor);
+    requestAnimationFrame(() => {
+      if (anchor === currentScrollAnchor()) restoreRelativeScrollAnchor(anchor);
+    });
+  });
+}
+
+function rememberScrollAnchor(target) {
+  const root = document.getElementById('app');
+  const element = scrollAnchorElement(target);
+  if (!root || !element || !root.contains(element)) return;
+
+  activeScrollAnchor = {
+    page: state.page,
+    capturedAt: Date.now(),
+    viewportTop: element.getBoundingClientRect().top,
+    descriptor: describeScrollAnchor(root, element),
+  };
+  scheduleScrollAnchorRestore(activeScrollAnchor);
+}
+
+function captureInteractionScrollAnchor(event) {
+  rememberScrollAnchor(event.target);
+}
+
+if (typeof document !== 'undefined') {
+  for (const type of ['click', 'change', 'input']) {
+    document.addEventListener(type, captureInteractionScrollAnchor, true);
+  }
+
+  const appRoot = document.getElementById('app');
+  if (appRoot && typeof MutationObserver !== 'undefined') {
+    new MutationObserver(() => scheduleScrollAnchorRestore()).observe(appRoot, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+    });
+  }
+}
 
 function saveState() {
   if (readOnlyState) return;
@@ -257,11 +417,12 @@ function card(item, compact=false) {
   const status = statusClass(item);
   const gain = gainFor(item);
   const cropLimited = item.cropScope !== 'Any';
+  const isShard = item.section === 'shards' || item.category === 'Attribute Shard';
   return `
-    <button class="item-card ${status} ${compact ? 'compact' : ''}" data-open="${esc(item.id)}">
+    <button class="item-card ${status} ${isShard ? 'shard-card' : ''} ${compact ? 'compact' : ''}" data-open="${esc(item.id)}">
       <div class="card-layer"></div>
       <div class="card-head">
-        ${item.packAsset ? `<span class="card-portrait" data-pack-asset="${esc(item.packAsset)}"></span>` : ''}
+        ${item.packAsset || isShard ? `<span class="card-portrait${isShard ? ' shard-portrait' : ''}"${item.packAsset ? ` data-pack-asset="${esc(item.packAsset)}"` : ''}></span>` : ''}
         <div>
           <div class="eyebrow">${esc(item.category)}</div>
           <div class="item-title">${esc(item.name)}</div>
@@ -275,6 +436,7 @@ function card(item, compact=false) {
       </div>
       <div class="progress"><i data-progress="${Math.min(100,(level/max)*100)}"></i></div>
       <div class="chips">
+        ${item.attribute ? badge(item.attribute, 'soft') : ''}
         ${isCropScopedItem(item) ? badge(crop().name, 'soft') : (cropLimited ? badge(item.cropScope, 'soft') : '')}
         ${item.hypercharge ? badge('Hypercharge', 'soft') : ''}
         ${item.modeScope !== 'Any' ? badge(item.modeScope, 'soft') : ''}
@@ -287,12 +449,14 @@ function shell(content) {
   return `
   <div class="app-shell">
     <aside class="sidebar">
+      <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="primaryNav" aria-label="Open navigation"><span aria-hidden="true">⋮</span></button>
       <div class="brand">
         <div class="brand-mark">F4</div>
         <div><strong>Farming420</strong><span>SkyBlock Farming Planner</span></div>
       </div>
-      <nav>
+      <nav id="primaryNav" aria-label="Main navigation">
         ${NAV.map(([id,label]) => `<button class="nav-link ${state.page===id?'active':''}" data-page="${id}">${esc(label)}</button>`).join('')}
+        <button class="nav-link" type="button" data-nav-id="settings" data-open-settings>Settings</button>
       </nav>
       <div class="side-foot">
         <div class="mini-label">Profile</div>
@@ -311,7 +475,6 @@ function shell(content) {
           </select>
         </div>
         <div class="search-wrap"><input id="search" placeholder="Search item, upgrade or effect…" value="${esc(state.search)}" /></div>
-        <div class="fortune-pill"><span>Effective</span><strong>${effectiveFortune().toLocaleString('en-US')} FF</strong></div>
       </header>
       <section class="content">${content}</section>
     </main>
@@ -324,32 +487,61 @@ function pageHeader(kicker, title, text='') {
 }
 
 function dashboard() {
-  const candidate = plannerCandidates()[0];
-  const maxed = UPGRADES.filter(isMaxed).length;
-  const active = UPGRADES.filter(x => x.status === 'ACTIVE').length;
-  const cropItems = UPGRADES.filter(appliesToCrop);
-  const cropMaxed = cropItems.filter(isMaxed).length;
+  const mode = activityModeForState(state);
+  const selectedCrop = crop();
+  const stats = computeStatTotals(state, selectedCrop.id, mode);
+  const marker = count => count ? ' ~' : '';
+  const number = value => Number(value || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
+  const cropRows = CROPS.map(entry => {
+    const values = computeStatTotals(state, entry.id, mode);
+    const totalFortune = values.globalFortune + values.cropFortune;
+    const totalIncomplete = values.incomplete.globalFortune.length
+      + values.incomplete.cropFortune.length;
+    const incomplete = totalIncomplete
+      + values.incomplete.overbloom.length
+      + values.incomplete.bonusPestChance.length;
+    return `
+      <article class="stat-card dashboard-crop-result ${entry.id === selectedCrop.id ? 'selected' : ''}">
+        <span>${esc(entry.name)}</span>
+        <strong>${number(totalFortune)} FF${marker(totalIncomplete)}</strong>
+        <small>Global FF ${number(values.globalFortune)} · Crop FF ${number(values.cropFortune)}</small>
+        <small>Overbloom ${number(values.overbloom)}${marker(values.incomplete.overbloom.length)} · BPC ${number(values.bonusPestChance)}${marker(values.incomplete.bonusPestChance.length)}</small>
+        ${incomplete ? '<small>~ contains sources that are not fully modeled yet</small>' : '<small>fully calculated from known sources</small>'}
+      </article>`;
+  }).join('');
+
   return `
-    ${pageHeader('Dashboard', 'Your Farming Progress', 'Only the important decisions are shown here. Open a layer for details.')}
-    <div class="hero-grid">
-      <div class="hero-card primary">
-        <div class="eyebrow">Next upgrade</div>
-        ${candidate ? `
-          <h2>${esc(candidate.item.name)}</h2>
-          <p>+${candidate.gain.toLocaleString('en-US')} marginal stat · about ${candidate.rel.toFixed(2)}% relative gain in the current ${esc(crop().name)}-Setup.</p>
-          <button class="primary-btn" data-open="${candidate.item.id}">Open details</button>
-        ` : `<h2>No calculated upgrade</h2><p>No active upgrade with a calculated marginal gain is available for the current profile state.</p>`}
-      </div>
-      <div class="stat-card"><span>Total</span><strong>${maxed}/${active}</strong><small>active entries maxed</small></div>
-      <div class="stat-card"><span>${esc(crop().name)}</span><strong>${cropMaxed}/${cropItems.length}</strong><small>relevant entries maxed</small></div>
-      <div class="stat-card"><span>Effective Fortune</span><strong>${effectiveFortune()}</strong><small>global + ${esc(crop().name)}</small></div>
+    ${pageHeader('Dashboard', 'Calculated Farming Stats', `Read-only result overview · ${activityLabel(mode)}. Global values are shown above; crop totals are listed below.`)}
+    <div class="card-grid dashboard-results-grid">
+      <article class="stat-card">
+        <span>Global Farming Fortune</span>
+        <strong>${number(stats.globalFortune)}${marker(stats.incomplete.globalFortune.length)}</strong>
+        <small>Account-wide Fortune before crop-specific Fortune is added</small>
+      </article>
+      <article class="stat-card">
+        <span>Pest Fortune</span>
+        <strong>${number(stats.pestFortune)}${marker(stats.incomplete.pestFortune.length)}</strong>
+        <small>Pest/Vacuum Fortune in the active context</small>
+      </article>
+      <article class="stat-card">
+        <span>Overbloom</span>
+        <strong>${number(stats.overbloom)}${marker(stats.incomplete.overbloom.length)}</strong>
+        <small>Calculated rare-crop multiplier stat</small>
+      </article>
+      <article class="stat-card">
+        <span>Bonus Pest Chance</span>
+        <strong>${number(stats.bonusPestChance)}${marker(stats.incomplete.bonusPestChance.length)}</strong>
+        <small>Calculated BPC for the active set</small>
+      </article>
     </div>
 
-    <div class="section-row"><div><h2>Account layer</h2><p>Global progression that affects multiple crops.</p></div><button class="ghost" data-page="account">View all</button></div>
-    <div class="card-grid">${visibleUpgrades('account').slice(0,6).map(x=>card(x,true)).join('')}</div>
-
-    <div class="section-row"><div><h2>${esc(crop().name)} layer</h2><p>Crop-specific progression and its physical farming tool.</p></div><button class="ghost" data-page="crops">Open crop</button></div>
-    ${cropFocusCard()}
+    <div class="section-row">
+      <div>
+        <h2>All crops</h2>
+        <p>Each crop total is Global Farming Fortune + that crop's own Crop Fortune. The selected crop is highlighted.</p>
+      </div>
+    </div>
+    <div class="card-grid dashboard-crop-results">${cropRows}</div>
   `;
 }
 
@@ -357,7 +549,7 @@ function accountPage() {
   const groups = [
     ['Account & Skill',['Account/Skill','Account Upgrade','Anita']],
     ['Garden',['Garden','Greenhouse']],
-    ['Accessories & permanent items',['Accessory','Consumable','Jacob Accessory','Chocolate Factory']]
+    ['Permanent account items',['Consumable','Chocolate Factory']]
   ];
   return `${pageHeader('Account', 'Global Account Progression', 'Progress that is not bound to one crop or one physical farming tool.')}
     <div class="input-strip">
@@ -365,6 +557,77 @@ function accountPage() {
       ${inputHint('input:globalFortune', 'Used only for relative upgrade evaluation. Ownership remains a separate state.')}
     </div>
     ${groups.map(([title,cats]) => `<div class="group"><div class="section-row"><div><h2>${title}</h2></div></div><div class="card-grid">${visibleUpgrades('account').filter(x=>cats.includes(x.category)).map(x=>card(x)).join('')}</div></div>`).join('')}`;
+}
+
+function accessoryItemState(accessory) {
+  return state.profile.accessoryItems?.[accessory.itemId] || {};
+}
+
+function accessoryCatalogRecord(accessory) {
+  return itemCatalog.find(item => String(item?.id || '').toUpperCase() === accessory.itemId) || null;
+}
+
+function accessoryCatalogCard(accessory) {
+  const upgrade = accessory.upgradeId
+    ? UPGRADES.find(item => item.id === accessory.upgradeId)
+    : null;
+  const status = upgrade ? statusClass(upgrade) : '';
+  const itemState = accessoryItemState(accessory);
+  const capability = accessoryCapabilityState(accessory, itemState, accessoryCatalogRecord(accessory));
+  const synced = itemState.source === 'hypixel-sync';
+  const rarityText = itemState.recombobulated && capability.baseRarity !== capability.effectiveRarity
+    ? `${capability.baseRarity} → ${capability.effectiveRarity}`
+    : capability.effectiveRarity;
+  const stateBadge = synced
+    ? badge('profile sync', 'synced')
+    : upgrade
+      ? badge(isMaxed(upgrade) ? 'owned' : 'not set', isMaxed(upgrade) ? 'maxed' : 'missing')
+      : badge('manual state', 'soft');
+
+  return `<article class="item-card accessory-catalog-card ${status}" data-accessory-item-id="${esc(accessory.itemId)}">
+    <div class="card-layer"></div>
+    <div class="card-head">
+      <span class="card-portrait accessory-portrait" aria-hidden="true"></span>
+      <div>
+        <div class="eyebrow">${esc(rarityText)} · ${esc(accessory.itemId)}</div>
+        <div class="item-title">${esc(accessory.name)}</div>
+      </div>
+      ${stateBadge}
+    </div>
+    <p class="accessory-effect">${esc(accessory.effect)}</p>
+    <div class="chips">
+      ${badge(accessory.condition, 'soft')}
+      ${badge(itemState.recombobulated ? 'recombobulated' : 'base rarity', itemState.recombobulated ? 'owned' : 'soft')}
+    </div>
+    <div class="accessory-upgrades">
+      <label class="accessory-upgrade-row">
+        <span><strong>Recombobulator 3000</strong><small>Raises this accessory by exactly one rarity.</small></span>
+        <input type="checkbox" data-accessory-recomb="${esc(accessory.itemId)}" ${itemState.recombobulated ? 'checked' : ''} ${capability.canRecombobulate ? '' : 'disabled'}>
+      </label>
+      ${upgrade ? `<button class="ghost small accessory-progression-btn" type="button" data-open="${esc(upgrade.id)}">Open calculator progression</button>` : ''}
+    </div>
+  </article>`;
+}
+
+function accessoriesPage() {
+  const term = state.search.trim().toLowerCase();
+  const groups = FARMING_ACCESSORY_GROUPS.map(group => ({
+    ...group,
+    items: group.items.filter(item => !term
+      || `${item.name} ${item.itemId} ${item.effect} ${item.condition}`.toLowerCase().includes(term)),
+  })).filter(group => group.items.length);
+
+  return `${pageHeader('Accessories', 'Farming Accessories', 'Accessory progression keeps the physical item, effective rarity and Recombobulator state.')}
+    <div class="accessory-model-note">
+      <strong>Exact item model and rarity</strong>
+      <span>Live Hypixel item metadata wins. Exact current player-head hashes are used as an offline fallback. A Recombobulator raises the accessory by exactly one rarity and is tracked per physical accessory.</span>
+    </div>
+    ${groups.length ? groups.map(group => `
+      <section class="accessory-group" data-accessory-group="${esc(group.id)}">
+        <div class="section-row"><div><h2>${esc(group.title)}</h2><p>${esc(group.note)}</p></div></div>
+        <div class="card-grid accessory-grid">${group.items.map(accessoryCatalogCard).join('')}</div>
+      </section>
+    `).join('') : '<div class="empty">No farming accessories match the current search.</div>'}`;
 }
 
 function cropFocusCard() {
@@ -381,7 +644,7 @@ function cropFocusCard() {
 }
 
 function cropsPage() {
-  return `${pageHeader('Crops', 'One crop, one workspace', 'Each crop combines its progression, crop-specific Fortune and physical farming tool.')}
+  return `${pageHeader('Crops', 'Crop progression', 'Select a crop to track only the Fortune and progression that belong directly to that crop. Tool and loadout settings live on their own pages.')}
     <div class="crop-grid">
       ${CROPS.map(c => {
         const selected = c.id===state.selectedCrop;
@@ -392,13 +655,22 @@ function cropsPage() {
       }).join('')}
     </div>
     <div class="crop-detail-panel">
-      <div class="section-row"><div><div class="eyebrow">Active crop</div><h2>${esc(crop().name)}</h2><p>${esc(crop().tool)}</p></div>
+      <div class="section-row"><div><div class="eyebrow">Active crop</div><h2>${esc(crop().name)}</h2><p>Crop-specific progression and Fortune</p></div>
       <label class="inline-input">Crop Fortune<input type="number" id="cropFortune" value="${Number(state.profile.cropFortune[state.selectedCrop]||0)}"></label></div>
       ${inputHint('input:cropFortune', `Crop-specific Fortune for ${crop().name}, kept separate from your global total.`)}
-      <div class="layer-tabs"><span>Crop progression</span><span>Tool</span><span>Account effects are inherited automatically</span></div>
+      <div class="crop-scope-addon">
+        <div>
+          <div class="eyebrow">This page</div>
+          <strong>Only bonuses that belong to ${esc(crop().name)}</strong>
+          <p>Tool reforges, enchantments and gemstones are edited under Tools. Armor, equipment and pets are edited in Setups.</p>
+        </div>
+        <div class="crop-related-actions-addon">
+          <button class="ghost" data-page="tools">Open ${esc(crop().tool)}</button>
+          <button class="ghost" data-page="setups">Open active setup</button>
+        </div>
+      </div>
+      <div class="section-row crop-progression-head-addon"><div><h2>${esc(crop().name)} progression</h2><p>Only crop-scoped sources are listed here.</p></div></div>
       <div class="card-grid">${visibleUpgrades('crops').filter(appliesToCrop).map(x=>card(x)).join('')}</div>
-      <div class="section-row"><div><h2>${esc(crop().tool)}</h2><p>Tool upgrades belong to the physical tool layer and are not mixed with account progression.</p></div><button class="ghost" data-page="tools">Open tool layer</button></div>
-      <div class="card-grid">${visibleUpgrades('tools').slice(0,8).map(x=>card(x,true)).join('')}</div>
     </div>`;
 }
 
@@ -461,18 +733,7 @@ function toolEntryLine(item) {
 }
 
 function toolItemPanel() {
-  const tool = crop().tool;
-  const filled = toolPanelEntryIds().filter(id => isOwned(TOOL_PANEL_ENTRIES.get(id))).length;
-
   return `<div class="item-editor rarity-unknown" data-tool-editor="1">
-    <header class="item-editor-head">
-      <div class="item-portrait"><span class="item-portrait-fallback" aria-hidden="true">${esc(tool.slice(0, 2).toUpperCase())}</span></div>
-      <div class="item-identity">
-        <div class="eyebrow">Tool · ${esc(crop().name)}</div>
-        <strong class="item-title">${esc(tool)}</strong>
-        <span class="item-rarity">${filled}/${toolPanelEntryIds().length} parts set</span>
-      </div>
-    </header>
     ${TOOL_PANEL.map(group => `<section class="item-editor-section">
       <div class="section-row"><div><h3>${esc(group.title)}</h3><p>${esc(group.note)}</p></div></div>
       <div class="enchant-grid">${group.entries.map(id => toolEntryLine(TOOL_PANEL_ENTRIES.get(id))).join('')}</div>
@@ -500,11 +761,12 @@ function bindToolPanel() {
 
 function genericSectionPage(section, kicker, title, text) {
   const items = visibleUpgrades(section);
+  const gridClass = section === 'shards' ? 'card-grid shard-gallery' : 'card-grid';
   return `${pageHeader(kicker,title,text)}
     <div class="filter-line">${badge(`${items.length} entries`,'soft')}</div>
     ${section === 'tools' && !state.search.trim() ? toolItemPanel() : ''}
     ${section === 'tools' ? '<div class="section-row"><div><h2>Every scored tool entry</h2><p>The same values, with the Fortune each one contributes and the source behind it.</p></div></div>' : ''}
-    <div class="card-grid">${items.map(x=>card(x)).join('') || '<div class="empty">No matches.</div>'}</div>`;
+    <div class="${gridClass}">${items.map(x=>card(x)).join('') || '<div class="empty">No matches.</div>'}</div>`;
 }
 
 function plannerPage() {
@@ -614,13 +876,18 @@ function whereToFindSection(item) {
       <p class="find-synced">${esc(location.where)}</p></div>`;
   }
   if (location.where) {
+    const caveat = location.status === LOCATION_STATUS.UNVERIFIED
+      ? `<p class="find-warn">Not yet confirmed against a current in-game capture.${location.note ? ` ${esc(location.note)}` : ''}</p>`
+      : location.status === LOCATION_STATUS.NEEDS_RESEARCH
+        ? '<p class="find-warn">This is practical lookup guidance. The exact route for this entry has not been individually verified, so use the source below for current unlock or acquisition details.</p>'
+        : '';
     return `<div class="drawer-section"><h3>Where do I find this?</h3>
       <p>${esc(location.where)}</p>
-      ${location.status === LOCATION_STATUS.UNVERIFIED ? `<p class="find-warn">Not yet confirmed against a current in-game capture.${location.note ? ` ${esc(location.note)}` : ''}</p>` : ''}
+      ${caveat}
       ${location.source ? `<a class="source-btn" href="${esc(location.source)}" target="_blank" rel="noreferrer">Open source</a>` : ''}</div>`;
   }
   return `<div class="drawer-section"><h3>Where do I find this?</h3>
-    <p class="find-warn">The in-game location for this value is not documented yet, so it is not guessed at here. The source below is the reference this entry is based on.</p>
+    <p class="find-warn">Check the relevant SkyBlock or Garden menu, item tooltip, or active-effect screen for this value. Use the source below for the current unlock or acquisition route.</p>
     ${location.note ? `<p>${esc(location.note)}</p>` : ''}
     ${location.source ? `<a class="source-btn" href="${esc(location.source)}" target="_blank" rel="noreferrer">Open source</a>` : ''}</div>`;
 }
@@ -669,7 +936,7 @@ function findRows(rows) {
             <div class="eyebrow">${esc(row.entry.category)}${row.entry.cropScope !== 'Any' ? ` \u00b7 ${esc(row.entry.cropScope)}` : ''}</div>
             <h3>${esc(row.entry.name)}</h3>
             <p>${esc(row.entry.notes || 'No additional note.')}</p>
-            ${row.location.where ? `<p class="find-where">${esc(row.location.where)}</p>` : '<p class="find-warn">In-game location not documented yet \u2014 open the source to look it up.</p>'}
+            ${row.location.where ? `<p class="find-where">${esc(row.location.where)}</p>` : '<p class="find-warn">Check the relevant SkyBlock or Garden menu, item tooltip, or active-effect screen for this value, then use the source for current unlock or acquisition details.</p>'}
           </div>
           <div class="find-side">
             ${badge(done ? 'entered' : 'open', done ? 'maxed' : 'missing')}
@@ -765,7 +1032,10 @@ function leverInput(attribute, slotId, key, checked, label) {
 
 function enchantLine(slotId, row) {
   const levels = row.maxLevel
-    ? Array.from({ length: row.maxLevel }, (_, index) => index + 1)
+    ? [...new Set([
+      ...Array.from({ length: row.maxLevel }, (_, index) => index + 1),
+      row.level,
+    ].filter(value => value > 0))].sort((a, b) => a - b)
     : [...new Set([row.level, 1, 2, 3, 4, 5].filter(value => value > 0))].sort((a, b) => a - b);
   return `<div class="enchant-line enchant-${esc(row.state)} ${row.active ? 'on' : 'off'}" data-ench-row="${esc(row.storageKey)}">
       ${leverInput('data-ench-toggle', slotId, row.storageKey, row.active, `${row.label} on this item`)}
@@ -794,15 +1064,7 @@ function slotEditor(slotId) {
   const filled = Boolean(item.displayName);
 
   return `<div class="item-editor ${esc(rarityClass(item.rarity))}" data-item-editor="${esc(slotId)}">
-    <header class="item-editor-head">
-      <div class="item-portrait" data-item-art-slot="${esc(slotId)}">
-        <span class="item-portrait-fallback" aria-hidden="true">${esc(slot.label.slice(0, 2).toUpperCase())}</span>
-      </div>
-      <div class="item-identity">
-        <div class="eyebrow">${esc(slot.group)} · ${esc(slot.label)}</div>
-        <strong class="item-title">${esc(item.displayName || 'Choose an item')}</strong>
-        <span class="item-rarity">${esc(item.rarity || 'rarity unknown')}${item.source === ITEM_SOURCE.SYNC ? ' · synced' : ''}</span>
-      </div>
+    <header class="item-editor-head item-editor-actions">
       <button class="ghost small" data-slot-clear="${esc(slotId)}" ${filled ? '' : 'disabled'}>Clear slot</button>
     </header>
 
@@ -935,9 +1197,11 @@ function bindSetups() {
   });
   document.querySelector(`[data-slot-item="${slotId}"]`)?.addEventListener('change', event => {
     const chosen = itemsForSlot(itemCatalog, slotId).find(entry => entry.id === event.target.value);
+    const changingItem = Boolean(chosen?.id && chosen.id !== currentItem().skyblockId);
     patch({
       skyblockId: chosen?.id ?? null,
       displayName: chosen?.name ?? currentItem().displayName,
+      enchantments: changingItem ? intrinsicEnchantmentsForCatalogItem(chosen) : currentItem().enchantments,
       // Hypixel's own item resource carries the base tier, so picking an item
       // from the list colours it correctly without anyone typing a rarity. A
       // recombobulator raises the shown rarity, which the editor states
@@ -986,8 +1250,8 @@ function bindSetups() {
 }
 
 /**
- * The official item list is fetched once per session when the Setups page is
- * first opened, so the app does not pay for it on every start.
+ * The official item list is fetched once per session when an item-aware page
+ * first opens, so the app does not pay for it on every start.
  */
 async function ensureItemCatalog() {
   if (catalogRequested) return;
@@ -996,7 +1260,7 @@ async function ensureItemCatalog() {
   itemCatalog = result.items;
   catalogNotice = result.error;
   // Only repaint when there is something new to show.
-  if (state.page === 'setups' && (result.items.length || result.error)) render();
+  if (['setups', 'accessories'].includes(state.page) && (result.items.length || result.error)) render();
 }
 
 // --- Guide 0-60 -------------------------------------------------------------
@@ -1109,11 +1373,23 @@ function bindGuide() {
   }));
 }
 
-function render() {
+function render({ preserveScroll = true } = {}) {
+  // Most state changes only alter a control/card. Replacing #app is still the
+  // core render model, but it must not behave like navigation: keep the right
+  // content pane and the navigation rail exactly where the user left them.
+  const relativeAnchor = preserveScroll ? currentScrollAnchor() : (clearScrollAnchor(), null);
+  const scrollState = preserveScroll ? {
+    main: document.querySelector('#app .main')?.scrollTop || 0,
+    nav: document.querySelector('#app .sidebar nav')?.scrollTop || 0,
+    windowX: window.scrollX,
+    windowY: window.scrollY,
+  } : null;
+
   let content = '';
   switch(state.page) {
     case 'dashboard': content = dashboard(); break;
     case 'account': content = accountPage(); break;
+    case 'accessories': content = accessoriesPage(); break;
     case 'crops': content = cropsPage(); break;
     // The heading says what the page is; the picker and the editor below both
     // name the selected tool, so repeating it a third time here added nothing.
@@ -1134,17 +1410,51 @@ function render() {
   }
   document.getElementById('app').innerHTML = shell(content);
   bind();
-  if (state.page === 'setups') {
-    bindSetups();
-    ensureItemCatalog();
-  }
+  if (state.page === 'setups') bindSetups();
+  if (['setups', 'accessories'].includes(state.page)) ensureItemCatalog();
   if (state.page === 'tools') bindToolPanel();
   if (state.page === 'guide') bindGuide();
+
+  if (scrollState) {
+    const main = document.querySelector('#app .main');
+    const nav = document.querySelector('#app .sidebar nav');
+    if (main) main.scrollTop = scrollState.main;
+    if (nav) nav.scrollTop = scrollState.nav;
+    window.scrollTo(scrollState.windowX, scrollState.windowY);
+    restoreRelativeScrollAnchor(relativeAnchor);
+    scheduleScrollAnchorRestore(relativeAnchor);
+  }
+}
+
+function closeNavigation() {
+  const sidebar = document.querySelector('#app .sidebar');
+  const toggle = document.querySelector('#app [data-nav-toggle]');
+  if (!sidebar || !toggle) return;
+  sidebar.classList.remove('nav-open');
+  toggle.setAttribute('aria-expanded', 'false');
+  toggle.setAttribute('aria-label', 'Open navigation');
 }
 
 function bind() {
   document.querySelectorAll('[data-progress]').forEach(el => { el.style.width = `${el.dataset.progress}%`; });
-  document.querySelectorAll('[data-page]').forEach(el => el.addEventListener('click', () => { state.page=el.dataset.page; state.drawer=null; saveState(); render(); }));
+
+  const sidebar = document.querySelector('#app .sidebar');
+  const navToggle = document.querySelector('#app [data-nav-toggle]');
+  navToggle?.addEventListener('click', () => {
+    const open = !sidebar?.classList.contains('nav-open');
+    sidebar?.classList.toggle('nav-open', open);
+    navToggle.setAttribute('aria-expanded', String(open));
+    navToggle.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
+  });
+
+  document.querySelectorAll('[data-page]').forEach(el => el.addEventListener('click', () => {
+    state.page=el.dataset.page;
+    state.drawer=null;
+    closeNavigation();
+    saveState();
+    render({ preserveScroll: false });
+  }));
+  document.querySelectorAll('[data-open-settings]').forEach(el => el.addEventListener('click', closeNavigation));
   document.querySelectorAll('[data-open]').forEach(el => el.addEventListener('click', () => { state.drawer=el.dataset.open; saveState(); render(); }));
   // The backdrop closes the drawer, but a click on the drawer itself must not:
   // it bubbles up to the backdrop, so the target is checked explicitly.
@@ -1165,20 +1475,36 @@ function bind() {
   const cf = document.getElementById('cropFortune');
   if (cf) cf.addEventListener('change', e => { state.profile.cropFortune[state.selectedCrop]=Number(e.target.value||0); saveState(); render(); });
 
+  document.querySelectorAll('[data-accessory-recomb]').forEach(el => el.addEventListener('change', event => {
+    const accessory = farmingAccessoryByItemId(event.target.dataset.accessoryRecomb);
+    if (!accessory) return;
+    state.profile.accessoryItems ||= {};
+    const next = { ...(state.profile.accessoryItems[accessory.itemId] || {}) };
+    next.recombobulated = Boolean(event.target.checked);
+    next.source = 'manual';
+    state.profile.accessoryItems[accessory.itemId] = next;
+    saveState();
+    render();
+  }));
+
   document.querySelectorAll('[data-step]').forEach(el => el.addEventListener('click', () => {
     const item = UPGRADES.find(x=>x.id===el.dataset.id); if (!item) return;
     const store = itemStore(item);
-    store.levels[item.id] = Math.max(0, Math.min(Number(item.max||1), currentLevel(item)+Number(el.dataset.step)));
-    store.owned[item.id] = store.levels[item.id] > 0;
+    const nextLevel = Math.max(0, Math.min(Number(item.max||1), currentLevel(item)+Number(el.dataset.step)));
+    if (nextLevel > 0) clearExclusivePeers(item);
+    store.levels[item.id] = nextLevel;
+    store.owned[item.id] = nextLevel > 0;
     saveState(); render();
   }));
   document.querySelectorAll('[data-max]').forEach(el => el.addEventListener('click', () => {
     const item = UPGRADES.find(x=>x.id===el.dataset.max); if (!item) return;
+    clearExclusivePeers(item);
     const store = itemStore(item);
     store.levels[item.id]=Number(item.max||1); store.owned[item.id]=true; saveState(); render();
   }));
   document.querySelectorAll('[data-owned]').forEach(el => el.addEventListener('change', e => {
     const item = UPGRADES.find(x=>x.id===e.target.dataset.owned); if (!item) return;
+    if (e.target.checked) clearExclusivePeers(item);
     const store = itemStore(item);
     store.owned[item.id]=e.target.checked;
     store.levels[item.id]=e.target.checked?1:0; saveState(); render();

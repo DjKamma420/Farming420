@@ -28,6 +28,7 @@
   font-size: 12px;
   font-weight: 800;
   cursor: pointer;
+  min-width: 74px;
 }
 
 .activity-mode-switch button.active {
@@ -61,11 +62,38 @@
 }
 
 @media (max-width: 760px) {
+  .activity-mode-switch {
+    flex: 1;
+    max-width: 320px;
+  }
+
   .activity-mode-switch > span {
     display: none;
   }
 
   .activity-mode-switch button {
-    padding: 7px 8px;
+    flex: 1;
+    min-width: 0;
+    padding: 7px 6px;
+  }
+}
+
+
+/* Shared pages have no Farming/Spawning/Killing control. Keep the compact
+   mobile app bar, but make it useful instead of leaving a blank black strip. */
+@media (max-width: 780px) {
+  .topbar .mobile-title {
+    display: block !important;
+    flex: 0 0 auto;
+    color: var(--sb-text, #eef8ef);
+    font-weight: 900;
+  }
+
+  .activity-mode-topbar-shared {
+    display: flex !important;
+  }
+
+  .activity-mode-page-shared .content {
+    padding-top: 10px;
   }
 }

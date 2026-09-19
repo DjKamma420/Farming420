@@ -16,6 +16,8 @@ import {
 let scheduled = false;
 let applying = false;
 
+const MODE_SWITCH_PAGES = new Set(['dashboard', 'setups', 'planner']);
+
 function load() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
 }
@@ -73,7 +75,7 @@ function appliesToCrop(item, cropId) {
 function relativeGain(item, gain, stats, mode) {
   if (!gain) return 0;
   if (item.metric === 'Crop Yield') {
-    const base = mode === ACTIVITY_MODE.PEST ? 600 : 100;
+    const base = mode === ACTIVITY_MODE.PEST_KILL ? 600 : 100;
     const denominator = base + Number(stats.effectiveFortune || 0);
     return denominator > 0 ? (gain / denominator) * 100 : 0;
   }
@@ -130,8 +132,24 @@ function setMode(mode) {
 function injectHeaderSwitch(raw) {
   const topbar = document.querySelector('.topbar');
   if (!topbar) return;
-  const mode = activityModeForState(raw);
+  const main = topbar.closest('.main');
+  const page = String(raw?.page || '');
   let control = topbar.querySelector('.activity-mode-switch');
+
+  // The phase selector belongs only where the selected loadout changes what is
+  // being edited or calculated. Shared pages keep the compact mobile app bar,
+  // but only as a branded header; the phase selector itself is removed.
+  if (!MODE_SWITCH_PAGES.has(page)) {
+    control?.remove();
+    topbar.classList.add('activity-mode-topbar-shared');
+    main?.classList.add('activity-mode-page-shared');
+    return;
+  }
+
+  topbar.classList.remove('activity-mode-topbar-shared');
+  main?.classList.remove('activity-mode-page-shared');
+
+  const mode = activityModeForState(raw);
   if (!control) {
     control = document.createElement('div');
     control.className = 'activity-mode-switch';
@@ -141,52 +159,16 @@ function injectHeaderSwitch(raw) {
   if (control.dataset.mode === mode) return;
 
   control.dataset.mode = mode;
-  control.setAttribute('aria-label', 'Active calculation set');
+  control.setAttribute('aria-label', 'Active farming phase');
   control.innerHTML = `
     <span>Set</span>
-    <button type="button" data-activity-mode="farm" class="${mode === ACTIVITY_MODE.FARM ? 'active' : ''}" aria-pressed="${mode === ACTIVITY_MODE.FARM}">Farm</button>
-    <button type="button" data-activity-mode="pest" class="${mode === ACTIVITY_MODE.PEST ? 'active' : ''}" aria-pressed="${mode === ACTIVITY_MODE.PEST}">Pest</button>`;
+    <button type="button" data-activity-mode="farm" class="${mode === ACTIVITY_MODE.FARM ? 'active' : ''}" aria-pressed="${mode === ACTIVITY_MODE.FARM}">Farming</button>
+    <button type="button" data-activity-mode="pest-spawn" class="${mode === ACTIVITY_MODE.PEST_SPAWN ? 'active' : ''}" aria-pressed="${mode === ACTIVITY_MODE.PEST_SPAWN}">Spawning</button>
+    <button type="button" data-activity-mode="pest-kill" class="${mode === ACTIVITY_MODE.PEST_KILL ? 'active' : ''}" aria-pressed="${mode === ACTIVITY_MODE.PEST_KILL}">Killing</button>`;
   control.querySelectorAll('[data-activity-mode]').forEach(button => button.addEventListener('click', () => {
     if (button.dataset.activityMode === mode) return;
     setMode(button.dataset.activityMode);
   }));
-}
-
-function renderStatsStrip(raw) {
-  const strip = document.querySelector('.computed-stats-strip');
-  if (!strip) return;
-  const mode = activityModeForState(raw);
-  const cropId = selectedCropId(raw);
-  const stats = computeStatTotals(raw, cropId, mode);
-  const unresolvedFortune = stats.incomplete.globalFortune.length
-    + stats.incomplete.cropFortune.length
-    + stats.incomplete.pestFortune.length;
-  const signature = [
-    mode,
-    stats.effectiveFortune,
-    stats.pestFortune,
-    stats.overbloom,
-    stats.bonusPestChance,
-    unresolvedFortune,
-    stats.incomplete.overbloom.length,
-    stats.incomplete.bonusPestChance.length,
-  ].join(':');
-  if (strip.dataset.activityStats === signature) return;
-  strip.dataset.activityStats = signature;
-
-  strip.innerHTML = `
-    <div class="computed-stat" title="Fortune from the active ${esc(activityLabel(mode))}">
-      <span>${mode === ACTIVITY_MODE.PEST ? 'Pest FF' : 'Farm FF'}</span><strong>${Number(stats.effectiveFortune || 0).toLocaleString('en-US')}</strong>${unresolvedFortune ? '<em>~</em>' : ''}
-    </div>
-    ${mode === ACTIVITY_MODE.PEST ? `<div class="computed-stat" title="Farming Fortune that applies to Pest/Vacuum drops only. It is separate from normal crop Fortune.">
-      <span>Pest Drop FF</span><strong>${Number(stats.pestFortune || 0).toLocaleString('en-US')}</strong>${stats.incomplete.pestFortune.length ? '<em>~</em>' : ''}
-    </div>` : ''}
-    <div class="computed-stat" title="Overbloom for the active set. Pest-only Overbloom is excluded from Farm Set totals.">
-      <span>OB</span><strong>${Number(stats.overbloom || 0).toLocaleString('en-US')}</strong>${stats.incomplete.overbloom.length ? '<em>~</em>' : ''}
-    </div>
-    <div class="computed-stat" title="Bonus Pest Chance produced by the currently selected Farm or Pest loadout.">
-      <span>BPC</span><strong>${Number(stats.bonusPestChance || 0).toLocaleString('en-US')}</strong>${stats.incomplete.bonusPestChance.length ? '<em>~</em>' : ''}
-    </div>`;
 }
 
 function simplifySetupEditor(raw) {
@@ -199,7 +181,7 @@ function simplifySetupEditor(raw) {
   const tabs = content.querySelector('.setup-tabs');
   if (tabs && tabs.dataset.modeSurface !== mode) {
     tabs.dataset.modeSurface = mode;
-    tabs.innerHTML = `<div class="mode-editor-banner"><strong>${esc(activityLabel(mode))}</strong> is being edited. Armor, equipment and pet selections are stored separately for Farm and Pest. Change the active set with the switch in the header.</div>`;
+    tabs.innerHTML = `<div class="mode-editor-banner"><strong>${esc(activityLabel(mode))}</strong> is being edited. Loadout gear is phase-specific. Shared sources such as crop Tools, Shards, Account upgrades and Buffs are configured once and are not switched here.</div>`;
   }
 
   const nameInput = content.querySelector('#setupName');
@@ -223,7 +205,7 @@ function renderDashboardCandidate(raw) {
     <h2>${esc(candidate.item.name)}</h2>
     <p>+${candidate.gain.toLocaleString('en-US')} marginal stat · about ${candidate.rel.toFixed(2)}% relative gain in the current ${esc(cropName(cropId))} ${esc(activityLabel(mode))}.</p>
     <button class="primary-btn" data-mode-open="${esc(candidate.item.id)}">Open details</button>
-    <div class="planner-mode-note">Farm uses the crop farming tool. Pest uses the Vacuum instead. Armor, equipment and pet come from the selected set.</div>` : `
+    <div class="planner-mode-note">Farming and Pest Spawning use the crop farming tool. Pest Killing uses the Vacuum. Armor, equipment and pet come from the selected phase set.</div>` : `
     <div class="eyebrow">Next upgrade · ${esc(activityLabel(mode))}</div>
     <h2>No calculated upgrade</h2>
     <p>No active upgrade with a calculated marginal gain is available for this crop and set.</p>`;
@@ -282,7 +264,6 @@ function apply() {
   try {
     const raw = load();
     injectHeaderSwitch(raw);
-    renderStatsStrip(raw);
     simplifySetupEditor(raw);
     renderDashboardCandidate(raw);
     renderPlanner(raw);

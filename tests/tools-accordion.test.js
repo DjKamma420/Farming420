@@ -35,6 +35,17 @@ test('dockToolEditor runs in the apply pass', () => {
   assert.match(read('skyblock-redesign.js'), /\n\s*dockToolEditor\(\);/, 'never called');
 });
 
+test('the expanded tool editor does not repeat the selected tool identity', () => {
+  const app = read('app.js');
+  const start = app.indexOf('function toolItemPanel()');
+  const end = app.indexOf('\nfunction bindToolPanel()', start);
+  assert.ok(start >= 0 && end > start, 'toolItemPanel block not found');
+  const fn = app.slice(start, end);
+  assert.doesNotMatch(fn, /item-editor-head/);
+  assert.doesNotMatch(fn, /item-portrait/);
+  assert.doesNotMatch(fn, /item-identity/);
+});
+
 test('the docked editor spans the whole card row', () => {
   const css = read('skyblock-redesign.css').replace(/\/\*[\s\S]*?\*\//g, '');
   assert.match(
@@ -54,4 +65,74 @@ test('the empty picker wrapper is collapsed, but only while it is empty', () => 
     'without :only-child this hides the wrapper even once it holds real content',
   );
   assert.match(rule[0], /display:\s*none/);
+});
+
+
+test('tool cards and shared item editors stay compact', () => {
+  const redesign = read('skyblock-redesign.css').replace(/\/\*[\s\S]*?\*\//g, '');
+  const editor = read('item-editor.css').replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.match(redesign, /\.sb-tool-card \{[^}]*min-height:\s*58px/);
+  assert.match(redesign, /\.sb-reforge-card \{[^}]*min-height:\s*58px/);
+  assert.match(editor, /\.item-editor \{[^}]*padding:\s*14px/);
+  assert.match(editor, /\.item-portrait \{\s*width:\s*58px;\s*height:\s*58px/);
+});
+
+
+test('tools page keeps redundant copy hidden while the active tool remains tappable', () => {
+  const src = read('skyblock-redesign.js');
+  const css = read('skyblock-redesign.css').replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.match(src, /content\.classList\.add\('sb-tools-page'\)/);
+  assert.match(css, /\.sb-tools-page > \.page-head \{[^}]*display:\s*none/);
+  assert.doesNotMatch(css, /\.sb-tools-page \.sb-tool-card\.selected \{[^}]*display:\s*none/);
+  assert.doesNotMatch(
+    src,
+    /Every current Farming Tool reforge stays selectable\. The recommendation changes by goal instead of hiding non-meta choices\./,
+  );
+});
+
+test('tapping the active tool toggles its docked editor closed and open', () => {
+  const src = read('skyblock-redesign.js');
+  const css = read('skyblock-redesign.css').replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.match(src, /let collapsedToolKey = null/);
+  assert.match(
+    src,
+    /if \(clickedKey === selectedKey\) \{[\s\S]*collapsedToolKey = collapsedToolKey === selectedKey \? null : selectedKey;[\s\S]*dockToolEditor\(\);/,
+  );
+  assert.match(
+    css,
+    /\.sb-tool-grid > \.sb-docked-editor\.sb-tool-editor-collapsed \{[^}]*display:\s*none/,
+  );
+  assert.match(src, /getAttribute\('aria-expanded'\) !== nextValue/);
+});
+
+
+test('reforge state dots stay in a dedicated far-right grid column', () => {
+  const css = read('skyblock-redesign.css').replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.match(css, /\.sb-reforge-card \{[^}]*grid-template-columns:\s*32px minmax\(0,1fr\) 14px/s);
+  assert.match(
+    css,
+    /\.sb-reforge-card > \.sb-state-dot \{[^}]*position:\s*static;[^}]*transform:\s*none;[^}]*justify-self:\s*end;[^}]*align-self:\s*center/s,
+  );
+  assert.doesNotMatch(css, /\.sb-reforge-card em ~ \.sb-state-dot/);
+});
+
+test('the open tool and its editor render as one connected accordion frame', () => {
+  const css = read('skyblock-redesign.css').replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.match(css, /\.sb-tool-card\.selected\[aria-expanded="true"\] \{[^}]*grid-column:\s*1 \/ -1;[^}]*margin-bottom:\s*-7px;[^}]*border-bottom:\s*0/s);
+  assert.match(css, /\.sb-tool-grid > \.sb-docked-editor \{[^}]*margin:\s*-7px 0 8px;[^}]*border-top:\s*0;[^}]*border-radius:\s*0 0 6px 6px/s);
+  assert.match(css, /\.sb-tool-grid > \.sb-docked-editor::before \{[^}]*content:\s*none/s);
+  assert.match(css, /\.sb-reforge-panel \{[^}]*margin:\s*0;[^}]*padding:\s*0;[^}]*border:\s*0;[^}]*background:\s*transparent;[^}]*box-shadow:\s*none/s);
+});
+
+
+test('rarity styling cannot redraw a seam between an expanded tool and its editor', () => {
+  const css = read('rarity-background-ui.css').replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.match(
+    css,
+    /\.sb-tool-card\.rarity-surface\.selected\[aria-expanded="true"\] \{[^}]*outline:\s*0;[^}]*box-shadow:\s*none/s,
+  );
+  assert.match(
+    css,
+    /\.sb-tool-grid > \.sb-docked-editor\.rarity-surface \{[^}]*box-shadow:\s*0 10px 24px rgba\(0, 0, 0, \.18\)/s,
+  );
 });

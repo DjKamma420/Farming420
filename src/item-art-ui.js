@@ -1,6 +1,6 @@
 import { STORAGE_KEY } from './config.js';
 import { itemAssetForSkyblockId, loadItemAssetManifest } from './item-assets.js';
-import { skullTextureUrl } from './skull-art.js';
+import { knownSkyblockHeadTexture, knownSkyblockRenderedIcon, skullTextureUrl } from './skull-art.js?v=20260918-4';
 
 let manifest = null;
 let manifestRequested = false;
@@ -70,7 +70,7 @@ function showFallback(container, label, identity) {
   return node;
 }
 
-function skullNode(textureId, item) {
+function skullNode(textureId, item, onError = null) {
   const url = skullTextureUrl(textureId);
   if (!url) return null;
 
@@ -80,20 +80,46 @@ function skullNode(textureId, item) {
   node.setAttribute('role', 'img');
   node.setAttribute('aria-label', item?.displayName ? `${item.displayName} head texture` : 'SkyBlock head texture');
 
+  // Use real image elements rather than CSS background-image. The CSP permits
+  // Mojang in img-src, while a dynamically assigned background style is a much
+  // more fragile path on mobile/WebView. Both images show the same skin sheet;
+  // CSS shifts one to the face square and the other to the hat square.
+  let failed = false;
+  const fail = () => {
+    if (failed) return;
+    failed = true;
+    node.remove();
+    if (typeof onError === 'function') onError();
+  };
+
   for (const layer of ['skull-face', 'skull-hat']) {
-    const element = document.createElement('span');
-    element.className = `skull-layer ${layer}`;
-    element.style.backgroundImage = `url("${url}")`;
-    node.append(element);
+    const image = document.createElement('img');
+    image.className = `skull-layer ${layer}`;
+    image.src = url;
+    image.alt = '';
+    image.decoding = 'async';
+    image.draggable = false;
+    image.addEventListener('error', fail, { once: true });
+    node.append(image);
   }
 
-  const probe = new Image();
-  probe.addEventListener('load', () => {
-    node.classList.add(probe.naturalHeight >= probe.naturalWidth ? 'skull-square' : 'skull-legacy');
-  }, { once: true });
-  probe.src = url;
-
   return node;
+}
+
+function remoteIconNode(url, item, onError = null) {
+  if (!url) return null;
+  const img = document.createElement('img');
+  img.className = 'official-item-art exact-remote-item-art';
+  img.src = url;
+  img.alt = item?.displayName ? `${item.displayName} item icon` : 'SkyBlock item icon';
+  img.loading = 'eager';
+  img.decoding = 'async';
+  img.referrerPolicy = 'no-referrer';
+  img.addEventListener('error', () => {
+    img.remove();
+    if (typeof onError === 'function') onError();
+  }, { once: true });
+  return img;
 }
 
 function imageNode(asset, item, onError = null) {
@@ -148,14 +174,39 @@ export function renderSetupItemArt({ root = document, rawState = readState(), ma
       return;
     }
 
-    const identity = item.skullTexture
-      ? `skull:${item.skullTexture}`
-      : item.skyblockId ? `item:${item.skyblockId}` : `name:${item.displayName || slotId}`;
+    const textureId = item.skullTexture || knownSkyblockHeadTexture(item.skyblockId);
+    const renderedIconUrl = item.skullTexture ? null : knownSkyblockRenderedIcon(item.skyblockId);
+    const identity = renderedIconUrl
+      ? `rendered:${String(item.skyblockId || '').toUpperCase()}`
+      : textureId
+        ? `skull:${textureId}`
+        : item.skyblockId ? `item:${item.skyblockId}` : `name:${item.displayName || slotId}`;
     if ((card.classList.contains('has-official-item-art') || card.classList.contains('has-item-art-fallback')) && card.dataset.renderedItemArt === identity) return;
     removeRenderedArt(card);
 
     const asset = item.skyblockId ? itemAssetForSkyblockId(manifestValue, item.skyblockId) : null;
-    const skull = skullNode(item.skullTexture, item);
+
+    if (renderedIconUrl) {
+      const exact = remoteIconNode(renderedIconUrl, item, () => {
+        const skullFallback = skullNode(textureId, item, () => showFallback(card, item.displayName || slotId, identity));
+        if (skullFallback) {
+          card.prepend(skullFallback);
+          card.classList.add('has-official-item-art');
+          card.dataset.renderedItemArt = `skull:${textureId}`;
+        } else {
+          showFallback(card, item.displayName || slotId, identity);
+        }
+      });
+      if (exact) {
+        card.prepend(exact);
+        card.classList.add('has-official-item-art');
+        card.dataset.renderedItemArt = identity;
+        rendered += 1;
+        return;
+      }
+    }
+
+    const skull = skullNode(textureId, item, () => showFallback(card, item.displayName || slotId, identity));
     if (skull) {
       card.prepend(skull);
       card.classList.add('has-official-item-art');
@@ -187,6 +238,10 @@ async function apply() {
   if (applying) return;
   applying = true;
   try {
+    // Heads are independent of the Hypixel resource-pack manifest. Render them
+    // immediately so a slow/missing manifest can never leave a setup portrait
+    // blank. Once the manifest arrives, run a second pass for non-head items.
+    renderSetupItemArt({ manifestValue: manifest });
     const loaded = await ensureManifest();
     renderSetupItemArt({ manifestValue: loaded });
   } finally {

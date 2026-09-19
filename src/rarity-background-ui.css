@@ -19,6 +19,17 @@
     0 10px 24px rgba(0, 0, 0, .18);
 }
 
+.skyblock-redesign .sb-tool-card.rarity-surface,
+.skyblock-redesign .sb-tool-card.rarity-surface.selected,
+.skyblock-redesign .sb-tool-grid > .sb-docked-editor.rarity-surface {
+  background:
+    radial-gradient(110% 120% at 0% 0%, color-mix(in srgb, var(--rarity-tone) 22%, transparent), transparent 58%),
+    linear-gradient(145deg,
+      color-mix(in srgb, var(--rarity-tone) 16%, #17231c),
+      color-mix(in srgb, var(--rarity-tone) 5%, #0c130f));
+  border-color: color-mix(in srgb, var(--rarity-tone) 52%, #34483a);
+}
+
 .skyblock-redesign .slot-card.rarity-surface.filled strong,
 .skyblock-redesign .rarity-surface .item-title {
   color: var(--rarity-tone);
@@ -28,6 +39,17 @@
 .skyblock-redesign .sb-tool-card.rarity-surface.selected {
   outline: 2px solid color-mix(in srgb, var(--rarity-tone) 72%, #ffffff);
   outline-offset: 1px;
+}
+
+/* An expanded tool and its editor are one surface. The selected-card outline
+   and standalone shadows otherwise draw a bright horizontal seam between them. */
+.skyblock-redesign .sb-tool-card.rarity-surface.selected[aria-expanded="true"] {
+  outline: 0;
+  box-shadow: none;
+}
+
+.skyblock-redesign .sb-tool-grid > .sb-docked-editor.rarity-surface {
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .18);
 }
 
 .skyblock-redesign .rarity-surface.rarity-unknown {

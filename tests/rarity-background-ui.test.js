@@ -10,12 +10,30 @@ const [uiSource, cssSource, indexSource] = await Promise.all([
 
 test('rarity presentation covers every physical farming item surface', () => {
   assert.match(uiSource, /\.slot-card\[data-slot/);
+  assert.match(uiSource, /\.item-card\[data-open\]/);
+  assert.match(uiSource, /physicalItemId/);
+  assert.match(uiSource, /applyCatalogItemSurfaceRarity/);
+  assert.match(uiSource, /\.drawer/);
+  assert.match(uiSource, /\.sb-reforge-card/);
+  assert.match(uiSource, /\.workspace-level-row/);
   assert.match(uiSource, /\.sb-tool-card\[data-sb-tool-crop/);
   assert.match(uiSource, /data-tool-editor/);
   assert.match(uiSource, /data-vacuum-panel/);
   assert.match(uiSource, /effectiveSetupItemRarity/);
   assert.match(uiSource, /vacuumRarity/);
   assert.match(uiSource, /deriveRarity/);
+});
+
+test('physical progression cards use the official resolved item tier and non-items stay neutral', () => {
+  assert.match(uiSource, /catalogItemById/);
+  assert.match(uiSource, /item\?\.tier/);
+  assert.match(uiSource, /clearRarityClass\(surface\)/);
+  assert.match(uiSource, /attributeFilter:\s*\['data-physical-item-id'\]/);
+});
+
+test('rarity label writes are idempotent inside the observed app subtree', () => {
+  assert.match(uiSource, /setTextIfChanged\(rarityLabel, label\)/);
+  assert.doesNotMatch(uiSource, /rarityLabel\.textContent\s*=/);
 });
 
 test('rarity backgrounds do not depend on some other editor loading the item catalog first', () => {
@@ -29,6 +47,12 @@ test('rarity is expressed as the physical item background, not only text or a bo
   assert.match(cssSource, /background:/);
   assert.match(cssSource, /var\(--rarity/);
   assert.match(cssSource, /border-color:/);
+});
+
+test('tool selection and docked editors keep the rarity background instead of generic green', () => {
+  assert.match(cssSource, /\.sb-tool-card\.rarity-surface\.selected/);
+  assert.match(cssSource, /\.sb-tool-grid > \.sb-docked-editor\.rarity-surface/);
+  assert.match(cssSource, /color-mix\(in srgb, var\(--rarity-tone\)/);
 });
 
 test('the rarity presentation is loaded after the redesign styles and item UI scripts', () => {

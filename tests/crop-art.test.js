@@ -23,6 +23,17 @@ function cropArtTable() {
   return table;
 }
 
+
+function cropSpriteTable() {
+  const block = redesign.match(/const CROP_SPRITES = Object\.freeze\(\{([\s\S]*?)\n\}\);/);
+  assert.ok(block, 'CROP_SPRITES table not found');
+  const table = {};
+  for (const m of block[1].matchAll(/^\s*'?([\w-]+)'?:\s*'([^']+)'/gm)) {
+    table[m[1]] = m[2];
+  }
+  return table;
+}
+
 function cropIds() {
   const block = data.slice(data.indexOf('export const CROPS = ['));
   return [...block.slice(0, block.indexOf('\n];')).matchAll(/"id":\s*"([\w-]+)"/g)].map(m => m[1]);
@@ -38,12 +49,28 @@ test('every crop art key exists in the shipped pack', () => {
 
 test('every crop has art, so no tile falls back to a letter', () => {
   const table = cropArtTable();
-  const bare = cropIds().filter(id => !(table[id] || []).some(key => key in manifest.items));
+  const sprites = cropSpriteTable();
+  const bare = cropIds().filter(id => !sprites[id] && !(table[id] || []).some(key => key in manifest.items));
   assert.deepEqual(bare, [], `these crops would still show a letter: ${bare.join(', ')}`);
 });
 
-test('the table has no entry for a crop that does not exist', () => {
+test('embedded crop sprites are valid PNG data URIs', () => {
+  const invalid = Object.entries(cropSpriteTable())
+    .filter(([, url]) => !url.startsWith('data:image/png;base64,iVBORw0KGgo'))
+    .map(([id]) => id);
+  assert.deepEqual(invalid, [], `invalid embedded crop sprites: ${invalid.join(', ')}`);
+});
+
+test('crop tiles never use farming tool artwork', () => {
+  const toolNames = /theoretical_hoe_|(?:melon|pumpkin)_dicer|coco_chopper|fungi_cutter|cactus_knife/;
+  const wrong = Object.entries(cropArtTable())
+    .flatMap(([crop, keys]) => keys.filter(key => toolNames.test(key)).map(key => `${crop} -> ${key}`));
+  assert.deepEqual(wrong, [], `tool art leaked into crop tiles: ${wrong.join(', ')}`);
+});
+
+test('the art tables have no entry for a crop that does not exist', () => {
   const ids = cropIds();
-  const unknown = Object.keys(cropArtTable()).filter(id => !ids.includes(id));
+  const unknown = [...Object.keys(cropArtTable()), ...Object.keys(cropSpriteTable())]
+    .filter((id, index, all) => !ids.includes(id) && all.indexOf(id) === index);
   assert.deepEqual(unknown, [], `art for unknown crops: ${unknown.join(', ')}`);
 });

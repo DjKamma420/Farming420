@@ -16,8 +16,6 @@ import { syncProfile } from './live-sync.js';
 
 let deferredInstallPrompt = null;
 let settingsDialog = null;
-let serviceWorkerRegistration = null;
-let reloadingForUpdate = false;
 
 function readState() {
   let stored = {};
@@ -144,17 +142,17 @@ function settingsMarkup() {
       <section class="settings-section">
         <div class="settings-section-copy">
           <h3>App & Updates</h3>
-          <p>The service worker keeps one coherent offline app version. Updates replace the cached app as a unit instead of mixing old and new files.</p>
+          <p>Reloading checks the current GitHub Pages deployment, removes only obsolete Farming420 caches and service workers, and keeps your local profile/settings data.</p>
         </div>
         <div class="settings-meta-grid">
           <div><span>App version</span><strong>${APP_VERSION}</strong></div>
           <div><span>Data schema</span><strong>${DATA_SCHEMA_VERSION}</strong></div>
-          <div><span>Offline support</span><strong>${'serviceWorker' in navigator ? 'Supported' : 'Unavailable'}</strong></div>
+          <div><span>Update delivery</span><strong>Commit-based</strong></div>
           <div><span>Install state</span><strong>${window.matchMedia?.('(display-mode: standalone)').matches ? 'Installed' : 'Browser tab'}</strong></div>
         </div>
         <div class="settings-actions">
           <button class="settings-button" type="button" data-install-app ${deferredInstallPrompt ? '' : 'disabled'}>Install app</button>
-          <button class="settings-button" type="button" data-check-update>Check for updates</button>
+          <button class="settings-button" type="button" data-check-update>Reload latest version</button>
         </div>
       </section>
     </div>
@@ -354,49 +352,50 @@ function bindSettings() {
     openSettings();
   });
 
-  settingsDialog.querySelector('[data-check-update]')?.addEventListener('click', async () => {
-    if (!serviceWorkerRegistration) {
-      setStatus('Service worker is not registered in this browser.', 'warning');
-      return;
-    }
-    try {
-      await serviceWorkerRegistration.update();
-      setStatus('Update check completed. A new version will reload automatically after activation.', 'success');
-    } catch (error) {
-      setStatus(`Update check failed: ${error.message}`, 'error');
-    }
+  settingsDialog.querySelector('[data-check-update]')?.addEventListener('click', () => {
+    setStatus('Reloading the latest deployed version. Local settings are preserved.', 'success');
+    void forceReloadApp();
   });
 }
 
 /**
- * Settings lives in the top bar rather than the sidebar: the sidebar is hidden
- * below 780px, which would otherwise leave backup, restore, import and update
- * controls unreachable on exactly the mobile-first layout the app targets.
+ * Reload the deployed app without touching Farming420 profile/settings storage.
+ * Query-string cache busting ensures the HTML request cannot reuse a stale URL,
+ * while the Pages build stamp gives every local asset an immutable build id.
  */
-function addSettingsButton() {
-  const topbar = document.querySelector('.topbar');
-  if (!topbar || topbar.querySelector('[data-open-settings]')) return;
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = 'settings-entry';
-  button.dataset.openSettings = '1';
-  button.setAttribute('aria-label', 'Open settings');
-  button.innerHTML = '<span aria-hidden="true">\u2699</span><span class="settings-entry-label">Settings</span>';
-  button.addEventListener('click', openSettings);
-  topbar.appendChild(button);
+async function forceReloadApp() {
+  if ('serviceWorker' in navigator) {
+    const registrations = await navigator.serviceWorker.getRegistrations().catch(() => []);
+    const appScope = new URL('./', document.baseURI).href;
+    await Promise.all(
+      registrations
+        .filter(registration => registration.scope.startsWith(appScope))
+        .map(registration => registration.unregister()),
+    );
+  }
+
+  if ('caches' in window) {
+    const names = await caches.keys().catch(() => []);
+    await Promise.all(
+      names
+        .filter(name => name.startsWith('farming420-'))
+        .map(name => caches.delete(name)),
+    );
+  }
+
+  const url = new URL(window.location.href);
+  url.searchParams.set('reload', Date.now().toString(36));
+  window.location.replace(url.href);
 }
 
-async function registerServiceWorker() {
-  if (!('serviceWorker' in navigator)) return;
-  try {
-    serviceWorkerRegistration = await navigator.serviceWorker.register('./sw.js');
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (reloadingForUpdate) return;
-      reloadingForUpdate = true;
-      location.reload();
-    });
-  } catch (error) {
-    console.warn('Farming420 service worker registration failed:', error);
+function bindAppControls() {
+  const app = document.getElementById('app');
+  if (!app) return;
+
+  const settingsButton = app.querySelector('[data-open-settings]');
+  if (settingsButton && !settingsButton.dataset.settingsBound) {
+    settingsButton.dataset.settingsBound = '1';
+    settingsButton.addEventListener('click', openSettings);
   }
 }
 
@@ -405,7 +404,6 @@ window.addEventListener('beforeinstallprompt', event => {
   deferredInstallPrompt = event;
 });
 
-const observer = new MutationObserver(addSettingsButton);
+const observer = new MutationObserver(bindAppControls);
 observer.observe(document.getElementById('app'), { childList: true, subtree: true });
-addSettingsButton();
-registerServiceWorker();
+bindAppControls();

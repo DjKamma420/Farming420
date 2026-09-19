@@ -84,8 +84,8 @@ if ! grep -q 'class="app-shell"' "$DASHBOARD_DOM"; then
   exit 1
 fi
 
-if ! grep -q 'Your Farming Progress' "$DASHBOARD_DOM"; then
-  echo "The app shell rendered, but the default Dashboard content is missing" >&2
+if ! grep -q 'Calculated Farming Stats' "$DASHBOARD_DOM"; then
+  echo "The app shell rendered, but the current results-only Dashboard content is missing" >&2
   sed -n '1,160p' "$DASHBOARD_DOM" >&2 || true
   exit 1
 fi
@@ -115,4 +115,16 @@ if grep -q 'MutationObserver' "$SETUPS_DOM"; then
   exit 1
 fi
 
-echo "Browser smoke test passed: Dashboard and tool-style Setups picker both render in headless Chrome."
+HELMET_LINE="$(grep 'data-slot="helmet"' "$SETUPS_DOM" | head -n 1 || true)"
+if [[ "$HELMET_LINE" != *"rarity-mythic"* || "$HELMET_LINE" != *'data-effective-rarity="MYTHIC"'* ]]; then
+  echo "Recombobulated Legendary setup armor did not render with the canonical Mythic rarity background" >&2
+  echo "$HELMET_LINE" >&2
+  exit 1
+fi
+if [[ "$HELMET_LINE" == *"rarity-divine"* ]]; then
+  echo "Recombobulated setup armor was promoted twice (Legendary -> Mythic -> Divine)" >&2
+  echo "$HELMET_LINE" >&2
+  exit 1
+fi
+
+echo "Browser smoke test passed: Dashboard, Setups picker, and canonical recombobulated rarity background render in headless Chrome."

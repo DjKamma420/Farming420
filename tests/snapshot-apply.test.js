@@ -107,6 +107,41 @@ test('tool counters, enchantments, reforge, gem and recomb land on that tool', (
   assert.equal(tool['tool-gem-perfect-peridot-on-farming-tool'], 1);
 });
 
+test('Accessory Bag sync imports Recombobulator state and ignores Enrichments', () => {
+  const state = emptyState();
+  applySnapshotToProgress(state, snapshotWith({
+    items: [{
+      container: 'talisman_bag',
+      skyblockId: 'HELIANTHUS_RELIC',
+      displayName: 'Helianthus Relic',
+      recombobulated: 1,
+      talismanEnrichment: 'magic_find',
+      enchantments: {},
+      gems: {},
+    }],
+  }));
+
+  assert.deepEqual(state.profile.accessoryItems.HELIANTHUS_RELIC, {
+    recombobulated: true,
+    source: 'hypixel-sync',
+  });
+
+  applySnapshotToProgress(state, snapshotWith({ items: [] }));
+  assert.equal(state.profile.accessoryItems.HELIANTHUS_RELIC, undefined, 'stale synced accessory state is cleared');
+});
+
+test('manual accessory state survives a sync that does not contain the item', () => {
+  const state = emptyState();
+  state.profile.accessoryItems = {
+    HELIANTHUS_RELIC: { recombobulated: true, enrichment: 'speed', source: 'manual' },
+  };
+  applySnapshotToProgress(state, snapshotWith({ items: [] }));
+  assert.deepEqual(state.profile.accessoryItems.HELIANTHUS_RELIC, {
+    recombobulated: true,
+    source: 'manual',
+  });
+});
+
 test('values are clamped to each documented maximum', () => {
   const state = emptyState();
   applySnapshotToProgress(state, snapshotWith({
@@ -334,6 +369,39 @@ test('switching the active setup re-derives from the newly active one', () => {
   state.profile.setups.activeId = 'pest';
   applySnapshotToProgress(state, snapshotWith());
   assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], undefined, 'the pest setup is empty');
+});
+
+test('Thorny reads all active armor Thorns tiers including the event Pufferfish Hat V', () => {
+  const thorny = slot => ({
+    displayName: `Mythic Thorny ${slot}`,
+    rarity: 'MYTHIC',
+    reforge: 'thorny',
+    enchantments: {},
+    gems: [],
+  });
+  const state = stateWithSetup({
+    helmet: setupPiece('Pufferfish Hat', { skyblockId: 'PUFFERFISH_HAT_CELEBRATION', enchantments: { thorns: 5 }, reforge: null }),
+    chestplate: setupPiece('Helianthus Chestplate', { enchantments: { thorns: 4 }, reforge: null }),
+    leggings: setupPiece('Helianthus Leggings', { enchantments: { thorns: 4 }, reforge: null }),
+    boots: setupPiece('Helianthus Boots', { enchantments: { thorns: 4 }, reforge: null }),
+    equipment1: thorny('Necklace'),
+    equipment2: thorny('Cloak'),
+    equipment3: thorny('Belt'),
+    equipment4: thorny('Bracelet'),
+  });
+
+  applySnapshotToProgress(state, snapshotWith());
+
+  assert.equal(state.profile.levels['equipment-reforge-thorny-on-full-mythic-equipment-ff'], 4);
+  assert.equal(state.profile.manualGain['equipment-reforge-thorny-on-full-mythic-equipment-ff'], 48);
+  assert.equal(state.profile.levels['equipment-reforge-thorny-on-full-mythic-equipment-overbloom'], 4);
+  assert.equal(state.profile.manualGain['equipment-reforge-thorny-on-full-mythic-equipment-overbloom'], 6);
+  assert.equal(state.profile.levels['equipment-reforge-thorny-thorns-overbloom'], 1);
+  assert.equal(state.profile.manualGain['equipment-reforge-thorny-thorns-overbloom'], 6.8);
+
+  state.profile.setups.list[0].slots.helmet.enchantments.thorns = 4;
+  applySnapshotToProgress(state, snapshotWith());
+  assert.equal(state.profile.manualGain['equipment-reforge-thorny-thorns-overbloom'], 6.4);
 });
 
 test("Perfect Peridot is read per slot from the setup editor's list shape", () => {

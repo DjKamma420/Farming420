@@ -118,7 +118,7 @@ test('the editor passes the per-item gate, not a constant', () => {
   const src = readFileSync(new URL('../src/workspace-ui.js', import.meta.url), 'utf8');
   assert.match(
     src,
-    /rarityRow\(bucket, catalogItem, entryLevel\(bucket, RECOMB_ID\) > 0, canRecomb\)/,
+    /rarityRow\(bucket, catalogItem, entryEnabled\(bucket, RECOMB_ID\), canRecomb, highestChainTier\(bucket, TOOL_TIER_CHAIN\)\)/,
     'the row must receive this item\'s eligibility',
   );
   assert.match(
@@ -126,4 +126,23 @@ test('the editor passes the per-item gate, not a constant', () => {
     /canRecombobulate: canRecombobulateItem\('tool', catalogItem\)/,
     'the gemstone Fortune must use the same per-item gate',
   );
+});
+
+
+test('tool Recombobulator toggle, rarity color and gemstone rarity use the same persisted state', () => {
+  const src = readFileSync(new URL('../src/workspace-ui.js', import.meta.url), 'utf8');
+  assert.match(src, /function entryEnabled\(bucket, id\).*bucket\?\.owned\?\.\[id\] === true/);
+  assert.match(src, /rarityRow\(bucket, catalogItem, entryEnabled\(bucket, RECOMB_ID\), canRecomb, highestChainTier\(bucket, TOOL_TIER_CHAIN\)\)/);
+  assert.match(src, /recombobulated: entryEnabled\(bucket, RECOMB_ID\)/);
+  assert.match(src, /data-tool-recomb \$\{entryEnabled\(bucket, RECOMB_ID\)\?'checked':''\}/);
+});
+
+
+test('Melon Dicer Mk. III uses the current EPIC base rarity, not the legacy Legendary rarity', () => {
+  const workspace = readFileSync(new URL('../src/workspace-ui.js', import.meta.url), 'utf8');
+  const backgrounds = readFileSync(new URL('../src/rarity-background-ui.js', import.meta.url), 'utf8');
+  assert.match(workspace, /farmingToolTierRarity\(tier\) \|\| catalogItem\?\.tier/);
+  assert.match(backgrounds, /farmingToolTierRarity\(tier\) \|\| item\?\.tier/);
+  assert.equal(deriveRarity({ base: 'EPIC', recombobulated: false }), 'EPIC');
+  assert.equal(deriveRarity({ base: 'EPIC', recombobulated: true }), 'LEGENDARY');
 });

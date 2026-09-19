@@ -50,11 +50,29 @@
 }
 
 .coverage-skull-art {
+  position: relative;
   width: 78%;
   height: 78%;
-  background-repeat: no-repeat;
-  background-size: 800% 800%;
-  background-position: 14.2857% 14.2857%;
+  overflow: hidden;
+}
+
+.coverage-skull-layer {
+  position: absolute;
+  width: 800%;
+  height: auto;
+  max-width: none;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+.coverage-skull-face {
+  left: -100%;
+  top: -100%;
+}
+
+.coverage-skull-hat {
+  left: -500%;
+  top: -100%;
 }
 
 .coverage-material-art {
@@ -107,6 +125,44 @@
   transform: translateY(-50%);
 }
 
+/* Recombobulator selectors keep the actual Recombobulator 3000 beside the
+   label so the toggle reads as a physical item upgrade instead of bare text. */
+.recombobulator-choice-copy {
+  position: relative;
+  min-height: 44px;
+  padding-left: 52px !important;
+}
+
+.recombobulator-choice-copy > .coverage-item-art {
+  position: absolute;
+  left: 2px;
+  top: 50%;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  transform: translateY(-50%);
+}
+
+.recombobulator-choice-copy > .coverage-item-art.coverage-skull-art,
+.recombobulator-choice-copy > .coverage-item-art.coverage-material-art {
+  width: 40px;
+  height: 40px;
+}
+
+@media (max-width: 700px) {
+  .recombobulator-choice-copy {
+    min-height: 40px;
+    padding-left: 46px !important;
+  }
+
+  .recombobulator-choice-copy > .coverage-item-art,
+  .recombobulator-choice-copy > .coverage-item-art.coverage-skull-art,
+  .recombobulator-choice-copy > .coverage-item-art.coverage-material-art {
+    width: 36px;
+    height: 36px;
+  }
+}
+
 /* The setup portraits already own the right size/border. Coverage art simply
    occupies that box when the shipped Hypixel pack has no matching item model. */
 .slot-portrait > .coverage-item-art,
@@ -126,5 +182,122 @@
   .item-card .card-head,
   .skyblock-redesign .item-card .card-head {
     gap: 9px !important;
+  }
+}
+
+
+/* Accessories are an Accessory Bag layer, not wearable setup slots. Reference
+   cards still use the same physical-item surface and exact Hypixel art, but
+   only calculator-linked cards behave like buttons. */
+.accessory-model-note {
+  display: grid;
+  gap: 5px;
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel2);
+}
+
+.accessory-model-note span,
+.accessory-effect {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.accessory-group {
+  margin-bottom: 30px;
+}
+
+.accessory-catalog-card {
+  min-height: 168px;
+}
+
+article.accessory-catalog-card {
+  cursor: default;
+}
+
+article.accessory-catalog-card:hover {
+  transform: none;
+}
+
+.accessory-catalog-card .accessory-effect {
+  position: relative;
+  min-height: 44px;
+  margin: 16px 0 10px;
+  font-size: 12px;
+}
+
+.accessory-catalog-card .card-portrait {
+  display: grid;
+  place-items: center;
+}
+
+
+/* Attribute Shards are primarily visual inventory objects. Give their real
+   Hypixel head texture enough room to be recognisable instead of treating it
+   like the small accessory icon used on generic progression cards. */
+.shard-gallery {
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 14px;
+}
+
+.shard-gallery .shard-card {
+  min-height: 178px;
+  padding: 18px;
+}
+
+.shard-gallery .shard-card .card-head,
+.skyblock-redesign .shard-gallery .shard-card .card-head {
+  align-items: center !important;
+  gap: 14px !important;
+}
+
+.shard-gallery .shard-card .shard-portrait,
+.skyblock-redesign .shard-gallery .shard-card .shard-portrait {
+  display: grid !important;
+  place-items: center;
+  flex: 0 0 76px !important;
+  width: 76px !important;
+  height: 76px !important;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 50% 38%, rgba(255,255,255,.07), transparent 58%),
+    var(--panel2);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.18), 0 8px 20px rgba(0,0,0,.18);
+}
+
+.shard-gallery .shard-card .shard-portrait > .coverage-item-art {
+  width: 88%;
+  height: 88%;
+  margin: auto;
+}
+
+.shard-gallery .shard-card .item-title {
+  font-size: 17px;
+  line-height: 1.25;
+}
+
+.shard-gallery .shard-card .card-meta {
+  margin-top: 16px;
+}
+
+@media (max-width: 700px) {
+  .shard-gallery {
+    grid-template-columns: 1fr;
+  }
+
+  .shard-gallery .shard-card {
+    min-height: 160px;
+    padding: 16px;
+  }
+
+  .shard-gallery .shard-card .shard-portrait,
+  .skyblock-redesign .shard-gallery .shard-card .shard-portrait {
+    flex-basis: 64px !important;
+    width: 64px !important;
+    height: 64px !important;
   }
 }

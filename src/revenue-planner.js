@@ -346,7 +346,7 @@ function economicsPanel(raw) {
   const mode = activityModeForState(raw);
   const context = plannerActivityContext(raw, cropId);
   const econ = economics(raw);
-  const fortuneStreamLabel = mode === ACTIVITY_MODE.PEST ? 'Pest/Vacuum Coins/h' : 'Normal crop Coins/h';
+  const fortuneStreamLabel = mode === ACTIVITY_MODE.PEST_KILL ? 'Pest/Vacuum Coins/h' : 'Crop-farming Coins/h';
   return `<details class="revenue-panel revenue-economics">
     <summary class="revenue-summary">
       <div class="revenue-panel-head">
@@ -359,7 +359,7 @@ function economicsPanel(raw) {
       <label><span>RARE CROP Coins/h</span><input data-revenue-input="rareCropCoinsPerHour" type="number" min="0" step="1000" value="${Number(econ.rareCropCoinsPerHour || 0)}"></label>
       <label><span>Computed Overbloom</span><input type="number" readonly value="${Number(context.currentOverbloom || 0)}"></label>
     </div>
-    <p class="revenue-help">Farm and Pest keep separate Coins/h baselines. Fortune and Overbloom are read from the active ${esc(activityLabel(mode))}; switching sets no longer reuses the other set's economics.</p>
+    <p class="revenue-help">Farming, Spawning and Killing keep separate Coins/h baselines. Fortune and Overbloom are read from the active ${esc(activityLabel(mode))}; switching sets no longer reuses the other set's economics.</p>
     ${measuredPanel(raw, context)}
   </details>`;
 }

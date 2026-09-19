@@ -54,7 +54,7 @@ test('restoring an older backup migrates it to the current schema', () => {
   });
   const result = validateBackupPayload(legacy);
   assert.equal(result.sourceSchemaVersion, 1);
-  assert.deepEqual(result.applied, [2, 3, 4, 5]);
+  assert.deepEqual(result.applied, [2, 3, 4, 5, 6, 7, 8]);
   assert.equal(result.state.schemaVersion, DATA_SCHEMA_VERSION);
   assert.equal(result.state.profile.cropProgress.melon.levels[CROP_UPGRADE_ID], 6);
   assert.equal(result.state.profile.normalizedSnapshot, null);

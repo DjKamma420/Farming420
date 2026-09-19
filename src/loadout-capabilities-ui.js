@@ -1,6 +1,8 @@
 import { STORAGE_KEY } from './config.js';
 import { UPGRADES } from './data.js';
-import { ACTIVITY_MODE, activityModeForState, isVacuumItemEntry } from './activity-mode.js';
+import { ACTIVITY_MODE, isVacuumItemEntry, setActivityModeOnState } from './activity-mode.js';
+import { computeStatTotals } from './computed-stats.js';
+import { applySnapshotToProgress } from './snapshot-apply.js';
 import {
   FARMING_REFORGES_BY_FAMILY,
   VACUUM_REFORGE_EFFECT_ENTRY_IDS,
@@ -141,6 +143,7 @@ function vacuumLevel(bucket, item) {
 
 function writeVacuumEntry(item, patch) {
   const raw = load();
+  const totalPestFortune = Number(killStats.globalFortune || 0) + Number(killStats.pestFortune || 0);
   const bucket = ensureVacuumBucket(raw);
   Object.assign(bucket.levels, patch.levels || {});
   Object.assign(bucket.owned, patch.owned || {});
@@ -157,35 +160,38 @@ function writeVacuumReforge(reforgeId) {
   const bucket = ensureVacuumBucket(raw);
   applyVacuumReforge(bucket, reforgeId || null);
   save(raw);
-  window.location.reload();
+  window.dispatchEvent(new Event('farming420:state-changed'));
+}
+
+function statsForMode(raw, cropId, mode) {
+  const scoped = typeof structuredClone === 'function'
+    ? structuredClone(raw)
+    : JSON.parse(JSON.stringify(raw));
+  setActivityModeOnState(scoped, mode);
+  scoped.profile ||= {};
+  scoped.profile.lastApply = applySnapshotToProgress(scoped, scoped.profile.normalizedSnapshot || {});
+  return computeStatTotals(scoped, cropId, mode);
 }
 
 function renderVacuumSurface(raw) {
-  if (raw.page !== 'tools' || activityModeForState(raw) !== ACTIVITY_MODE.PEST) return;
+  // The normal crop tool is shared by Farming and Spawning and stays on Tools.
+  // Vacuum is a Killing-only Pest concern, so configure it on the Pests page
+  // without changing the shared Tools workspace.
+  if (raw.page !== 'pests') return;
   const content = document.querySelector('.content');
   if (!content) return;
-
-  content.querySelector('[data-tool-editor]')?.setAttribute('hidden', '');
-  content.querySelectorAll('.card-grid').forEach(grid => grid.setAttribute('hidden', ''));
-  content.querySelectorAll('.section-row').forEach(row => {
-    if (row.querySelector('h2')?.textContent?.includes('Every scored tool entry')) row.setAttribute('hidden', '');
-  });
-
-  const title = content.querySelector('.page-head h1');
-  const description = content.querySelector('.page-head p');
-  if (title && title.textContent !== 'Vacuum') title.textContent = 'Vacuum';
-  if (description && description.textContent !== 'Pest Set uses the Vacuum layer instead of the crop farming tool.') {
-    description.textContent = 'Pest Set uses the Vacuum layer instead of the crop farming tool.';
-  }
 
   let panel = content.querySelector('[data-vacuum-panel]');
   if (!panel) {
     panel = document.createElement('div');
     panel.dataset.vacuumPanel = '1';
-    panel.className = 'item-editor rarity-unknown';
+    panel.className = 'item-editor pest-loadout-panel rarity-unknown';
     content.querySelector('.page-head')?.insertAdjacentElement('afterend', panel);
   }
 
+  const cropId = raw.selectedCrop || 'melon';
+  const spawnStats = statsForMode(raw, cropId, ACTIVITY_MODE.PEST_SPAWN);
+  const killStats = statsForMode(raw, cropId, ACTIVITY_MODE.PEST_KILL);
   const bucket = ensureVacuumBucket(raw);
   const reforge = selectedVacuumReforge(bucket);
   // If an old build left Beady's scored flag enabled while Buzzing was selected,
@@ -193,27 +199,53 @@ function renderVacuumSurface(raw) {
   if (bucket.reforge && reforge) applyVacuumReforge(bucket, reforge);
   const reforgeEntries = new Set(Object.values(VACUUM_REFORGE_EFFECT_ENTRY_IDS).filter(Boolean));
   const entries = UPGRADES.filter(isVacuumItemEntry).filter(item => !reforgeEntries.has(item.id));
-  const signature = `${reforge || ''}|${entries.map(item => `${item.id}:${vacuumLevel(bucket, item)}`).join('|')}`;
+  const signature = [
+    reforge || '',
+    spawnStats.effectiveFortune,
+    spawnStats.bonusPestChance,
+    totalPestFortune,
+    killStats.pestFortune,
+    killStats.overbloom,
+    entries.map(item => `${item.id}:${vacuumLevel(bucket, item)}`).join('|'),
+  ].join('|');
   if (panel.dataset.signature === signature) return;
   panel.dataset.signature = signature;
 
   panel.innerHTML = `
     <header class="item-editor-head">
-      <div class="item-portrait"><span class="item-portrait-fallback">VA</span></div>
-      <div class="item-identity"><div class="eyebrow">Pest Set</div><strong class="item-title">Vacuum</strong><span class="item-rarity">Used instead of the farming tool</span></div>
+      <div class="item-portrait"><span class="item-portrait-fallback">PE</span></div>
+      <div class="item-identity"><div class="eyebrow">Pest loadouts</div><strong class="item-title">Spawning + Killing totals</strong><span class="item-rarity">Shared values stay shared; only the loadout-specific gear and Vacuum differ.</span></div>
     </header>
+    <section class="pest-loadout-stats" aria-label="Pest loadout totals">
+      <div class="pest-loadout-stat"><span>Spawning Farming Fortune</span><strong>${Number(spawnStats.effectiveFortune || 0).toLocaleString('en-US')}</strong></div>
+      <div class="pest-loadout-stat"><span>Bonus Pest Chance</span><strong>${Number(spawnStats.bonusPestChance || 0).toLocaleString('en-US')}</strong></div>
+      <div class="pest-loadout-stat"><span>Total Pest Fortune</span><strong>${totalPestFortune.toLocaleString('en-US')}</strong><small>Global + Pest-only (+${Number(killStats.pestFortune || 0).toLocaleString('en-US')})</small></div>
+      <div class="pest-loadout-stat"><span>Pest Overbloom</span><strong>${Number(killStats.overbloom || 0).toLocaleString('en-US')}</strong></div>
+    </section>
     <section class="item-editor-section">
-      <div class="section-row"><div><h3>Vacuum reforge</h3><p>A Vacuum can have exactly one reforge. Beady gives Pest-only Farming Fortune; Buzzing is the damage reforge.</p></div></div>
-      <div class="workspace-choice-list">
-        ${FARMING_REFORGES_BY_FAMILY.vacuum.map(option => `<label class="workspace-choice ${option.id === reforge ? 'selected' : ''}">
-          <input type="radio" name="vacuum-reforge" value="${esc(option.id)}" ${option.id === reforge ? 'checked' : ''}>
-          <span class="workspace-radio"></span>
-          <span class="workspace-choice-copy"><strong>${esc(option.name)}</strong><small>${esc(option.stone || '')}</small><em>${option.id === 'beady' ? '+100 Farming Fortune on Pests' : 'Doubles Vacuum damage'}</em></span>
-        </label>`).join('')}
+      <div class="section-row"><div><h3>Vacuum · Killing only</h3><p>The Vacuum belongs to the Killing loadout. It does not replace the shared crop Tool on the Tools page.</p></div></div>
+    </section>
+    <section class="item-editor-section">
+      <div class="section-row"><div><h3>Vacuum reforge</h3><p>A Vacuum can have exactly one reforge. Beady contributes to the Killing Pest Fortune total; Buzzing is the damage reforge.</p></div></div>
+      <div class="sb-reforge-grid sb-reforge-grid-compact setup-reforge-grid" role="radiogroup" aria-label="Vacuum reforge">
+        ${[
+          { id: '', name: 'No reforge', stone: 'Nothing applied', itemId: '' },
+          ...FARMING_REFORGES_BY_FAMILY.vacuum,
+        ].map(option => {
+          const selected = option.id === (reforge || '');
+          const fallback = option.id ? esc(option.name.slice(0, 1).toUpperCase()) : '&ndash;';
+          return `<button type="button" class="sb-reforge-card setup-reforge-card ${selected ? 'selected' : ''} ${option.id ? '' : 'sb-reforge-none'}"
+            role="radio" aria-checked="${selected ? 'true' : 'false'}"
+            data-vacuum-reforge-choice="${esc(option.id)}" data-reforge-id="${esc(option.id)}" data-reforge-item-id="${esc(option.itemId || '')}">
+            <span class="sb-reforge-art"><span class="sb-reforge-fallback">${fallback}</span></span>
+            <span class="sb-reforge-copy"><strong>${esc(option.name)}</strong><small>${esc(option.stone || '')}</small></span>
+            <span class="sb-state-dot" aria-hidden="true"></span>
+          </button>`;
+        }).join('')}
       </div>
     </section>
     <section class="item-editor-section">
-      <div class="section-row"><div><h3>Other Vacuum values</h3><p>Only Vacuum properties belong here. Pest shards and other Pest modifiers stay in their own sections.</p></div></div>
+      <div class="section-row"><div><h3>Other Vacuum values</h3><p>Only Vacuum properties belong here. Shared Shards and other general sources remain configured once in their own sections and are included automatically when applicable.</p></div></div>
       <div class="enchant-grid">
         ${entries.map(item => {
           const level = vacuumLevel(bucket, item);
@@ -229,8 +261,9 @@ function renderVacuumSurface(raw) {
       </div>
     </section>`;
 
-  panel.querySelectorAll('input[name="vacuum-reforge"]').forEach(input => input.addEventListener('change', event => {
-    if (event.target.checked) writeVacuumReforge(event.target.value);
+  panel.querySelectorAll('[data-vacuum-reforge-choice]').forEach(button => button.addEventListener('click', event => {
+    event.preventDefault();
+    writeVacuumReforge(button.dataset.vacuumReforgeChoice || null);
   }));
   panel.querySelectorAll('[data-vacuum-toggle]').forEach(input => input.addEventListener('change', event => {
     const item = entries.find(entry => entry.id === input.dataset.vacuumToggle);

@@ -1,5 +1,5 @@
 import { CROPS, UPGRADES } from './data.js';
-import { createDefaultSetups, normalizeSetups } from './setups.js';
+import { createDefaultSetups, createSetup, normalizeSetups } from './setups.js';
 import { DATA_SCHEMA_VERSION } from './config.js';
 
 const PROGRESS_FIELDS = ['levels', 'owned', 'costs', 'manualGain'];
@@ -144,6 +144,73 @@ function migrateRenamedToolKeys(state, warnings) {
   }
 }
 
+/**
+ * Schema 5 -> 6
+ *
+ * Accessories now keep physical item-local state for Recombobulators and
+ * Enrichments. The map starts empty so existing profiles do not gain invented
+ * item upgrades during migration.
+ */
+function migrateAccessoryItemState(state) {
+  const profile = state.profile ||= {};
+  if (!profile.accessoryItems || typeof profile.accessoryItems !== 'object' || Array.isArray(profile.accessoryItems)) {
+    profile.accessoryItems = {};
+  }
+}
+
+/**
+ * Schema 6 -> 7
+ *
+ * Enrichments are not part of Farming420's farming model. Remove the obsolete
+ * per-accessory enrichment values and account-wide override while preserving
+ * Recombobulator state and its sync/manual provenance.
+ */
+function removeAccessoryEnrichmentState(state) {
+  const profile = state.profile ||= {};
+  delete profile.enrichmentSpeedOverride;
+  if (!profile.accessoryItems || typeof profile.accessoryItems !== 'object' || Array.isArray(profile.accessoryItems)) {
+    profile.accessoryItems = {};
+    return;
+  }
+  for (const itemState of Object.values(profile.accessoryItems)) {
+    if (!itemState || typeof itemState !== 'object' || Array.isArray(itemState)) continue;
+    delete itemState.enrichment;
+  }
+}
+
+/**
+ * Schema 7 -> 8
+ *
+ * Pest play now has two mechanically different gear phases: spawning and
+ * killing. The legacy `pest` setup is kept as the spawning setup so existing
+ * entered gear is preserved. A new killing setup is added empty. Custom/old
+ * setups (including Jacob Contest) are retained as data, but the activity UI
+ * exposes only the three calculation loadouts.
+ */
+function migrateThreeActivitySetups(state) {
+  const profile = state.profile ||= {};
+  const setups = normalizeSetups(profile.setups);
+
+  const farm = setups.list.find(setup => setup.id === 'normal');
+  if (farm?.name === 'Normal Farming') farm.name = 'Farming';
+
+  const spawn = setups.list.find(setup => setup.id === 'pest');
+  if (spawn?.name === 'Pest Farming') spawn.name = 'Pest Spawning';
+
+  if (!setups.list.some(setup => setup.id === 'normal')) {
+    setups.list.unshift(createSetup('normal', 'Farming'));
+  }
+  if (!setups.list.some(setup => setup.id === 'pest')) {
+    setups.list.push(createSetup('pest', 'Pest Spawning'));
+  }
+  if (!setups.list.some(setup => setup.id === 'pest-kill')) {
+    setups.list.push(createSetup('pest-kill', 'Pest Killing'));
+  }
+
+  if (!['normal', 'pest', 'pest-kill'].includes(setups.activeId)) setups.activeId = 'normal';
+  profile.setups = setups;
+}
+
 const MIGRATIONS = [
   {
     to: 2,
@@ -164,6 +231,21 @@ const MIGRATIONS = [
     to: 5,
     description: 'Move tool progress to the renamed specialised farming tools.',
     run: migrateRenamedToolKeys,
+  },
+  {
+    to: 6,
+    description: 'Add physical accessory Recombobulator and Enrichment state.',
+    run: migrateAccessoryItemState,
+  },
+  {
+    to: 7,
+    description: 'Remove obsolete accessory Enrichment state while keeping Recombobulators.',
+    run: removeAccessoryEnrichmentState,
+  },
+  {
+    to: 8,
+    description: 'Split Pest Farming into separate spawning and killing loadouts.',
+    run: migrateThreeActivitySetups,
   },
 ];
 

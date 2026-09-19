@@ -3,6 +3,7 @@ import test from 'node:test';
 import { readFileSync } from 'node:fs';
 
 import {
+  RECOMBOBULATOR_ITEM_ID,
   REFORGE_ITEM_IDS,
   TOOL_PROGRESS_ITEM_IDS,
   catalogItemById,
@@ -17,7 +18,11 @@ const catalog = [
   { id: 'RECOMBOBULATOR_3000', name: 'Recombobulator 3000', material: 'SKULL_ITEM', skin: 'c'.repeat(64) },
   { id: 'BOOSTER_COOKIE', name: 'Booster Cookie', material: 'COOKIE', skin: null },
   { id: 'MOSQUITO_SHARD', name: 'Mosquito Shard', material: 'SKULL_ITEM', skin: 'd'.repeat(64) },
+  { id: 'EARTHWORM_SHARD', name: 'Earthworm Shard', material: 'SKULL_ITEM', skin: '2'.repeat(64) },
+  { id: 'FIREFLY_SHARD', name: 'Firefly Shard', material: 'SKULL_ITEM', skin: '3'.repeat(64) },
+  { id: 'LUNAR_MOTH_SHARD', name: 'Lunar Moth Shard', material: 'SKULL_ITEM', skin: '4'.repeat(64) },
   { id: 'FERMENTO_ARTIFACT', name: 'Fermento Artifact', material: 'SKULL_ITEM', skin: 'e'.repeat(64) },
+  { id: 'POWER_RELIC', name: 'Relic of Power', material: 'SKULL_ITEM', skin: '1'.repeat(64) },
 ];
 
 test('official item ids resolve exactly and never through substring collisions', () => {
@@ -42,9 +47,66 @@ test('tool progression resolves Recombobulator as a physical item', () => {
   assert.ok(skinTextureUrl(catalogItemById(catalog, 'RECOMBOBULATOR_3000')).endsWith('c'.repeat(64)));
 });
 
+test('every Recombobulator selector gets the same physical item visual aid', () => {
+  const source = readFileSync(new URL('../src/item-art-coverage.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../src/item-art-coverage.css', import.meta.url), 'utf8');
+
+  assert.equal(RECOMBOBULATOR_ITEM_ID, 'RECOMBOBULATOR_3000');
+  assert.match(source, /\[data-accessory-recomb\]/);
+  assert.match(source, /\[data-slot-recomb\]/);
+  assert.match(source, /\[data-vacuum-recomb\]/);
+  assert.match(source, /\[data-tool-recomb\]/);
+  assert.match(source, /function decorateRecombobulatorControls/);
+  assert.match(source, /decorateRecombobulatorControls\(items\)/);
+  assert.match(css, /\.recombobulator-choice-copy[\s\S]*?padding-left:\s*52px/);
+  assert.match(css, /\.recombobulator-choice-copy > \.coverage-item-art[\s\S]*?width:\s*40px/);
+});
+
+test('known accessory and equipment ids get exact art while live Hypixel skin still wins', () => {
+  const accessoryFallback = skinTextureUrl({ id: 'HELIANTHUS_RELIC', skin: null });
+  assert.ok(accessoryFallback.endsWith('2e6c711f74f92bcbe486ec7e67810a16f0d1eaaac39b80d7a650cd81d611a2e7'));
+
+
+  const fallback = skinTextureUrl({ id: 'BLOSSOM_CLOAK', skin: null });
+  assert.ok(fallback.endsWith('8453a8084b7773c1b2bb6213901da8cfb50de5e5d0c8c524ff4fad0e182ea68b'));
+
+  const live = 'f'.repeat(64);
+  assert.ok(skinTextureUrl({ id: 'BLOSSOM_CLOAK', skin: live }).endsWith(live));
+});
+
 test('invalid skin hashes are never emitted as remote texture urls', () => {
   assert.equal(skinTextureUrl({ skin: 'not-a-hash' }), null);
   assert.equal(skinTextureUrl({}), null);
+});
+
+test('armor uses the item model before any same-set pack stand-in', () => {
+  const source = readFileSync(new URL('../src/item-art-coverage.js', import.meta.url), 'utf8');
+  const armorGuard = source.indexOf('if (isArmorItem(item))');
+  const packLookup = source.indexOf('const packNode = packArtNodeFor(item, label)');
+  assert.ok(armorGuard >= 0 && packLookup > armorGuard);
+  assert.match(source, /armorItemSvgMarkup/);
+});
+
+test('catalog head art uses CSP-safe image layers for the face and hat', () => {
+  const source = readFileSync(new URL('../src/item-art-coverage.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../src/item-art-coverage.css', import.meta.url), 'utf8');
+  assert.match(source, /\['face', 'hat'\]/);
+  assert.match(source, /document\.createElement\('img'\)/);
+  assert.match(source, /layer\.src = url/);
+  assert.doesNotMatch(source, /style\.backgroundImage/);
+  assert.match(css, /\.coverage-skull-art[\s\S]*?overflow:\s*hidden/);
+  assert.match(css, /\.coverage-skull-layer[\s\S]*?width:\s*800%/);
+  assert.match(css, /\.coverage-skull-face[\s\S]*?left:\s*-100%[\s\S]*?top:\s*-100%/);
+  assert.match(css, /\.coverage-skull-hat[\s\S]*?left:\s*-500%[\s\S]*?top:\s*-100%/);
+});
+
+
+test('setup portraits have exactly one writer', () => {
+  const coverage = readFileSync(new URL('../src/item-art-coverage.js', import.meta.url), 'utf8');
+  const setupArt = readFileSync(new URL('../src/item-art-ui.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(coverage, /decorateSetupItems\(/);
+  assert.doesNotMatch(coverage, /\.slot-portrait, \[data-item-art-slot\]/);
+  assert.match(setupArt, /root\.querySelectorAll\('\.slot-portrait, \[data-item-art-slot\]'\)/);
 });
 
 test('physical progression cards resolve exact names and deliberate suffix stripping', () => {
@@ -70,6 +132,25 @@ test('physical progression cards resolve exact names and deliberate suffix strip
   assert.equal(fermento?.id, 'FERMENTO_ARTIFACT');
 });
 
+test('explicit physical item ids override display wording for accessory art', () => {
+  const relic = catalogItemForUpgrade(catalog, {
+    id: 'accessory-relic-of-power-perfect-peridot-effect',
+    physicalItemId: 'POWER_RELIC',
+    name: 'Relic of Power + Perfect Peridot effect',
+    category: 'Accessory',
+  });
+  assert.equal(relic?.id, 'POWER_RELIC');
+});
+
+test('accessory catalog cards are decorated by exact item id', () => {
+  const source = readFileSync(new URL('../src/item-art-coverage.js', import.meta.url), 'utf8');
+  assert.match(source, /function decorateAccessoryCatalog/);
+  assert.match(source, /dataset\.accessoryItemId/);
+  assert.match(source, /catalogItemById\(catalog, itemId\)/);
+  assert.match(source, /catalogRecord \|\|/);
+  assert.match(source, /decorateAccessoryCatalog\(items\)/);
+});
+
 test('abstract stat cards do not steal vaguely similar item art', () => {
   const abstract = catalogItemForUpgrade(catalog, {
     id: 'account-skill-farming-skill-level',
@@ -91,6 +172,30 @@ test('name normalization is deterministic without fuzzy substring guessing', () 
   assert.equal(normalizeItemName("Farmer’s Boots"), 'farmers boots');
 });
 
+
+test('resolved physical progression cards expose their exact item id for the rarity layer', () => {
+  const source = readFileSync(new URL('../src/item-art-coverage.js', import.meta.url), 'utf8');
+  assert.match(source, /card\.dataset\.physicalItemId\s*=\s*record\.id/);
+  assert.match(source, /delete card\.dataset\.physicalItemId/);
+});
+
+test('a physical item detail drawer reuses the same exact catalog identity', () => {
+  const source = readFileSync(new URL('../src/item-art-coverage.js', import.meta.url), 'utf8');
+  assert.match(source, /function decorateDrawer/);
+  assert.match(source, /rawState\?\.drawer/);
+  assert.match(source, /drawer\.dataset\.physicalItemId\s*=\s*record\.id/);
+  assert.match(source, /decorateDrawer\(items, rawState\)/);
+});
+
+test('reforge choices and physical tool-upgrade rows expose exact item ids for rarity backgrounds', () => {
+  const source = readFileSync(new URL('../src/item-art-coverage.js', import.meta.url), 'utf8');
+  assert.match(source, /card\.dataset\.physicalItemId\s*=\s*record\.id/);
+  assert.match(source, /row\.dataset\.physicalItemId\s*=\s*record\.id/);
+  assert.match(source, /delete row\.dataset\.physicalItemId/);
+  assert.match(source, /decorateReforges\(catalog\)/);
+  assert.match(source, /decorateToolProgression\(catalog\)/);
+});
+
 test('chip/card art is pinned directly beside its title even under redesign specificity', () => {
   const css = readFileSync(new URL('../src/item-art-coverage.css', import.meta.url), 'utf8');
   assert.match(css, /\.skyblock-redesign \.item-card \.card-head[\s\S]*?display:\s*flex\s*!important/);
@@ -98,4 +203,32 @@ test('chip/card art is pinned directly beside its title even under redesign spec
   assert.match(css, /\.skyblock-redesign \.item-card \.card-head > div[\s\S]*?flex:\s*0 1 auto\s*!important/);
   assert.match(css, /\.item-card \.card-head > \.badge:first-of-type[\s\S]*?margin-left:\s*auto\s*!important/);
   assert.match(css, /\.skyblock-redesign \.item-card \.card-portrait[\s\S]*?width:\s*42px\s*!important/);
+});
+
+
+test('legacy and combined shard labels still resolve to current physical shard art', () => {
+  const earthworm = catalogItemForUpgrade(catalog, {
+    id: 'attribute-shard-earthworm-shard-formerly-termite',
+    name: 'Earthworm Shard (formerly Termite)',
+    category: 'Attribute Shard',
+  });
+  assert.equal(earthworm?.id, 'EARTHWORM_SHARD');
+
+  const dayNight = catalogItemForUpgrade(catalog, {
+    id: 'attribute-shard-firefly-or-lunar-moth-shard',
+    name: 'Firefly or Lunar Moth shard',
+    category: 'Attribute Shard',
+  });
+  assert.equal(dayNight?.id, 'FIREFLY_SHARD');
+  assert.ok(skinTextureUrl(dayNight).endsWith('3'.repeat(64)));
+});
+
+test('the Shards page reserves a large portrait surface for physical shard art', () => {
+  const app = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../src/item-art-coverage.css', import.meta.url), 'utf8');
+  assert.match(app, /section === 'shards' \? 'card-grid shard-gallery'/);
+  assert.match(app, /card-portrait\$\{isShard \? ' shard-portrait' : ''\}/);
+  assert.match(app, /item\.attribute \? badge\(item\.attribute, 'soft'\)/);
+  assert.match(css, /\.shard-gallery \.shard-card \.shard-portrait[\s\S]*?width:\s*76px\s*!important/);
+  assert.match(css, /\.shard-gallery \.shard-card \.shard-portrait > \.coverage-item-art[\s\S]*?width:\s*88%/);
 });
