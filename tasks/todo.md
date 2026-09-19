@@ -2344,3 +2344,40 @@ Verified by breaking it on purpose: three of the original mistakes put back,
 two tests fail, file restored.
 
 892 node + 7 python tests.
+## 0.40.0 -- the Greenhouse yield table
+
+- [x] Surface the 55 sourced loot multipliers
+- [x] Keep base crops and mutations apart
+- [x] Claim no Coins/h
+
+### Review
+
+`greenhouse-model.js` held the live loot multipliers from the August 20, 2026
+balance patch, the Garden level that unlocks the Greenhouse, its 10x10 grid,
+the 72-hour base-crop decay window and three announced-but-unreleased changes
+-- all sourced, and reached by nothing. The Sowdust mode meanwhile filtered
+upgrades by the words "sowdust" or "greenhouse".
+
+**No Coins/h is claimed**, and that is the model's own position: those
+multipliers "are NOT sufficient to infer a plant's base harvest amount, growth
+duration, water requirement, mutation spread chance, or minigame outcome". Each
+of those would be needed. What the page gets instead is the true and useful
+half: the ranked table, the rules with their numbers, and the announced changes
+marked as not scored.
+
+**Base crops and mutations are two lists.** A base crop is what you plant, a
+mutation is what you hope spreads, and their ranges do not overlap -- the best
+base crop is x0.29 and the best mutation is x25. One list would have read as
+advice to plant Snoozling.
+
+**The decay boundary keeps the model's refusal.** Exactly 72 hours returns
+`boundary`, not rounded into safe or decayed, because the model will not guess
+server tick order at the instant the timer expires. The panel says so in words.
+
+### Verified
+
+794 node + 7 python tests, overlay audit at 0 findings, planner sweep clean,
+startup smoke test passing, and driven in a browser at 1280px and 412px: one
+panel, 53 plants, 3 facts, 3 announced changes, the decay read-out answering
+Still growing / boundary / Decayed / unknown for 10, 72, 100 and empty hours,
+no sideways scroll, and no panel at all in the other modes.

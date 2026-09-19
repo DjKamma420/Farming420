@@ -3,6 +3,14 @@ import { STORAGE_KEY } from './config.js';
 import { toolKeyForCropId } from './migrations.js';
 import { activityModeForState } from './activity-mode.js';
 import { contestEstimate } from './contest-estimate.js';
+import {
+  DECAY_STATE_WORDS,
+  GREENHOUSE_FACTS,
+  GREENHOUSE_UPCOMING,
+  decayStateFor,
+  greenhousePlantsByYield,
+  greenhouseYieldRange,
+} from './greenhouse-reference.js';
 import { JACOB_BRACKETS, JACOB_PARTICIPATION_REWARD } from './jacob-contest-model.js';
 import { plannerActivityContext } from './planner-activity-context.js';
 import { PLANNER_MODES, plannerModeById, relevanceScore } from './planner-modes.js';
@@ -200,6 +208,71 @@ function refreshContestPanel(host, raw) {
     : `Still needs ${estimate.missing.join(', ')}. Measure your farm in the profit baseline above and it fills in here.`);
 }
 
+/**
+ * The Greenhouse panel.
+ *
+ * This mode filtered upgrades by the words "sowdust" or "greenhouse" while
+ * `greenhouse-model.js` held the 55 live loot multipliers from the August 20,
+ * 2026 balance patch, the unlock level, the grid size, the 72-hour decay window
+ * and three announced-but-unreleased changes -- all sourced, all unused.
+ *
+ * It produces no coins, and that is the model's own position: those
+ * multipliers "are NOT sufficient to infer a plant's base harvest amount,
+ * growth duration, water requirement, mutation spread chance, or minigame
+ * outcome". So this shows the ranked table, the rules with their numbers, and
+ * the announced changes marked as not scored -- which is the useful half, and
+ * the half that is true.
+ *
+ * Base crops and mutations are two lists, not one: a base crop is what you
+ * plant and a mutation is what you hope spreads, so ranking them together
+ * would read as advice to plant Snoozling.
+ */
+function greenhousePanelMarkup() {
+  const baseRange = greenhouseYieldRange('base-crop');
+  const mutationRange = greenhouseYieldRange('mutation');
+
+  const plantList = (kind, heading, blurb) => `<div class="greenhouse-column">
+    <h3>${esc(heading)}</h3>
+    <p class="greenhouse-blurb">${esc(blurb)}</p>
+    <div class="greenhouse-plants">
+      ${greenhousePlantsByYield(kind).map(plant => `<div class="greenhouse-plant">
+        <strong>${esc(plant.name)}</strong>
+        <span>\u00d7${plant.lootMultiplier}</span>
+      </div>`).join('')}
+    </div>
+  </div>`;
+
+  return `<section class="greenhouse-reference">
+    <div class="section-row">
+      <div>
+        <h2>Greenhouse yield table</h2>
+        <p>The live loot multipliers from the August 20, 2026 balance patch. These are
+          balance coefficients, not a harvest amount \u2014 so no Coins/h is claimed here.</p>
+      </div>
+    </div>
+    <div class="greenhouse-facts">
+      ${GREENHOUSE_FACTS.map(fact => `<div class="greenhouse-fact">
+        <strong>${esc(fact.value)}</strong><span>${esc(fact.label)}</span>
+      </div>`).join('')}
+      <label class="greenhouse-decay">
+        <span>Hours since a base crop matured</span>
+        <input data-greenhouse-hours type="number" min="0" step="1">
+        <small data-greenhouse-decay>${esc(DECAY_STATE_WORDS.unknown)}</small>
+      </label>
+    </div>
+    <div class="greenhouse-columns">
+      ${plantList('base-crop', `Base crops (${baseRange.count})`,
+        `What you plant. ${baseRange.top.name} leads at \u00d7${baseRange.top.lootMultiplier}, ${baseRange.bottom.name} trails at \u00d7${baseRange.bottom.lootMultiplier}.`)}
+      ${plantList('mutation', `Mutations (${mutationRange.count})`,
+        `What you hope spreads. ${mutationRange.top.name} at \u00d7${mutationRange.top.lootMultiplier} is ${Math.round(mutationRange.top.lootMultiplier / baseRange.top.lootMultiplier)}\u00d7 the best base crop.`)}
+    </div>
+    <div class="greenhouse-upcoming">
+      <h3>Announced, not scored</h3>
+      ${GREENHOUSE_UPCOMING.map(entry => `<p>${esc(entry.description)}</p>`).join('')}
+    </div>
+  </section>`;
+}
+
 function applyModeUI() {
   const content = document.querySelector('.content');
   const revenue = content?.querySelector('.revenue-planner-v2');
@@ -224,6 +297,21 @@ function applyModeUI() {
       <div class="planner-list planner-mode-list">${rows.length ? rows.slice(0, 40).map(rowMarkup).join('') : '<div class="empty">No active unmatched upgrades for this goal in the current crop/setup.</div>'}</div>`;
     tabs.after(panel);
     panel.querySelectorAll('[data-mode-open]').forEach(button => button.addEventListener('click', () => openItem(button.dataset.modeOpen)));
+
+    if (active.id === 'sowdust') {
+      const greenhouse = document.createElement('div');
+      greenhouse.className = 'greenhouse-reference-host';
+      greenhouse.innerHTML = greenhousePanelMarkup();
+      panel.before(greenhouse);
+      const hours = greenhouse.querySelector('[data-greenhouse-hours]');
+      // A local read-out only: nothing is stored and no render is dispatched,
+      // because the answer depends on nothing the app persists.
+      hours?.addEventListener('input', () => {
+        const typed = String(hours.value || '').trim();
+        const state = decayStateFor(typed === '' ? null : Number(typed));
+        setTextIfChanged(greenhouse.querySelector('[data-greenhouse-decay]'), DECAY_STATE_WORDS[state]);
+      });
+    }
 
     if (active.id === 'collection') {
       const contest = document.createElement('div');

@@ -58,7 +58,14 @@ async function sweepVariant(browser, label, viewport, seed) {
   p.on('crash', () => { crashed = true; });
   p.on('pageerror', e => errs.push(String(e).slice(0, 120)));
   p.on('console', m => {
-    if (m.type() === 'error' && !/ERR_TUNNEL|api\.hypixel|textures\.minecraft|favicon/.test(m.text())) {
+    // `deploy-version.json` is written by scripts/prepare-pages-deploy.js at
+      // deploy time and update-manager.js already treats a non-ok response as
+      // "no version yet", so its 404 locally is expected, not a fault.
+      // Chromium logs a bare "Failed to load resource" for a 404 and puts the
+      // URL only in the message's location, so the text alone cannot tell an
+      // expected miss from a real one.
+      const noise = /ERR_TUNNEL|api\.hypixel|textures\.minecraft|favicon|deploy-version\.json/;
+      if (m.type() === 'error' && !noise.test(m.text()) && !noise.test(m.location?.()?.url || '')) {
       errs.push(m.text().slice(0, 110));
     }
   });
@@ -119,6 +126,27 @@ async function sweepVariant(browser, label, viewport, seed) {
      * makes the difference between "no error" and "it worked".
      */
     const reached = await (async () => {
+      /**
+       * Open the navigation drawer first.
+       *
+       * The rail collapses to a 44px three-dot handle and hides its whole
+       * `<nav>` until `.nav-open` is set, so every link is 0x0 until the
+       * toggle is clicked. Without this the sweep reported *every* page as
+       * "UNREACHABLE: page exists but no visible way to open it" -- which is
+       * worse than useless, because this is the check that found the one
+       * genuinely unreachable page.
+       */
+      const openNavigation = async () => {
+        const rail = await p.$('.sidebar');
+        const open = rail && await rail.evaluate(node => node.classList.contains('nav-open'));
+        if (open) return;
+        const toggle = await p.$('[data-nav-toggle]');
+        if (!toggle) return;
+        await cap(toggle.click({ timeout: 2000 }), 3000, 'nav toggle').catch(() => {});
+        await p.waitForTimeout(250);
+      };
+      await openNavigation();
+
       /**
        * A link that is merely late is not a link that is missing, so give it a
        * bounded chance to appear before calling the page unreachable. A page
