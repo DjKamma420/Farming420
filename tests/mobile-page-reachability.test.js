@@ -46,6 +46,13 @@ test('the mobile navigation stays fixed and exposes named tabs when opened', () 
   assert.doesNotMatch(mobile, /nav-link:nth-child\([^)]*\)\s*\{[^}]*display:\s*none/);
 });
 
+test('modal drawers render above the fixed navigation rail', () => {
+  const mobile = read('src/mobile-taskbar.css');
+
+  assert.match(mobile, /\.sidebar\.sb-rail\s*\{[\s\S]*?z-index:\s*30/);
+  assert.match(mobile, /\.drawer-backdrop\s*\{[^}]*z-index:\s*40/);
+});
+
 test('content scroll is isolated from the fixed side navigation', () => {
   const redesign = read('src/skyblock-redesign.css');
 
@@ -73,7 +80,7 @@ test('collapsed rail reserves only the handle while the open rail overlays conte
 test('navigation CSS is cache-busted in the page shell', () => {
   const index = read('index.html');
   assert.match(index, /src\/skyblock-redesign\.css\?v=20260918-7/);
-  assert.match(index, /src\/mobile-taskbar\.css\?v=20260918-6/);
+  assert.match(index, /src\/mobile-taskbar\.css\?v=20260919-1/);
 });
 
 test('the setup page keeps its own direct navigation entry', () => {
