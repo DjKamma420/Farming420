@@ -61,7 +61,11 @@ async function sweepVariant(browser, label, viewport, seed) {
     // `deploy-version.json` is written by scripts/prepare-pages-deploy.js at
       // deploy time and update-manager.js already treats a non-ok response as
       // "no version yet", so its 404 locally is expected, not a fault.
-      if (m.type() === 'error' && !/ERR_TUNNEL|api\.hypixel|textures\.minecraft|favicon|deploy-version\.json/.test(m.text())) {
+      // Chromium logs a bare "Failed to load resource" for a 404 and puts the
+      // URL only in the message's location, so the text alone cannot tell an
+      // expected miss from a real one.
+      const noise = /ERR_TUNNEL|api\.hypixel|textures\.minecraft|favicon|deploy-version\.json/;
+      if (m.type() === 'error' && !noise.test(m.text()) && !noise.test(m.location?.()?.url || '')) {
       errs.push(m.text().slice(0, 110));
     }
   });

@@ -43,6 +43,7 @@ jobs:
                       AGENTS.md README.md \
                       docs/PRODUCT_SPEC.md docs/PROFILE_DATA_MATRIX.md docs/PROFILE_MODEL.md docs/MATH_MODEL.md docs/FINDING_VALUES.md \
                       docs/VERIFIED_MECHANICS.md docs/FARMING_HISTORY.md docs/RENDER_FREEZE_SAFETY.md \
+                      docs/ARCHITECTURE.md \
                       scripts/browser-startup-smoke.sh scripts/prepare-pages-deploy.js; do
             test -f "$file" || { echo "missing required file: $file"; exit 1; }
           done
