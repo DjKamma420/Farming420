@@ -22,6 +22,12 @@
   margin-left: 44px;
 }
 
+/* Drawers are modal UI. They must sit above the fixed navigation rail so the
+   collapsed three-dot bar never covers drawer text or controls on phones. */
+.skyblock-redesign .drawer-backdrop {
+  z-index: 40;
+}
+
 .skyblock-redesign .nav-toggle {
   flex: 0 0 36px;
   width: 36px;
