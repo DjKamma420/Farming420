@@ -176,7 +176,7 @@ Source: https://hypixel.net/threads/may-14-harvest-feast-changes.6096831/
 
 Normal Pests have 600 HP in the current Pest reference. Ideal uninterrupted vacuum time is therefore `HP / damage per second`, before movement, targeting, lag, pathing, or player reaction time. This is an analytical lower bound, not a real-world handling-time assumption.
 
-Vacuum source: https://wiki.hypixel.net/Vacuums
+Vacuum source: https://hypixelskyblock.minecraft.wiki/w/Vacuums (the official wiki page this was originally taken from closed in July 2026)
 Pest-health source: https://hypixel-skyblock.fandom.com/wiki/Pest
 
 ## Runtime safety rules added by this pass

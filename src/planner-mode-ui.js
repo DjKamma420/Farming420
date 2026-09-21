@@ -262,10 +262,15 @@ function greenhousePanelMarkup() {
     </div>
     <div class="greenhouse-columns">
       ${plantList('base-crop', `Base crops (${baseRange.count})`,
-        `What you plant. ${baseRange.top.name} leads at \u00d7${baseRange.top.lootMultiplier}, ${baseRange.bottom.name} trails at \u00d7${baseRange.bottom.lootMultiplier}.`)}
+        `What you plant. Sorted by loot multiplier, from \u00d7${baseRange.top.lootMultiplier} down to \u00d7${baseRange.bottom.lootMultiplier}.`)}
       ${plantList('mutation', `Mutations (${mutationRange.count})`,
-        `What you hope spreads. ${mutationRange.top.name} at \u00d7${mutationRange.top.lootMultiplier} is ${Math.round(mutationRange.top.lootMultiplier / baseRange.top.lootMultiplier)}\u00d7 the best base crop.`)}
+        `What you hope spreads. Sorted by loot multiplier, from \u00d7${mutationRange.top.lootMultiplier} down to \u00d7${mutationRange.bottom.lootMultiplier}.`)}
     </div>
+    <p class="greenhouse-caveat">This is one axis, not a ranking. A high multiplier
+      can be offset by growth duration, layout requirements, spread chance,
+      water and minigame upkeep, opportunity cost, the plant\u2019s own base loot
+      table, decay risk and what you are actually farming for \u2014 so the top row
+      is the biggest multiplier, not the best plant.</p>
     <div class="greenhouse-upcoming">
       <h3>Announced, not scored</h3>
       ${GREENHOUSE_UPCOMING.map(entry => `<p>${esc(entry.description)}</p>`).join('')}

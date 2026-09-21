@@ -36,12 +36,17 @@ export const VACUUM_BOOKWORM_BOOK = Object.freeze({
   cropScope: 'Any',
   status: 'ACTIVE',
   max: 5,
-  stepGain: 10,
+  stepGain: 20,
   manualDefault: null,
-  rawMarginal: 10,
+  rawMarginal: 20,
   hypercharge: false,
-  notes: 'Item-local Vacuum modifier. Up to 5 books; each grants +10 Vacuum Damage. It does not grant Farming Fortune.',
-  source: 'https://wiki.hypixel.net/Earthworm',
+  notes: 'Item-local Vacuum modifier. Up to 5 books; each grants +20 Vacuum Damage, +100 at five. It does not grant Farming Fortune.',
+  // 0.27 doubled this from +10 to +20 per application. The old value shipped
+  // here with a `lastVerified` of the same day research/VACUUM_RESEARCH.md
+  // recorded the correction, sourced to a `wiki.hypixel.net` page that has
+  // been closed since July 2026 -- and to the Earthworm page, which is not
+  // where this book is documented in the first place.
+  source: 'https://hypixelskyblock.minecraft.wiki/w/Bookworm%27s_Favorite_Book',
   lastVerified: '2026-09-17',
   workbookRank: null,
 });

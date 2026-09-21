@@ -347,3 +347,18 @@
 @media (max-width: 650px) {
   .greenhouse-facts { grid-template-columns: 1fr; }
 }
+
+/* research/knowledge-base/45-greenhouse-live-model-2026-09-17.md is explicit:
+   "Do not rank a mutation as universally best from its loot multiplier alone."
+   A sorted table implies a ranking whatever the heading says, so the caveat
+   sits with the table rather than in a footnote. */
+.greenhouse-caveat {
+  margin: 14px 0 0;
+  border: 1px solid #4a3f18;
+  background: rgba(60, 50, 16, .35);
+  color: #e8dcae;
+  padding: 10px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  line-height: 1.45;
+}

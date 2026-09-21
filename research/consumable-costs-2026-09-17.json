@@ -47,7 +47,10 @@
       "duration": {
         "base_hours": 12,
         "alchemy_scaling": "base duration gains up to +12 hours from Alchemy level; model the profile's actual duration",
-        "base_range_hours_without_other_duration_modifiers": [12, 24],
+        "base_range_hours_without_other_duration_modifiers": [
+          12,
+          24
+        ],
         "offline_rule": "God Potion playtime does not tick down while the player is offline."
       },
       "market_reference": {
@@ -81,7 +84,10 @@
         "source_b_instant_sell_coins": 13620916.7,
         "source_b_instant_buy_coins": 13731771.2,
         "source_b": "https://www.skyblock.bz/product/BOOSTER_COOKIE",
-        "observed_instant_buy_band_coins": [12250000, 13731771.2],
+        "observed_instant_buy_band_coins": [
+          12250000,
+          13731771.2
+        ],
         "fallback_mid_band_reference_coins": 12990885.6,
         "confidence": "VOLATILE_CROSS_SOURCE"
       },
@@ -169,8 +175,10 @@
       "use": "God Potion recent AH distribution"
     },
     {
-      "url": "https://wiki.hypixel.net/SkyBlock_Version/3989053",
-      "use": "God Potion 12h base, up to +12h from Alchemy, 1,500 Bits"
+      "use": "God Potion 12h base, up to +12h from Alchemy, 1,500 Bits",
+      "retiredUrl": "https://wiki.hypixel.net/SkyBlock_Version/3989053",
+      "confidence": "retired-source-needs-reverification",
+      "note": "The official wiki closed in July 2026 and this page is gone. The claim is kept because it was recorded while the page was live, but it is no longer a citable authority and needs re-verification against current patch notes or the community wiki."
     },
     {
       "url": "https://skyblock.finance/items/BOOSTER_COOKIE",

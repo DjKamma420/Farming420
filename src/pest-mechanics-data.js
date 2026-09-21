@@ -7,7 +7,9 @@ const SOURCE = Object.freeze({
   bonusPestChance: 'https://hypixel-skyblock.fandom.com/wiki/Bonus_Pest_Chance',
   pestWaresDay3: 'https://hypixel.net/threads/nov-13th-pesthunters-wares-chocolate-factory-additions-crimson-qol-and-more.5801731/',
   feastMay14: 'https://hypixel.net/threads/may-14-harvest-feast-changes.6096831/',
-  vacuums: 'https://wiki.hypixel.net/Vacuums',
+  // The official wiki closed in July 2026; the community wiki carries this
+  // page and is already the repository's cited source for it.
+  vacuums: 'https://hypixelskyblock.minecraft.wiki/w/Vacuums',
 });
 
 export const ACTIVE_PEST_SPAWN = Object.freeze({

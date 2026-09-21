@@ -705,3 +705,43 @@ The deeper finding: the diagram drew `app.js` as calling the planner, the sync
 and the stats. It calls none of them. Twenty-four modules observe `#app` and
 patch what it rendered, and the core imports not one of them. Getting that
 backwards hides why `docs/RENDER_FREEZE_SAFETY.md` exists at all.
+
+## A test can pin a wrong value in place (0.46.0)
+
+Auditing the code against the research layer found `Bookworm's Favorite Book`
+shipping `+10` Vacuum Damage. `research/VACUUM_RESEARCH.md` says, in its own
+"0.27 damage correction" section, **"+20 Damage each, not +10"**, and warns that
+"old guides are unsafe for Vacuum damage".
+
+The value did not survive by accident. Three things protected it:
+
+1. It carried `lastVerified: '2026-09-17'` -- the very day the research recorded
+   the correction. The date looked current and was attached to the old number.
+2. Its source was `https://wiki.hypixel.net/Earthworm`: a page on a wiki closed
+   since July 2026, marked `confidence: "official-high"` in the research index,
+   and the wrong page for that book in any case. A dead link cannot be
+   contradicted, so it reads as authority.
+3. **A test asserted `stepGain === 10`.** The suite that was supposed to protect
+   the value was holding it in place.
+
+Rules:
+
+- A `lastVerified` date states when someone looked, not that they looked at the
+  right thing. Compare the *value* to the research, not the date to the calendar.
+- A citation to a page that no longer exists is worse than no citation, because
+  it cannot be checked and still claims confidence. Retire it explicitly.
+- When a test and the research disagree, the research wins, and the test was
+  part of the bug.
+
+The general fix is `tests/research-agreement.test.js`: it compares the code to
+the research layer rather than to itself, and walks every `source`/`url` field
+instead of the four filenames someone remembered to guard.
+
+## Assertions that forbid their own disclaimer (0.46.0)
+
+Twice in two days I wrote a test asserting a page must not contain a phrase, and
+the page's own honest caveat contained it: `Coins/h` in "no Coins/h is claimed",
+and "best plant" in "the top row is the biggest multiplier, not the best plant".
+
+Rule: assert the *claim*, not the words. If the wording that makes a page honest
+would fail the check, the check is wrong.
