@@ -200,31 +200,26 @@ function statsForMode(raw, cropId, mode) {
 }
 
 function renderVacuumSurface(raw) {
-  // Vacuum is a physical tool. Configure it beside the crop tools; Pest pages
-  // only analyze the configured build and never own a second copy of it.
+  // Vacuum is a physical tool. Configure it in the same expandable picker as
+  // the crop tools; Pest pages only analyze this stored build.
   if (raw.page !== 'tools') return;
   const content = document.querySelector('.content');
   if (!content) return;
 
-  const anchor = content.querySelector('.sb-tool-picker')
+  const anchor = content.querySelector('[data-sb-vacuum]')
+    || content.querySelector('.sb-tool-picker')
     || content.querySelector('[data-tool-editor="1"]')
     || content.querySelector('.page-head');
   let panel = content.querySelector('[data-vacuum-panel]');
   if (!panel) {
     panel = document.createElement('div');
     panel.dataset.vacuumPanel = '1';
-    panel.className = 'item-editor pest-loadout-panel rarity-unknown';
+    panel.className = 'item-editor pest-loadout-panel rarity-unknown sb-docked-editor sb-tool-editor-collapsed';
     anchor?.insertAdjacentElement('afterend', panel);
-  } else if (anchor && panel.previousElementSibling !== anchor) {
-    anchor.insertAdjacentElement('afterend', panel);
   }
 
   const cropId = raw.selectedCrop || 'melon';
   const killStats = statsForMode(raw, cropId, ACTIVITY_MODE.PEST_KILL);
-  // Declared here, beside the stats it reads. It had been written into
-  // `writeVacuumEntry`, which has no `killStats` -- so the render threw
-  // "totalPestFortune is not defined" and this panel never appeared, while
-  // every save of a Vacuum entry threw "killStats is not defined".
   const totalPestFortune = Number(killStats.globalFortune || 0) + Number(killStats.pestFortune || 0);
   const bucket = ensureVacuumBucket(raw);
   const reforge = selectedVacuumReforge(bucket);
@@ -246,19 +241,8 @@ function renderVacuumSurface(raw) {
   panel.dataset.signature = signature;
 
   panel.innerHTML = `
-    <header class="item-editor-head">
-      <div class="item-portrait"><span class="item-portrait-fallback">PE</span></div>
-      <div class="item-identity"><div class="eyebrow">Vacuum</div><strong class="item-title">Pest Vacuum</strong><span class="item-rarity">Physical killing tool for Pest loadouts.</span></div>
-    </header>
-    <section class="pest-loadout-stats" aria-label="Vacuum Pest totals">
-      <div class="pest-loadout-stat"><span>Total Pest Fortune</span><strong>${totalPestFortune.toLocaleString('en-US')}</strong><small>Global + Pest-only (+${Number(killStats.pestFortune || 0).toLocaleString('en-US')})</small></div>
-      <div class="pest-loadout-stat"><span>Pest Overbloom</span><strong>${Number(killStats.overbloom || 0).toLocaleString('en-US')}</strong></div>
-    </section>
-    <section class="item-editor-section">
-      <div class="section-row"><div><h3>Vacuum · Pest killing tool</h3><p>Choose and upgrade the physical Vacuum here. The Pests page uses this exact build for kill calculations.</p></div></div>
-    </section>
-    <section class="item-editor-section">
-      <div class="section-row"><div><h3>Vacuum reforge</h3><p>A Vacuum can have exactly one reforge. Beady contributes to the Killing Pest Fortune total; Buzzing is the damage reforge.</p></div></div>
+    <section class="item-editor-section sb-reforge-panel" data-vacuum-section="reforge">
+      <div class="sb-block-title"><div><span class="eyebrow">Reforge</span><h3>Pick what is actually on the Vacuum</h3><p>A Vacuum carries exactly one Vacuum reforge.</p></div></div>
       <div class="sb-reforge-grid sb-reforge-grid-compact setup-reforge-grid" role="radiogroup" aria-label="Vacuum reforge">
         ${[
           { id: '', name: 'No reforge', stone: 'Nothing applied', itemId: '' },
@@ -276,10 +260,17 @@ function renderVacuumSurface(raw) {
         }).join('')}
       </div>
     </section>
-    <section class="item-editor-section">
+    <section class="item-editor-section" data-vacuum-section="upgrades">
       <div class="workspace-section-head"><div><h3>Vacuum upgrades</h3><p>Use the same 0-to-max progression controls as the farming tools. Zero means the upgrade is not applied.</p></div></div>
       <div class="workspace-level-list">
         ${entries.map(item => vacuumUpgradeRow(bucket, item)).join('') || '<p class="hint">No other modeled Vacuum values are available yet.</p>'}
+      </div>
+    </section>
+    <section class="item-editor-section" data-vacuum-section="totals">
+      <div class="workspace-section-head"><div><h3>Pest totals</h3><p>Calculated from the configured Vacuum and the active Killing setup.</p></div></div>
+      <div class="pest-loadout-stats" aria-label="Vacuum Pest totals">
+        <div class="pest-loadout-stat"><span>Total Pest Fortune</span><strong>${totalPestFortune.toLocaleString('en-US')}</strong><small>Global + Pest-only (+${Number(killStats.pestFortune || 0).toLocaleString('en-US')})</small></div>
+        <div class="pest-loadout-stat"><span>Pest Overbloom</span><strong>${Number(killStats.overbloom || 0).toLocaleString('en-US')}</strong></div>
       </div>
     </section>`;
 
