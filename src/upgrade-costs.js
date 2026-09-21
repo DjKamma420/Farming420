@@ -439,8 +439,8 @@ export const UPGRADE_COSTS = Object.freeze({
   },
   "pet-switch-to-best-farming-pet": {
     "coins": null,
-    "reason": "earned rather than bought; no time or progression figure is researched yet",
-    "unit": "time"
+    "reason": "no price research is linked to this entry yet",
+    "unit": null
   },
   "temporary-atmospheric-filter-spring": {
     "coins": null,
