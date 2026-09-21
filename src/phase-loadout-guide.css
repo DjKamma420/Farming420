@@ -1,0 +1,100 @@
+/* The Setups page shows three tabs and said nothing about what belongs in them
+   -- and three empty wardrobes imply you need three, which the research
+   explicitly denies. */
+.phase-guide {
+  border: 1px solid rgba(125, 160, 134, .28);
+  background: rgba(10, 18, 13, .76);
+  padding: 16px;
+  border-radius: 6px;
+  margin: 16px 0 20px;
+}
+
+.phase-guide-tier {
+  display: grid;
+  gap: 5px;
+  color: #9fb0a3;
+  font-size: 12px;
+  font-weight: 800;
+  min-width: 0;
+}
+
+.phase-guide-tier select {
+  border: 1px solid #3c5142;
+  background: #07100a;
+  color: #edf7ef;
+  padding: 8px 10px;
+  border-radius: 4px;
+  font: inherit;
+  font-weight: 400;
+  min-width: 0;
+}
+
+.phase-guide-rows {
+  display: grid;
+  gap: 6px;
+}
+
+.phase-guide-row {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 12px;
+  border: 1px solid #23322a;
+  background: #0b130d;
+  border-radius: 4px;
+  padding: 9px 11px;
+  min-width: 0;
+}
+
+.phase-guide-row strong {
+  color: #9fd8b1;
+  font-size: 12px;
+}
+
+.phase-guide-row span {
+  color: #edf7ef;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+/* The count is the correction this panel exists to make, so it is the line
+   that gets emphasis. */
+.phase-guide-baseline {
+  margin-top: 12px;
+  border: 1px solid #2c3d31;
+  border-left: 3px solid #7fbf96;
+  background: #0b130d;
+  border-radius: 4px;
+  padding: 10px 12px;
+  min-width: 0;
+}
+
+.phase-guide-baseline strong {
+  display: block;
+  color: #edf7ef;
+  font-size: 14px;
+}
+
+.phase-guide-baseline span {
+  display: block;
+  color: #8fa294;
+  font-size: 12px;
+  margin-top: 3px;
+  line-height: 1.45;
+}
+
+.phase-guide-note {
+  margin: 10px 0 0;
+  color: #8fa294;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.phase-guide-note a { color: #7fbf96; }
+
+.phase-guide [data-phase-copy-armor] {
+  margin-top: 12px;
+}
+
+@media (max-width: 650px) {
+  .phase-guide-row { grid-template-columns: 1fr; gap: 3px; }
+}

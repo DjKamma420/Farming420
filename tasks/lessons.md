@@ -745,3 +745,30 @@ and "best plant" in "the top row is the biggest multiplier, not the best plant".
 
 Rule: assert the *claim*, not the words. If the wording that makes a page honest
 would fail the check, the check is wrong.
+
+## Assert the claim, not the words -- third time (0.48.0)
+
+For the third time I wrote `assert.doesNotMatch(source, /<phrase>/)` and the
+module's own honest explanation contained that phrase: "you need three" inside
+a comment saying the research denies exactly that.
+
+This is now a helper, `withoutComments()`, and the rule is written down where I
+will hit it: **a check that forbids a phrase must strip comments first**, or it
+forbids the sentence that makes the code honest. Three occurrences is no longer
+a slip; it is a habit I have to design around rather than remember.
+
+## Import the mapping, do not rebuild it -- also third time (0.48.0)
+
+The phase setup ids are not the phase names: Farming is stored as `normal` and
+Spawning as `pest`. I wrote `mode === FARM ? 'normal' : mode`, which produces
+`pest-spawn` for a setup that is actually called `pest` -- so the Spawning phase
+silently rendered the *Farming* loadout. A browser probe caught it; no unit test
+would have, because the lookup simply returned nothing and the code fell back.
+
+`setupIdForActivity` was exported the whole time. Same shape as the two rarity
+ladders, the two taskbar rules, the two pest tables and the two profit-engine
+adapters.
+
+Rule, now with a concrete trigger: **when I am about to write a mapping from one
+of the app's own enums to one of the app's own ids, that mapping already
+exists.** Grep for a function that returns the id before writing the ternary.
