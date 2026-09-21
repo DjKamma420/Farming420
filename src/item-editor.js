@@ -75,19 +75,64 @@ export function slotKind(slotId) {
 
 /** Display names. Identifiers are storage; nobody should have to read them. */
 export const ENCHANT_LABELS = Object.freeze({
+  aqua_affinity: 'Aqua Affinity',
+  bank: 'Bank',
+  big_brain: 'Big Brain',
+  blast_protection: 'Blast Protection',
+  bobbin_time: "Bobbin' Time",
   bug_blender: 'Bug Blender',
+  cayenne: 'Cayenne',
+  counter_strike: 'Counter-Strike',
   crop_fever: 'Crop Fever',
   cultivating: 'Cultivating',
   dedication: 'Dedication',
   delicate: 'Delicate',
+  depth_strider: 'Depth Strider',
   feast: 'Feast',
+  feather_falling: 'Feather Falling',
+  ferocious_mana: 'Ferocious Mana',
+  fire_protection: 'Fire Protection',
+  forest_pledge: 'Forest Pledge',
   green_thumb: 'Green Thumb',
+  growth: 'Growth',
+  habanero_tactics: 'Habanero Tactics',
+  hardened_mana: 'Hardened Mana',
+  hardened_vitality: 'Hardened Vitality',
   harvesting: 'Harvesting',
+  hecatomb: 'Hecatomb',
+  ice_cold: 'Ice Cold',
+  last_stand: 'Last Stand',
+  legion: 'Legion',
+  mana_vampire: 'Mana Vampire',
+  no_pain_no_gain: 'No Pain No Gain',
   pesterminator: 'Pesterminator',
+  projectile_protection: 'Projectile Protection',
+  prosperity: 'Prosperity',
+  protection: 'Protection',
+  quantum: 'Quantum',
+  reflection: 'Reflection',
+  refrigerate: 'Refrigerate',
+  rejuvenate: 'Rejuvenate',
   replenish: 'Replenish',
+  respiration: 'Respiration',
+  respite: 'Respite',
+  scuba: 'Scuba',
+  small_brain: 'Small Brain',
+  smarty_pants: 'Smarty Pants',
+  stealth: 'Stealth',
+  strong_mana: 'Strong Mana',
+  strong_vitality: 'Strong Vitality',
+  sugar_rush: 'Sugar Rush',
   sunset: 'Sunset',
+  the_one: 'The One',
   thorns: 'Thorns',
+  tidal: 'Tidal',
+  transylvanian: 'Transylvanian',
+  true_protection: 'True Protection',
   turbo_crop: 'Turbo-Crop',
+  vampiric_vitality: 'Vampiric Vitality',
+  vivacious_vitality: 'Vivacious Vitality',
+  wisdom: 'Wisdom',
 });
 
 export function enchantLabel(enchantId) {
@@ -134,15 +179,18 @@ export function enchantRowsFor(slotId, item) {
   const covered = new Set();
 
   for (const [id, meta] of Object.entries(VERIFIED_FARMING_ENCHANT_META)) {
-    if (!kind || !meta.appliesTo.includes(kind)) continue;
+    if (!kind || (!meta.appliesTo.includes(kind) && !meta.appliesTo.includes(slotId))) continue;
     covered.add(id);
     const { level, storageKey } = storedEnchant(enchantments, id);
     rows.push({
       id,
       storageKey,
       label: enchantLabel(id),
+      minLevel: meta.minLevel,
       maxLevel: meta.maxLevel,
+      trueMaxLevel: meta.trueMaxLevel,
       kind: meta.kind,
+      conflicts: meta.conflicts,
       level,
       active: level > 0,
       known: true,
@@ -169,8 +217,11 @@ export function enchantRowsFor(slotId, item) {
       id: key,
       storageKey: key,
       label: enchantLabel(key),
+      minLevel: 1,
       maxLevel: null,
+      trueMaxLevel: null,
       kind: 'normal',
+      conflicts: Object.freeze([]),
       level,
       active: true,
       known: false,
@@ -196,15 +247,30 @@ function clampLevel(level, maxLevel) {
 export function withEnchantToggled(item, enchantId, on) {
   const next = { ...(item?.enchantments || {}) };
   const id = String(enchantId);
+  const canonical = canonicalEnchantId(id);
+  const meta = VERIFIED_FARMING_ENCHANT_META[canonical] || null;
   if (!on) {
     delete next[id];
-    // A canonical toggle also clears the crop-specific keys it stands for.
+    // A canonical toggle also clears the crop-specific/ultimate-prefixed key it
+    // stands for.
     for (const key of Object.keys(next)) {
-      if (canonicalEnchantId(key) === canonicalEnchantId(id)) delete next[key];
+      if (canonicalEnchantId(key) === canonical) delete next[key];
     }
     return next;
   }
-  if (!(Number(next[id]) > 0)) next[id] = 1;
+
+  // Applying an incompatible enchantment replaces its peer instead of allowing
+  // the editor to save a combination the game rejects.
+  const incompatible = new Set(meta?.conflicts || []);
+  for (const key of Object.keys(next)) {
+    const existing = canonicalEnchantId(key);
+    const existingMeta = VERIFIED_FARMING_ENCHANT_META[existing] || null;
+    if (incompatible.has(existing) || (meta?.kind === 'ultimate' && existingMeta?.kind === 'ultimate' && existing !== canonical)) {
+      delete next[key];
+    }
+  }
+
+  if (!(Number(next[id]) > 0)) next[id] = meta?.minLevel || 1;
   return next;
 }
 
