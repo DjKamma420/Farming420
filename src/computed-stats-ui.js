@@ -78,8 +78,13 @@ function replaceCropInput(raw) {
   const label = input.closest('label');
   if (!label) return;
   const missing = stats.incomplete.cropFortune.length;
+  const sourceCount = Number(stats.sourceCount?.cropFortune || 0);
   label.className = 'inline-output computed-crop-output';
-  label.innerHTML = `<span>Calculated Crop Fortune</span><strong>${shortValue(stats.cropFortune)}</strong>${missing ? `<small>~ ${missing} unresolved source${missing === 1 ? '' : 's'}</small>` : ''}`;
+  label.innerHTML = `<span>${sourceCount ? 'Calculated Crop Fortune' : 'Crop Fortune'}</span><strong>${shortValue(stats.cropFortune)}</strong>${missing
+    ? `<small>~ ${missing} unresolved source${missing === 1 ? '' : 's'}</small>`
+    : sourceCount
+      ? `<small>${sourceCount} configured source${sourceCount === 1 ? '' : 's'}</small>`
+      : '<small>No configured crop sources yet</small>'}`;
 }
 
 function replacePlannerOverbloom(raw) {
@@ -90,8 +95,13 @@ function replacePlannerOverbloom(raw) {
   const label = input.closest('label');
   if (!label) return;
   const missing = stats.incomplete.overbloom.length;
+  const sourceCount = Number(stats.sourceCount?.overbloom || 0);
   label.className = 'revenue-derived-stat';
-  label.innerHTML = `<span>Current Overbloom · calculated</span><strong>${shortValue(stats.overbloom)}</strong>${missing ? `<small>~ ${missing} unresolved source${missing === 1 ? '' : 's'}</small>` : ''}`;
+  label.innerHTML = `<span>Current Overbloom${sourceCount ? ' · calculated' : ''}</span><strong>${shortValue(stats.overbloom)}</strong>${missing
+    ? `<small>~ ${missing} unresolved source${missing === 1 ? '' : 's'}</small>`
+    : sourceCount
+      ? `<small>${sourceCount} configured source${sourceCount === 1 ? '' : 's'}</small>`
+      : '<small>No configured Overbloom sources yet</small>'}`;
 }
 
 function addAccountAudit(raw) {
