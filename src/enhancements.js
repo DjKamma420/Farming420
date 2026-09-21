@@ -3,17 +3,16 @@
  *
  * Pages left out of this table are not dropped -- they stay in the nav, ahead
  * of the groups, because `groupSidebar` appends groups after whatever it did
- * not move. With `setups`, `guide` and `setup` missing, the rail opened with a
- * set of items and two bare letters before Dashboard, which is not where a
- * first-time reader looks. `tests/nav-groups.test.js` fails if a page is
- * missing here.
+ * not move. The table stays in lockstep with the actual navigation, and
+ * `tests/nav-groups.test.js` fails if a page is missing or a retired page is
+ * left behind here.
  */
 const GROUPS = [
   ['Progress', ['dashboard', 'account', 'accessories', 'crops', 'tools']],
   ['Loadout', ['setups', 'gear', 'pets', 'buffs']],
   ['Specialized', ['chips', 'shards', 'pests']],
-  ['Analysis', ['planner', 'research', 'coming']],
-  ['Getting started', ['guide', 'setup']],
+  ['Analysis', ['planner']],
+  ['Getting started', ['guide']],
   ['System', ['settings']],
 ];
 
