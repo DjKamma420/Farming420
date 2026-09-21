@@ -307,7 +307,7 @@ export function parseGem(value) {
 export function itemSummary(slotId, item) {
   if (!item?.displayName) return 'Empty';
   const rows = enchantRowsFor(slotId, item).filter(row => row.active);
-  const maxed = rows.filter(row => row.state === 'maxed').length;
+  const maxed = rows.filter(row => row.state === 'maxed' || row.state === 'special-maxed').length;
   return [
     item.reforge ? `${item.reforge} reforge` : null,
     rows.length ? `${rows.length} enchant${rows.length === 1 ? '' : 's'}${maxed ? ` (${maxed} maxed)` : ''}` : null,
