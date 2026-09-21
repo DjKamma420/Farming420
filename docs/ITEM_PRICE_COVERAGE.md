@@ -11,8 +11,8 @@ exists rather than a guess from comparing two names.
 |---|---|
 | Priced from research | 12 |
 | Covered by another entry | 2 |
-| Earned, not bought (needs a time figure) | 11 |
-| No price research linked yet | 60 |
+| Earned, not bought (needs a time figure) | 10 |
+| No price research linked yet | 61 |
 | **Total** | **85** |
 
 `unknown != 0` holds: an unpriced entry carries `coins: null` and a reason,
@@ -62,7 +62,6 @@ progression, and the research does not carry one yet.
 | Personal Best perk (selected crop) | `jacob-personal-best-perk-selected-crop` |
 | Farming Tool level | `tool-tool-base-counter-fortune` |
 | Chocolate Factory Cocoa perk | `chocolate-factory-chocolate-factory-cocoa-perk` |
-| Switch to best farming pet | `pet-switch-to-best-farming-pet` |
 
 ## No price research linked yet
 
@@ -126,10 +125,11 @@ stone or a gemstone tier needs a line in the link table in
 | Thorny on full Mythic equipment - FF | `equipment-reforge-thorny-on-full-mythic-equipment-ff` |
 | Thorny on full Mythic equipment - Overbloom | `equipment-reforge-thorny-on-full-mythic-equipment-overbloom` |
 
-### Pets (4)
+### Pets (5)
 
 | Entry | id |
 |---|---|
+| Switch to best farming pet | `pet-switch-to-best-farming-pet` |
 | Green Bandana | `pet-item-green-bandana` |
 | Lucky Clover / Poignant Lucky Clover | `pet-item-lucky-clover-poignant-lucky-clover` |
 | Rabbit/XP pet switch | `pet-rabbit-xp-pet-switch` |
