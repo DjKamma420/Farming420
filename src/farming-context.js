@@ -6,10 +6,10 @@ export const FARMING_CONTEXT = Object.freeze({
 });
 
 export const FARMING_CONTEXT_OPTIONS = Object.freeze([
-  Object.freeze({ id: FARMING_CONTEXT.NORMAL, label: 'Normal farming', modeScope: null }),
-  Object.freeze({ id: FARMING_CONTEXT.HARVEST_FEAST, label: 'Harvest Feast', modeScope: 'Harvest Feast' }),
-  Object.freeze({ id: FARMING_CONTEXT.GRAND_FEAST, label: 'Grand Feast', modeScope: 'Harvest Feast' }),
-  Object.freeze({ id: FARMING_CONTEXT.JACOB_CONTEST, label: "Jacob's Contest", modeScope: 'Jacob Contest' }),
+  Object.freeze({ id: FARMING_CONTEXT.NORMAL, label: 'Normal farming', modeScopes: Object.freeze([]) }),
+  Object.freeze({ id: FARMING_CONTEXT.HARVEST_FEAST, label: 'Harvest Feast', modeScopes: Object.freeze(['Harvest Feast']) }),
+  Object.freeze({ id: FARMING_CONTEXT.GRAND_FEAST, label: 'Grand Feast', modeScopes: Object.freeze(['Harvest Feast', 'Grand Feast']) }),
+  Object.freeze({ id: FARMING_CONTEXT.JACOB_CONTEST, label: "Jacob's Contest", modeScopes: Object.freeze(['Jacob Contest']) }),
 ]);
 
 export function normalizeFarmingContext(value) {
@@ -28,8 +28,8 @@ export function farmingContextOption(context) {
   return FARMING_CONTEXT_OPTIONS.find(option => option.id === normalized) || FARMING_CONTEXT_OPTIONS[0];
 }
 
-export function farmingContextScope(context) {
-  return farmingContextOption(context).modeScope;
+export function farmingContextScopes(context) {
+  return farmingContextOption(context).modeScopes;
 }
 
 export function farmingContextLabel(context) {
