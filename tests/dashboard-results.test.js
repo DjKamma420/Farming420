@@ -32,6 +32,14 @@ test('dashboard separates global Fortune from per-crop totals', () => {
   assert.ok(!source.includes('${esc(selectedCrop.name)} Crop Fortune'));
   assert.doesNotMatch(source, /Next upgrade|Account layer|Open upgrade planner|cropFocusCard\(\)/);
   assert.doesNotMatch(source, /data-open=|data-page=/, 'dashboard results must not contain editing/navigation actions');
+  assert.match(source, /sourceCount/, 'dashboard must distinguish configured sources from an empty profile');
+  assert.match(source, /No configured sources in this context/);
+  assert.match(source, /fully calculated from configured sources/);
+});
+
+test('empty calculated totals are not presented as completed coverage', () => {
+  assert.match(computedStatsUi, /The displayed 0 is an empty result, not a completed calculation/);
+  assert.doesNotMatch(computedStatsUi, /Every configured global source currently has a modeled total contribution/);
 });
 
 test('topbar does not duplicate the dashboard stat results', () => {
