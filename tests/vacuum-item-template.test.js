@@ -47,13 +47,19 @@ test('Vacuum item editor keeps the same physical-item section order as Tools', (
   assert.match(exact, /insertAdjacentElement\('afterend', gemstones\)/);
 });
 
-test('Vacuum reforge uses the same card template and item-art hook as farming tools', () => {
-  const loadout = read('src/loadout-capabilities-ui.js');
-  assert.match(loadout, /item-editor-section sb-reforge-panel/);
-  assert.match(loadout, /sb-reforge-grid sb-reforge-grid-compact setup-reforge-grid/);
-  assert.match(loadout, /sb-reforge-card setup-reforge-card/);
-  assert.match(loadout, /data-reforge-item-id=/);
-  assert.match(loadout, /data-vacuum-reforge-choice=/);
+test('Vacuum reforge uses the same compact card template as farming tools', () => {
+  const redesign = read('src/skyblock-redesign.js');
+  const start = redesign.indexOf('function vacuumReforgePanel()');
+  const end = redesign.indexOf('\nfunction toolPortrait()', start);
+  assert.ok(start >= 0 && end > start, 'vacuumReforgePanel block not found');
+  const panel = redesign.slice(start, end);
+  assert.match(panel, /className = 'sb-reforge-panel item-editor-section'/);
+  assert.match(panel, /class="sb-reforge-grid"/);
+  assert.match(panel, /class="sb-reforge-card/);
+  assert.match(panel, /class="sb-reforge-art"/);
+  assert.match(panel, /class="sb-reforge-copy"/);
+  assert.match(panel, /class="sb-state-dot"/);
+  assert.match(panel, /data-sb-vacuum-reforge/);
 });
 
 test('Vacuum physical state preserves item enchantments', () => {
