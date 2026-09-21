@@ -8,6 +8,13 @@ import { setTextIfChanged } from './set-text.js';
 import { costOriginNote, resolveUpgradeCost } from './upgrade-cost-resolution.js';
 import { INTERNET_FARMING_TIME_VALUE_COINS_PER_HOUR } from './upgrade-economics.js';
 import {
+  PLANNER_UPGRADE_TARGET,
+  plannerUpgradeTarget,
+  plannerUpgradeTargetEligible,
+  plannerUpgradeTargetRole,
+  plannerUpgradeValueText,
+} from './planner-upgrade-objective.js';
+import {
   plannerActivityContext,
   plannerEconomicsBucket,
   plannerItemApplies,
@@ -230,19 +237,67 @@ function benchmarkStreams(item, itemGain) {
   return { normalCropCoinsPerHour: PLANNER_BENCHMARK_COINS_PER_HOUR, rareCropCoinsPerHour: 0 };
 }
 
+function isSpawningPrimary(row) {
+  return row?.activityMode === ACTIVITY_MODE.PEST_SPAWN
+    && row?.targetRole?.tier === 'primary';
+}
+
+function targetUnitCost(row) {
+  if (!row?.costKnown || !Number.isFinite(row?.cost) || !(row?.gain > 0)) return null;
+  if (row.target === PLANNER_UPGRADE_TARGET.BONUS_PEST_CHANCE
+    || row.target === PLANNER_UPGRADE_TARGET.PEST_COOLDOWN) {
+    return row.cost / row.gain;
+  }
+  return null;
+}
+
+function rankPlannerRows(rows, mode) {
+  const ranked = rankEvaluatedUpgrades(rows);
+  if (mode !== ACTIVITY_MODE.PEST_SPAWN) return ranked;
+
+  return ranked.sort((a, b) => {
+    const aPriority = Number(a.targetRole?.priority ?? 99);
+    const bPriority = Number(b.targetRole?.priority ?? 99);
+    if (aPriority !== bPriority) return aPriority - bPriority;
+
+    if (a.targetRole?.tier === 'primary' && b.targetRole?.tier === 'primary') {
+      const aVerified = a.item?.status === 'ACTIVE' ? 0 : 1;
+      const bVerified = b.item?.status === 'ACTIVE' ? 0 : 1;
+      if (aVerified !== bVerified) return aVerified - bVerified;
+
+      const aUnitCost = targetUnitCost(a);
+      const bUnitCost = targetUnitCost(b);
+      if (aUnitCost !== null && bUnitCost !== null && aUnitCost !== bUnitCost) return aUnitCost - bUnitCost;
+      if (aUnitCost !== null && bUnitCost === null) return -1;
+      if (bUnitCost !== null && aUnitCost === null) return 1;
+    }
+
+    return 0;
+  });
+}
+
 function benchmarkEvaluatedRows(raw) {
   const cropId = selectedCropId(raw);
   const context = plannerActivityContext(raw, cropId);
 
-  return rankEvaluatedUpgrades(UPGRADES
-    .filter(item => item.status === 'ACTIVE')
+  const rows = UPGRADES
     .filter(item => plannerItemApplies(raw, item, cropId))
+    .filter(item => plannerUpgradeTargetEligible(item, context.mode))
+    .filter(item => {
+      if (item.status === 'ACTIVE') return true;
+      const role = plannerUpgradeTargetRole(item, context.mode);
+      return context.mode === ACTIVITY_MODE.PEST_SPAWN
+        && item.status === 'VERIFY'
+        && role.tier === 'primary';
+    })
     .filter(item => !maxed(raw, item))
     .map(item => {
       const itemGain = gain(raw, item);
       const store = progressBucket(raw, item);
       const costSource = resolveUpgradeCost(store, item.id);
       const benchmark = benchmarkStreams(item, itemGain);
+      const target = plannerUpgradeTarget(item);
+      const targetRole = plannerUpgradeTargetRole(item, context.mode);
       return {
         item,
         ...evaluateUpgrade({
@@ -261,10 +316,17 @@ function benchmarkEvaluatedRows(raw) {
           rareCropCoinsPerHour: benchmark.rareCropCoinsPerHour,
         }),
         activityMode: context.mode,
+        target,
+        targetRole,
         costSource,
       };
     })
-    .filter(row => row.modeled && row.gain > 0));
+    .filter(row => {
+      if (row.modeled && row.gain > 0) return true;
+      return isSpawningPrimary(row) && (row.gain > 0 || row.item.status === 'VERIFY');
+    });
+
+  return rankPlannerRows(rows, context.mode);
 }
 
 function compactCoins(value) {
@@ -534,37 +596,69 @@ function earnedAssumptionsPanel(raw) {
 }
 
 function rankingMarkup(rows, ready) {
-  if (!rows.length) return '<div class="empty">No modeled Fortune/Overbloom upgrades for the current set.</div>';
+  if (!rows.length) return '<div class="empty">No upgrades match the current activity objective.</div>';
   return rows.slice(0, 30).map((row, index) => {
     const costKnown = row.costKnown === true;
     const marginalKnown = Number.isFinite(row.marginalCoinsHour);
-    const valueLabel = row.modeled === 'overbloom'
-      ? `+${row.gain.toLocaleString('en-US')} Overbloom`
-      : `+${row.gain.toLocaleString('en-US')} FF`;
+    const spawnPrimary = isSpawningPrimary(row);
+    const valueLabel = plannerUpgradeValueText(row.item, row.gain);
     const equivalent = row.modeled === 'overbloom' && row.fortuneEquivalent > 0
       ? `≈ ${row.fortuneEquivalent.toFixed(2)} FF eq.`
-      : row.modeled === 'fortune' ? `${row.fortuneEquivalent.toFixed(2)} FF eq.` : '—';
+      : row.modeled === 'fortune'
+        ? `${row.fortuneEquivalent.toFixed(2)} FF eq.`
+        : row.item.status === 'VERIFY' ? 'manual value required' : 'activity-specific stat';
     const costLabel = costKnown
       ? `${compactCoins(row.cost)} ${row.acquisitionMode === 'EARNED' ? 'Coins eq.' : 'Coins'}`
       : '—';
+    const targetCost = targetUnitCost(row);
     const costNote = row.acquisitionMode === 'EARNED' && costKnown
       ? `EARNED — time converted to coins · ${formatHours(row.activeGrindHours)} @ ${compactCoins(row.timeValueCoinsPerHour)}/h${row.directCoinCost > 0 ? ` + ${compactCoins(row.directCoinCost)} direct` : ''}`
-      : costKnown && row.coinsPerEffectiveFortune
-        ? `${compactCoins(row.coinsPerEffectiveFortune)} / FF eq. · ${costOriginNote(row.costSource)}`
-        : costOriginNote(row.costSource);
+      : spawnPrimary && row.target === PLANNER_UPGRADE_TARGET.BONUS_PEST_CHANCE && targetCost !== null
+        ? `${compactCoins(targetCost)} / BPC · ${costOriginNote(row.costSource)}`
+        : costKnown && row.coinsPerEffectiveFortune
+          ? `${compactCoins(row.coinsPerEffectiveFortune)} / FF eq. · ${costOriginNote(row.costSource)}`
+          : costOriginNote(row.costSource);
+    const valueDisplay = spawnPrimary
+      ? 'Primary'
+      : marginalKnown ? `+${compactCoins(row.marginalCoinsHour)}/h` : '—';
+    const valueNote = spawnPrimary
+      ? 'spawning focus'
+      : ready ? 'benchmark Coins/h' : 'value unavailable';
+    const paybackDisplay = spawnPrimary
+      ? '—'
+      : costKnown && row.payback !== null ? formatPayback(row.payback) : '—';
+    const paybackNote = spawnPrimary ? 'no FF conversion' : 'benchmark payback';
+    const statusNote = row.item.status === 'VERIFY' ? ' · manual/verify' : '';
+
     return `<button class="planner-row revenue-row" data-revenue-open="${esc(row.item.id)}">
       <div class="rank">${index + 1}</div>
-      <div class="planner-main"><strong>${esc(row.item.name)}</strong><span>${esc(row.item.category)} · ${esc(row.modeled === 'overbloom' ? 'Overbloom' : 'Farming Fortune')}</span></div>
-      <div class="planner-number"><strong>${valueLabel}</strong><span>${equivalent}</span></div>
-      <div class="planner-number"><strong>${marginalKnown ? `+${compactCoins(row.marginalCoinsHour)}/h` : '—'}</strong><span>${ready ? 'benchmark Coins/h' : 'value unavailable'}</span></div>
-      <div class="planner-number"><strong>${costLabel}</strong><span>${esc(costNote)}</span></div>
-      <div class="planner-number"><strong>${costKnown && row.payback !== null ? formatPayback(row.payback) : '—'}</strong><span>benchmark payback</span></div>
+      <div class="planner-main"><strong>${esc(row.item.name)}</strong><span>${esc(row.item.category)} · ${esc(row.targetRole?.label || row.modeled || 'upgrade')}${esc(statusNote)}</span></div>
+      <div class="planner-number"><strong>${esc(valueLabel)}</strong><span>${esc(equivalent)}</span></div>
+      <div class="planner-number"><strong>${esc(valueDisplay)}</strong><span>${esc(valueNote)}</span></div>
+      <div class="planner-number"><strong>${esc(costLabel)}</strong><span>${esc(costNote)}</span></div>
+      <div class="planner-number"><strong>${esc(paybackDisplay)}</strong><span>${esc(paybackNote)}</span></div>
     </button>`;
   }).join('');
 }
 
 function benchmarkPanel(raw) {
   const context = plannerActivityContext(raw, selectedCropId(raw));
+
+  if (context.mode === ACTIVITY_MODE.PEST_SPAWN) {
+    return `<section class="revenue-panel revenue-benchmark">
+      <div class="revenue-panel-head">
+        <div><div class="eyebrow">${esc(activityLabel(context.mode))} objective model</div><h2>Spawning priorities</h2></div>
+        <span class="revenue-note">Purpose-ranked</span>
+      </div>
+      <div class="benchmark-stat-grid">
+        <div><span>Primary target</span><strong>Bonus Pest Chance</strong></div>
+        <div><span>Primary target</span><strong>Pest cooldown ↓</strong></div>
+        <div><span>Secondary Farming Fortune</span><strong>${Number(context.currentFortune || 0).toLocaleString('en-US')}</strong></div>
+      </div>
+      <p class="revenue-help">The Spawning set is a short crop-breaking phase near the effective Pest cooldown. Bonus Pest Chance and cooldown reduction are primary; Farming Fortune only values crop output during those breaks. BPC and cooldown are not converted into FF-equivalent or benchmark Coins/h without a verified spawn-value formula.</p>
+    </section>`;
+  }
+
   return `<section class="revenue-panel revenue-benchmark">
     <div class="revenue-panel-head">
       <div><div class="eyebrow">${esc(activityLabel(context.mode))} calculated value</div><h2>Fortune → Coins</h2></div>
@@ -580,16 +674,20 @@ function benchmarkPanel(raw) {
 }
 
 function focusNextRows(raw) {
-  return benchmarkEvaluatedRows(raw)
-    .filter(row => row.acquisitionMode === 'EARNED')
-    .sort((a, b) => {
-      const aValue = Number.isFinite(a.marginalCoinsHour) ? a.marginalCoinsHour : -1;
-      const bValue = Number.isFinite(b.marginalCoinsHour) ? b.marginalCoinsHour : -1;
-      if (aValue !== bValue) return bValue - aValue;
-      const aRank = Number.isFinite(Number(a.item.workbookRank)) ? Number(a.item.workbookRank) : Number.MAX_SAFE_INTEGER;
-      const bRank = Number.isFinite(Number(b.item.workbookRank)) ? Number(b.item.workbookRank) : Number.MAX_SAFE_INTEGER;
-      return aRank - bRank || String(a.item.name || '').localeCompare(String(b.item.name || ''));
-    });
+  const mode = activityModeForState(raw);
+  const rows = benchmarkEvaluatedRows(raw)
+    .filter(row => row.acquisitionMode === 'EARNED');
+
+  if (mode === ACTIVITY_MODE.PEST_SPAWN) return rows;
+
+  return rows.sort((a, b) => {
+    const aValue = Number.isFinite(a.marginalCoinsHour) ? a.marginalCoinsHour : -1;
+    const bValue = Number.isFinite(b.marginalCoinsHour) ? b.marginalCoinsHour : -1;
+    if (aValue !== bValue) return bValue - aValue;
+    const aRank = Number.isFinite(Number(a.item.workbookRank)) ? Number(a.item.workbookRank) : Number.MAX_SAFE_INTEGER;
+    const bRank = Number.isFinite(Number(b.item.workbookRank)) ? Number(b.item.workbookRank) : Number.MAX_SAFE_INTEGER;
+    return aRank - bRank || String(a.item.name || '').localeCompare(String(b.item.name || ''));
+  });
 }
 
 function focusNextMarkup(raw, rows) {
@@ -599,17 +697,21 @@ function focusNextMarkup(raw, rows) {
     const current = level(raw, row.item);
     const remaining = Math.max(1, max - current);
     const remainingHours = remaining * FOCUS_AVERAGE_STEP_HOURS;
-    const valueLabel = row.modeled === 'overbloom'
-      ? `+${row.gain.toLocaleString('en-US')} Overbloom`
-      : `+${row.gain.toLocaleString('en-US')} FF`;
-    const marginal = Number.isFinite(row.marginalCoinsHour)
-      ? `+${compactCoins(row.marginalCoinsHour)}/h`
-      : '—';
+    const spawnPrimary = isSpawningPrimary(row);
+    const valueLabel = plannerUpgradeValueText(row.item, row.gain);
+    const marginal = spawnPrimary
+      ? 'Primary'
+      : Number.isFinite(row.marginalCoinsHour)
+        ? `+${compactCoins(row.marginalCoinsHour)}/h`
+        : '—';
+    const marginalNote = spawnPrimary ? 'spawning focus' : 'benchmark value';
+    const statusNote = row.item.status === 'VERIFY' ? ' · manual/verify' : '';
+
     return `<button class="planner-row focus-next-row" data-focus-open="${esc(row.item.id)}">
       <div class="rank">${index + 1}</div>
-      <div class="planner-main"><strong>${esc(row.item.name)}</strong><span>${esc(row.item.category)} · earned progression</span></div>
-      <div class="planner-number"><strong>${valueLabel}</strong><span>next step</span></div>
-      <div class="planner-number"><strong>${marginal}</strong><span>benchmark value</span></div>
+      <div class="planner-main"><strong>${esc(row.item.name)}</strong><span>${esc(row.item.category)} · ${esc(row.targetRole?.label || 'earned progression')}${esc(statusNote)}</span></div>
+      <div class="planner-number"><strong>${esc(valueLabel)}</strong><span>next step</span></div>
+      <div class="planner-number"><strong>${esc(marginal)}</strong><span>${esc(marginalNote)}</span></div>
       <div class="planner-number"><strong>~${FOCUS_AVERAGE_STEP_HOURS.toFixed(1)} h</strong><span>next step · ~${remainingHours.toFixed(1)} h remaining</span></div>
       <div class="planner-number"><strong>${current}/${max}</strong><span>current progress</span></div>
     </button>`;
@@ -624,11 +726,15 @@ function enhanceFocusNext() {
   const raw = load();
   const mode = activityModeForState(raw);
   const rows = focusNextRows(raw);
+  const objectiveHelp = mode === ACTIVITY_MODE.PEST_SPAWN
+    ? '<p>Spawning is purpose-ranked: Bonus Pest Chance and Pest cooldown reduction are primary. Farming Fortune is secondary because it only affects crop output during the short spawning window.</p>'
+    : `<p>Value is calculated from the active Fortune/Overbloom against the same ${compactCoins(PLANNER_BENCHMARK_COINS_PER_HOUR)}/h standard stream used by Upgrade Planner.</p>`;
+
   host.innerHTML = `
     <section class="focus-next-assumption">
       <div><div class="eyebrow">${esc(activityLabel(mode))} earned progression</div><h2>Next things worth focusing on</h2></div>
       <p>Time is separate from upgrades: every next earned step uses a fixed ~${FOCUS_AVERAGE_STEP_HOURS.toFixed(1)} h planning average. It is a scheduling assumption, not an asserted in-game completion time.</p>
-      <p>Value is calculated from the active Fortune/Overbloom against the same ${compactCoins(PLANNER_BENCHMARK_COINS_PER_HOUR)}/h standard stream used by Upgrade Planner.</p>
+      ${objectiveHelp}
     </section>
     <div class="focus-next-results">${focusNextMarkup(raw, rows)}</div>`;
 
@@ -645,13 +751,19 @@ function enhancePlanner() {
   const mode = activityModeForState(raw);
   const ready = true;
   const rows = benchmarkEvaluatedRows(raw).filter(row => row.acquisitionMode !== 'EARNED');
+  const rankingTitle = mode === ACTIVITY_MODE.PEST_SPAWN
+    ? `Spawning upgrade priorities · ${activityLabel(mode)}`
+    : `Best upgrade value · ${activityLabel(mode)}`;
+  const rankingHelp = mode === ACTIVITY_MODE.PEST_SPAWN
+    ? 'Bonus Pest Chance and Pest cooldown reduction are primary Spawning targets. Farming Fortune is shown after them as a secondary crop-output stat for the short spawning window. Activity-specific stats are not forced into fake FF equivalents.'
+    : `Coin-cost and unpriced upgrades stay here. Earned progression is excluded and appears under Focus on next. Marginal value and payback use the common ${compactCoins(PLANNER_BENCHMARK_COINS_PER_HOUR)}/h affected-income benchmark.`;
 
   original.classList.add('planner-v1-source');
   const panel = document.createElement('div');
   panel.className = 'revenue-planner-v2';
   panel.innerHTML = `${benchmarkPanel(raw)}
     ${usefulItemsPanel(raw)}
-    <div class="section-row revenue-ranking-head"><div><h2>Best upgrade value · ${esc(activityLabel(mode))}</h2><p>Coin-cost and unpriced upgrades stay here. Earned progression is excluded and appears under Focus on next. Marginal value and payback use the common ${compactCoins(PLANNER_BENCHMARK_COINS_PER_HOUR)}/h affected-income benchmark.</p></div></div>
+    <div class="section-row revenue-ranking-head"><div><h2>${esc(rankingTitle)}</h2><p>${esc(rankingHelp)}</p></div></div>
     <div class="planner-list revenue-list">${rankingMarkup(rows, ready)}</div>`;
   original.before(panel);
 
