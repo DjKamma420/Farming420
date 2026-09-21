@@ -25,6 +25,14 @@ import {
 const PLANNER_BENCHMARK_COINS_PER_HOUR = INTERNET_FARMING_TIME_VALUE_COINS_PER_HOUR;
 const FOCUS_AVERAGE_STEP_HOURS = 1;
 
+// Focus on next is progression, not a catch-all for anything whose price table
+// happens to use a time acquisition mode. Purchases and equipment choices stay
+// in Upgrade Planner even when their market price has not been researched yet.
+const FOCUS_PROGRESSION_IDS = new Set([
+  'account-skill-farming-skill-level',
+  'tool-tool-base-counter-fortune',
+]);
+
 const USEFUL_ITEMS = Object.freeze([
   {
     id: 'squeaky-mousemat',
@@ -723,7 +731,7 @@ function benchmarkPanel(raw) {
 function focusNextRows(raw) {
   const mode = activityModeForState(raw);
   const rows = benchmarkEvaluatedRows(raw)
-    .filter(row => row.acquisitionMode === 'EARNED');
+    .filter(row => FOCUS_PROGRESSION_IDS.has(row.item?.id));
 
   if (mode === ACTIVITY_MODE.PEST_SPAWN) return rows;
 
@@ -738,10 +746,16 @@ function focusNextRows(raw) {
 }
 
 function focusNextMarkup(raw, rows) {
-  if (!rows.length) return '<div class="empty">No modeled earned next steps for the current crop and set.</div>';
+  if (!rows.length) return '<div class="empty">No tracked progression goals for the current crop and set.</div>';
   return rows.slice(0, 30).map((row, index) => {
     const max = Math.max(1, Number(row.item.max || 1));
     const current = level(raw, row.item);
+    const target = Math.min(max, current + 1);
+    const focusName = row.item.id === 'account-skill-farming-skill-level'
+      ? `Farming Level ${target}`
+      : row.item.id === 'tool-tool-base-counter-fortune'
+        ? `Tool Level ${target}`
+        : row.item.name;
     const remaining = Math.max(1, max - current);
     const remainingHours = remaining * FOCUS_AVERAGE_STEP_HOURS;
     const spawnPrimary = isSpawningPrimary(row);
@@ -756,7 +770,7 @@ function focusNextMarkup(raw, rows) {
 
     return `<button class="planner-row focus-next-row" data-focus-open="${esc(row.item.id)}">
       <div class="rank">${index + 1}</div>
-      <div class="planner-main"><strong>${esc(row.item.name)}</strong><span>${esc(row.item.category)} · ${esc(row.targetRole?.label || 'earned progression')}${esc(statusNote)}</span></div>
+      <div class="planner-main"><strong>${esc(focusName)}</strong><span>${esc(row.item.category)} · progression goal${esc(statusNote)}</span></div>
       <div class="planner-number"><strong>${esc(valueLabel)}</strong><span>next step</span></div>
       <div class="planner-number"><strong>${esc(marginal)}</strong><span>${esc(marginalNote)}</span></div>
       <div class="planner-number"><strong>~${FOCUS_AVERAGE_STEP_HOURS.toFixed(1)} h</strong><span>next step · ~${remainingHours.toFixed(1)} h remaining</span></div>
@@ -780,7 +794,8 @@ function enhanceFocusNext() {
   host.innerHTML = `
     <section class="focus-next-assumption">
       <div><div class="eyebrow">${esc(activityLabel(mode))} earned progression</div><h2>Next things worth focusing on</h2></div>
-      <p>Time is separate from upgrades: every next earned step uses a fixed ~${FOCUS_AVERAGE_STEP_HOURS.toFixed(1)} h planning average. It is a scheduling assumption, not an asserted in-game completion time.</p>
+      <p>Focus on next only tracks progression goals. Pets, gear, reforges and other purchase/equipment choices stay in Upgrade Planner, even when their price is currently unknown.</p>
+      <p>Time is separate from upgrades: every tracked progression step uses a fixed ~${FOCUS_AVERAGE_STEP_HOURS.toFixed(1)} h planning average. It is a scheduling assumption, not an asserted in-game completion time.</p>
       ${objectiveHelp}
     </section>
     <div class="focus-next-results">${focusNextMarkup(raw, rows)}</div>`;

@@ -166,7 +166,6 @@ TIME_UNIT_IDS = frozenset({
     "crop-progression-crop-upgrade-selected-crop",
     "chocolate-factory-chocolate-factory-cocoa-perk",
     "tool-tool-base-counter-fortune",
-    "pet-switch-to-best-farming-pet",
 })
 
 

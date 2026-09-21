@@ -21,8 +21,17 @@ test('Upgrade Planner no longer mixes earned progression into upgrade rows', () 
   assert.doesNotMatch(rendered[0], /earnedAssumptionsPanel|economicsPanel/);
 });
 
-test('Focus on next contains only earned progression and keeps time separate', () => {
-  assert.match(planner, /function focusNextRows\(raw\)[\s\S]*?\.filter\(row => row\.acquisitionMode === 'EARNED'\)/);
+test('Focus on next uses explicit progression goals instead of acquisition cost type', () => {
+  assert.match(planner, /const FOCUS_PROGRESSION_IDS = new Set\(\[/);
+  assert.match(planner, /'account-skill-farming-skill-level'/);
+  assert.match(planner, /'tool-tool-base-counter-fortune'/);
+  assert.match(planner, /\.filter\(row => FOCUS_PROGRESSION_IDS\.has\(row\.item\?\.id\)\)/);
+  const focusFunction = planner.match(/function focusNextRows\(raw\)[\s\S]*?\n}\n\nfunction focusNextMarkup/);
+  assert.ok(focusFunction, 'focusNextRows not found');
+  assert.doesNotMatch(focusFunction[0], /acquisitionMode === 'EARNED'/);
+  assert.doesNotMatch(focusFunction[0], /pet-switch-to-best-farming-pet/);
+  assert.match(planner, /`Farming Level \$\{target\}`/);
+  assert.match(planner, /`Tool Level \$\{target\}`/);
   assert.match(planner, /const FOCUS_AVERAGE_STEP_HOURS = 1;/);
   assert.match(planner, /planning average/);
   assert.match(planner, /scheduling assumption, not an asserted in-game completion time/);
