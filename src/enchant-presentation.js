@@ -1,3 +1,4 @@
+import './vacuum-data-patches.js';
 import { UPGRADES } from './data.js';
 
 const ENCHANTMENTS_SOURCE = 'https://hypixelskyblock.minecraft.wiki/w/Enchantments';
