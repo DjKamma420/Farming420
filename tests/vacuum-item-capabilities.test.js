@@ -14,7 +14,11 @@ test('Vacuum item-local books have the real caps and stat axes', () => {
   assert.equal(dummies?.stepGain, 1);
   assert.equal(dummies?.metric, 'Crop Yield');
   assert.equal(bookworm?.max, 5);
-  assert.equal(bookworm?.stepGain, 10);
+  // +20 each, +100 at five. 0.27 doubled this from +10, and
+  // research/VACUUM_RESEARCH.md lists "not +10" as an explicit correction --
+  // but this assertion pinned the old number, which is how the stale value
+  // survived a test suite that was supposed to protect it.
+  assert.equal(bookworm?.stepGain, 20);
   assert.equal(bookworm?.metric, 'Vacuum Damage');
 });
 

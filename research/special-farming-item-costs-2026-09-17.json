@@ -23,7 +23,7 @@
     {
       "item": "Farming for Dummies",
       "market": "bazaar",
-      "instant_sell_coins": 154403.00,
+      "instant_sell_coins": 154403.0,
       "instant_buy_coins": 427999.97,
       "midpoint_reference_coins": 291201.48,
       "spread_pct_of_midpoint": 93.95,
@@ -48,7 +48,7 @@
       "spread_pct_of_midpoint": 4.47,
       "required_quantity": 10,
       "midpoint_total_coins": 2444343.15,
-      "instant_buy_total_coins": 2498987.10,
+      "instant_buy_total_coins": 2498987.1,
       "historical_rolling_average_coins": null,
       "effect": {
         "per_unit": "Unlocks one additional Farming Tool level after level 40",
@@ -62,12 +62,12 @@
       "item": "Bookworm's Favorite Book",
       "market": "bazaar",
       "instant_sell_coins": 7059.75,
-      "instant_buy_coins": 11921.20,
+      "instant_buy_coins": 11921.2,
       "midpoint_reference_coins": 9490.48,
       "spread_pct_of_midpoint": 51.22,
       "required_quantity": 5,
       "midpoint_total_coins": 47452.38,
-      "instant_buy_total_coins": 59606.00,
+      "instant_buy_total_coins": 59606.0,
       "historical_rolling_average_coins": null,
       "effect": {
         "per_unit": "+10 Vacuum Damage",
@@ -100,7 +100,7 @@
     {
       "item": "Refined Dark Cacao Truffle",
       "market": "bazaar",
-      "instant_sell_coins": 207564.90,
+      "instant_sell_coins": 207564.9,
       "instant_buy_coins": 420740.13,
       "midpoint_reference_coins": 314152.52,
       "spread_pct_of_midpoint": 67.86,
@@ -125,7 +125,7 @@
       "midpoint_reference_coins": 9505942.12,
       "spread_pct_of_midpoint": 9.64,
       "required_quantity": 5,
-      "midpoint_total_coins": 47529710.60,
+      "midpoint_total_coins": 47529710.6,
       "instant_buy_total_coins": 49820993.35,
       "historical_rolling_average_coins": null,
       "effect": {
@@ -139,13 +139,13 @@
     {
       "item": "Feast Burger with a Side of Deepfries",
       "market": "bazaar",
-      "instant_sell_coins": 7857257.10,
-      "instant_buy_coins": 9659998.00,
+      "instant_sell_coins": 7857257.1,
+      "instant_buy_coins": 9659998.0,
       "midpoint_reference_coins": 8758627.55,
       "spread_pct_of_midpoint": 20.58,
       "required_quantity": 5,
       "midpoint_total_coins": 43793137.75,
-      "instant_buy_total_coins": 48299990.00,
+      "instant_buy_total_coins": 48299990.0,
       "historical_rolling_average_coins": null,
       "effect": {
         "per_unit": "+1 permanent Overbloom",
@@ -157,13 +157,13 @@
     {
       "item": "Very Moldy Bread",
       "market": "bazaar",
-      "instant_sell_coins": 13878314.40,
-      "instant_buy_coins": 18999989.90,
+      "instant_sell_coins": 13878314.4,
+      "instant_buy_coins": 18999989.9,
       "midpoint_reference_coins": 16439152.15,
       "spread_pct_of_midpoint": 31.15,
       "required_quantity": 1,
       "midpoint_total_coins": 16439152.15,
-      "instant_buy_total_coins": 18999989.90,
+      "instant_buy_total_coins": 18999989.9,
       "historical_rolling_average_coins": null,
       "effect": {
         "per_unit": "+1 permanent Farming Wisdom",
@@ -184,8 +184,8 @@
       "midpoint_reference_coins": 5647.08,
       "spread_pct_of_midpoint": 47.77,
       "required_quantity": 3000,
-      "midpoint_total_coins": 16941225.00,
-      "instant_buy_total_coins": 20987370.00,
+      "midpoint_total_coins": 16941225.0,
+      "instant_buy_total_coins": 20987370.0,
       "historical_rolling_average_coins": null,
       "reward": "+12 Wheat Fortune +5 Health",
       "coins_per_plus_1_crop_fortune_midpoint": 1411768.75
@@ -199,8 +199,8 @@
       "midpoint_reference_coins": 8381.49,
       "spread_pct_of_midpoint": 20.99,
       "required_quantity": 3000,
-      "midpoint_total_coins": 25144455.00,
-      "instant_buy_total_coins": 27783720.00,
+      "midpoint_total_coins": 25144455.0,
+      "instant_buy_total_coins": 27783720.0,
       "historical_rolling_average_coins": null,
       "reward": "+12 Carrot Fortune +5 Health",
       "coins_per_plus_1_crop_fortune_midpoint": 2095371.25
@@ -209,16 +209,16 @@
       "item": "Expired Pumpkin",
       "crop": "Pumpkin",
       "market": "bazaar",
-      "instant_sell_coins": 5050.80,
-      "instant_buy_coins": 7498.70,
+      "instant_sell_coins": 5050.8,
+      "instant_buy_coins": 7498.7,
       "midpoint_reference_coins": 6274.75,
       "spread_pct_of_midpoint": 39.01,
       "required_quantity": 3000,
-      "midpoint_total_coins": 18824250.00,
-      "instant_buy_total_coins": 22496100.00,
+      "midpoint_total_coins": 18824250.0,
+      "instant_buy_total_coins": 22496100.0,
       "historical_rolling_average_coins": null,
       "reward": "+12 Pumpkin Fortune +5 Health",
-      "coins_per_plus_1_crop_fortune_midpoint": 1568687.50
+      "coins_per_plus_1_crop_fortune_midpoint": 1568687.5
     },
     {
       "item": "Supreme Chocolate Bar",
@@ -229,26 +229,26 @@
       "midpoint_reference_coins": 1016.94,
       "spread_pct_of_midpoint": 115.33,
       "required_quantity": 3000,
-      "midpoint_total_coins": 3050820.00,
-      "instant_buy_total_coins": 4810110.00,
+      "midpoint_total_coins": 3050820.0,
+      "instant_buy_total_coins": 4810110.0,
       "historical_rolling_average_coins": null,
       "reward": "+12 Cocoa Beans Fortune +5 Health",
-      "coins_per_plus_1_crop_fortune_midpoint": 254235.00
+      "coins_per_plus_1_crop_fortune_midpoint": 254235.0
     },
     {
       "item": "Half-Eaten Mushroom",
       "crop": "Mushroom",
       "market": "bazaar",
-      "instant_sell_coins": 424.40,
+      "instant_sell_coins": 424.4,
       "instant_buy_coins": 1603.54,
       "midpoint_reference_coins": 1013.97,
       "spread_pct_of_midpoint": 116.29,
       "required_quantity": 3000,
-      "midpoint_total_coins": 3041910.00,
-      "instant_buy_total_coins": 4810620.00,
+      "midpoint_total_coins": 3041910.0,
+      "instant_buy_total_coins": 4810620.0,
       "historical_rolling_average_coins": null,
       "reward": "+12 Mushroom Fortune +5 Health",
-      "coins_per_plus_1_crop_fortune_midpoint": 253492.50
+      "coins_per_plus_1_crop_fortune_midpoint": 253492.5
     },
     {
       "item": "Warty",
@@ -257,10 +257,10 @@
       "instant_sell_coins": 8925.37,
       "instant_buy_coins": 17999.48,
       "midpoint_reference_coins": 13462.43,
-      "spread_pct_of_midpoint": 67.40,
+      "spread_pct_of_midpoint": 67.4,
       "required_quantity": 3000,
-      "midpoint_total_coins": 40387275.00,
-      "instant_buy_total_coins": 53998440.00,
+      "midpoint_total_coins": 40387275.0,
+      "instant_buy_total_coins": 53998440.0,
       "historical_rolling_average_coins": null,
       "reward": "+12 Nether Wart Fortune +5 Health",
       "coins_per_plus_1_crop_fortune_midpoint": 3365606.25
@@ -270,12 +270,12 @@
       "crop": "Wild Rose",
       "market": "bazaar",
       "instant_sell_coins": 2879.69,
-      "instant_buy_coins": 5998.00,
+      "instant_buy_coins": 5998.0,
       "midpoint_reference_coins": 4438.85,
       "spread_pct_of_midpoint": 70.25,
       "required_quantity": 3000,
-      "midpoint_total_coins": 13316535.00,
-      "instant_buy_total_coins": 17994000.00,
+      "midpoint_total_coins": 13316535.0,
+      "instant_buy_total_coins": 17994000.0,
       "historical_rolling_average_coins": null,
       "reward": "+12 Wild Rose Fortune +5 Health",
       "coins_per_plus_1_crop_fortune_midpoint": 1109711.25
@@ -284,21 +284,21 @@
       "item": "Potted Cactus",
       "crop": "Cactus",
       "market": "bazaar",
-      "instant_sell_coins": 13318.30,
+      "instant_sell_coins": 13318.3,
       "instant_buy_coins": 33684.88,
       "midpoint_reference_coins": 23501.59,
       "spread_pct_of_midpoint": 86.66,
       "required_quantity": 3000,
-      "midpoint_total_coins": 70504770.00,
-      "instant_buy_total_coins": 101054640.00,
+      "midpoint_total_coins": 70504770.0,
+      "instant_buy_total_coins": 101054640.0,
       "historical_rolling_average_coins": null,
       "reward": "+12 Cactus Fortune +5 Health",
-      "coins_per_plus_1_crop_fortune_midpoint": 5875397.50
+      "coins_per_plus_1_crop_fortune_midpoint": 5875397.5
     }
   ],
   "carrolyn_group_summary": {
-    "all_listed_exportables_midpoint_total_coins": 191211240.00,
-    "all_listed_exportables_instant_buy_total_coins": 253935000.00,
+    "all_listed_exportables_midpoint_total_coins": 191211240.0,
+    "all_listed_exportables_instant_buy_total_coins": 253935000.0,
     "rule": "Each export is a one-time profile progression. Track delivered quantity 0..3000 so optimizer prices only the remaining quantity, not the full 3000 after partial progress."
   },
   "optimizer_integration": {
@@ -331,18 +331,22 @@
   "mechanics_sources": [
     {
       "topic": "Vacuum / Farming for Dummies / Bookworm's Favorite Book / Recombobulator",
-      "url": "https://wiki.hypixel.net/Vacuums",
-      "confidence": "official-high"
+      "url": "https://hypixelskyblock.minecraft.wiki/w/Vacuums",
+      "confidence": "official-high",
+      "supersedes": "https://wiki.hypixel.net/Vacuums",
+      "note": "Moved to the community wiki after the official wiki closed in July 2026."
     },
     {
       "topic": "Bookworm's Favorite Book drop/use",
-      "url": "https://wiki.hypixel.net/Earthworm",
-      "confidence": "official-high"
+      "confidence": "retired-source-needs-reverification",
+      "retiredUrl": "https://wiki.hypixel.net/Earthworm",
+      "note": "The official wiki closed in July 2026 and this page is gone. The claim is kept because it was recorded while the page was live, but it is no longer a citable authority and needs re-verification against current patch notes or the community wiki."
     },
     {
       "topic": "Farming for Dummies source",
-      "url": "https://wiki.hypixel.net/Shiny_Orb",
-      "confidence": "official-high"
+      "confidence": "retired-source-needs-reverification",
+      "retiredUrl": "https://wiki.hypixel.net/Shiny_Orb",
+      "note": "The official wiki closed in July 2026 and this page is gone. The claim is kept because it was recorded while the page was live, but it is no longer a citable authority and needs re-verification against current patch notes or the community wiki."
     },
     {
       "topic": "Overclocker 3000 use and max 10",
@@ -356,8 +360,9 @@
     },
     {
       "topic": "Dark Cacao aging",
-      "url": "https://wiki.hypixel.net/Dark_Cacao_Truffle",
-      "confidence": "official-high"
+      "confidence": "retired-source-needs-reverification",
+      "retiredUrl": "https://wiki.hypixel.net/Dark_Cacao_Truffle",
+      "note": "The official wiki closed in July 2026 and this page is gone. The claim is kept because it was recorded while the page was live, but it is no longer a citable authority and needs re-verification against current patch notes or the community wiki."
     },
     {
       "topic": "Refined Dark Cacao permanent effect",

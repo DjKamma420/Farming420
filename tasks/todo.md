@@ -2381,3 +2381,60 @@ startup smoke test passing, and driven in a browser at 1280px and 412px: one
 panel, 53 plants, 3 facts, 3 announced changes, the decay read-out answering
 Still growing / boundary / Decayed / unknown for 10, 72, 100 and empty hours,
 no sideways scroll, and no panel at all in the other modes.
+
+## 0.46.0 -- the code against the research
+
+Audited every value the app ships against the research layer, as AGENTS.md
+requires. Three real findings, one of them a wrong number in shipped data.
+
+### Bookworm's Favorite Book was still pre-0.27
+
+`+10` Vacuum Damage per application. `research/VACUUM_RESEARCH.md` records the
+0.27 correction in a section titled exactly that: **"+20 Damage each, not
++10"**, with "+100 max", and warns that old guides are unsafe for Vacuum damage.
+
+It survived because three things vouched for it: a `lastVerified` of the same
+day the correction was recorded, a `confidence: "official-high"` source pointing
+at a closed-wiki page (and the wrong page for that book), and a test asserting
+`stepGain === 10`. The suite meant to protect the value was holding it in place.
+
+### Two source citations to a wiki that closed in July 2026
+
+`src/pest-mechanics-data.js` and `src/vacuum-data-patches.js`, plus five URLs in
+the research JSON. AGENTS.md forbids `wiki.hypixel.net` as a source; there were
+per-file guards for `data.js`, `help-locations.js`, core fortune and progression
+-- and these sat outside that list.
+
+Where the community wiki carries the same page and the repository already cites
+it, the URL is substituted. Where it cannot be backed, the entry keeps
+`retiredUrl`, loses its `official-high` confidence and says the page is gone and
+the claim needs re-verification. No URL was invented.
+
+### The Greenhouse table read as a ranking
+
+kb-45 is explicit: *"Do not rank a mutation as universally best from its loot
+multiplier alone."* My own panel, merged the day before, said "Stoplight Petal
+at x25 is 86x the best base crop". It now names the sort as a sort and carries
+the offsetting factors kb-45 lists -- growth duration, layout, spread chance,
+upkeep, opportunity cost, base loot table, decay risk and the player's goal.
+
+### Checked and found correct
+
+- Thorny fortune/Overbloom tables are read from `research/`, not restated, and
+  match the master file exactly.
+- The Century Pufferfish Hat's intrinsic Thorns V is modelled from the id alone,
+  and the ordinary hat correctly does not inherit it.
+- The three-phase Farming/Spawning/Killing model matches knowledge-base 50,
+  including the labels.
+- The Greenhouse table holds the 53 entries kb-45 says it holds.
+- No verification date anywhere predates the newest recorded game change.
+
+Base Vacuum damage (Turbo 150 / Hyper 200 / Infini 300 / Hooverius 400) is
+recorded in the research but not modelled in the app at all. That is a gap, not
+an error, and is left rather than invented.
+
+### Verified
+
+908 node + 7 python tests, overlay audit at 0 findings, planner sweep clean,
+startup smoke test passing, and the Greenhouse panel re-driven in a browser.
+Both findings re-broken on purpose to prove the new tests catch them.
