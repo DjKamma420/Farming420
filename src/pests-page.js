@@ -24,7 +24,6 @@ import {
   guaranteedDropText,
   philipFortuneFor,
 } from './pest-model.js';
-import { VACUUM_BASE_STATS, VACUUM_REFORGES } from '../research/vacuum-damage.js';
 import { oneShotAdvice, pullsToKill } from './vacuum-damage.js';
 import { selectedVacuumReforge } from './item-capabilities.js';
 import { setTextIfChanged } from './set-text.js';
