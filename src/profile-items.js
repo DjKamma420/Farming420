@@ -39,9 +39,9 @@ function encodedData(value) {
   return typeof value.data === 'string' && value.data.trim() ? value.data.trim() : null;
 }
 
-function addContainer(containers, name, value) {
+function addContainer(containers, name, value, metadata = {}) {
   const data = encodedData(value);
-  if (data) containers.push({ name, data });
+  if (data) containers.push({ name, data, ...metadata });
 }
 
 function collectInventoryContainers(member) {
@@ -75,20 +75,42 @@ function collectLoadoutContainers(member) {
 
   const armor = loadout.armor;
   if (armor && typeof armor === 'object') {
+    const equippedSet = armor.equipped_set == null ? null : String(armor.equipped_set);
+    const armorSlots = [
+      ['HELMET', 3],
+      ['CHESTPLATE', 2],
+      ['LEGGINGS', 1],
+      ['BOOTS', 0],
+    ];
     for (const [setId, set] of Object.entries(armor)) {
       if (setId === 'equipped_set' || !set || typeof set !== 'object') continue;
-      for (const slot of ['HELMET', 'CHESTPLATE', 'LEGGINGS', 'BOOTS']) {
-        addContainer(containers, `loadout.armor.${setId}.${slot.toLowerCase()}`, set[slot]);
+      for (const [slot, slotOverride] of armorSlots) {
+        if (setId === equippedSet) {
+          addContainer(containers, 'armor', set[slot], { slotOverride });
+        } else {
+          addContainer(containers, `loadout.armor.${setId}.${slot.toLowerCase()}`, set[slot]);
+        }
       }
     }
   }
 
   const equipment = loadout.equipment;
   if (equipment && typeof equipment === 'object') {
+    const equippedSet = equipment.equipped_set == null ? null : String(equipment.equipped_set);
+    const equipmentSlots = [
+      ['EQUIPMENT_SLOT_1', 0],
+      ['EQUIPMENT_SLOT_2', 1],
+      ['EQUIPMENT_SLOT_3', 2],
+      ['EQUIPMENT_SLOT_4', 3],
+    ];
     for (const [setId, set] of Object.entries(equipment)) {
       if (setId === 'equipped_set' || !set || typeof set !== 'object') continue;
-      for (const slot of ['EQUIPMENT_SLOT_1', 'EQUIPMENT_SLOT_2', 'EQUIPMENT_SLOT_3', 'EQUIPMENT_SLOT_4']) {
-        addContainer(containers, `loadout.equipment.${setId}.${slot.toLowerCase()}`, set[slot]);
+      for (const [slot, slotOverride] of equipmentSlots) {
+        if (setId === equippedSet) {
+          addContainer(containers, 'equipment', set[slot], { slotOverride });
+        } else {
+          addContainer(containers, `loadout.equipment.${setId}.${slot.toLowerCase()}`, set[slot]);
+        }
       }
     }
   }
@@ -147,7 +169,11 @@ export async function extractProfileItems(payload, options = {}) {
 
   for (const container of containers) {
     try {
-      decoded.push(...await normalizeEncodedInventory(container.data, { container: container.name }));
+      const items = await normalizeEncodedInventory(container.data, { container: container.name });
+      if (Number.isInteger(container.slotOverride)) {
+        for (const item of items) item.slot = container.slotOverride;
+      }
+      decoded.push(...items);
     } catch (error) {
       warnings.push(`${container.name}: ${error.message}`);
     }
