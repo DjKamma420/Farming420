@@ -552,6 +552,15 @@ function dashboard() {
       </article>
     </div>
 
+    <aside class="dashboard-farm-tip">
+      <div>
+        <span>Farm layout reference</span>
+        <strong>Copy a working Garden farm</strong>
+        <small>Visit the Garden in-game to inspect the layout and use it as a build reference.</small>
+      </div>
+      <code>/v Dj_Kamma420</code>
+    </aside>
+
     <div class="section-row">
       <div>
         <h2>All crops</h2>
