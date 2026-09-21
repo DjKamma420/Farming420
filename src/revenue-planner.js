@@ -24,6 +24,7 @@ import {
 
 const PLANNER_BENCHMARK_COINS_PER_HOUR = INTERNET_FARMING_TIME_VALUE_COINS_PER_HOUR;
 const FOCUS_AVERAGE_STEP_HOURS = 1;
+const FOCUS_SCOPE_KEY = 'farming420-focus-scope-v1';
 
 // Focus on next is progression, not a catch-all for anything whose price table
 // happens to use a time acquisition mode. Purchases and equipment choices stay
@@ -728,10 +729,22 @@ function benchmarkPanel(raw) {
   </section>`;
 }
 
-function focusNextRows(raw) {
+function focusScope() {
+  return localStorage.getItem(FOCUS_SCOPE_KEY) === 'crop' ? 'crop' : 'global';
+}
+
+function focusItemIsCropScoped(item) {
+  return item?.section === 'crops'
+    || item?.section === 'tools'
+    || (item?.cropScope && item.cropScope !== 'Any');
+}
+
+function focusNextRows(raw, scope = focusScope()) {
   const mode = activityModeForState(raw);
+  const cropScoped = scope === 'crop';
   const rows = benchmarkEvaluatedRows(raw)
-    .filter(row => FOCUS_PROGRESSION_IDS.has(row.item?.id));
+    .filter(row => FOCUS_PROGRESSION_IDS.has(row.item?.id))
+    .filter(row => focusItemIsCropScoped(row.item) === cropScoped);
 
   if (mode === ACTIVITY_MODE.PEST_SPAWN) return rows;
 
@@ -743,6 +756,37 @@ function focusNextRows(raw) {
     const bRank = Number.isFinite(Number(b.item.workbookRank)) ? Number(b.item.workbookRank) : Number.MAX_SAFE_INTEGER;
     return aRank - bRank || String(a.item.name || '').localeCompare(String(b.item.name || ''));
   });
+}
+
+function focusScopePanel(raw, scope) {
+  const cropId = selectedCropId(raw);
+  const cropName = CROPS.find(entry => entry.id === cropId)?.name || 'Crop';
+  const scopeHelp = scope === 'crop'
+    ? `Shows progression that belongs to ${cropName}: crop milestones, the crop's physical tool and other crop-bound goals.`
+    : 'Shows account-wide progression such as Farming Skill, Garden progression and other goals that are not tied to one crop.';
+
+  return `<section class="revenue-panel focus-next-scope">
+    <div>
+      <div class="eyebrow">Focus scope</div>
+      <h2>${scope === 'crop' ? cropName : 'Global'}</h2>
+      <p class="revenue-help">${esc(scopeHelp)}</p>
+    </div>
+    <div class="focus-next-scope-controls">
+      <label>
+        <span>Scope</span>
+        <select data-focus-scope aria-label="Focus scope">
+          <option value="global" ${scope === 'global' ? 'selected' : ''}>Global</option>
+          <option value="crop" ${scope === 'crop' ? 'selected' : ''}>Crop</option>
+        </select>
+      </label>
+      ${scope === 'crop' ? `<label>
+        <span>Crop</span>
+        <select data-focus-crop aria-label="Focus crop">
+          ${CROPS.map(entry => `<option value="${esc(entry.id)}" ${entry.id === cropId ? 'selected' : ''}>${esc(entry.name)}</option>`).join('')}
+        </select>
+      </label>` : ''}
+    </div>
+  </section>`;
 }
 
 function focusNextMarkup(raw, rows) {
@@ -779,19 +823,16 @@ function focusNextMarkup(raw, rows) {
   }).join('');
 }
 
-function enhanceFocusNext() {
-  const host = document.querySelector('.focus-next-list');
-  if (!host || host.dataset.focusNextReady === '1') return;
-  host.dataset.focusNextReady = '1';
-
-  const raw = load();
+function renderFocusNext(host, raw) {
   const mode = activityModeForState(raw);
-  const rows = focusNextRows(raw);
+  const scope = focusScope();
+  const rows = focusNextRows(raw, scope);
   const objectiveHelp = mode === ACTIVITY_MODE.PEST_SPAWN
     ? '<p>Spawning is purpose-ranked: Bonus Pest Chance and Pest cooldown reduction are primary. Farming Fortune is secondary because it only affects crop output during the short spawning window.</p>'
     : `<p>Value is calculated from the active Fortune/Overbloom against the same ${compactCoins(PLANNER_BENCHMARK_COINS_PER_HOUR)}/h standard stream used by Upgrade Planner.</p>`;
 
   host.innerHTML = `
+    ${focusScopePanel(raw, scope)}
     <section class="focus-next-assumption">
       <div><div class="eyebrow">${esc(activityLabel(mode))} earned progression</div><h2>Next things worth focusing on</h2></div>
       <p>Focus on next only tracks progression goals. Pets, gear, reforges and other purchase/equipment choices stay in Upgrade Planner, even when their price is currently unknown.</p>
@@ -800,7 +841,26 @@ function enhanceFocusNext() {
     </section>
     <div class="focus-next-results">${focusNextMarkup(raw, rows)}</div>`;
 
+  host.querySelector('[data-focus-scope]')?.addEventListener('change', event => {
+    localStorage.setItem(FOCUS_SCOPE_KEY, event.target.value === 'crop' ? 'crop' : 'global');
+    renderFocusNext(host, load());
+  });
+
+  host.querySelector('[data-focus-crop]')?.addEventListener('change', event => {
+    const cropSelect = document.querySelector('#cropSelect');
+    if (!cropSelect || cropSelect.value === event.target.value) return;
+    cropSelect.value = event.target.value;
+    cropSelect.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+
   host.querySelectorAll('[data-focus-open]').forEach(button => button.addEventListener('click', () => openItem(button.dataset.focusOpen)));
+}
+
+function enhanceFocusNext() {
+  const host = document.querySelector('.focus-next-list');
+  if (!host || host.dataset.focusNextReady === '1') return;
+  host.dataset.focusNextReady = '1';
+  renderFocusNext(host, load());
 }
 
 function enhanceQol() {
