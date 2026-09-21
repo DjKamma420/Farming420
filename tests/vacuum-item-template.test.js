@@ -4,6 +4,9 @@ import { readFileSync } from 'node:fs';
 
 import { GARDEN_VACUUM_ITEMS } from '../src/exact-farming-items.js';
 import { enchantRowsFor } from '../src/item-editor.js';
+import { ACTIVITY_MODE } from '../src/activity-mode.js';
+import { computeStatTotals } from '../src/computed-stats.js';
+import { VACUUM_BUG_BLENDER } from '../src/vacuum-data-patches.js';
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 
@@ -56,4 +59,21 @@ test('Vacuum reforge uses the same card template and item-art hook as farming to
 test('Vacuum physical state preserves item enchantments', () => {
   const state = read('src/vacuum-state.js');
   assert.match(state, /bucket\.enchantments = bucket\.enchantments && typeof bucket\.enchantments === 'object'/);
+});
+
+
+test('Bug Blender item level contributes its Pest-only Farming Fortune', () => {
+  const state = {
+    selectedCrop: 'melon',
+    profile: {
+      vacuumProgress: {
+        levels: { [VACUUM_BUG_BLENDER.id]: 5 },
+        owned: { [VACUUM_BUG_BLENDER.id]: true },
+        enchantments: { bug_blender: 5 },
+        gemSlots: [],
+      },
+    },
+  };
+  const totals = computeStatTotals(state, 'melon', ACTIVITY_MODE.PEST_KILL);
+  assert.equal(totals.pestFortune, 100);
 });
