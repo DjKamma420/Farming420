@@ -4,15 +4,12 @@ import {
   GARDEN_VACUUM_ITEMS,
   availableOfficialGemstoneSlots,
   catalogItemByExactId,
-  officialGemstoneUnlockCoins,
-  officialGemstoneUnlockItems,
   vacuumFallbackGemstoneSlotCount,
 } from './exact-farming-items.js';
 import {
   GEMSTONE_QUALITIES,
   normalizeToolGemstoneSlots,
   withGemstone,
-  withGemstoneSlotCost,
   withGemstoneSlotUnlocked,
 } from './gemstone-slots.js';
 import {
@@ -80,14 +77,6 @@ function gemOptions(value) {
   }).join('')}`;
 }
 
-function costText(slot) {
-  if (!slot) return '';
-  const parts = officialGemstoneUnlockItems(slot).map(cost => `${cost.amount}× ${cost.itemId}`);
-  const coins = officialGemstoneUnlockCoins(slot);
-  if (coins) parts.push(`${coins.toLocaleString('en-US')} Coins`);
-  return parts.join(' + ');
-}
-
 function progressionHtml(bucket) {
   const selected = String(bucket.skyblockId || '').toUpperCase();
   const item = catalogItem(bucket);
@@ -119,7 +108,6 @@ function progressionHtml(bucket) {
 function gemstonesHtml(bucket) {
   const selected = String(bucket.skyblockId || '').toUpperCase();
   const item = catalogItem(bucket);
-  const exactSlots = officialSlots(bucket, item);
   const count = socketCount(bucket, item);
   const slots = normalizeToolGemstoneSlots(bucket.gemSlots, count);
   const peridot = vacuumPeridotFortune(bucket);
@@ -129,12 +117,9 @@ function gemstonesHtml(bucket) {
     <div class="workspace-gem-summary"><strong>${count ? `${peridot} Farming Fortune from filled active Peridot sockets` : 'This Vacuum has no Peridot socket.'}</strong><span>${count} physical socket${count === 1 ? '' : 's'}</span></div>
     <div class="workspace-gem-list">
       ${slots.map((slot, index) => {
-        const meta = exactSlots?.[index];
-        const official = costText(meta);
-        const coinCost = officialGemstoneUnlockCoins(meta);
         return `<div class="workspace-gem-slot ${slot.unlocked ? 'unlocked' : 'locked'}">
-          <label class="workspace-slot-toggle"><input type="checkbox" data-vacuum-gem-unlocked="${index}" ${slot.unlocked ? 'checked' : ''}><span>Peridot Slot ${index + 1}</span><small>${slot.unlocked ? 'Unlocked' : 'Locked'}${official ? ` · official: ${esc(official)}` : ''}</small></label>
-          <label><span>Unlock coin cost</span><input type="number" min="0" data-vacuum-gem-cost="${index}" value="${slot.unlockCostCoins ?? ''}" placeholder="${coinCost || ''}" ${slot.unlocked ? '' : 'disabled'}></label>
+          <label class="workspace-slot-toggle"><input type="checkbox" data-vacuum-gem-unlocked="${index}" ${slot.unlocked ? 'checked' : ''}><span>Peridot Slot ${index + 1}</span><small>${slot.unlocked ? 'Unlocked' : 'Locked'}</small></label>
+          
           <label><span>Gemstone</span><select data-vacuum-gem-value="${index}" ${slot.unlocked ? '' : 'disabled'}>${gemOptions(slot.gem)}</select></label>
         </div>`;
       }).join('') || '<p class="hint">No gemstone socket belongs to this physical Vacuum.</p>'}
@@ -153,11 +138,6 @@ function bind(section) {
     const item = catalogItem(bucket);
     const count = socketCount(bucket, item);
     bucket.gemSlots = withGemstoneSlotUnlocked(bucket.gemSlots, Number(event.target.dataset.vacuumGemUnlocked), event.target.checked, count);
-  })));
-  section.querySelectorAll('[data-vacuum-gem-cost]').forEach(input => input.addEventListener('change', event => write(bucket => {
-    const item = catalogItem(bucket);
-    const count = socketCount(bucket, item);
-    bucket.gemSlots = withGemstoneSlotCost(bucket.gemSlots, Number(event.target.dataset.vacuumGemCost), event.target.value, count);
   })));
   section.querySelectorAll('[data-vacuum-gem-value]').forEach(select => select.addEventListener('change', event => write(bucket => {
     const item = catalogItem(bucket);
