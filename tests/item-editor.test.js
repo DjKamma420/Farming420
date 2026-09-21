@@ -219,3 +219,9 @@ test('slot-specific rows expose their real minimum and true maximum', () => {
   assert.equal(thorns.trueMaxLevel, 5);
   assert.equal(thorns.state, 'special-maxed');
 });
+
+
+test("withEnchantLevel clamps a manually supplied level to the enchantment's real minimum", () => {
+  assert.deepEqual(withEnchantLevel({ enchantments: {} }, 'big_brain', 1, 5), { big_brain: 3 });
+  assert.deepEqual(withEnchantLevel({ enchantments: {} }, 'cayenne', 2, 5), { cayenne: 4 });
+});
