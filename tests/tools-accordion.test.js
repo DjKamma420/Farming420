@@ -163,14 +163,14 @@ test('Vacuum and crop tools share the same docked-editor behavior', () => {
 });
 
 
-test('Vacuum uses the same workspace editor primitives as crop tools', () => {
+test('Vacuum uses the same item-editor and reforge templates as crop tools', () => {
   const vacuum = read('loadout-capabilities-ui.js');
   assert.match(vacuum, /panel\.className = 'item-editor rarity-unknown sb-docked-editor sb-tool-editor-collapsed'/);
   assert.doesNotMatch(vacuum, /panel\.className = 'item-editor pest-loadout-panel/);
-  assert.match(vacuum, /class="workspace-section-head"/);
-  assert.match(vacuum, /class="workspace-choice-list"/);
-  assert.match(vacuum, /class="workspace-choice \$\{selected \? 'selected' : ''\}"/);
-  assert.match(vacuum, /class="workspace-radio"/);
+  assert.match(vacuum, /class="item-editor-section sb-reforge-panel"/);
+  assert.match(vacuum, /class="sb-reforge-grid sb-reforge-grid-compact setup-reforge-grid"/);
+  assert.match(vacuum, /class="sb-reforge-card setup-reforge-card/);
+  assert.match(vacuum, /data-reforge-item-id=/);
   assert.match(vacuum, /class="workspace-level-list"/);
   assert.match(vacuum, /class="workspace-stepper"/);
 });
