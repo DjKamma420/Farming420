@@ -99,6 +99,10 @@ test('farming and spawning use crop tools while killing uses Vacuum/loot effects
   assert.equal(itemAppliesToActivity(feast, ACTIVITY_MODE.FARM), false);
   assert.equal(itemAppliesToActivity(feast, ACTIVITY_MODE.PEST_SPAWN), false);
   assert.equal(itemAppliesToActivity(feast, ACTIVITY_MODE.PEST_KILL), false);
+
+  assert.equal(itemAppliesToActivity(feast, ACTIVITY_MODE.FARM, 'Harvest Feast'), true);
+  assert.equal(itemAppliesToActivity(feast, ACTIVITY_MODE.PEST_SPAWN, 'Harvest Feast'), true);
+  assert.equal(itemAppliesToActivity(feast, ACTIVITY_MODE.FARM, 'Jacob Contest'), false);
 });
 
 test('computed totals isolate BPC to spawning and pest loot Overbloom/Fortune to killing', () => {
