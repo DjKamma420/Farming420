@@ -1251,11 +1251,6 @@ function farmingLevel() {
   return Number.isFinite(entered) && entered > 0 ? entered : null;
 }
 
-function petChoice(phase) {
-  return state.profile.petChoices?.[phase] || null;
-}
-
-
 const BEGINNER_PLACES = Object.freeze([
   {
     name: 'Farm Merchant',
@@ -1439,16 +1434,15 @@ function guidePage(embedded = false) {
       </div>`).join('')}
     </div>
 
-    <div class="section-row"><div><h2>Pets</h2><p>Your best pet changes between farming, spawning Pests and killing them. Pick the one you use and it is remembered.</p></div></div>
+    <div class="section-row"><div><h2>Pets</h2><p>The useful pet changes between levelling, farming crops, spawning Pests and killing them. These cards explain the role only; pet configuration stays outside Info.</p></div></div>
     ${PET_OPTIONS.map(group => `
       <div class="pet-group">
         <div class="eyebrow">${esc(group.label)}</div>
         <div class="pet-options">
-          ${group.options.map(option => `<button class="pet-option ${petChoice(group.phase) === option.name ? 'chosen' : ''}"
-              data-pet-phase="${esc(group.phase)}" data-pet-name="${esc(option.name)}">
+          ${group.options.map(option => `<article class="pet-option">
             <div class="pet-head">${badge(TIER_LABEL[option.tier], option.tier === 'best' ? 'maxed' : (option.tier === 'budget' ? 'soft' : 'owned'))}<strong>${esc(option.name)}</strong></div>
             <p>${esc(option.note)}</p>
-          </button>`).join('')}
+          </article>`).join('')}
         </div>
       </div>`).join('')}
 
@@ -1483,13 +1477,6 @@ function guidePage(embedded = false) {
 function bindGuide() {
   document.querySelectorAll('[data-guide-stage]').forEach(el => el.addEventListener('click', () => {
     state.guideStage = el.dataset.guideStage; saveState(); render();
-  }));
-  document.querySelectorAll('[data-pet-phase]').forEach(el => el.addEventListener('click', () => {
-    state.profile.petChoices ||= {};
-    const phase = el.dataset.petPhase;
-    // Clicking the chosen option again clears it.
-    state.profile.petChoices[phase] = state.profile.petChoices[phase] === el.dataset.petName ? null : el.dataset.petName;
-    saveState(); render();
   }));
 }
 
