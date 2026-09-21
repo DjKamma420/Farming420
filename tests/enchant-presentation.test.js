@@ -112,10 +112,10 @@ test('unknown maxima stay neutral instead of being guessed from a high level', (
 });
 
 test('documented normal-enchant conflict groups are explicit', () => {
-  assert.deepEqual(enchantMetadata('protection').conflicts.sort(), ['blast_protection', 'fire_protection', 'projectile_protection']);
+  assert.deepEqual([...enchantMetadata('protection').conflicts].sort(), ['blast_protection', 'fire_protection', 'projectile_protection']);
   assert.deepEqual(enchantMetadata('big_brain').conflicts, ['small_brain']);
   assert.deepEqual(enchantMetadata('rejuvenate').conflicts, ['respite']);
-  assert.deepEqual(enchantMetadata('hardened_vitality').conflicts.sort(), ['strong_vitality', 'vampiric_vitality', 'vivacious_vitality']);
+  assert.deepEqual([...enchantMetadata('hardened_vitality').conflicts].sort(), ['strong_vitality', 'vampiric_vitality', 'vivacious_vitality']);
 });
 
 test('special starting tiers are represented instead of inventing tier I', () => {
