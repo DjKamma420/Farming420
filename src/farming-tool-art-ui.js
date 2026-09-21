@@ -47,7 +47,7 @@ function enhanceWorkspaceEditor(raw) {
   const cropId = select?.value || raw.selectedCrop || 'melon';
   const tool = toolForCropId(cropId);
   const key = artKey(raw, cropId);
-  const portrait = document.querySelector('[data-tool-editor="1"] .item-portrait');
+  const portrait = document.querySelector('.sb-tool-card.selected[data-sb-tool-crop] .sb-tool-art');
   ensureArtHost(portrait, key, tool ? `${tool} texture` : null);
 }
 
@@ -69,8 +69,8 @@ function mutationNeedsApply(mutations) {
   return mutations.some(mutation => [...mutation.addedNodes].some(node => {
     if (!(node instanceof Element)) return false;
     if (node.classList.contains('workspace-tool-art')) return false;
-    return node.matches?.('#workspaceToolSelect, [data-tool-editor="1"]')
-      || node.querySelector?.('#workspaceToolSelect, [data-tool-editor="1"]');
+    return node.matches?.('#workspaceToolSelect, .sb-tool-card[data-sb-tool-crop]')
+      || node.querySelector?.('#workspaceToolSelect, .sb-tool-card[data-sb-tool-crop]');
   }));
 }
 

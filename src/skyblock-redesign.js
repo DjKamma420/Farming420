@@ -150,6 +150,8 @@ function toolArtForTier(cropId, tier) {
 let manifest = null;
 let applying = false;
 let collapsedToolKey = null;
+let activeToolSurface = 'tool';
+let vacuumCollapsed = false;
 
 function readState() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
@@ -333,16 +335,46 @@ function decorateCropIcons() {
 }
 
 
+function syncToolSurfaceSelection() {
+  const grid = document.querySelector('.sb-tool-picker .sb-tool-grid');
+  if (!grid) return;
+  const selectedKey = toolKeyForCropId(activeCropId());
+  grid.querySelectorAll('.sb-tool-card').forEach(card => {
+    const isVacuum = card.hasAttribute('data-sb-vacuum');
+    const selected = isVacuum
+      ? activeToolSurface === 'vacuum'
+      : activeToolSurface === 'tool' && toolKeyForCropId(card.dataset.sbToolCrop) === selectedKey;
+    if (card.classList.contains('selected') !== selected) card.classList.toggle('selected', selected);
+  });
+}
+
 function handleToolCardClick(cropId) {
   const clickedKey = toolKeyForCropId(cropId);
   const selectedKey = toolKeyForCropId(activeCropId());
-  if (clickedKey === selectedKey) {
+  if (activeToolSurface === 'tool' && clickedKey === selectedKey) {
     collapsedToolKey = collapsedToolKey === selectedKey ? null : selectedKey;
     dockToolEditor();
     return;
   }
+  activeToolSurface = 'tool';
   collapsedToolKey = null;
+  if (clickedKey === selectedKey) {
+    syncToolSurfaceSelection();
+    dockToolEditor();
+    return;
+  }
   setCrop(cropId);
+}
+
+function handleVacuumCardClick() {
+  if (activeToolSurface === 'vacuum') vacuumCollapsed = !vacuumCollapsed;
+  else {
+    activeToolSurface = 'vacuum';
+    vacuumCollapsed = false;
+    collapsedToolKey = null;
+  }
+  syncToolSurfaceSelection();
+  dockToolEditor();
 }
 
 function toolPicker() {
@@ -362,12 +394,19 @@ function toolPicker() {
   const selectedKey = toolKeyForCropId(cropId);
   const section = document.createElement('section');
   section.className = 'sb-tool-picker';
-  section.innerHTML = `<div class="sb-block-title"><div><span class="eyebrow">Farming Toolkit</span><h2>Choose a physical tool</h2></div><span class="sb-hint">No global crop dropdown. The selected tool defines the crop context.</span></div>
-    <div class="sb-tool-grid">${uniqueTools().map(tool => {
+  section.innerHTML = `<div class="sb-block-title"><div><span class="eyebrow">Farming Toolkit</span><h2>Choose a physical tool or Vacuum</h2></div><span class="sb-hint">Each item opens the same compact editor pattern. Crop tools define the crop context; Vacuum is independent.</span></div>
+    <div class="sb-tool-grid">
+      <button class="sb-tool-card sb-vacuum-card ${activeToolSurface === 'vacuum' ? 'selected' : ''}" data-sb-vacuum="1">
+        <span class="sb-tool-art"><span class="sb-tool-fallback">V</span></span>
+        <span class="sb-tool-copy"><strong>Pest Vacuum</strong><small>Pest killing tool</small></span>
+        <span class="sb-tool-tier">Vacuum</span>
+        <span class="sb-state-dot" aria-hidden="true"></span>
+      </button>
+      ${uniqueTools().map(tool => {
       const firstCrop = tool.crops[0];
       const tier = toolTierFor(state, firstCrop.id);
       const iconUrl = assetByCandidates(toolArtForTier(firstCrop.id, tier));
-      return `<button class="sb-tool-card ${tool.key === selectedKey ? 'selected' : ''}" data-sb-tool-crop="${firstCrop.id}">
+      return `<button class="sb-tool-card ${activeToolSurface === 'tool' && tool.key === selectedKey ? 'selected' : ''}" data-sb-tool-crop="${firstCrop.id}">
         <span class="sb-tool-art">${img(iconUrl, `${tool.name} ${tierLabel(tier)}`)}<span class="sb-tool-fallback">${firstCrop.icon}</span></span>
         <span class="sb-tool-copy"><strong>${tool.name}</strong><small>${tool.crops.map(crop => crop.name).join(' / ')}</small></span>
         <span class="sb-tool-tier">${tierLabel(tier)}</span>
@@ -382,6 +421,7 @@ function toolPicker() {
   section.dataset.sbSignature = signature;
   if (existing) existing.replaceWith(section);
   else head.insertAdjacentElement('afterend', section);
+  section.querySelector('[data-sb-vacuum]')?.addEventListener('click', handleVacuumCardClick);
   section.querySelectorAll('[data-sb-tool-crop]').forEach(button => button.addEventListener('click', () => handleToolCardClick(button.dataset.sbToolCrop)));
 }
 
@@ -403,18 +443,30 @@ function toolPicker() {
 function dockToolEditor() {
   if (pageId() !== 'tools') return;
   const grid = document.querySelector('.sb-tool-picker .sb-tool-grid');
-  const editor = document.querySelector('[data-tool-editor="1"]');
-  if (!grid || !editor) return;
+  if (!grid) return;
   const selected = grid.querySelector('.sb-tool-card.selected')
     || grid.querySelector('.sb-tool-card');
   if (!selected) return;
-  const selectedKey = toolKeyForCropId(selected.dataset.sbToolCrop);
-  const collapsed = collapsedToolKey === selectedKey;
+
+  const vacuumSelected = selected.hasAttribute('data-sb-vacuum');
+  const toolEditor = document.querySelector('[data-tool-editor="1"]');
+  const vacuumEditor = document.querySelector('[data-vacuum-panel]');
+  const editor = vacuumSelected ? vacuumEditor : toolEditor;
+  const inactiveEditor = vacuumSelected ? toolEditor : vacuumEditor;
+  if (!editor) return;
+
+  const selectedKey = vacuumSelected ? 'vacuum' : toolKeyForCropId(selected.dataset.sbToolCrop);
+  const collapsed = vacuumSelected ? vacuumCollapsed : collapsedToolKey === selectedKey;
   grid.querySelectorAll('.sb-tool-card').forEach(button => {
     const expanded = button === selected && !collapsed;
     const nextValue = expanded ? 'true' : 'false';
     if (button.getAttribute('aria-expanded') !== nextValue) button.setAttribute('aria-expanded', nextValue);
   });
+
+  if (inactiveEditor) {
+    if (!inactiveEditor.classList.contains('sb-docked-editor')) inactiveEditor.classList.add('sb-docked-editor');
+    if (!inactiveEditor.classList.contains('sb-tool-editor-collapsed')) inactiveEditor.classList.add('sb-tool-editor-collapsed');
+  }
   if (!editor.classList.contains('sb-docked-editor')) editor.classList.add('sb-docked-editor');
   if (editor.classList.contains('sb-tool-editor-collapsed') !== collapsed) {
     editor.classList.toggle('sb-tool-editor-collapsed', collapsed);
@@ -480,7 +532,7 @@ function reforgePanel() {
 
 function toolPortrait() {
   if (pageId() !== 'tools') return;
-  const portrait = document.querySelector('[data-tool-editor] .item-portrait');
+  const portrait = document.querySelector('.sb-tool-card.selected[data-sb-tool-crop] .sb-tool-art');
   if (!portrait) return;
   const cropId = activeCropId();
   const tier = toolTierFor(readState(), cropId);
@@ -508,6 +560,7 @@ function apply() {
     decorateNavigation();
     decorateCropIcons();
     toolPicker();
+    syncToolSurfaceSelection();
     dockToolEditor();
     reforgePanel();
     toolPortrait();

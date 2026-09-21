@@ -60,19 +60,17 @@ function renderRecommendations(root,crop,state) {
   if (goals.innerHTML !== markup) goals.innerHTML = markup;
 }
 function renderTier(root,crop,state) {
-  const editor=root.querySelector('[data-tool-editor="1"]'); if(!editor)return;
+  const card=root.querySelector('.sb-tool-card.selected[data-sb-tool-crop]'); if(!card)return;
   const tier=selectedToolTier(state,crop.id), label=toolTierLabel(tier), asset=toolAssetForTier(crop.id,tier);
-  const portrait=editor.querySelector('.item-portrait');
+  const portrait=card.querySelector('.sb-tool-art');
   if(portrait){
     if(asset){ if(portrait.dataset.packAsset!==asset) portrait.dataset.packAsset=asset; }
     else if('packAsset' in portrait.dataset) delete portrait.dataset.packAsset;
-    let badge=portrait.querySelector('.workspace-tier-badge');
-    if(!badge){ badge=document.createElement('span'); badge.className='workspace-tier-badge'; portrait.append(badge); }
-    // Setting textContent replaces the text node even when the string is
-    // identical, which is a mutation, which re-enters this function.
+  }
+  const badge=card.querySelector('.sb-tool-tier');
+  if(badge){
     if(badge.textContent!==label) badge.textContent=label;
   }
-  const status=editor.querySelector('.item-rarity'); if(status && !status.textContent.includes(label)) status.textContent=`${label} · ${status.textContent}`;
 }
 /**
  * Every write below lands in the subtree the observer watches, so the writes
