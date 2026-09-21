@@ -193,6 +193,7 @@ function vacuumPanelMarkup(raw) {
       </div>
       <p class="pest-note" data-vacuum-advice>${build.vacuumId ? esc(killAdviceText(result, advice)) : 'Choose a Vacuum under Tools first.'}</p>
       <p class="pest-note">Vacuum selection, Reforge, books, Recombobulator and gemstones are configured under Tools. This page only analyzes the resulting Pest kill threshold.</p>
+      <p class="pest-note">Pulls, not seconds: pull rate, range and travel are not modeled, so no time estimate is claimed.</p>
     </div>
   </details>`;
 }
