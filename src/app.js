@@ -1518,7 +1518,7 @@ function render({ preserveScroll = true } = {}) {
     case 'chips': content = genericSectionPage('chips','Garden Chips','Garden Chips','Each chip has its own level path and activation conditions.'); break;
     case 'shards': content = genericSectionPage('shards','Attribute Shards','Shards','Track day/night, pest-conditional and general Farming Fortune shards separately.'); break;
     case 'buffs': content = effectsPage(); break;
-    case 'pests': content = genericSectionPage('pests','Pests','Pest Setup','Pest-specific stats, spawn mechanics and loot logic stay separate from normal crop farming.'); break;
+    case 'pests': content = genericSectionPage('pests','Pests','Pest Analysis','Vacuum kill thresholds and Pesthunter Phillip calculations live here. Explanations and strategy are in Info.'); break;
     case 'qol': content = qolPage(); break;
     case 'info': content = infoPage(); break;
     case 'setups': content = setupsPage(); break;
