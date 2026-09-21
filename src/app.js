@@ -694,7 +694,7 @@ function cropsPage() {
       ${inputHint('input:cropFortune', `Crop-specific Fortune for ${crop().name}, kept separate from your global total.`)}
       <div class="crop-scope-addon">
         <div>
-          <div class="eyebrow">This page</div>
+          <div class="eyebrow">Crop section</div>
           <strong>Only bonuses that belong to ${esc(crop().name)}</strong>
           <p>Tool reforges, enchantments and gemstones are edited under Tools. Armor, equipment and pets are edited in Setups.</p>
         </div>
@@ -1334,7 +1334,7 @@ function guidePage() {
       <div><span>Next armour</span><strong>${esc(next ? `${next.set} at ${next.level}` : (level === null ? '—' : 'All reached'))}</strong></div>
       <div><span>Stages</span><strong>${STAGES.length}</strong></div>
     </div>
-    ${level === null ? '<div class="hint">Sync your profile in Settings, or enter your Farming Skill level on the Account page, and this guide will follow along.</div>' : ''}
+    ${level === null ? '<div class="hint">Sync your profile in Settings, or enter your Farming Skill level on the Garden page, and this guide will follow along.</div>' : ''}
 
     <div class="setup-tabs">
       ${STAGES.map(stage => `<button class="setup-tab ${stage.id === openStage ? 'active' : ''}" data-guide-stage="${esc(stage.id)}">
