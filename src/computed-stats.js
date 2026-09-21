@@ -84,13 +84,13 @@ export function statAxisFor(item) {
   return STAT_AXIS.GLOBAL_FORTUNE;
 }
 
-function contributionFor(state, item, cropId, mode = null) {
+function contributionFor(state, item, cropId, mode = null, activeContextScope = null) {
   const profile = state?.profile || {};
   if (!appliesToCrop(item, cropId)) return null;
   const axis = statAxisFor(item);
   if (!axis) return null;
 
-  if (mode && !itemAppliesToActivity(item, mode)) return null;
+  if (mode && !itemAppliesToActivity(item, mode, activeContextScope)) return null;
   // BPC is a spawn-phase stat. Keeping it out of Farming/Killing totals prevents
   // the old two-set model from making those loadouts look better than they are.
   if (mode && axis === STAT_AXIS.BONUS_PEST_CHANCE && mode !== ACTIVITY_MODE.PEST_SPAWN) return null;
@@ -136,7 +136,7 @@ function contributionFor(state, item, cropId, mode = null) {
   return { axis, value: 0, incomplete: true, id: item.id, reason: 'total formula not modeled yet' };
 }
 
-export function computeTotalsFromEntries(state, entries, cropId = state?.selectedCrop || 'melon', mode = null) {
+export function computeTotalsFromEntries(state, entries, cropId = state?.selectedCrop || 'melon', mode = null, activeContextScope = null) {
   const totals = {
     globalFortune: 0,
     cropFortune: 0,
@@ -161,7 +161,7 @@ export function computeTotalsFromEntries(state, entries, cropId = state?.selecte
   };
 
   for (const item of entries) {
-    const part = contributionFor(state, item, cropId, mode);
+    const part = contributionFor(state, item, cropId, mode, activeContextScope);
     if (!part) continue;
     totals[part.axis] += part.value;
     totals.sourceCount[part.axis] += 1;
@@ -221,8 +221,18 @@ function applyDerivedMechanics(state, totals, mode, cropId) {
   return totals;
 }
 
-export function computeStatTotals(state, cropId = state?.selectedCrop || 'melon', mode = activityModeForState(state)) {
-  return applyDerivedMechanics(state, computeTotalsFromEntries(state, UPGRADES, cropId, mode), mode, cropId);
+export function computeStatTotals(
+  state,
+  cropId = state?.selectedCrop || 'melon',
+  mode = activityModeForState(state),
+  activeContextScope = null,
+) {
+  return applyDerivedMechanics(
+    state,
+    computeTotalsFromEntries(state, UPGRADES, cropId, mode, activeContextScope),
+    mode,
+    cropId,
+  );
 }
 
 export function computedStatsSnapshot(state, mode = activityModeForState(state)) {
