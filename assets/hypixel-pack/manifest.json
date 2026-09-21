@@ -129,7 +129,7 @@
     },
     "admin_bow": {
       "source": "uncategorized/admin_bow",
-      "texture": "textures/item/uncategorized/admin_bow_pulling_2.png"
+      "texture": "textures/item/uncategorized/admin_bow_pulling_1.png"
     },
     "admin_chisel": {
       "source": "glacite/admin_chisel",
@@ -141,7 +141,7 @@
     },
     "admin_lava_rod": {
       "source": "fishing/rod/admin_lava_rod",
-      "texture": "textures/item/fishing/rod/admin_lava_rod.png"
+      "texture": "textures/item/fishing/rod/admin_lava_rod_cast.png"
     },
     "admin_sword": {
       "source": "island_relevant/rift/weapons/admin_sword",
@@ -153,7 +153,7 @@
     },
     "admin_water_rod": {
       "source": "fishing/rod/admin_water_rod",
-      "texture": "textures/item/fishing/rod/admin_water_rod_cast.png"
+      "texture": "textures/item/fishing/rod/admin_water_rod.png"
     },
     "advanced_gardening_axe": {
       "source": "island_relevant/garden/tools/advanced_gardening_axe",
@@ -253,7 +253,7 @@
     },
     "artisanal_shortbow": {
       "source": "uncategorized/artisanal_shortbow",
-      "texture": "textures/item/uncategorized/artisanal_shortbow_pulling_0.png"
+      "texture": "textures/item/uncategorized/artisanal_shortbow_pulling_1.png"
     },
     "ascension_rope": {
       "source": "uncategorized/ascension_rope",
@@ -305,7 +305,7 @@
     },
     "atomsplit_katana": {
       "source": "slayer/enderman/weapons/katanas/atomsplit_katana",
-      "texture": "textures/item/slayer/enderman/weapons/katanas/atomsplit_katana_in_hand.png"
+      "texture": "textures/item/slayer/enderman/weapons/katanas/atomsplit_katana.png"
     },
     "aurora_staff": {
       "source": "uncategorized/aurora_staff",
@@ -389,7 +389,7 @@
     },
     "bingbow": {
       "source": "bingo/bingbow",
-      "texture": "textures/item/bingo/bingbow_pulling_0.png"
+      "texture": "textures/item/bingo/bingbow_pulling_2.png"
     },
     "binghoe": {
       "source": "bingo/binghoe",
@@ -401,11 +401,11 @@
     },
     "bingo_lava_rod": {
       "source": "bingo/bingo_lava_rod",
-      "texture": "textures/item/bingo/bingo_lava_rod_cast.png"
+      "texture": "textures/item/bingo/bingo_lava_rod.png"
     },
     "bingo_rod": {
       "source": "bingo/bingo_rod",
-      "texture": "textures/item/bingo/bingo_rod_cast.png"
+      "texture": "textures/item/bingo/bingo_rod.png"
     },
     "bingolibur": {
       "source": "bingo/bingolibur",
@@ -509,7 +509,7 @@
     },
     "bonzos_staff_fragged": {
       "source": "island_relevant/dungeons/bonzos_staff_fragged",
-      "texture": "textures/item/island_relevant/dungeons/bonzos_staff_fragged_in_hand.png"
+      "texture": "textures/item/island_relevant/dungeons/bonzos_staff_fragged.png"
     },
     "booster_fighting": {
       "source": "boosters/common/booster_fighting",
@@ -589,7 +589,7 @@
     },
     "broken_bow": {
       "source": "broken/broken_bow",
-      "texture": "textures/item/broken/broken_bow_pulling_2.png"
+      "texture": "textures/item/broken/broken_bow_pulling_1.png"
     },
     "broken_hoe": {
       "source": "broken/broken_hoe",
@@ -691,13 +691,33 @@
       "source": "fishing/misc/can_of_worms",
       "texture": "textures/item/fishing/misc/can_of_worms.png"
     },
+    "candy_bean_tintable": {
+      "source": "cosmetic/taylor/fall26/candy_bean_tintable",
+      "texture": "textures/item/cosmetic/taylor/fall26/model_candy_bean_tintable.png"
+    },
+    "candy_choc_cube": {
+      "source": "cosmetic/taylor/fall26/candy_choc_cube",
+      "texture": "textures/item/cosmetic/taylor/fall26/model_candy_choc_cube.png"
+    },
+    "candy_lollipop_tintable": {
+      "source": "cosmetic/taylor/fall26/candy_lollipop_tintable",
+      "texture": "textures/item/cosmetic/taylor/fall26/model_candy_lollipop_tintable.png"
+    },
+    "candy_mint_tintable": {
+      "source": "cosmetic/taylor/fall26/candy_mint_tintable",
+      "texture": "textures/item/cosmetic/taylor/fall26/model_candy_mint_tintable.png"
+    },
+    "candy_toffee_tintable": {
+      "source": "cosmetic/taylor/fall26/candy_toffee_tintable",
+      "texture": "textures/item/cosmetic/taylor/fall26/model_candy_toffee_tintable.png"
+    },
     "candycomb": {
       "source": "island_relevant/foraging_2/salts/candycomb",
       "texture": "textures/item/island_relevant/foraging_2/salts/candycomb.png"
     },
     "carnival_rod": {
       "source": "uncategorized/carnival_rod",
-      "texture": "textures/item/uncategorized/carnival_rod.png"
+      "texture": "textures/item/uncategorized/carnival_rod_cast.png"
     },
     "carnival_shovel_diamond": {
       "source": "uncategorized/carnival_shovel_diamond",
@@ -737,7 +757,7 @@
     },
     "challenging_rod": {
       "source": "fishing/rod/challenging_rod",
-      "texture": "textures/item/fishing/rod/challenging_rod_cast.png"
+      "texture": "textures/item/fishing/rod/challenging_rod.png"
     },
     "chicken_axe": {
       "source": "uncategorized/chicken_axe",
@@ -881,7 +901,7 @@
     },
     "critter_capsule": {
       "source": "island_relevant/safari/critter_capsule",
-      "texture": "textures/item/island_relevant/safari/critter_capsule_active.png"
+      "texture": "textures/item/island_relevant/safari/model_critter_capsule.png"
     },
     "critter_capsule_active": {
       "source": "island_relevant/safari/critter_capsule_active",
@@ -929,7 +949,7 @@
     },
     "dark_claymore": {
       "source": "uncategorized/dark_claymore",
-      "texture": "textures/item/uncategorized/dark_claymore.png"
+      "texture": "textures/item/uncategorized/dark_claymore_in_hand.png"
     },
     "dead_plant": {
       "source": "island_relevant/garden/greenhouse/dead_plant",
@@ -937,7 +957,7 @@
     },
     "death_bow": {
       "source": "uncategorized/death_bow",
-      "texture": "textures/item/uncategorized/death_bow_pulling_1.png"
+      "texture": "textures/item/uncategorized/death_bow_pulling_0.png"
     },
     "deathripper_dagger": {
       "source": "slayer/blaze/swords/deathripper_dagger",
@@ -949,7 +969,7 @@
     },
     "decent_bow": {
       "source": "uncategorized/decent_bow",
-      "texture": "textures/item/uncategorized/decent_bow.png"
+      "texture": "textures/item/uncategorized/decent_bow_pulling_2.png"
     },
     "decoy": {
       "source": "uncategorized/decoy",
@@ -1001,7 +1021,7 @@
     },
     "divans_drill": {
       "source": "uncategorized/divans_drill",
-      "texture": "textures/item/uncategorized/divans_drill_head_animated.png"
+      "texture": "textures/item/uncategorized/divans_drill_handle.png"
     },
     "divans_drill_head_animated": {
       "source": "uncategorized/divans_drill_head_animated",
@@ -1009,7 +1029,7 @@
     },
     "dragon_shortbow": {
       "source": "island_relevant/combat_3/dragon_shortbow",
-      "texture": "textures/item/island_relevant/combat_3/dragon_shortbow.png"
+      "texture": "textures/item/island_relevant/combat_3/dragon_shortbow_pulling_1.png"
     },
     "dreadlord_sword": {
       "source": "uncategorized/dreadlord_sword",
@@ -1053,7 +1073,7 @@
     },
     "elles_lava_rod": {
       "source": "island_relevant/crimson_isle/kuudra/elles_lava_rod",
-      "texture": "textures/item/island_relevant/crimson_isle/kuudra/elles_lava_rod_cast.png"
+      "texture": "textures/item/island_relevant/crimson_isle/kuudra/elles_lava_rod.png"
     },
     "elles_pickaxe": {
       "source": "island_relevant/crimson_isle/kuudra/elles_pickaxe",
@@ -1089,7 +1109,7 @@
     },
     "end_stone_bow": {
       "source": "island_relevant/combat_3/weapons/end_stone_bow",
-      "texture": "textures/item/island_relevant/combat_3/weapons/end_stone_bow_pulling_1.png"
+      "texture": "textures/item/island_relevant/combat_3/weapons/end_stone_bow_pulling_0.png"
     },
     "end_sword": {
       "source": "island_relevant/combat_3/weapons/end_sword",
@@ -1097,7 +1117,7 @@
     },
     "ender_bow": {
       "source": "island_relevant/combat_3/weapons/ender_bow",
-      "texture": "textures/item/island_relevant/combat_3/weapons/ender_bow_pulling_0.png"
+      "texture": "textures/item/island_relevant/combat_3/weapons/ender_bow_pulling_2.png"
     },
     "endstone_blade": {
       "source": "island_relevant/combat_3/weapons/endstone_blade",
@@ -1161,7 +1181,7 @@
     },
     "explosive_bow": {
       "source": "uncategorized/explosive_bow",
-      "texture": "textures/item/uncategorized/explosive_bow_pulling_1.png"
+      "texture": "textures/item/uncategorized/explosive_bow_pulling_0.png"
     },
     "extremely_mild_adhesive": {
       "source": "island_relevant/foraging_3/reforge_stones/extremely_mild_adhesive",
@@ -1193,7 +1213,7 @@
     },
     "felthorn_reaper_fragged": {
       "source": "island_relevant/dungeons/felthorn_reaper_fragged",
-      "texture": "textures/item/island_relevant/dungeons/felthorn_reaper_fragged_in_hand.png"
+      "texture": "textures/item/island_relevant/dungeons/felthorn_reaper_fragged.png"
     },
     "fermento": {
       "source": "island_relevant/garden/fermento",
@@ -1273,7 +1293,7 @@
     },
     "fire_fury_staff": {
       "source": "uncategorized/fire_fury_staff",
-      "texture": "textures/item/uncategorized/fire_fury_staff.png"
+      "texture": "textures/item/uncategorized/fire_fury_staff_in_hand.png"
     },
     "fire_in_a_bottle": {
       "source": "island_relevant/garden/fire_in_a_bottle",
@@ -1285,7 +1305,7 @@
     },
     "firedust_dagger": {
       "source": "slayer/blaze/swords/firedust_dagger",
-      "texture": "textures/item/slayer/blaze/swords/firedust_dagger_auric.png"
+      "texture": "textures/item/slayer/blaze/swords/firedust_dagger_ashen.png"
     },
     "fish_bait": {
       "source": "fishing/bait/fish_bait",
@@ -1411,9 +1431,61 @@
       "source": "uncategorized/florid_zombie_sword",
       "texture": "textures/item/uncategorized/florid_zombie_sword.png"
     },
+    "flower_bell_tintable": {
+      "source": "cosmetic/taylor/fall26/flower_bell_tintable",
+      "texture": "textures/item/cosmetic/taylor/fall26/model_flower_bell_tintable.png"
+    },
+    "flower_daisy_small_tintable": {
+      "source": "cosmetic/taylor/fall26/flower_daisy_small_tintable",
+      "texture": "textures/item/cosmetic/taylor/fall26/model_flower_daisy_small_tintable.png"
+    },
+    "flower_globe_thistle_tintable": {
+      "source": "cosmetic/taylor/fall26/flower_globe_thistle_tintable",
+      "texture": "textures/item/cosmetic/taylor/fall26/model_flower_globe_thistle_tintable.png"
+    },
+    "flower_large_tintable": {
+      "source": "cosmetic/taylor/fall26/flower_large_tintable",
+      "texture": "textures/item/cosmetic/taylor/fall26/model_flower_large_tintable.png"
+    },
+    "flower_leaf_maple_aut": {
+      "source": "cosmetic/taylor/fall26/flower_leaf_maple_aut",
+      "texture": "textures/item/cosmetic/taylor/fall26/model_flower_leaf_maple_aut.png"
+    },
     "flower_of_truth": {
       "source": "uncategorized/flower_of_truth",
       "texture": "textures/item/uncategorized/flower_of_truth.png"
+    },
+    "flower_petal_1_tintable": {
+      "source": "cosmetic/taylor/fall26/flower_petal_1_tintable",
+      "texture": "textures/item/cosmetic/taylor/fall26/model_flower_petal_1_tintable.png"
+    },
+    "flower_petal_2_tintable": {
+      "source": "cosmetic/taylor/fall26/flower_petal_2_tintable",
+      "texture": "textures/item/cosmetic/taylor/fall26/model_flower_petal_2_tintable.png"
+    },
+    "flower_petal_3_tintable": {
+      "source": "cosmetic/taylor/fall26/flower_petal_3_tintable",
+      "texture": "textures/item/cosmetic/taylor/fall26/model_flower_petal_3_tintable.png"
+    },
+    "flower_petal_4_tintable": {
+      "source": "cosmetic/taylor/fall26/flower_petal_4_tintable",
+      "texture": "textures/item/cosmetic/taylor/fall26/model_flower_petal_4_tintable.png"
+    },
+    "flower_petal_5_tintable": {
+      "source": "cosmetic/taylor/fall26/flower_petal_5_tintable",
+      "texture": "textures/item/cosmetic/taylor/fall26/model_flower_petal_5_tintable.png"
+    },
+    "flower_petal_6_tintable": {
+      "source": "cosmetic/taylor/fall26/flower_petal_6_tintable",
+      "texture": "textures/item/cosmetic/taylor/fall26/model_flower_petal_6_tintable.png"
+    },
+    "flower_petal_7_tintable": {
+      "source": "cosmetic/taylor/fall26/flower_petal_7_tintable",
+      "texture": "textures/item/cosmetic/taylor/fall26/model_flower_petal_7_tintable.png"
+    },
+    "flower_petal_8_tintable": {
+      "source": "cosmetic/taylor/fall26/flower_petal_8_tintable",
+      "texture": "textures/item/cosmetic/taylor/fall26/model_flower_petal_8_tintable.png"
     },
     "fly": {
       "source": "decoration/statue/fly",
@@ -1477,7 +1549,7 @@
     },
     "frozen_scythe": {
       "source": "island_relevant/winter/weapons/frozen_scythe",
-      "texture": "textures/item/island_relevant/winter/weapons/frozen_scythe_in_hand.png"
+      "texture": "textures/item/island_relevant/winter/weapons/frozen_scythe.png"
     },
     "ftx_3070": {
       "source": "uncategorized/ftx_3070",
@@ -1513,7 +1585,7 @@
     },
     "gemstone_drill_lt_522": {
       "source": "uncategorized/gemstone_drill_lt_522",
-      "texture": "textures/item/uncategorized/gemstone_drill_lt_522_head.png"
+      "texture": "textures/item/uncategorized/gemstone_drill_lt_522_head_animated.png"
     },
     "gemstone_fuel_tank": {
       "source": "uncategorized/gemstone_fuel_tank",
@@ -1533,7 +1605,7 @@
     },
     "giant_fishing_rod": {
       "source": "fishing/rod/giant_fishing_rod",
-      "texture": "textures/item/fishing/rod/giant_fishing_rod.png"
+      "texture": "textures/item/fishing/rod/giant_fishing_rod_cast.png"
     },
     "giant_honey_dipper": {
       "source": "uncategorized/giant_honey_dipper",
@@ -1557,7 +1629,7 @@
     },
     "glacial_scythe": {
       "source": "island_relevant/winter/weapons/glacial_scythe",
-      "texture": "textures/item/island_relevant/winter/weapons/glacial_scythe_in_hand.png"
+      "texture": "textures/item/island_relevant/winter/weapons/glacial_scythe.png"
     },
     "glacite": {
       "source": "glacite/glacite/glacite",
@@ -1693,7 +1765,7 @@
     },
     "halberd_of_the_shredded": {
       "source": "slayer/zombie/weapons/halberd_of_the_shredded",
-      "texture": "textures/item/slayer/zombie/weapons/halberd_of_the_shredded.png"
+      "texture": "textures/item/slayer/zombie/weapons/halberd_of_the_shredded_in_hand.png"
     },
     "half_eaten_mushroom": {
       "source": "fishing/misc/half_eaten_mushroom",
@@ -1865,7 +1937,7 @@
     },
     "hydro_can_1000": {
       "source": "island_relevant/garden/tools/hydro_can_1000",
-      "texture": "textures/item/island_relevant/garden/tools/hydro_can_1000_empty.png"
+      "texture": "textures/item/island_relevant/garden/tools/hydro_can_1000_full.png"
     },
     "hydro_can_turbo_2000": {
       "source": "island_relevant/garden/tools/hydro_can_turbo_2000",
@@ -1905,7 +1977,7 @@
     },
     "inferno_rod": {
       "source": "fishing/rod/inferno_rod",
-      "texture": "textures/item/fishing/rod/inferno_rod_cast.png"
+      "texture": "textures/item/fishing/rod/inferno_rod.png"
     },
     "infini_vacuum": {
       "source": "island_relevant/garden/vacuum/infini_vacuum",
@@ -1985,7 +2057,7 @@
     },
     "juju_shortbow": {
       "source": "slayer/enderman/weapons/juju_shortbow",
-      "texture": "textures/item/slayer/enderman/weapons/juju_shortbow_pulling_1.png"
+      "texture": "textures/item/slayer/enderman/weapons/juju_shortbow_pulling_2.png"
     },
     "jungle_heart": {
       "source": "uncategorized/jungle_heart",
@@ -2029,7 +2101,7 @@
     },
     "kindlebane_dagger": {
       "source": "slayer/blaze/swords/kindlebane_dagger",
-      "texture": "textures/item/slayer/blaze/swords/kindlebane_dagger_auric.png"
+      "texture": "textures/item/slayer/blaze/swords/kindlebane_dagger_ashen.png"
     },
     "kismet_feather": {
       "source": "community_center/bits_shop/kismet_feather",
@@ -2061,7 +2133,7 @@
     },
     "last_breath": {
       "source": "uncategorized/last_breath",
-      "texture": "textures/item/uncategorized/last_breath_pulling_2.png"
+      "texture": "textures/item/uncategorized/last_breath.png"
     },
     "lava_horse_bronze": {
       "source": "fishing/trophy/lava/lava_horse_bronze",
@@ -2169,7 +2241,7 @@
     },
     "machine_gun_shortbow": {
       "source": "uncategorized/machine_gun_shortbow",
-      "texture": "textures/item/uncategorized/machine_gun_shortbow.png"
+      "texture": "textures/item/uncategorized/machine_gun_shortbow_pulling_1.png"
     },
     "magic_for_pets": {
       "source": "uncategorized/magic_for_pets",
@@ -2205,7 +2277,7 @@
     },
     "magma_rod": {
       "source": "fishing/rod/magma_rod",
-      "texture": "textures/item/fishing/rod/magma_rod.png"
+      "texture": "textures/item/fishing/rod/magma_rod_cast.png"
     },
     "magmafish_bronze": {
       "source": "fishing/trophy/lava/magmafish_bronze",
@@ -2309,7 +2381,7 @@
     },
     "midas_staff_fragged": {
       "source": "community_center/mayor/scorpius/midas_staff_fragged",
-      "texture": "textures/item/community_center/mayor/scorpius/midas_staff_fragged.png"
+      "texture": "textures/item/community_center/mayor/scorpius/midas_staff_fragged_in_hand.png"
     },
     "midas_sword": {
       "source": "uncategorized/midas_sword",
@@ -2345,11 +2417,11 @@
     },
     "mithril_drill_sx_r226": {
       "source": "uncategorized/mithril_drill_sx_r226",
-      "texture": "textures/item/uncategorized/mithril_drill_sx_r226_head.png"
+      "texture": "textures/item/uncategorized/mithril_drill_sx_r226_handle.png"
     },
     "mithril_drill_sx_r326": {
       "source": "uncategorized/mithril_drill_sx_r326",
-      "texture": "textures/item/uncategorized/mithril_drill_sx_r326_head.png"
+      "texture": "textures/item/uncategorized/mithril_drill_sx_r326_handle.png"
     },
     "mithril_infused_fuel_tank": {
       "source": "uncategorized/mithril_infused_fuel_tank",
@@ -2725,7 +2797,7 @@
     },
     "prismarine_bow": {
       "source": "uncategorized/prismarine_bow",
-      "texture": "textures/item/uncategorized/prismarine_bow_pulling_1.png"
+      "texture": "textures/item/uncategorized/prismarine_bow_pulling_2.png"
     },
     "prismarine_sinker": {
       "source": "fishing/rod_part/sinker/prismarine_sinker",
@@ -2941,11 +3013,11 @@
     },
     "rod_of_legends": {
       "source": "fishing/rod/rod_of_legends",
-      "texture": "textures/item/fishing/rod/rod_of_legends.png"
+      "texture": "textures/item/fishing/rod/rod_of_legends_cast.png"
     },
     "rod_of_the_sea": {
       "source": "fishing/rod/rod_of_the_sea",
-      "texture": "textures/item/fishing/rod/rod_of_the_sea_cast.png"
+      "texture": "textures/item/fishing/rod/rod_of_the_sea.png"
     },
     "rogue_sword": {
       "source": "uncategorized/rogue_sword",
@@ -3029,7 +3101,7 @@
     },
     "ruby_drill_tx_15": {
       "source": "uncategorized/ruby_drill_tx_15",
-      "texture": "textures/item/uncategorized/ruby_drill_tx_15_head.png"
+      "texture": "textures/item/uncategorized/ruby_drill_tx_15_head_animated.png"
     },
     "ruby_polished_drill_engine": {
       "source": "uncategorized/ruby_polished_drill_engine",
@@ -3113,7 +3185,7 @@
     },
     "savanna_bow": {
       "source": "uncategorized/savanna_bow",
-      "texture": "textures/item/uncategorized/savanna_bow_pulling_0.png"
+      "texture": "textures/item/uncategorized/savanna_bow_pulling_2.png"
     },
     "scorched_crab_stick": {
       "source": "fishing/misc/scorched_crab_stick",
@@ -3281,7 +3353,7 @@
     },
     "slime_bow": {
       "source": "uncategorized/slime_bow",
-      "texture": "textures/item/uncategorized/slime_bow.png"
+      "texture": "textures/item/uncategorized/slime_bow_pulling_0.png"
     },
     "sloth_claw_giant": {
       "source": "island_relevant/foraging_3/petupgrades/sloth_claw_giant",
@@ -3333,7 +3405,7 @@
     },
     "sniper_bow": {
       "source": "uncategorized/sniper_bow",
-      "texture": "textures/item/uncategorized/sniper_bow_pulling_0.png"
+      "texture": "textures/item/uncategorized/sniper_bow.png"
     },
     "snow_shovel": {
       "source": "uncategorized/snow_shovel",
@@ -3381,11 +3453,11 @@
     },
     "souls_rebound": {
       "source": "uncategorized/souls_rebound",
-      "texture": "textures/item/uncategorized/souls_rebound_pulling_1.png"
+      "texture": "textures/item/uncategorized/souls_rebound_pulling_0.png"
     },
     "soulstealer_bow": {
       "source": "uncategorized/soulstealer_bow",
-      "texture": "textures/item/uncategorized/soulstealer_bow_pulling_1.png"
+      "texture": "textures/item/uncategorized/soulstealer_bow_pulling_2.png"
     },
     "sowledge_chip": {
       "source": "island_relevant/garden/chips/sowledge_chip",
@@ -3425,11 +3497,11 @@
     },
     "spider_queens_stinger": {
       "source": "uncategorized/spider_queens_stinger",
-      "texture": "textures/item/uncategorized/spider_queens_stinger.png"
+      "texture": "textures/item/uncategorized/spider_queens_stinger_pulling_0.png"
     },
     "spider_shortbow": {
       "source": "slayer/spider/weapons/spider_shortbow",
-      "texture": "textures/item/slayer/spider/weapons/spider_shortbow_pulling_1.png"
+      "texture": "textures/item/slayer/spider/weapons/spider_shortbow.png"
     },
     "spider_sword": {
       "source": "uncategorized/spider_sword",
@@ -3461,7 +3533,7 @@
     },
     "spirit_shortbow": {
       "source": "island_relevant/dungeons/spirit_shortbow",
-      "texture": "textures/item/island_relevant/dungeons/spirit_shortbow_pulling_2.png"
+      "texture": "textures/item/island_relevant/dungeons/spirit_shortbow_pulling_0.png"
     },
     "spirit_sword": {
       "source": "uncategorized/spirit_sword",
@@ -3509,11 +3581,11 @@
     },
     "staff_of_the_rising_moon": {
       "source": "island_relevant/rift/wands/staff_of_the_rising_moon",
-      "texture": "textures/item/island_relevant/rift/wands/staff_of_the_rising_moon_in_hand.png"
+      "texture": "textures/item/island_relevant/rift/wands/staff_of_the_rising_moon.png"
     },
     "staff_of_the_rising_sun": {
       "source": "uncategorized/staff_of_the_rising_sun",
-      "texture": "textures/item/uncategorized/staff_of_the_rising_sun_in_hand.png"
+      "texture": "textures/item/uncategorized/staff_of_the_rising_sun.png"
     },
     "staff_of_the_rising_sun_2": {
       "source": "uncategorized/staff_of_the_rising_sun_2",
@@ -3521,7 +3593,7 @@
     },
     "staff_of_the_volcano": {
       "source": "uncategorized/staff_of_the_volcano",
-      "texture": "textures/item/uncategorized/staff_of_the_volcano_in_hand.png"
+      "texture": "textures/item/uncategorized/staff_of_the_volcano.png"
     },
     "starfall": {
       "source": "uncategorized/starfall",
@@ -3541,11 +3613,11 @@
     },
     "starter_lava_rod": {
       "source": "fishing/rod/starter_lava_rod",
-      "texture": "textures/item/fishing/rod/starter_lava_rod_cast.png"
+      "texture": "textures/item/fishing/rod/starter_lava_rod.png"
     },
     "steak_stake": {
       "source": "island_relevant/rift/zones/castle/steak_stake",
-      "texture": "textures/item/island_relevant/rift/zones/castle/steak_stake.png"
+      "texture": "textures/item/island_relevant/rift/zones/castle/steak_stake_in_hand.png"
     },
     "steaming_hot_flounder_bronze": {
       "source": "fishing/trophy/lava/steaming_hot_flounder_bronze",
@@ -3733,7 +3805,7 @@
     },
     "terminator": {
       "source": "slayer/enderman/weapons/terminator",
-      "texture": "textures/item/slayer/enderman/weapons/terminator_pulling_1.png"
+      "texture": "textures/item/slayer/enderman/weapons/terminator_pulling_0.png"
     },
     "tessalated_ender_pearl": {
       "source": "uncategorized/tessalated_ender_pearl",
@@ -3857,11 +3929,11 @@
     },
     "titanium_drill_dr_x355": {
       "source": "uncategorized/titanium_drill_dr_x355",
-      "texture": "textures/item/uncategorized/titanium_drill_dr_x355_handle.png"
+      "texture": "textures/item/uncategorized/titanium_drill_dr_x355_head.png"
     },
     "titanium_drill_dr_x455": {
       "source": "uncategorized/titanium_drill_dr_x455",
-      "texture": "textures/item/uncategorized/titanium_drill_dr_x455_head.png"
+      "texture": "textures/item/uncategorized/titanium_drill_dr_x455_handle.png"
     },
     "titanium_drill_dr_x555": {
       "source": "uncategorized/titanium_drill_dr_x555",
@@ -3869,7 +3941,7 @@
     },
     "titanium_drill_dr_x655": {
       "source": "uncategorized/titanium_drill_dr_x655",
-      "texture": "textures/item/uncategorized/titanium_drill_dr_x655_handle.png"
+      "texture": "textures/item/uncategorized/titanium_drill_dr_x655_head_animated.png"
     },
     "titanium_infused_fuel_tank": {
       "source": "uncategorized/titanium_infused_fuel_tank",
@@ -3897,7 +3969,7 @@
     },
     "topaz_rod": {
       "source": "fishing/rod/topaz_rod",
-      "texture": "textures/item/fishing/rod/topaz_rod_cast.png"
+      "texture": "textures/item/fishing/rod/topaz_rod.png"
     },
     "tormentor": {
       "source": "island_relevant/crimson_isle/tormentor",
@@ -3969,7 +4041,7 @@
     },
     "tribal_spear": {
       "source": "uncategorized/tribal_spear",
-      "texture": "textures/item/uncategorized/tribal_spear.png"
+      "texture": "textures/item/uncategorized/tribal_spear_in_hand.png"
     },
     "trophy_line": {
       "source": "fishing/rod_part/line/trophy_line",
@@ -4005,7 +4077,7 @@
     },
     "twilight_dagger": {
       "source": "slayer/blaze/swords/twilight_dagger",
-      "texture": "textures/item/slayer/blaze/swords/twilight_dagger_spirit.png"
+      "texture": "textures/item/slayer/blaze/swords/twilight_dagger_crystal.png"
     },
     "ugly_fossil": {
       "source": "glacite/fossils/ugly_fossil",
@@ -4025,7 +4097,7 @@
     },
     "undead_bow": {
       "source": "uncategorized/undead_bow",
-      "texture": "textures/item/uncategorized/undead_bow_pulling_1.png"
+      "texture": "textures/item/uncategorized/undead_bow_pulling_0.png"
     },
     "undead_catalyst": {
       "source": "slayer/zombie/catalysts/undead_catalyst",
@@ -4073,7 +4145,7 @@
     },
     "venoms_touch": {
       "source": "uncategorized/venoms_touch",
-      "texture": "textures/item/uncategorized/venoms_touch_pulling_0.png"
+      "texture": "textures/item/uncategorized/venoms_touch.png"
     },
     "vermin_pest_trap": {
       "source": "island_relevant/garden/pests/vermin_pest_trap",
@@ -4133,7 +4205,7 @@
     },
     "vorpal_katana": {
       "source": "slayer/enderman/weapons/katanas/vorpal_katana",
-      "texture": "textures/item/slayer/enderman/weapons/katanas/vorpal_katana_ability_in_hand.png"
+      "texture": "textures/item/slayer/enderman/weapons/katanas/vorpal_katana_ability.png"
     },
     "wand_of_atonement": {
       "source": "slayer/zombie/wands/wand_of_atonement",
@@ -4237,7 +4309,7 @@
     },
     "wither_bow": {
       "source": "uncategorized/wither_bow",
-      "texture": "textures/item/uncategorized/wither_bow_pulling_2.png"
+      "texture": "textures/item/uncategorized/wither_bow_pulling_1.png"
     },
     "wither_catalyst": {
       "source": "uncategorized/wither_catalyst",
@@ -4257,7 +4329,7 @@
     },
     "wob": {
       "source": "island_relevant/rift/zones/mirrorcosm/crafting_room/crafts/wob",
-      "texture": "textures/item/island_relevant/rift/zones/mirrorcosm/crafting_room/crafts/wob_pulling_2.png"
+      "texture": "textures/item/island_relevant/rift/zones/mirrorcosm/crafting_room/crafts/wob_pulling_1.png"
     },
     "wolf_tooth": {
       "source": "slayer/wolf/wolf_tooth",
@@ -4354,12 +4426,12 @@
   },
   "license": "LICENSE",
   "pack": {
-    "deployId": "14f2c4bb-8ce2-4238-bdaf-f2adde05fd7c",
-    "hash": "8a2ff5ae5a0f43a3451eb717215956054fa17420",
+    "deployId": "b3749f35-aa7e-4e8e-8ffa-edd5fba20a5b",
+    "hash": "262749fa15297f365f69b06cfa5aa6b0a258f4ea",
     "id": "SkyBlock",
-    "lastUpdated": 1789483091729,
+    "lastUpdated": 1789684384763,
     "packFormat": 97,
-    "url": "https://resourcepacks.hypixel.net/SkyBlock/14f2c4bb-8ce2-4238-bdaf-f2adde05fd7c/97.zip"
+    "url": "https://resourcepacks.hypixel.net/SkyBlock/b3749f35-aa7e-4e8e-8ffa-edd5fba20a5b/97.zip"
   },
   "schemaVersion": 1
 }
