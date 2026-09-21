@@ -6,7 +6,7 @@ import { GARDEN_VACUUM_ITEMS } from '../src/exact-farming-items.js';
 import { enchantRowsFor } from '../src/item-editor.js';
 import { ACTIVITY_MODE } from '../src/activity-mode.js';
 import { computeStatTotals } from '../src/computed-stats.js';
-import { VACUUM_BUG_BLENDER } from '../src/vacuum-data-patches.js';
+import { VACUUM_BUG_BLENDER, VACUUM_FARMING_FOR_DUMMIES, VACUUM_BOOKWORM_BOOK } from '../src/vacuum-data-patches.js';
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 
@@ -67,6 +67,30 @@ test('Vacuum physical state preserves item enchantments', () => {
   assert.match(state, /bucket\.enchantments = bucket\.enchantments && typeof bucket\.enchantments === 'object'/);
 });
 
+
+test('all verified item-local Vacuum modifier templates are represented', () => {
+  assert.deepEqual(
+    [
+      VACUUM_BUG_BLENDER.id,
+      VACUUM_FARMING_FOR_DUMMIES.id,
+      VACUUM_BOOKWORM_BOOK.id,
+    ],
+    [
+      'vacuum-enchant-bug-blender',
+      'vacuum-farming-for-dummies',
+      'vacuum-bookworms-favorite-book',
+    ],
+  );
+
+  const exact = read('src/vacuum-exact-ui.js');
+  const loadout = read('src/loadout-capabilities-ui.js');
+  assert.match(exact, /data-vacuum-model/);
+  assert.match(exact, /data-vacuum-recomb/);
+  assert.match(exact, /data-vacuum-enchantments="1"/);
+  assert.match(exact, /data-vacuum-gemstones="1"/);
+  assert.match(loadout, /data-vacuum-section="upgrades"/);
+  assert.match(loadout, /FARMING_REFORGES_BY_FAMILY\.vacuum/);
+});
 
 test('Bug Blender item level contributes its Pest-only Farming Fortune', () => {
   const state = {
