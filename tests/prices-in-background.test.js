@@ -41,7 +41,12 @@ test('the coin total is gone from the gemstone summary', () => {
   );
 });
 
-test('the per-slot cost inputs are still there', () => {
-  // Prices stay in the app. Only the reader is spared them.
-  assert.match(read('workspace-ui.js'), /data-gem-cost=/, 'recording unlock costs must remain possible');
+test('gemstone unlock prices stay in background metadata, not per-slot inputs', () => {
+  const workspace = read('workspace-ui.js');
+  const catalog = read('item-catalog.js');
+  const exact = read('exact-farming-items.js');
+
+  assert.doesNotMatch(workspace, /data-gem-cost=/, 'item state must not ask the player to maintain unlock prices');
+  assert.match(catalog, /gemstone_slots/, 'the official item resource must still preserve gemstone socket metadata');
+  assert.match(exact, /officialGemstoneUnlockCoins/, 'planner code must still be able to read the official coin component');
 });
