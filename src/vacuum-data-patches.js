@@ -6,6 +6,26 @@ function upsert(entry) {
   else UPGRADES.push(entry);
 }
 
+export const VACUUM_BUG_BLENDER = Object.freeze({
+  id: 'vacuum-enchant-bug-blender',
+  category: 'Vacuum Enchantment',
+  section: 'tools',
+  name: 'Bug Blender',
+  metric: 'Crop Yield',
+  modeScope: 'Pest Vacuum Drops',
+  cropScope: 'Any',
+  status: 'ACTIVE',
+  max: 5,
+  stepGain: 20,
+  manualDefault: null,
+  rawMarginal: 20,
+  hypercharge: false,
+  notes: 'Vacuum-only enchantment. +20 Farming Fortune while vacuuming Pests per level, up to +100 at Bug Blender V.',
+  source: 'https://hypixelskyblock.minecraft.wiki/w/Bug_Blender',
+  lastVerified: '2026-09-21',
+  workbookRank: null,
+});
+
 export const VACUUM_FARMING_FOR_DUMMIES = Object.freeze({
   id: 'vacuum-farming-for-dummies',
   category: 'Vacuum Upgrade',
@@ -51,5 +71,6 @@ export const VACUUM_BOOKWORM_BOOK = Object.freeze({
   workbookRank: null,
 });
 
+upsert(VACUUM_BUG_BLENDER);
 upsert(VACUUM_FARMING_FOR_DUMMIES);
 upsert(VACUUM_BOOKWORM_BOOK);
