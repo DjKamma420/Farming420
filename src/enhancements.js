@@ -80,7 +80,7 @@ function improveToolsPage(root) {
     <div><span>Crop</span><strong>${cropName}</strong></div>
     <div class="tool-context-arrow">→</div>
     <div><span>Active tool</span><strong>${toolName}</strong></div>
-    <button type="button">Crop workspace</button>
+    <button type="button">Garden</button>
   `;
   context.querySelector('button').addEventListener('click', () => clickPage('crops'));
   heading.insertAdjacentElement('afterend', context);
