@@ -715,18 +715,7 @@ function benchmarkPanel(raw) {
     </section>`;
   }
 
-  return `<section class="revenue-panel revenue-benchmark">
-    <div class="revenue-panel-head">
-      <div><div class="eyebrow">${esc(activityLabel(context.mode))} calculated value</div><h2>Fortune → Coins</h2></div>
-      <span class="revenue-note">${compactCoins(PLANNER_BENCHMARK_COINS_PER_HOUR)} Coins/h standard stream</span>
-    </div>
-    <div class="benchmark-stat-grid">
-      <div><span>Effective Fortune</span><strong>${Number(context.currentFortune || 0).toLocaleString('en-US')}</strong></div>
-      <div><span>Overbloom</span><strong>${Number(context.currentOverbloom || 0).toLocaleString('en-US')}</strong></div>
-      <div><span>Fortune base</span><strong>${Number(context.fortuneBase || 100).toLocaleString('en-US')}</strong></div>
-    </div>
-    <p class="revenue-help">Marginal Coins/h is calculated from the active set's Fortune or Overbloom against the same ${compactCoins(PLANNER_BENCHMARK_COINS_PER_HOUR)}/h affected-income benchmark. No manual Coins/h baseline is required. This is a comparison value, not a claim about your farm's actual profit.</p>
-  </section>`;
+  return '';
 }
 
 function focusScope() {

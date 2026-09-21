@@ -73,9 +73,24 @@ export function usesFarmingTool(mode) {
   return normalized === ACTIVITY_MODE.FARM || normalized === ACTIVITY_MODE.PEST_SPAWN;
 }
 
-export function itemAppliesToActivity(item, mode) {
+const CONTEXT_MODE_SCOPES = new Set(['Harvest Feast', 'Grand Feast', 'Jacob Contest', 'Greenhouse']);
+
+export function itemAppliesToActivity(item, mode, activeContextScope = null) {
   const normalized = normalizeActivityMode(mode);
-  const scope = String(item?.modeScope || 'Any');
+  const rawScope = String(item?.modeScope || 'Any');
+  const contextual = CONTEXT_MODE_SCOPES.has(rawScope);
+
+  // Event/context scope is a separate dimension from Farming/Spawning/Killing.
+  // Existing callers that do not provide a context keep the old behavior:
+  // event-only rows stay inactive. Dashboard can opt into one documented
+  // context without making that row look permanently active everywhere else.
+  const contextScopes = new Set(
+    Array.isArray(activeContextScope)
+      ? activeContextScope
+      : activeContextScope ? [activeContextScope] : [],
+  );
+  if (contextual && !contextScopes.has(rawScope)) return false;
+  const scope = contextual ? 'Any' : rawScope;
 
   if (normalized === ACTIVITY_MODE.FARM) {
     if (item?.section === 'pests' || isPestVacuumEntry(item)) return false;

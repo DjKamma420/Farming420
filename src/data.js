@@ -1180,7 +1180,7 @@ export const UPGRADES = [
     "section": "buffs",
     "name": "Grand Feast rare-crop bonus",
     "metric": "Rare Crops",
-    "modeScope": "Harvest Feast",
+    "modeScope": "Grand Feast",
     "cropScope": "Any",
     "status": "VERIFY",
     "max": 1,

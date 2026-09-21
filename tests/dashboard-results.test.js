@@ -12,7 +12,7 @@ function dashboardSource() {
   return match[1];
 }
 
-test('dashboard separates global Fortune from per-crop totals', () => {
+test('dashboard keeps global Fortune separate while also exposing the selected crop total', () => {
   const source = dashboardSource();
 
   for (const label of [
@@ -27,8 +27,8 @@ test('dashboard separates global Fortune from per-crop totals', () => {
 
   assert.ok(source.includes('const totalFortune = values.globalFortune + values.cropFortune;'));
   assert.ok(source.includes('Global FF ${number(values.globalFortune)} · Crop FF ${number(values.cropFortune)}'));
-  assert.doesNotMatch(source, /Effective Farming Fortune/);
-  assert.doesNotMatch(source, /stats\.effectiveFortune|values\.effectiveFortune/);
+  assert.match(source, /Effective Fortune/);
+  assert.match(source, /stats\.effectiveFortune/);
   assert.ok(!source.includes('${esc(selectedCrop.name)} Crop Fortune'));
   assert.doesNotMatch(source, /Next upgrade|Account layer|Open upgrade planner|cropFocusCard\(\)/);
   assert.doesNotMatch(source, /data-open=|data-page=/, 'dashboard results must not contain editing/navigation actions');

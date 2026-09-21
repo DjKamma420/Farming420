@@ -40,3 +40,64 @@
 .info-progression .source-btn{margin-top:6px}
 @media(max-width:980px){.info-place-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:720px){.info-section{padding:14px}.info-strategy-grid,.info-place-grid{grid-template-columns:1fr}}
+
+
+/* Dashboard event context and source-driven Coins/h estimate */
+.dashboard-context-panel{
+  display:grid;
+  grid-template-columns:minmax(220px,320px) minmax(0,1fr);
+  gap:14px;
+  align-items:end;
+  margin:0 0 16px;
+  padding:16px 18px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:linear-gradient(180deg,var(--panel2),var(--panel));
+  box-shadow:var(--shadow);
+}
+.dashboard-context-panel label,
+.dashboard-estimate-grid label{display:grid;gap:6px;color:var(--muted);font-size:12px}
+.dashboard-context-panel select,
+.dashboard-estimate-grid input{
+  width:100%;
+  min-width:0;
+  padding:10px 11px;
+  border:1px solid var(--line);
+  border-radius:9px;
+  background:#08120d;
+  color:var(--text);
+}
+.dashboard-context-panel>div{display:grid;gap:4px}
+.dashboard-context-panel small,
+.dashboard-estimate-inputs>small{color:var(--muted);line-height:1.45}
+.dashboard-results-grid{margin-bottom:12px}
+.dashboard-profit-card strong{font-variant-numeric:tabular-nums}
+.dashboard-estimate-inputs{
+  margin:0 0 18px;
+  padding:0;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--panel);
+}
+.dashboard-estimate-inputs>summary{
+  padding:12px 15px;
+  cursor:pointer;
+  color:var(--muted);
+  font-size:12px;
+  font-weight:700;
+}
+.dashboard-estimate-inputs[open]>summary{border-bottom:1px solid var(--line)}
+.dashboard-estimate-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+  padding:14px 15px 10px;
+}
+.dashboard-estimate-inputs>small{display:block;padding:0 15px 14px}
+@media (max-width:780px){
+  .dashboard-context-panel{grid-template-columns:1fr;padding:14px}
+  .dashboard-estimate-grid{grid-template-columns:1fr 1fr}
+}
+@media (max-width:480px){
+  .dashboard-estimate-grid{grid-template-columns:1fr}
+}
