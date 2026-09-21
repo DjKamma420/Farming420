@@ -361,3 +361,141 @@
   .pest-loadout-stat { padding: 9px 10px; }
   .pest-loadout-stat strong { font-size: 17px; }
 }
+
+/* The kill-side question the page used to state and then leave unanswered. */
+.pest-vacuum {
+  border: 1px solid rgba(125, 160, 134, .28);
+  background: rgba(10, 18, 13, .76);
+  padding: 16px;
+  border-radius: 6px;
+}
+
+.pest-vacuum > summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.pest-vacuum > summary::-webkit-details-marker { display: none; }
+
+/* The flex row lives on this inner div. A <summary> given `display: flex`
+   stops counting as the disclosure summary in Chromium. */
+.pest-vacuum-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.pest-vacuum-head h2 { margin: 2px 0 0; }
+
+.pest-vacuum-head::after {
+  content: '\25b8';
+  align-self: center;
+  color: #7fbf96;
+  font-size: .8rem;
+}
+
+.pest-vacuum[open] > summary .pest-vacuum-head::after { content: '\25be'; }
+
+.pest-vacuum-body {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.pest-vacuum-body label {
+  display: grid;
+  gap: 5px;
+  align-content: start;
+  color: #9fb0a3;
+  font-size: 12px;
+  font-weight: 800;
+  min-width: 0;
+}
+
+.pest-vacuum-body select,
+.pest-vacuum-body input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #3c5142;
+  background: #07100a;
+  color: #edf7ef;
+  padding: 9px 10px;
+  border-radius: 4px;
+  font: inherit;
+  font-weight: 400;
+}
+
+.pest-vacuum-body small {
+  color: #7d8f82;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+.pest-vacuum-out {
+  grid-column: 1 / -1;
+  padding-top: 12px;
+  border-top: 1px solid #23322a;
+  min-width: 0;
+}
+
+.pest-vacuum-out strong {
+  display: block;
+  color: #edf7ef;
+  font-size: 20px;
+  overflow-wrap: anywhere;
+}
+
+.pest-vacuum-out span {
+  display: block;
+  color: #8fa294;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.pest-vacuum-pulls {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.pest-vacuum-pull {
+  border: 1px solid #23322a;
+  border-left: 3px solid #4d6b56;
+  background: #0b130d;
+  border-radius: 4px;
+  padding: 10px 12px;
+  min-width: 0;
+}
+
+/* Reaching the threshold is the whole point, so it is the thing that changes
+   colour. */
+.pest-vacuum-pull.one-shot { border-left-color: #7fbf96; }
+
+.pest-vacuum-pull strong {
+  display: block;
+  color: #edf7ef;
+  font-size: 15px;
+}
+
+.pest-vacuum-pull span {
+  display: block;
+  color: #8fa294;
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.pest-vacuum-body .pest-note { grid-column: 1 / -1; margin-top: 0; }
+
+@media (max-width: 980px) {
+  .pest-vacuum-body { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 650px) {
+  .pest-vacuum-body { grid-template-columns: 1fr; }
+  .pest-vacuum-pulls { grid-template-columns: 1fr; }
+  .pest-vacuum-head { display: block; }
+}

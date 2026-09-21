@@ -143,7 +143,6 @@ function vacuumLevel(bucket, item) {
 
 function writeVacuumEntry(item, patch) {
   const raw = load();
-  const totalPestFortune = Number(killStats.globalFortune || 0) + Number(killStats.pestFortune || 0);
   const bucket = ensureVacuumBucket(raw);
   Object.assign(bucket.levels, patch.levels || {});
   Object.assign(bucket.owned, patch.owned || {});
@@ -192,6 +191,11 @@ function renderVacuumSurface(raw) {
   const cropId = raw.selectedCrop || 'melon';
   const spawnStats = statsForMode(raw, cropId, ACTIVITY_MODE.PEST_SPAWN);
   const killStats = statsForMode(raw, cropId, ACTIVITY_MODE.PEST_KILL);
+  // Declared here, beside the stats it reads. It had been written into
+  // `writeVacuumEntry`, which has no `killStats` -- so the render threw
+  // "totalPestFortune is not defined" and this panel never appeared, while
+  // every save of a Vacuum entry threw "killStats is not defined".
+  const totalPestFortune = Number(killStats.globalFortune || 0) + Number(killStats.pestFortune || 0);
   const bucket = ensureVacuumBucket(raw);
   const reforge = selectedVacuumReforge(bucket);
   // If an old build left Beady's scored flag enabled while Buzzing was selected,
