@@ -26,6 +26,7 @@ import {
 } from './pest-model.js';
 import { VACUUM_BASE_STATS, VACUUM_REFORGES } from '../research/vacuum-damage.js';
 import { oneShotAdvice, pullsToKill } from './vacuum-damage.js';
+import { selectedVacuumReforge } from './item-capabilities.js';
 import { setTextIfChanged } from './set-text.js';
 import { cropArtUrl } from './skyblock-redesign.js';
 
@@ -37,10 +38,6 @@ function esc(value = '') {
 
 function load() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
-}
-
-function save(raw) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(raw)); } catch { /* a full or blocked store must not break the page */ }
 }
 
 function pageId() {
@@ -113,13 +110,14 @@ function philipMarkup(pests) {
     <p class="pest-note">${esc(PESTHUNTER_PHILIP.alternativeUseNote)}</p>`;
 }
 
-/** The Vacuum build the player last chose, stored with the rest of the profile. */
+/** The Pests page reads the physical Vacuum configured under Tools. */
 function vacuumBuild(raw) {
-  const stored = raw?.profile?.pestVacuumBuild || {};
+  const bucket = raw?.profile?.vacuumProgress || {};
+  const legacy = raw?.profile?.pestVacuumBuild || {};
   return {
-    vacuumId: stored.vacuumId || 'INFINI_VACUUM',
-    bookwormBooks: Number(stored.bookwormBooks) || 0,
-    reforge: stored.reforge || '',
+    vacuumId: bucket.skyblockId || legacy.vacuumId || null,
+    bookwormBooks: Number(bucket.levels?.['vacuum-bookworms-favorite-book'] ?? legacy.bookwormBooks) || 0,
+    reforge: selectedVacuumReforge(bucket) || legacy.reforge || '',
   };
 }
 
@@ -165,35 +163,25 @@ function killAdviceText(result, advice) {
  */
 function vacuumPanelMarkup(raw) {
   const build = vacuumBuild(raw);
-  const result = pullsToKill(build);
-  const advice = oneShotAdvice(build);
+  const result = build.vacuumId ? pullsToKill(build) : null;
+  const advice = build.vacuumId ? oneShotAdvice(build) : null;
   const rows = result?.contexts || [];
+  const vacuumName = build.vacuumId
+    ? build.vacuumId.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, character => character.toUpperCase())
+    : 'No Vacuum selected';
 
   return `<details class="pest-vacuum">
     <summary>
       <div class="pest-vacuum-head">
-        <div><div class="eyebrow">Kill side</div><h2>Does your Vacuum one-shot a pest?</h2></div>
+        <div><div class="eyebrow">Kill analysis</div><h2>Does your Vacuum one-shot a pest?</h2></div>
         <span class="pest-note">${esc(killResultText(result))}</span>
       </div>
     </summary>
     <div class="pest-vacuum-body">
-      <label><span>Vacuum</span>
-        <select data-vacuum-id>
-          ${Object.entries(VACUUM_BASE_STATS).map(([id, stats]) => `<option value="${esc(id)}"${build.vacuumId === id ? ' selected' : ''}>${esc(id.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase()))} \u00b7 ${stats.damage}</option>`).join('')}
-        </select>
-        <small>Base damage from the 0.27 table.</small>
-      </label>
-      <label><span>Bookworm books</span>
-        <input data-vacuum-books type="number" min="0" max="5" step="1" value="${build.bookwormBooks}">
-        <small>+20 damage each, up to five.</small>
-      </label>
-      <label><span>Reforge</span>
-        <select data-vacuum-reforge>
-          <option value=""${build.reforge ? '' : ' selected'}>\u2014 none \u2014</option>
-          ${Object.values(VACUUM_REFORGES).map(reforge => `<option value="${esc(reforge.id)}"${build.reforge === reforge.id ? ' selected' : ''}>${esc(reforge.label)}</option>`).join('')}
-        </select>
-        <small>A Vacuum has one reforge, so these are alternatives.</small>
-      </label>
+      <div class="pest-vacuum-out">
+        <strong>${esc(vacuumName)}</strong>
+        <span>${build.vacuumId ? `${build.bookwormBooks} Bookworm book${build.bookwormBooks === 1 ? '' : 's'} · ${build.reforge || 'no reforge'}` : 'Configure the physical Vacuum under Tools.'}</span>
+      </div>
       <div class="pest-vacuum-out">
         <strong data-vacuum-damage>${esc(killResultText(result))}</strong>
         <span data-vacuum-breakdown>${esc(killBreakdownText(result))}</span>
@@ -201,14 +189,11 @@ function vacuumPanelMarkup(raw) {
       <div class="pest-vacuum-pulls" data-vacuum-pulls>
         ${rows.map(row => `<div class="pest-vacuum-pull${row.oneShot ? ' one-shot' : ''}">
           <strong>${row.pulls} pull${row.pulls === 1 ? '' : 's'}</strong>
-          <span>${esc(row.label)} \u00b7 ${row.health} HP</span>
+          <span>${esc(row.label)} · ${row.health} HP</span>
         </div>`).join('')}
       </div>
-      <p class="pest-note" data-vacuum-advice>${esc(killAdviceText(result, advice))}</p>
-      <p class="pest-note">Pulls, not seconds: pull rate, range and travel are not in the
-        research, so no time estimate is claimed. Beady trades this threshold for
-        +100 Pest-only Farming Fortune \u2014 which raises guaranteed pest drops, not the
-        rare-drop roll \u2014 so neither reforge wins outright.</p>
+      <p class="pest-note" data-vacuum-advice>${build.vacuumId ? esc(killAdviceText(result, advice)) : 'Choose a Vacuum under Tools first.'}</p>
+      <p class="pest-note">Vacuum selection, Reforge, books, Recombobulator and gemstones are configured under Tools. This page only analyzes the resulting Pest kill threshold.</p>
     </div>
   </details>`;
 }
@@ -276,45 +261,6 @@ function applyPestsPage() {
   host.className = 'pest-page-addon';
   host.innerHTML = panelMarkup(raw);
   anchor.insertAdjacentElement('afterend', host);
-
-  // The Vacuum build recomputes in place and writes only the stored build. A
-  // render per keystroke would rebuild the panel under the cursor, which is the
-  // loop shape rule 5 of docs/RENDER_FREEZE_SAFETY.md exists to prevent.
-  const vacuumFields = {
-    vacuumId: host.querySelector('[data-vacuum-id]'),
-    bookwormBooks: host.querySelector('[data-vacuum-books]'),
-    reforge: host.querySelector('[data-vacuum-reforge]'),
-  };
-  const refreshVacuum = () => {
-    const next = load();
-    next.profile ||= {};
-    next.profile.pestVacuumBuild = {
-      vacuumId: vacuumFields.vacuumId?.value || 'INFINI_VACUUM',
-      bookwormBooks: Math.max(0, Math.min(5, Number(vacuumFields.bookwormBooks?.value) || 0)),
-      reforge: vacuumFields.reforge?.value || '',
-    };
-    save(next);
-
-    const build = vacuumBuild(next);
-    const result = pullsToKill(build);
-    const advice = oneShotAdvice(build);
-    setTextIfChanged(host.querySelector('[data-vacuum-damage]'), killResultText(result));
-    setTextIfChanged(host.querySelector('[data-vacuum-breakdown]'), killBreakdownText(result));
-    setTextIfChanged(host.querySelector('[data-vacuum-advice]'), killAdviceText(result, advice));
-    const summaryNote = host.querySelector('.pest-vacuum-head .pest-note');
-    setTextIfChanged(summaryNote, killResultText(result));
-
-    const pulls = host.querySelector('[data-vacuum-pulls]');
-    for (const [index, row] of (result?.contexts || []).entries()) {
-      const node = pulls?.children?.[index];
-      if (!node) continue;
-      setTextIfChanged(node.querySelector('strong'), `${row.pulls} pull${row.pulls === 1 ? '' : 's'}`);
-      node.classList.toggle('one-shot', row.oneShot);
-    }
-  };
-  for (const field of Object.values(vacuumFields)) {
-    field?.addEventListener(field.tagName === 'SELECT' ? 'change' : 'input', refreshVacuum);
-  }
 
   const input = host.querySelector('[data-pest-philip]');
   input?.addEventListener('input', () => {
