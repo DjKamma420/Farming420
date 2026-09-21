@@ -3,7 +3,17 @@ import { FARMING_ACCESSORY_GROUPS, farmingAccessoryByItemId } from './farming-ac
 import { accessoryCapabilityState } from './accessory-capabilities.js';
 import { DATA_SCHEMA_VERSION, STORAGE_KEY } from './config.js';
 import { computeStatTotals } from './computed-stats.js';
-import { activityLabel, activityModeForState } from './activity-mode.js';
+import { ACTIVITY_MODE, activityLabel, activityModeForState } from './activity-mode.js';
+import {
+  FARMING_CONTEXT_OPTIONS,
+  farmingContextForState,
+  farmingContextLabel,
+  farmingContextScope,
+  isGrandFeastContext,
+  isHarvestFeastContext,
+} from './farming-context.js';
+import { CROP_PRICE_STATUS, liveCropUnitPrice, liveHarvestFeastMaterialPrice } from './live-crop-price.js';
+import { MEASURED_FEAST_KEY, measuredBaseline } from './measured-baseline.js';
 import { ensureProgressBucket, migrateState, toolKeyForCropId } from './migrations.js';
 import { applySnapshotToProgress, isAutoApplied } from './snapshot-apply.js';
 import { LOCATION_STATUS, isSyncFilled, locationFor } from './help-locations.js';
@@ -105,6 +115,7 @@ const defaultState = {
     costs: {},
     manualGain: {},
     accessoryItems: {},
+    farmingContext: 'normal',
   }
 };
 
@@ -496,12 +507,92 @@ function pageHeader(kicker, title, text='') {
   return `<div class="page-head"><div><div class="eyebrow">${esc(kicker)}</div><h1>${esc(title)}</h1>${text?`<p>${esc(text)}</p>`:''}</div></div>`;
 }
 
+function compactDashboardCoins(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return '—';
+  if (number >= 1_000_000_000) return `${(number / 1_000_000_000).toFixed(number >= 10_000_000_000 ? 1 : 2)}b`;
+  if (number >= 1_000_000) return `${(number / 1_000_000).toFixed(number >= 10_000_000 ? 1 : 2)}m`;
+  if (number >= 1_000) return `${(number / 1_000).toFixed(number >= 10_000 ? 1 : 2)}k`;
+  return Math.round(number).toLocaleString('en-US');
+}
+
+function dashboardMeasuredValues(cropId, mode) {
+  const key = `${cropId}:${mode}`;
+  return { ...(state.profile.plannerMeasured?.[key] || {}) };
+}
+
+function dashboardProfitEstimate(cropId, mode, context, stats) {
+  if (mode === ACTIVITY_MODE.PEST_KILL) {
+    return {
+      result: null,
+      values: dashboardMeasuredValues(cropId, mode),
+      normalPrice: null,
+      feastPrice: null,
+      display: '—',
+      note: 'Pest Killing needs a Vacuum/loot throughput model; crop Coins/h is not substituted here.',
+    };
+  }
+
+  const stored = dashboardMeasuredValues(cropId, mode);
+  const values = { ...stored };
+  const normalPrice = liveCropUnitPrice(cropId);
+  if ((values.coinsPerUnit === undefined || values.coinsPerUnit === '') && normalPrice.status === CROP_PRICE_STATUS.LIVE) {
+    values.coinsPerUnit = normalPrice.coinsPerUnit;
+  }
+
+  const feastActive = isHarvestFeastContext(context);
+  const feastPrice = feastActive ? liveHarvestFeastMaterialPrice(cropId) : null;
+  if (feastActive) {
+    values[MEASURED_FEAST_KEY] = true;
+    if ((values.feastMaterialCoins === undefined || values.feastMaterialCoins === '') && feastPrice?.status === CROP_PRICE_STATUS.LIVE) {
+      values.feastMaterialCoins = feastPrice.coinsPerUnit;
+    }
+  } else {
+    delete values[MEASURED_FEAST_KEY];
+  }
+
+  const result = measuredBaseline(values, {
+    farmingFortune: stats.globalFortune,
+    cropFortune: stats.cropFortune,
+    overbloom: stats.overbloom,
+  }, cropId);
+
+  if (result.normalCropCoinsPerHour == null) {
+    const modelNote = result.cropDataStatus !== 'VERIFIED'
+      ? 'This crop still lacks a verified base-drop model.'
+      : 'Enter breaks/s and farming uptime; a blank sell price uses the live Bazaar quote when available.';
+    return { result, values: stored, normalPrice, feastPrice, display: '—', note: modelNote };
+  }
+
+  const rareKnown = feastActive && result.rareCropCoinsPerHour != null;
+  const total = result.normalCropCoinsPerHour + (rareKnown ? result.rareCropCoinsPerHour : 0);
+  const display = feastActive && !rareKnown
+    ? `≥ ${compactDashboardCoins(total)}/h`
+    : `${compactDashboardCoins(total)}/h`;
+  const note = feastActive
+    ? rareKnown
+      ? `Normal crop + priced Feast crop · ${farmingContextLabel(context)}${isGrandFeastContext(context) ? ' · Kernels/Seasoning progression excluded' : ''}`
+      : `Normal crop only · Feast material value is unavailable${isGrandFeastContext(context) ? ' · Kernels/Seasoning progression excluded' : ''}`
+    : mode === ACTIVITY_MODE.PEST_SPAWN
+      ? 'Crop stream only; Pest spawn/kill value is not added without a verified spawn-profit model.'
+      : 'Calculated from current Fortune, crop drops, throughput and sell price.';
+
+  return { result, values: stored, normalPrice, feastPrice, display, note };
+}
+
 function dashboard() {
   const mode = activityModeForState(state);
   const selectedCrop = crop();
-  const stats = computeStatTotals(state, selectedCrop.id, mode);
+  const context = farmingContextForState(state);
+  const contextScope = farmingContextScope(context);
+  const stats = computeStatTotals(state, selectedCrop.id, mode, contextScope);
+  const estimate = dashboardProfitEstimate(selectedCrop.id, mode, context, stats);
+  const measuredValues = estimate.values || {};
   const marker = count => count ? ' ~' : '';
   const number = value => Number(value || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
+  const effectiveIncomplete = stats.incomplete.globalFortune.length
+    + stats.incomplete.cropFortune.length
+    + stats.incomplete.pestFortune.length;
   const sourceNote = (values, axis) => {
     const sources = Number(values.sourceCount?.[axis] || 0);
     const unresolved = values.incomplete?.[axis]?.length || 0;
@@ -509,8 +600,17 @@ function dashboard() {
     if (unresolved) return `${sources} configured source${sources === 1 ? '' : 's'} · ${unresolved} unresolved`;
     return `${sources} configured source${sources === 1 ? '' : 's'} · fully modeled`;
   };
+  const priceNote = measuredValues.coinsPerUnit !== undefined && measuredValues.coinsPerUnit !== ''
+    ? 'manual crop sell price'
+    : estimate.normalPrice?.status === CROP_PRICE_STATUS.LIVE
+      ? 'live Bazaar crop price'
+      : 'crop price unavailable';
+  const contextHelp = context === 'normal'
+    ? 'Only always-active configured sources are included.'
+    : `${farmingContextLabel(context)}-only configured effects are included in the totals below.`;
+
   const cropRows = CROPS.map(entry => {
-    const values = computeStatTotals(state, entry.id, mode);
+    const values = computeStatTotals(state, entry.id, mode, contextScope);
     const totalFortune = values.globalFortune + values.cropFortune;
     const totalIncomplete = values.incomplete.globalFortune.length
       + values.incomplete.cropFortune.length;
@@ -536,8 +636,33 @@ function dashboard() {
   }).join('');
 
   return `
-    ${pageHeader('Dashboard', 'Calculated Farming Stats', `Read-only result overview · ${activityLabel(mode)}. Global values are shown above; crop totals are listed below.`)}
+    ${pageHeader('Dashboard', 'Calculated Farming Stats', `Result overview · ${activityLabel(mode)} · ${farmingContextLabel(context)}. Event context changes only documented conditional effects.`)}
+    <section class="dashboard-context-panel">
+      <label>
+        <span>Farming context</span>
+        <select data-dashboard-context>
+          ${FARMING_CONTEXT_OPTIONS.map(option => `<option value="${esc(option.id)}" ${option.id === context ? 'selected' : ''}>${esc(option.label)}</option>`).join('')}
+        </select>
+      </label>
+      <div>
+        <strong>${esc(farmingContextLabel(context))}</strong>
+        <small>${esc(contextHelp)}</small>
+      </div>
+    </section>
+
     <div class="card-grid dashboard-results-grid">
+      <article class="stat-card dashboard-total-card">
+        <span>Effective Fortune · ${esc(selectedCrop.name)}</span>
+        <strong>${number(stats.effectiveFortune)} FF${marker(effectiveIncomplete)}</strong>
+        <small>Global ${number(stats.globalFortune)} + Crop ${number(stats.cropFortune)}${stats.pestFortune ? ` + Pest ${number(stats.pestFortune)}` : ''}</small>
+        <small>${esc(farmingContextLabel(context))} context</small>
+      </article>
+      <article class="stat-card dashboard-profit-card">
+        <span>Estimated Coins/h · ${esc(selectedCrop.name)}</span>
+        <strong>${esc(estimate.display)}</strong>
+        <small>${esc(estimate.note)}</small>
+        <small>${esc(priceNote)}</small>
+      </article>
       <article class="stat-card">
         <span>Global Farming Fortune</span>
         <strong>${number(stats.globalFortune)}${marker(stats.incomplete.globalFortune.length)}</strong>
@@ -564,6 +689,17 @@ function dashboard() {
       </article>
     </div>
 
+    <details class="dashboard-estimate-inputs">
+      <summary>Coins/h estimate inputs</summary>
+      <div class="dashboard-estimate-grid">
+        <label><span>Crop breaks/s</span><input type="number" min="0" step="0.1" data-dashboard-estimate="breaksPerSecond" value="${esc(measuredValues.breaksPerSecond ?? '')}" placeholder="required"></label>
+        <label><span>Farming uptime %</span><input type="number" min="0" max="100" step="1" data-dashboard-estimate="uptimePercent" value="${esc(measuredValues.uptimePercent ?? '')}" placeholder="required"></label>
+        <label><span>Crop sell price</span><input type="number" min="0" step="0.1" data-dashboard-estimate="coinsPerUnit" value="${esc(measuredValues.coinsPerUnit ?? '')}" placeholder="live Bazaar"></label>
+        ${isHarvestFeastContext(context) ? `<label><span>Feast crop sell price</span><input type="number" min="0" step="1" data-dashboard-estimate="feastMaterialCoins" value="${esc(measuredValues.feastMaterialCoins ?? '')}" placeholder="live Bazaar"></label>` : ''}
+      </div>
+      <small>These are estimate inputs, not a manual Coins/h baseline. Blank prices use fresh Bazaar data when available; unknown crop mechanics stay unknown instead of being guessed.</small>
+    </details>
+
     <aside class="dashboard-farm-tip">
       <div>
         <span>Farm layout reference</span>
@@ -576,7 +712,7 @@ function dashboard() {
     <div class="section-row">
       <div>
         <h2>All crops</h2>
-        <p>Each crop total is Global Farming Fortune + that crop's own Crop Fortune. The selected crop is highlighted.</p>
+        <p>Each crop total is Global Farming Fortune + that crop's own Crop Fortune in the selected farming context. The selected crop is highlighted.</p>
       </div>
     </div>
     <div class="card-grid dashboard-crop-results">${cropRows}</div>
@@ -1574,6 +1710,25 @@ function bind() {
 
   const cropSel = document.getElementById('cropSelect');
   if (cropSel) cropSel.addEventListener('change', e => { state.selectedCrop=e.target.value; saveState(); render(); });
+
+  document.querySelector('[data-dashboard-context]')?.addEventListener('change', event => {
+    const option = FARMING_CONTEXT_OPTIONS.find(entry => entry.id === event.target.value);
+    state.profile.farmingContext = option?.id || 'normal';
+    saveState();
+    render();
+  });
+
+  document.querySelectorAll('[data-dashboard-estimate]').forEach(input => input.addEventListener('change', event => {
+    state.profile.plannerMeasured ||= {};
+    const key = `${state.selectedCrop}:${activityModeForState(state)}`;
+    state.profile.plannerMeasured[key] ||= {};
+    const field = event.target.dataset.dashboardEstimate;
+    const raw = String(event.target.value || '').trim();
+    if (raw === '') delete state.profile.plannerMeasured[key][field];
+    else state.profile.plannerMeasured[key][field] = Math.max(0, Number(raw) || 0);
+    saveState();
+    render();
+  }));
   const search = document.getElementById('search');
   if (search) search.addEventListener('input', e => { state.search=e.target.value; saveState(); render(); });
   const profileName = document.getElementById('profileName');
