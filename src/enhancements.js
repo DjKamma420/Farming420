@@ -11,7 +11,7 @@ const GROUPS = [
   ['Progress', ['dashboard', 'accessories', 'crops', 'tools']],
   ['Loadout', ['setups', 'gear', 'pets', 'buffs']],
   ['Specialized', ['chips', 'shards', 'pests']],
-  ['Analysis', ['planner']],
+  ['Analysis', ['focus', 'planner']],
   ['Getting started', ['guide']],
   ['System', ['settings']],
 ];
@@ -26,6 +26,13 @@ function groupSidebar(root) {
   nav.dataset.grouped = '1';
 
   for (const [label, ids] of GROUPS) {
+    const buttons = ids
+      .map(id => nav.querySelector(`[data-page="${id}"], [data-nav-id="${id}"]`))
+      .filter(Boolean);
+    // navigation-dedupe.js can remove legacy destinations before grouping.
+    // A removed destination must not leave an empty section heading behind.
+    if (!buttons.length) continue;
+
     const group = document.createElement('div');
     group.className = 'nav-group-addon';
 
@@ -34,10 +41,7 @@ function groupSidebar(root) {
     title.textContent = label;
     group.appendChild(title);
 
-    for (const id of ids) {
-      const button = nav.querySelector(`[data-page="${id}"], [data-nav-id="${id}"]`);
-      if (button) group.appendChild(button);
-    }
+    for (const button of buttons) group.appendChild(button);
     nav.appendChild(group);
   }
 }

@@ -50,6 +50,7 @@ const NAV_ART = Object.freeze({
   shards: ['earth_shard'],
   buffs: ['pest_repellent_max', 'pest_repellent'],
   pests: ['pest_trap', 'sprayonator'],
+  focus: ['super_jacob_system'],
   planner: ['wishing_compass'],
   guide: ['box_of_seeds'],
   setup: ['builders_ruler'],
