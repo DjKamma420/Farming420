@@ -531,7 +531,7 @@ function reforgePanel() {
 
 function toolPortrait() {
   if (pageId() !== 'tools') return;
-  const portrait = document.querySelector('[data-tool-editor] .item-portrait');
+  const portrait = document.querySelector('.sb-tool-card.selected[data-sb-tool-crop] .sb-tool-art');
   if (!portrait) return;
   const cropId = activeCropId();
   const tier = toolTierFor(readState(), cropId);
