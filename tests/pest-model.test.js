@@ -52,7 +52,7 @@ test('a pest with no crop is recorded, not listed', () => {
     assert.ok(!GARDEN_PESTS.some(listed => listed.id === pest.id), pest.id);
     assert.ok(!PESTS[pest.id].cropId, pest.id);
   }
-  assert.match(read('pests-page.js'), /UNMODELLED_PESTS/);
+  assert.match(read('app.js'), /UNMODELLED_PESTS/);
 });
 
 test('an unverified Fortune divisor stays null, never zero', () => {
