@@ -1,6 +1,7 @@
 import { STORAGE_KEY } from './config.js';
 
 export const DUPLICATE_PAGE_TARGETS = Object.freeze({
+  account: 'crops',
   gear: 'setups',
   pets: 'setups',
   guide: 'dashboard',
