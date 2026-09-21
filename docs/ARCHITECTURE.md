@@ -6,7 +6,7 @@ and every module named here must exist. A wrong arrow fails the suite.
 
 ## The shape of the app
 
-One core renders the page. Twenty-five independent modules watch what it
+One core renders the page. Twenty-four independent modules watch what it
 rendered and change it. **The core does not know they exist**, and that is the
 single most important thing to understand here: `app.js` imports none of them,
 and every arrow into it points the wrong way if you draw it as a call graph.
@@ -25,7 +25,7 @@ graph TD
     data_js["Farming data<br/>data.js"]
   end
 
-  subgraph enhance["Enhancement layer — 25 MutationObserver modules over #app"]
+  subgraph enhance["Enhancement layer — 24 MutationObserver modules over #app"]
     revenue_planner_js["Revenue planner<br/>revenue-planner.js"]
     planner_mode_ui_js["Planner modes<br/>planner-mode-ui.js"]
     pests_page_js["Pests page<br/>pests-page.js"]
