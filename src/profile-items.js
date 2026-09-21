@@ -121,6 +121,7 @@ function collectLoadoutContainers(member) {
 function mergeDuplicateItems(items) {
   const output = [];
   const byUuid = new Map();
+  const isWorn = container => container === 'armor' || container === 'equipment';
 
   for (const item of items) {
     const location = { container: item.container, slot: item.slot };
@@ -139,6 +140,13 @@ function mergeDuplicateItems(items) {
 
     if (!existing.locations.some(entry => entry.container === location.container && entry.slot === location.slot)) {
       existing.locations.push(location);
+    }
+    // Saved loadouts can reference the same physical UUID as the equipped set.
+    // Keep the equipped location canonical so setup autofill sees what is
+    // actually worn instead of whichever saved set happened to decode first.
+    if (!isWorn(existing.container) && isWorn(item.container)) {
+      existing.container = item.container;
+      existing.slot = item.slot;
     }
   }
 
