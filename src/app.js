@@ -63,16 +63,15 @@ import {
 
 const NAV = [
   ['dashboard', 'Dashboard'],
-  ['account', 'Account'],
   ['accessories', 'Accessories'],
-  ['crops', 'Crops'],
+  ['crops', 'Garden'],
   ['tools', 'Tools'],
   ['setups', 'Setups'],
   ['gear', 'Gear'],
   ['pets', 'Pets'],
   ['chips', 'Garden Chips'],
   ['shards', 'Shards'],
-  ['buffs', 'Buffs'],
+  ['buffs', 'Effects'],
   ['pests', 'Pests'],
   ['guide', 'Guide 0-60'],
   ['setup', 'What to enter'],
@@ -565,18 +564,31 @@ function dashboard() {
   `;
 }
 
-function accountPage() {
+function gardenAccountProgression() {
   const groups = [
-    ['Account & Skill',['Account/Skill','Account Upgrade','Anita']],
-    ['Garden',['Garden','Greenhouse']],
-    ['Permanent account items',['Consumable','Chocolate Factory']]
+    ['Farming progression',['Account/Skill','Account Upgrade','Anita']],
+    ['Garden progression',['Garden','Greenhouse']]
   ];
-  return `${pageHeader('Account', 'Global Account Progression', 'Progress that is not bound to one crop or one physical farming tool.')}
+  return `
     <div class="input-strip">
       <label>Global Farming Fortune<input type="number" id="globalFortune" value="${Number(state.profile.globalFortune||0)}"></label>
       ${inputHint('input:globalFortune', 'Used only for relative upgrade evaluation. Ownership remains a separate state.')}
     </div>
     ${groups.map(([title,cats]) => `<div class="group"><div class="section-row"><div><h2>${title}</h2></div></div><div class="card-grid">${visibleUpgrades('account').filter(x=>cats.includes(x.category)).map(x=>card(x)).join('')}</div></div>`).join('')}`;
+}
+
+function effectsPage() {
+  const permanent = visibleUpgrades('account').filter(x => ['Consumable','Chocolate Factory'].includes(x.category));
+  const temporary = visibleUpgrades('buffs');
+  return `${pageHeader('Effects', 'Farming Effects', 'Permanent farming effects and temporary buffs, mixins, cakes and event effects in one place.')}
+    <div class="group">
+      <div class="section-row"><div><h2>Permanent effects</h2><p>Account-wide consumables and permanent effect sources.</p></div></div>
+      <div class="card-grid">${permanent.map(x=>card(x)).join('') || '<div class="empty">No matches.</div>'}</div>
+    </div>
+    <div class="group">
+      <div class="section-row"><div><h2>Temporary effects</h2><p>God Potion, mixins, cakes, event bonuses and other active effects.</p></div></div>
+      <div class="card-grid">${temporary.map(x=>card(x)).join('') || '<div class="empty">No matches.</div>'}</div>
+    </div>`;
 }
 
 function accessoryItemState(accessory) {
@@ -664,7 +676,9 @@ function cropFocusCard() {
 }
 
 function cropsPage() {
-  return `${pageHeader('Crops', 'Crop progression', 'Select a crop to track only the Fortune and progression that belong directly to that crop. Tool and loadout settings live on their own pages.')}
+  return `${pageHeader('Garden', 'Garden & Crop Progression', 'Manage account-wide farming progression, Garden progression and crop-specific Fortune from one page. Tool and loadout settings stay on their own pages.')}
+    ${gardenAccountProgression()}
+    <div class="section-row"><div><h2>Crop progression</h2><p>Select a crop to edit only progression and Fortune that belong directly to that crop.</p></div></div>
     <div class="crop-grid">
       ${CROPS.map(c => {
         const selected = c.id===state.selectedCrop;
@@ -1415,7 +1429,6 @@ function render({ preserveScroll = true } = {}) {
   let content = '';
   switch(state.page) {
     case 'dashboard': content = dashboard(); break;
-    case 'account': content = accountPage(); break;
     case 'accessories': content = accessoriesPage(); break;
     case 'crops': content = cropsPage(); break;
     // The heading says what the page is; the picker and the editor below both
@@ -1425,7 +1438,7 @@ function render({ preserveScroll = true } = {}) {
     case 'pets': content = genericSectionPage('pets','Pets','Pets & Pet Items','Pets are mutually exclusive setup choices and are never added together.'); break;
     case 'chips': content = genericSectionPage('chips','Garden Chips','Garden Chips','Each chip has its own level path and activation conditions.'); break;
     case 'shards': content = genericSectionPage('shards','Attribute Shards','Shards','Track day/night, pest-conditional and general Farming Fortune shards separately.'); break;
-    case 'buffs': content = genericSectionPage('buffs','Buffs','Temporary Buffs & Mixins','God Potion, mixins, cakes and seasonal effects are kept separate from permanent progression.'); break;
+    case 'buffs': content = effectsPage(); break;
     case 'pests': content = genericSectionPage('pests','Pests','Pest Setup','Pest-specific stats, spawn mechanics and loot logic stay separate from normal crop farming.'); break;
     case 'guide': content = guidePage(); break;
     case 'setup': content = setupPage(); break;
