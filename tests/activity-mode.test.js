@@ -102,7 +102,12 @@ test('farming and spawning use crop tools while killing uses Vacuum/loot effects
 
   assert.equal(itemAppliesToActivity(feast, ACTIVITY_MODE.FARM, 'Harvest Feast'), true);
   assert.equal(itemAppliesToActivity(feast, ACTIVITY_MODE.PEST_SPAWN, 'Harvest Feast'), true);
+  assert.equal(itemAppliesToActivity(feast, ACTIVITY_MODE.FARM, ['Harvest Feast', 'Grand Feast']), true);
   assert.equal(itemAppliesToActivity(feast, ACTIVITY_MODE.FARM, 'Jacob Contest'), false);
+
+  const grandFeast = { id: 'grand-feast-bonus', section: 'buffs', modeScope: 'Grand Feast' };
+  assert.equal(itemAppliesToActivity(grandFeast, ACTIVITY_MODE.FARM, 'Harvest Feast'), false);
+  assert.equal(itemAppliesToActivity(grandFeast, ACTIVITY_MODE.FARM, ['Harvest Feast', 'Grand Feast']), true);
 });
 
 test('computed totals isolate BPC to spawning and pest loot Overbloom/Fortune to killing', () => {
