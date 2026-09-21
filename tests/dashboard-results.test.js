@@ -7,7 +7,7 @@ const activityModeUi = readFileSync(new URL('../src/activity-mode-ui.js', import
 const computedStatsUi = readFileSync(new URL('../src/computed-stats-ui.js', import.meta.url), 'utf8');
 
 function dashboardSource() {
-  const match = app.match(/function dashboard\(\) \{([\s\S]*?)\n\}\n\nfunction accountPage\(\)/);
+  const match = app.match(/function dashboard\(\) \{([\s\S]*?)\n\}\n\nfunction gardenAccountProgression\(\)/);
   assert.ok(match, 'dashboard() source not found');
   return match[1];
 }

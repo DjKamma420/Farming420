@@ -8,7 +8,7 @@
  * left behind here.
  */
 const GROUPS = [
-  ['Progress', ['dashboard', 'account', 'accessories', 'crops', 'tools']],
+  ['Progress', ['dashboard', 'accessories', 'crops', 'tools']],
   ['Loadout', ['setups', 'gear', 'pets', 'buffs']],
   ['Specialized', ['chips', 'shards', 'pests']],
   ['Analysis', ['planner']],
@@ -45,7 +45,7 @@ function groupSidebar(root) {
 
 function enhanceCropWorkspace(root) {
   const heading = root.querySelector('.page-head h1');
-  if (!heading || heading.textContent.trim() !== 'Crop progression') return;
+  if (!heading || heading.textContent.trim() !== 'Garden & Crop Progression') return;
 
   const picker = root.querySelector('.crop-grid');
   const panel = root.querySelector('.crop-detail-panel');
@@ -79,7 +79,7 @@ function improveToolsPage(root) {
     <div><span>Crop</span><strong>${cropName}</strong></div>
     <div class="tool-context-arrow">→</div>
     <div><span>Active tool</span><strong>${toolName}</strong></div>
-    <button type="button">Crop workspace</button>
+    <button type="button">Garden</button>
   `;
   context.querySelector('button').addEventListener('click', () => clickPage('crops'));
   heading.insertAdjacentElement('afterend', context);

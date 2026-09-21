@@ -8,8 +8,9 @@ import {
   removeDuplicateNavigation,
 } from '../src/navigation-dedupe.js';
 
-test('duplicate gear, pet and guide routes canonicalize to their shared workspaces', () => {
-  assert.deepEqual(DUPLICATE_PAGE_TARGETS, { gear: 'setups', pets: 'setups', guide: 'dashboard' });
+test('legacy and duplicate routes canonicalize to their shared workspaces', () => {
+  assert.deepEqual(DUPLICATE_PAGE_TARGETS, { account: 'crops', gear: 'setups', pets: 'setups', guide: 'dashboard' });
+  assert.equal(canonicalPage('account'), 'crops');
   assert.equal(canonicalPage('gear'), 'setups');
   assert.equal(canonicalPage('pets'), 'setups');
   assert.equal(canonicalPage('guide'), 'dashboard');
@@ -17,13 +18,13 @@ test('duplicate gear, pet and guide routes canonicalize to their shared workspac
 });
 
 test('stored legacy duplicate page is rewritten without changing profile data', () => {
-  let raw = JSON.stringify({ page: 'guide', profile: { name: 'A', owned: { x: true } } });
+  let raw = JSON.stringify({ page: 'account', profile: { name: 'A', owned: { x: true } } });
   const storage = {
     getItem: () => raw,
     setItem: (_key, value) => { raw = value; },
   };
   assert.equal(canonicalizeStoredPage({ storage, key: 'test' }), true);
-  assert.deepEqual(JSON.parse(raw), { page: 'dashboard', profile: { name: 'A', owned: { x: true } } });
+  assert.deepEqual(JSON.parse(raw), { page: 'crops', profile: { name: 'A', owned: { x: true } } });
   assert.equal(canonicalizeStoredPage({ storage, key: 'test' }), false);
 });
 
