@@ -91,12 +91,14 @@ test('the setup id mapping is imported, never rebuilt', () => {
   assert.equal(setupIdForActivity(ACTIVITY_MODE.PEST_KILL), 'pest-kill');
 });
 
-test('copying armor clones, it does not share one object', () => {
-  // Two setups pointing at one object would make editing either silently edit
-  // the other -- a different bug from the one this solves.
+test('reused armor shares a physical identity without sharing one JS object', () => {
+  // The slot records stay separate for compatibility, but the shared
+  // physicalItemId is what makes edits propagate across phase references.
   const guide = read('src/phase-loadout-guide.js');
   const copy = guide.match(/function copyFarmingArmor[\s\S]*?\n}/)[0];
-  assert.match(copy, /JSON\.parse\(JSON\.stringify\(piece\)\)/);
+  assert.match(copy, /ensurePhysicalItemId\(piece/);
+  assert.match(copy, /farmSetup\.slots\[slot\] = linked/);
+  assert.match(copy, /JSON\.parse\(JSON\.stringify\(linked\)\)/);
   assert.match(copy, /farming420:state-changed/, 'a user action may dispatch a render');
 });
 

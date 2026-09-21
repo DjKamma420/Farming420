@@ -1,0 +1,1700 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-21T08:56:51.657Z",
+  "catalogSource": "https://api.hypixel.net/v2/resources/skyblock/items",
+  "pack": {
+    "deployId": "b3749f35-aa7e-4e8e-8ffa-edd5fba20a5b",
+    "hash": "262749fa15297f365f69b06cfa5aa6b0a258f4ea",
+    "id": "SkyBlock",
+    "lastUpdated": 1789684384763,
+    "packFormat": 97,
+    "url": "https://resourcepacks.hypixel.net/SkyBlock/b3749f35-aa7e-4e8e-8ffa-edd5fba20a5b/97.zip"
+  },
+  "totalFarmingPhysicalItems": 152,
+  "resolved": 152,
+  "unresolvedCount": 0,
+  "directModelCount": 43,
+  "fallbackModelCount": 109,
+  "bySource": {
+    "official-skin": 0,
+    "resource-pack-item": 43,
+    "resource-pack-set": 18,
+    "vanilla-material": 91,
+    "unresolved": 0
+  },
+  "unresolved": [],
+  "nonPackItems": [
+    {
+      "id": "PESTHUNTER_RING",
+      "name": "Pesthunter Ring",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PESTHUNTER_BADGE",
+      "name": "Pesthunter Badge",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PESTHUNTER_ARTIFACT",
+      "name": "Pesthunter Artifact",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PUMPKIN_GENERATOR_11",
+      "name": "Pumpkin Minion XI",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PUMPKIN_GENERATOR_9",
+      "name": "Pumpkin Minion IX",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PUMPKIN_GENERATOR_3",
+      "name": "Pumpkin Minion III",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PUMPKIN_GENERATOR_6",
+      "name": "Pumpkin Minion VI",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PUMPKIN_GENERATOR_7",
+      "name": "Pumpkin Minion VII",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PUMPKIN_GENERATOR_2",
+      "name": "Pumpkin Minion II",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PUMPKIN_GENERATOR_1",
+      "name": "Pumpkin Minion I",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PUMPKIN_GENERATOR_4",
+      "name": "Pumpkin Minion IV",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PUMPKIN_GENERATOR_5",
+      "name": "Pumpkin Minion V",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PUMPKIN_GENERATOR_8",
+      "name": "Pumpkin Minion VIII",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PUMPKIN_GENERATOR_12",
+      "name": "Pumpkin Minion XII",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PUMPKIN_GENERATOR_10",
+      "name": "Pumpkin Minion X",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "MELON_GENERATOR_5",
+      "name": "Melon Minion V",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "MELON_GENERATOR_9",
+      "name": "Melon Minion IX",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "MELON_GENERATOR_6",
+      "name": "Melon Minion VI",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "MELON_GENERATOR_7",
+      "name": "Melon Minion VII",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "MELON_GENERATOR_2",
+      "name": "Melon Minion II",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "MELON_GENERATOR_1",
+      "name": "Melon Minion I",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "MELON_GENERATOR_4",
+      "name": "Melon Minion IV",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "MELON_GENERATOR_10",
+      "name": "Melon Minion X",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "MELON_GENERATOR_12",
+      "name": "Melon Minion XII",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "MELON_GENERATOR_8",
+      "name": "Melon Minion VIII",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "MELON_GENERATOR_3",
+      "name": "Melon Minion III",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "MELON_GENERATOR_11",
+      "name": "Melon Minion XI",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "LOTUS_CROWN",
+      "name": "Lotus Crown",
+      "source": "resource-pack-set"
+    },
+    {
+      "id": "LOTUS_ATOLL_TRAVEL_SCROLL",
+      "name": "Travel Scroll to the Lotus Atoll",
+      "source": "resource-pack-set"
+    },
+    {
+      "id": "PUFFERFISH_HAT_CELEBRATION",
+      "name": "Pufferfish Hat",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "ZORROS_CAPE",
+      "name": "Zorro's Cape",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "LOTUS_SILVER",
+      "name": "Silver Lotus",
+      "source": "resource-pack-set"
+    },
+    {
+      "id": "LOTUS_GOLD",
+      "name": "Gold Lotus",
+      "source": "resource-pack-set"
+    },
+    {
+      "id": "LOTUS_DIAMOND",
+      "name": "Diamond Lotus",
+      "source": "resource-pack-set"
+    },
+    {
+      "id": "MELON_JUICE",
+      "name": "Melon Juice",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PEST_VEST",
+      "name": "Pest Vest",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PESTHUNTER_RELIC",
+      "name": "Pesthunter Relic",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PUMPKIN_CRAFTING_TABLE",
+      "name": "Pumpkin Crafting Table",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PUMPKIN_ARMCHAIR",
+      "name": "Pumpkin Armchair",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PUMPKIN_BED",
+      "name": "Pumpkin Bed",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PUMPKIN_TV",
+      "name": "Pumpkin TV",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PUMPKIN_COUCH",
+      "name": "Pumpkin Couch",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PUMPKIN_DRESSER",
+      "name": "Pumpkin Dresser",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PUMPKIN_CANDY_HANDOUT",
+      "name": "Pumpkin Candy Handout",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "LOTUS_ATOLL_PORTAL",
+      "name": "Portal to the Lotus Atoll",
+      "source": "resource-pack-set"
+    },
+    {
+      "id": "FARM_ARMOR_CHESTPLATE",
+      "name": "Haymaker Chestplate",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "MELON",
+      "name": "Melon Slice",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PUMPKIN_SEEDS",
+      "name": "Pumpkin Seeds",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "FARM_ARMOR_BOOTS",
+      "name": "Haymaker Boots",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PUMPKIN_BOOTS",
+      "name": "Sprout Boots",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "FARMER_BOOTS",
+      "name": "Farmer Boots",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PUMPKIN_PIE",
+      "name": "Pumpkin Pie",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PUMPKIN_CHESTPLATE",
+      "name": "Sprout Chestplate",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "FARM_SUIT_BOOTS",
+      "name": "Farmhand Boots",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "FARM_SUIT_HELMET",
+      "name": "Farmhand Helmet",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "FARM_ARMOR_LEGGINGS",
+      "name": "Haymaker Leggings",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "FARM_SUIT_CHESTPLATE",
+      "name": "Farmhand Chestplate",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PUMPKIN_HELMET",
+      "name": "Sprout Helmet",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "MELON_SEEDS",
+      "name": "Melon Seeds",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "ENCHANTED_JACK_O_LANTERN",
+      "name": "Lantern Helmet",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PUMPKIN_LAUNCHER",
+      "name": "Pumpkin Launcher",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "MELON_BLOCK",
+      "name": "Melon",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PUMPKIN_PERSONALITY",
+      "name": "Pumpkin Minion Skin",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "FARM_SUIT_LEGGINGS",
+      "name": "Farmhand Leggings",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "RANCHERS_BOOTS",
+      "name": "Rancher's Boots",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PUFFERFISH_HAT",
+      "name": "Pufferfish Hat",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PUMPKIN_BOMB",
+      "name": "Blast o' Lantern",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "FARM_ARMOR_HELMET",
+      "name": "Haymaker Helmet",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "MELON_JUICE_MIXIN",
+      "name": "Melon Juice Mixin",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PUMPKIN_GUTS",
+      "name": "Pumpkin Guts",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "MELON_PERSONALITY",
+      "name": "Melon Minion Skin",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PUMPKIN_LEGGINGS",
+      "name": "Sprout Leggings",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "BLOSSOM_BRACELET",
+      "name": "Blossom Bracelet",
+      "source": "resource-pack-set"
+    },
+    {
+      "id": "BLOSSOM_BELT",
+      "name": "Blossom Belt",
+      "source": "resource-pack-set"
+    },
+    {
+      "id": "BLOSSOM_NECKLACE",
+      "name": "Blossom Necklace",
+      "source": "resource-pack-set"
+    },
+    {
+      "id": "BLOSSOM_CLOAK",
+      "name": "Blossom Cloak",
+      "source": "resource-pack-set"
+    },
+    {
+      "id": "PESTHUNTERS_BELT",
+      "name": "Pesthunter's Belt",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PESTHUNTERS_GLOVES",
+      "name": "Pesthunter's Gloves",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PESTHUNTERS_NECKLACE",
+      "name": "Pesthunter's Necklace",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PESTHUNTERS_CLOAK",
+      "name": "Pesthunter's Cloak",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "LOTUS_BRACELET",
+      "name": "Peony Bracelet",
+      "source": "resource-pack-set"
+    },
+    {
+      "id": "LOTUS_BELT",
+      "name": "Peony Belt",
+      "source": "resource-pack-set"
+    },
+    {
+      "id": "LOTUS_NECKLACE",
+      "name": "Peony Necklace",
+      "source": "resource-pack-set"
+    },
+    {
+      "id": "LOTUS_CLOAK",
+      "name": "Peony Cloak",
+      "source": "resource-pack-set"
+    },
+    {
+      "id": "FERMENTO_HELMET",
+      "name": "Fermento Helmet",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "FERMENTO_CHESTPLATE",
+      "name": "Fermento Chestplate",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "FERMENTO_BOOTS",
+      "name": "Fermento Boots",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "FERMENTO_LEGGINGS",
+      "name": "Fermento Leggings",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "CROPIE_LEGGINGS",
+      "name": "Cropie Leggings",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "CROPIE_HELMET",
+      "name": "Cropie Helmet",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "CROPIE_BOOTS",
+      "name": "Cropie Boots",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "CROPIE_CHESTPLATE",
+      "name": "Cropie Chestplate",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "HELIANTHUS_BOOTS",
+      "name": "Helianthus Boots",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "HELIANTHUS_LEGGINGS",
+      "name": "Helianthus Leggings",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "HELIANTHUS_HELMET",
+      "name": "Helianthus Helmet",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "HELIANTHUS_CHESTPLATE",
+      "name": "Helianthus Chestplate",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "SQUASH_LEGGINGS",
+      "name": "Squash Leggings",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "SQUASH_HELMET",
+      "name": "Squash Helmet",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "SQUASH_CHESTPLATE",
+      "name": "Squash Chestplate",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "SQUASH_BOOTS",
+      "name": "Squash Boots",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "MELON_HELMET",
+      "name": "Tater Helmet",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "MELON_BOOTS",
+      "name": "Tater Boots",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "MELON_CHESTPLATE",
+      "name": "Tater Chestplate",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "MELON_LEGGINGS",
+      "name": "Tater Leggings",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "PESTHUNTERS_LAIR_BARN_SKIN",
+      "name": "Pesthunter's Lair Barn Skin",
+      "source": "vanilla-material"
+    },
+    {
+      "id": "SQUASH_RING",
+      "name": "Squash Ring",
+      "source": "resource-pack-set"
+    },
+    {
+      "id": "CROPIE_TALISMAN",
+      "name": "Cropie Talisman",
+      "source": "resource-pack-set"
+    },
+    {
+      "id": "HELIANTHUS_RELIC",
+      "name": "Helianthus Relic",
+      "source": "resource-pack-set"
+    },
+    {
+      "id": "FERMENTO_ARTIFACT",
+      "name": "Fermento Artifact",
+      "source": "resource-pack-set"
+    }
+  ],
+  "records": [
+    {
+      "id": "CACTUS_KNIFE_3",
+      "name": "Cactus Knife Mk. III",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "cactus_knife_3",
+      "texture": "textures/item/jacob/cactus_knife_3.png"
+    },
+    {
+      "id": "PESTHUNTER_RING",
+      "name": "Pesthunter Ring",
+      "category": "ACCESSORY",
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "COCO_CHOPPER",
+      "name": "Cocoa Chopper Mk. I",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "coco_chopper",
+      "texture": "textures/item/jacob/coco_chopper.png"
+    },
+    {
+      "id": "MELON_DICER",
+      "name": "Melon Dicer Mk. I",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "melon_dicer",
+      "texture": "textures/item/jacob/melon_dicer.png"
+    },
+    {
+      "id": "CACTUS_KNIFE",
+      "name": "Cactus Knife Mk. I",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "cactus_knife",
+      "texture": "textures/item/jacob/cactus_knife.png"
+    },
+    {
+      "id": "COCO_CHOPPER_3",
+      "name": "Cocoa Chopper Mk. III",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "coco_chopper_3",
+      "texture": "textures/item/jacob/coco_chopper_3.png"
+    },
+    {
+      "id": "COCO_CHOPPER_2",
+      "name": "Cocoa Chopper Mk. II",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "coco_chopper_2",
+      "texture": "textures/item/jacob/coco_chopper_2.png"
+    },
+    {
+      "id": "FUNGI_CUTTER_3",
+      "name": "Fungi Cutter Mk. III",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "fungi_cutter_3",
+      "texture": "textures/item/jacob/fungi_cutter_3.png"
+    },
+    {
+      "id": "FUNGI_CUTTER_2",
+      "name": "Fungi Cutter Mk. II",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "fungi_cutter_2",
+      "texture": "textures/item/jacob/fungi_cutter_2.png"
+    },
+    {
+      "id": "CACTUS_KNIFE_2",
+      "name": "Cactus Knife Mk. II",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "cactus_knife_2",
+      "texture": "textures/item/jacob/cactus_knife_2.png"
+    },
+    {
+      "id": "FUNGI_CUTTER",
+      "name": "Fungi Cutter Mk. I",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "fungi_cutter",
+      "texture": "textures/item/jacob/fungi_cutter.png"
+    },
+    {
+      "id": "PESTHUNTER_BADGE",
+      "name": "Pesthunter Badge",
+      "category": "ACCESSORY",
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "PESTHUNTER_ARTIFACT",
+      "name": "Pesthunter Artifact",
+      "category": "ACCESSORY",
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "THEORETICAL_HOE_CARROT_3",
+      "name": "Gauss Carrot Shovel Mk. III",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "theoretical_hoe_carrot_3",
+      "texture": "textures/item/jacob/hoes/theoretical_hoe_carrot_3.png"
+    },
+    {
+      "id": "THEORETICAL_HOE_WHEAT_2",
+      "name": "Euclid's Wheat Sickle Mk. II",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "theoretical_hoe_wheat_2",
+      "texture": "textures/item/jacob/hoes/theoretical_hoe_wheat_2.png"
+    },
+    {
+      "id": "THEORETICAL_HOE_CANE_1",
+      "name": "Turing Sugar Cane Cutter Mk. I",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "theoretical_hoe_cane_1",
+      "texture": "textures/item/jacob/hoes/theoretical_hoe_cane_1.png"
+    },
+    {
+      "id": "THEORETICAL_HOE_SUNFLOWER_2",
+      "name": "Eclipse Sickle Mk. II",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "theoretical_hoe_sunflower_2",
+      "texture": "textures/item/jacob/hoes/theoretical_hoe_sunflower_2.png"
+    },
+    {
+      "id": "THEORETICAL_HOE_SUNFLOWER_1",
+      "name": "Eclipse Sickle Mk. I",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "theoretical_hoe_sunflower_1",
+      "texture": "textures/item/jacob/hoes/theoretical_hoe_sunflower_1.png"
+    },
+    {
+      "id": "THEORETICAL_HOE_WHEAT_1",
+      "name": "Euclid's Wheat Sickle Mk. I",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "theoretical_hoe_wheat_1",
+      "texture": "textures/item/jacob/hoes/theoretical_hoe_wheat_1.png"
+    },
+    {
+      "id": "THEORETICAL_HOE_CARROT_2",
+      "name": "Gauss Carrot Shovel Mk. II",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "theoretical_hoe_carrot_2",
+      "texture": "textures/item/jacob/hoes/theoretical_hoe_carrot_2.png"
+    },
+    {
+      "id": "THEORETICAL_HOE_CANE_3",
+      "name": "Turing Sugar Cane Cutter Mk. III",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "theoretical_hoe_cane_3",
+      "texture": "textures/item/jacob/hoes/theoretical_hoe_cane_3.png"
+    },
+    {
+      "id": "THEORETICAL_HOE_POTATO_2",
+      "name": "Pythagorean Potato Shovel Mk. II",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "theoretical_hoe_potato_2",
+      "texture": "textures/item/jacob/hoes/theoretical_hoe_potato_2.png"
+    },
+    {
+      "id": "THEORETICAL_HOE_POTATO_3",
+      "name": "Pythagorean Potato Shovel Mk. III",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "theoretical_hoe_potato_3",
+      "texture": "textures/item/jacob/hoes/theoretical_hoe_potato_3.png"
+    },
+    {
+      "id": "THEORETICAL_HOE_WHEAT_3",
+      "name": "Euclid's Wheat Sickle Mk. III",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "theoretical_hoe_wheat_3",
+      "texture": "textures/item/jacob/hoes/theoretical_hoe_wheat_3.png"
+    },
+    {
+      "id": "THEORETICAL_HOE_CARROT_1",
+      "name": "Gauss Carrot Shovel Mk. I",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "theoretical_hoe_carrot_1",
+      "texture": "textures/item/jacob/hoes/theoretical_hoe_carrot_1.png"
+    },
+    {
+      "id": "THEORETICAL_HOE_WARTS_3",
+      "name": "Newton Nether Wart Cutter Mk. III",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "theoretical_hoe_warts_3",
+      "texture": "textures/item/jacob/hoes/theoretical_hoe_warts_3.png"
+    },
+    {
+      "id": "THEORETICAL_HOE_SUNFLOWER_3",
+      "name": "Eclipse Sickle Mk. III",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "theoretical_hoe_sunflower_3",
+      "texture": "textures/item/jacob/hoes/theoretical_hoe_sunflower_3.png"
+    },
+    {
+      "id": "THEORETICAL_HOE_WILD_ROSE_3",
+      "name": "Wild Rose Cutter Mk. III",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "theoretical_hoe_wild_rose_3",
+      "texture": "textures/item/jacob/hoes/theoretical_hoe_wild_rose_3.png"
+    },
+    {
+      "id": "THEORETICAL_HOE_CANE_2",
+      "name": "Turing Sugar Cane Cutter Mk. II",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "theoretical_hoe_cane_2",
+      "texture": "textures/item/jacob/hoes/theoretical_hoe_cane_2.png"
+    },
+    {
+      "id": "THEORETICAL_HOE_WARTS_1",
+      "name": "Newton Nether Wart Cutter Mk. I",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "theoretical_hoe_warts_1",
+      "texture": "textures/item/jacob/hoes/theoretical_hoe_warts_1.png"
+    },
+    {
+      "id": "THEORETICAL_HOE_POTATO_1",
+      "name": "Pythagorean Potato Shovel Mk. I",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "theoretical_hoe_potato_1",
+      "texture": "textures/item/jacob/hoes/theoretical_hoe_potato_1.png"
+    },
+    {
+      "id": "THEORETICAL_HOE_WILD_ROSE_1",
+      "name": "Wild Rose Cutter Mk. I",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "theoretical_hoe_wild_rose_1",
+      "texture": "textures/item/jacob/hoes/theoretical_hoe_wild_rose_1.png"
+    },
+    {
+      "id": "THEORETICAL_HOE_WARTS_2",
+      "name": "Newton Nether Wart Cutter Mk. II",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "theoretical_hoe_warts_2",
+      "texture": "textures/item/jacob/hoes/theoretical_hoe_warts_2.png"
+    },
+    {
+      "id": "THEORETICAL_HOE_WILD_ROSE_2",
+      "name": "Wild Rose Cutter Mk. II",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "theoretical_hoe_wild_rose_2",
+      "texture": "textures/item/jacob/hoes/theoretical_hoe_wild_rose_2.png"
+    },
+    {
+      "id": "PUMPKIN_DICER",
+      "name": "Pumpkin Dicer Mk. I",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "pumpkin_dicer",
+      "texture": "textures/item/jacob/pumpkin_dicer.png"
+    },
+    {
+      "id": "PUMPKIN_GENERATOR_11",
+      "name": "Pumpkin Minion XI",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "PUMPKIN_GENERATOR_9",
+      "name": "Pumpkin Minion IX",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "PUMPKIN_GENERATOR_3",
+      "name": "Pumpkin Minion III",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "PUMPKIN_GENERATOR_6",
+      "name": "Pumpkin Minion VI",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "PUMPKIN_GENERATOR_7",
+      "name": "Pumpkin Minion VII",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "PUMPKIN_GENERATOR_2",
+      "name": "Pumpkin Minion II",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "PUMPKIN_GENERATOR_1",
+      "name": "Pumpkin Minion I",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "PUMPKIN_GENERATOR_4",
+      "name": "Pumpkin Minion IV",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "PUMPKIN_GENERATOR_5",
+      "name": "Pumpkin Minion V",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "PUMPKIN_GENERATOR_8",
+      "name": "Pumpkin Minion VIII",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "PUMPKIN_GENERATOR_12",
+      "name": "Pumpkin Minion XII",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "PUMPKIN_GENERATOR_10",
+      "name": "Pumpkin Minion X",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "MELON_GENERATOR_5",
+      "name": "Melon Minion V",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "MELON_GENERATOR_9",
+      "name": "Melon Minion IX",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "MELON_GENERATOR_6",
+      "name": "Melon Minion VI",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "MELON_GENERATOR_7",
+      "name": "Melon Minion VII",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "MELON_GENERATOR_2",
+      "name": "Melon Minion II",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "MELON_GENERATOR_1",
+      "name": "Melon Minion I",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "MELON_GENERATOR_4",
+      "name": "Melon Minion IV",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "MELON_GENERATOR_10",
+      "name": "Melon Minion X",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "MELON_GENERATOR_12",
+      "name": "Melon Minion XII",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "MELON_GENERATOR_8",
+      "name": "Melon Minion VIII",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "MELON_GENERATOR_3",
+      "name": "Melon Minion III",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "MELON_GENERATOR_11",
+      "name": "Melon Minion XI",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "LOTUS_SINKER",
+      "name": "Lotus Sinker",
+      "category": "FISHING_ROD_PART",
+      "source": "resource-pack-item",
+      "packKey": "lotus_sinker",
+      "texture": "textures/item/fishing/rod_part/sinker/lotus_sinker.png"
+    },
+    {
+      "id": "LOTUS_CROWN",
+      "name": "Lotus Crown",
+      "category": "PET_ITEM",
+      "source": "resource-pack-set",
+      "packKey": "lotus",
+      "texture": "textures/item/collections/lotus/lotus.png"
+    },
+    {
+      "id": "LOTUS_ATOLL_TRAVEL_SCROLL",
+      "name": "Travel Scroll to the Lotus Atoll",
+      "category": "TRAVEL_SCROLL",
+      "source": "resource-pack-set",
+      "packKey": "lotus",
+      "texture": "textures/item/collections/lotus/lotus.png"
+    },
+    {
+      "id": "LOTUS_WATER_ORB",
+      "name": "Lotus Water Orb",
+      "category": null,
+      "source": "resource-pack-item",
+      "packKey": "lotus_water_orb",
+      "texture": "textures/item/fishing/lotus_atoll/lotus_water_orb.png"
+    },
+    {
+      "id": "PUFFERFISH_HAT_CELEBRATION",
+      "name": "Pufferfish Hat",
+      "category": "HELMET",
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "ZORROS_CAPE",
+      "name": "Zorro's Cape",
+      "category": "CLOAK",
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "LOTUS_SILVER",
+      "name": "Silver Lotus",
+      "category": null,
+      "source": "resource-pack-set",
+      "packKey": "silver_lotus",
+      "texture": "textures/item/collections/lotus/silver_lotus.png"
+    },
+    {
+      "id": "LOTUS_GOLD",
+      "name": "Gold Lotus",
+      "category": null,
+      "source": "resource-pack-set",
+      "packKey": "gold_lotus",
+      "texture": "textures/item/collections/lotus/gold_lotus.png"
+    },
+    {
+      "id": "LOTUS_DIAMOND",
+      "name": "Diamond Lotus",
+      "category": null,
+      "source": "resource-pack-set",
+      "packKey": "diamond_lotus",
+      "texture": "textures/item/collections/lotus/diamond_lotus.png"
+    },
+    {
+      "id": "MELON_JUICE",
+      "name": "Melon Juice",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "PAPER"
+    },
+    {
+      "id": "PEST_VEST",
+      "name": "Pest Vest",
+      "category": "CLOAK",
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "PESTHUNTER_RELIC",
+      "name": "Pesthunter Relic",
+      "category": "ACCESSORY",
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "PUMPKIN_CRAFTING_TABLE",
+      "name": "Pumpkin Crafting Table",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "PUMPKIN_ARMCHAIR",
+      "name": "Pumpkin Armchair",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "PUMPKIN_BED",
+      "name": "Pumpkin Bed",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "PUMPKIN_TV",
+      "name": "Pumpkin TV",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "PUMPKIN_COUCH",
+      "name": "Pumpkin Couch",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "PUMPKIN_DRESSER",
+      "name": "Pumpkin Dresser",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "PUMPKIN_CANDY_HANDOUT",
+      "name": "Pumpkin Candy Handout",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "LOTUS_ATOLL_PORTAL",
+      "name": "Portal to the Lotus Atoll",
+      "category": "PORTAL",
+      "source": "resource-pack-set",
+      "packKey": "lotus",
+      "texture": "textures/item/collections/lotus/lotus.png"
+    },
+    {
+      "id": "FARM_ARMOR_CHESTPLATE",
+      "name": "Haymaker Chestplate",
+      "category": "CHESTPLATE",
+      "source": "vanilla-material",
+      "material": "LEATHER_CHESTPLATE"
+    },
+    {
+      "id": "MELON",
+      "name": "Melon Slice",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "MELON"
+    },
+    {
+      "id": "PUMPKIN_SEEDS",
+      "name": "Pumpkin Seeds",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "PUMPKIN_SEEDS"
+    },
+    {
+      "id": "FARM_ARMOR_BOOTS",
+      "name": "Haymaker Boots",
+      "category": "BOOTS",
+      "source": "vanilla-material",
+      "material": "LEATHER_BOOTS"
+    },
+    {
+      "id": "PUMPKIN_BOOTS",
+      "name": "Sprout Boots",
+      "category": "BOOTS",
+      "source": "vanilla-material",
+      "material": "LEATHER_BOOTS"
+    },
+    {
+      "id": "FARMER_BOOTS",
+      "name": "Farmer Boots",
+      "category": "BOOTS",
+      "source": "vanilla-material",
+      "material": "LEATHER_BOOTS"
+    },
+    {
+      "id": "PUMPKIN_PIE",
+      "name": "Pumpkin Pie",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "PUMPKIN_PIE"
+    },
+    {
+      "id": "PUMPKIN_CHESTPLATE",
+      "name": "Sprout Chestplate",
+      "category": "CHESTPLATE",
+      "source": "vanilla-material",
+      "material": "LEATHER_CHESTPLATE"
+    },
+    {
+      "id": "FARM_SUIT_BOOTS",
+      "name": "Farmhand Boots",
+      "category": "BOOTS",
+      "source": "vanilla-material",
+      "material": "LEATHER_BOOTS"
+    },
+    {
+      "id": "FARM_SUIT_HELMET",
+      "name": "Farmhand Helmet",
+      "category": "HELMET",
+      "source": "vanilla-material",
+      "material": "LEATHER_HELMET"
+    },
+    {
+      "id": "FARM_ARMOR_LEGGINGS",
+      "name": "Haymaker Leggings",
+      "category": "LEGGINGS",
+      "source": "vanilla-material",
+      "material": "LEATHER_LEGGINGS"
+    },
+    {
+      "id": "FARM_SUIT_CHESTPLATE",
+      "name": "Farmhand Chestplate",
+      "category": "CHESTPLATE",
+      "source": "vanilla-material",
+      "material": "LEATHER_CHESTPLATE"
+    },
+    {
+      "id": "PUMPKIN_HELMET",
+      "name": "Sprout Helmet",
+      "category": "HELMET",
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "MELON_SEEDS",
+      "name": "Melon Seeds",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "MELON_SEEDS"
+    },
+    {
+      "id": "ENCHANTED_JACK_O_LANTERN",
+      "name": "Lantern Helmet",
+      "category": "HELMET",
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "PUMPKIN_LAUNCHER",
+      "name": "Pumpkin Launcher",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "PUMPKIN"
+    },
+    {
+      "id": "MELON_BLOCK",
+      "name": "Melon",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "MELON_BLOCK"
+    },
+    {
+      "id": "PUMPKIN_PERSONALITY",
+      "name": "Pumpkin Minion Skin",
+      "category": "COSMETIC",
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "FARM_SUIT_LEGGINGS",
+      "name": "Farmhand Leggings",
+      "category": "LEGGINGS",
+      "source": "vanilla-material",
+      "material": "LEATHER_LEGGINGS"
+    },
+    {
+      "id": "RANCHERS_BOOTS",
+      "name": "Rancher's Boots",
+      "category": "BOOTS",
+      "source": "vanilla-material",
+      "material": "LEATHER_BOOTS"
+    },
+    {
+      "id": "PUFFERFISH_HAT",
+      "name": "Pufferfish Hat",
+      "category": "HELMET",
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "PUMPKIN_BOMB",
+      "name": "Blast o' Lantern",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "FARM_ARMOR_HELMET",
+      "name": "Haymaker Helmet",
+      "category": "HELMET",
+      "source": "vanilla-material",
+      "material": "HAY_BLOCK"
+    },
+    {
+      "id": "MELON_JUICE_MIXIN",
+      "name": "Melon Juice Mixin",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "PUMPKIN_GUTS",
+      "name": "Pumpkin Guts",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "PUMPKIN_SEEDS"
+    },
+    {
+      "id": "MELON_PERSONALITY",
+      "name": "Melon Minion Skin",
+      "category": null,
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "PUMPKIN_LEGGINGS",
+      "name": "Sprout Leggings",
+      "category": "LEGGINGS",
+      "source": "vanilla-material",
+      "material": "LEATHER_LEGGINGS"
+    },
+    {
+      "id": "BLOSSOM_BRACELET",
+      "name": "Blossom Bracelet",
+      "category": "BRACELET",
+      "source": "resource-pack-set",
+      "packKey": "bachelors_rose",
+      "texture": "textures/item/island_relevant/garden/greenhouse/wild_rose/bachelors_rose.png"
+    },
+    {
+      "id": "BLOSSOM_BELT",
+      "name": "Blossom Belt",
+      "category": "BELT",
+      "source": "resource-pack-set",
+      "packKey": "bachelors_rose",
+      "texture": "textures/item/island_relevant/garden/greenhouse/wild_rose/bachelors_rose.png"
+    },
+    {
+      "id": "BLOSSOM_NECKLACE",
+      "name": "Blossom Necklace",
+      "category": "NECKLACE",
+      "source": "resource-pack-set",
+      "packKey": "bachelors_rose",
+      "texture": "textures/item/island_relevant/garden/greenhouse/wild_rose/bachelors_rose.png"
+    },
+    {
+      "id": "BLOSSOM_CLOAK",
+      "name": "Blossom Cloak",
+      "category": "CLOAK",
+      "source": "resource-pack-set",
+      "packKey": "bachelors_rose",
+      "texture": "textures/item/island_relevant/garden/greenhouse/wild_rose/bachelors_rose.png"
+    },
+    {
+      "id": "PESTHUNTERS_BELT",
+      "name": "Pesthunter's Belt",
+      "category": "BELT",
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "PESTHUNTERS_GLOVES",
+      "name": "Pesthunter's Gloves",
+      "category": "GLOVES",
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "PESTHUNTERS_NECKLACE",
+      "name": "Pesthunter's Necklace",
+      "category": "NECKLACE",
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "PESTHUNTERS_CLOAK",
+      "name": "Pesthunter's Cloak",
+      "category": "CLOAK",
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "LOTUS_BRACELET",
+      "name": "Peony Bracelet",
+      "category": "BRACELET",
+      "source": "resource-pack-set",
+      "packKey": "lotus",
+      "texture": "textures/item/collections/lotus/lotus.png"
+    },
+    {
+      "id": "LOTUS_BELT",
+      "name": "Peony Belt",
+      "category": "BELT",
+      "source": "resource-pack-set",
+      "packKey": "lotus",
+      "texture": "textures/item/collections/lotus/lotus.png"
+    },
+    {
+      "id": "LOTUS_NECKLACE",
+      "name": "Peony Necklace",
+      "category": "NECKLACE",
+      "source": "resource-pack-set",
+      "packKey": "lotus",
+      "texture": "textures/item/collections/lotus/lotus.png"
+    },
+    {
+      "id": "LOTUS_CLOAK",
+      "name": "Peony Cloak",
+      "category": "CLOAK",
+      "source": "resource-pack-set",
+      "packKey": "lotus",
+      "texture": "textures/item/collections/lotus/lotus.png"
+    },
+    {
+      "id": "INFINI_VACUUM",
+      "name": "InfiniVacuum™",
+      "category": "VACUUM",
+      "source": "resource-pack-item",
+      "packKey": "infini_vacuum",
+      "texture": "textures/item/island_relevant/garden/vacuum/infini_vacuum.png"
+    },
+    {
+      "id": "INFINI_VACUUM_HOOVERIUS",
+      "name": "InfiniVacuum™ Hooverius",
+      "category": "VACUUM",
+      "source": "resource-pack-item",
+      "packKey": "infini_vacuum_hooverius",
+      "texture": "textures/item/island_relevant/garden/vacuum/infini_vacuum_hooverius.png"
+    },
+    {
+      "id": "SKYMART_VACUUM",
+      "name": "SkyMart Vacuum",
+      "category": "VACUUM",
+      "source": "resource-pack-item",
+      "packKey": "skymart_vacuum",
+      "texture": "textures/item/island_relevant/garden/vacuum/skymart_vacuum.png"
+    },
+    {
+      "id": "SKYMART_HYPER_VACUUM",
+      "name": "SkyMart Hyper Vacuum",
+      "category": "VACUUM",
+      "source": "resource-pack-item",
+      "packKey": "skymart_hyper_vacuum",
+      "texture": "textures/item/island_relevant/garden/vacuum/skymart_hyper_vacuum.png"
+    },
+    {
+      "id": "SKYMART_TURBO_VACUUM",
+      "name": "SkyMart Turbo Vacuum",
+      "category": "VACUUM",
+      "source": "resource-pack-item",
+      "packKey": "skymart_turbo_vacuum",
+      "texture": "textures/item/island_relevant/garden/vacuum/skymart_turbo_vacuum.png"
+    },
+    {
+      "id": "PUMPKIN_DICER_2",
+      "name": "Pumpkin Dicer Mk. II",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "pumpkin_dicer_2",
+      "texture": "textures/item/island_relevant/garden/pumpkin_dicer_2.png"
+    },
+    {
+      "id": "MELON_DICER_3",
+      "name": "Melon Dicer Mk. III",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "melon_dicer_3",
+      "texture": "textures/item/island_relevant/garden/melon_dicer_3.png"
+    },
+    {
+      "id": "FERMENTO_HELMET",
+      "name": "Fermento Helmet",
+      "category": "HELMET",
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "FERMENTO_CHESTPLATE",
+      "name": "Fermento Chestplate",
+      "category": "CHESTPLATE",
+      "source": "vanilla-material",
+      "material": "LEATHER_CHESTPLATE"
+    },
+    {
+      "id": "FERMENTO_BOOTS",
+      "name": "Fermento Boots",
+      "category": "BOOTS",
+      "source": "vanilla-material",
+      "material": "LEATHER_BOOTS"
+    },
+    {
+      "id": "FERMENTO_LEGGINGS",
+      "name": "Fermento Leggings",
+      "category": "LEGGINGS",
+      "source": "vanilla-material",
+      "material": "LEATHER_LEGGINGS"
+    },
+    {
+      "id": "CROPIE_LEGGINGS",
+      "name": "Cropie Leggings",
+      "category": "LEGGINGS",
+      "source": "vanilla-material",
+      "material": "LEATHER_LEGGINGS"
+    },
+    {
+      "id": "CROPIE_HELMET",
+      "name": "Cropie Helmet",
+      "category": "HELMET",
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "CROPIE_BOOTS",
+      "name": "Cropie Boots",
+      "category": "BOOTS",
+      "source": "vanilla-material",
+      "material": "LEATHER_BOOTS"
+    },
+    {
+      "id": "CROPIE_CHESTPLATE",
+      "name": "Cropie Chestplate",
+      "category": "CHESTPLATE",
+      "source": "vanilla-material",
+      "material": "LEATHER_CHESTPLATE"
+    },
+    {
+      "id": "HELIANTHUS_BOOTS",
+      "name": "Helianthus Boots",
+      "category": "BOOTS",
+      "source": "vanilla-material",
+      "material": "IRON_BOOTS"
+    },
+    {
+      "id": "HELIANTHUS_LEGGINGS",
+      "name": "Helianthus Leggings",
+      "category": "LEGGINGS",
+      "source": "vanilla-material",
+      "material": "LEATHER_LEGGINGS"
+    },
+    {
+      "id": "HELIANTHUS_HELMET",
+      "name": "Helianthus Helmet",
+      "category": "HELMET",
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "HELIANTHUS_CHESTPLATE",
+      "name": "Helianthus Chestplate",
+      "category": "CHESTPLATE",
+      "source": "vanilla-material",
+      "material": "IRON_CHESTPLATE"
+    },
+    {
+      "id": "SQUASH_LEGGINGS",
+      "name": "Squash Leggings",
+      "category": "LEGGINGS",
+      "source": "vanilla-material",
+      "material": "LEATHER_LEGGINGS"
+    },
+    {
+      "id": "SQUASH_HELMET",
+      "name": "Squash Helmet",
+      "category": "HELMET",
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "SQUASH_CHESTPLATE",
+      "name": "Squash Chestplate",
+      "category": "CHESTPLATE",
+      "source": "vanilla-material",
+      "material": "LEATHER_CHESTPLATE"
+    },
+    {
+      "id": "SQUASH_BOOTS",
+      "name": "Squash Boots",
+      "category": "BOOTS",
+      "source": "vanilla-material",
+      "material": "LEATHER_BOOTS"
+    },
+    {
+      "id": "MELON_HELMET",
+      "name": "Tater Helmet",
+      "category": "HELMET",
+      "source": "vanilla-material",
+      "material": "SKULL_ITEM"
+    },
+    {
+      "id": "MELON_BOOTS",
+      "name": "Tater Boots",
+      "category": "BOOTS",
+      "source": "vanilla-material",
+      "material": "LEATHER_BOOTS"
+    },
+    {
+      "id": "MELON_CHESTPLATE",
+      "name": "Tater Chestplate",
+      "category": "CHESTPLATE",
+      "source": "vanilla-material",
+      "material": "LEATHER_CHESTPLATE"
+    },
+    {
+      "id": "MELON_LEGGINGS",
+      "name": "Tater Leggings",
+      "category": "LEGGINGS",
+      "source": "vanilla-material",
+      "material": "LEATHER_LEGGINGS"
+    },
+    {
+      "id": "PESTHUNTERS_LAIR_BARN_SKIN",
+      "name": "Pesthunter's Lair Barn Skin",
+      "category": "COSMETIC",
+      "source": "vanilla-material",
+      "material": "DIRT"
+    },
+    {
+      "id": "SQUASH_RING",
+      "name": "Squash Ring",
+      "category": "ACCESSORY",
+      "source": "resource-pack-set",
+      "packKey": "squash",
+      "texture": "textures/item/island_relevant/garden/squash.png"
+    },
+    {
+      "id": "CROPIE_TALISMAN",
+      "name": "Cropie Talisman",
+      "category": "ACCESSORY",
+      "source": "resource-pack-set",
+      "packKey": "cropie",
+      "texture": "textures/item/island_relevant/garden/cropie.png"
+    },
+    {
+      "id": "HELIANTHUS_RELIC",
+      "name": "Helianthus Relic",
+      "category": "ACCESSORY",
+      "source": "resource-pack-set",
+      "packKey": "helianthus",
+      "texture": "textures/item/island_relevant/garden/helianthus.png"
+    },
+    {
+      "id": "PUMPKIN_DICER_3",
+      "name": "Pumpkin Dicer Mk. III",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "pumpkin_dicer_3",
+      "texture": "textures/item/island_relevant/garden/pumpkin_dicer_3.png"
+    },
+    {
+      "id": "MELON_DICER_2",
+      "name": "Melon Dicer Mk. II",
+      "category": "FARMING_TOOL",
+      "source": "resource-pack-item",
+      "packKey": "melon_dicer_2",
+      "texture": "textures/item/island_relevant/garden/melon_dicer_2.png"
+    },
+    {
+      "id": "FERMENTO_ARTIFACT",
+      "name": "Fermento Artifact",
+      "category": "ACCESSORY",
+      "source": "resource-pack-set",
+      "packKey": "fermento",
+      "texture": "textures/item/island_relevant/garden/fermento.png"
+    }
+  ]
+}

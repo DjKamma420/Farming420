@@ -4,6 +4,7 @@ import {
   ITEM_SOURCE,
   SLOT_IDS,
   normalizeSetups,
+  writeLinkedSetupSlot,
 } from './setups.js';
 import {
   intrinsicEnchantmentsForCatalogItem,
@@ -92,7 +93,8 @@ function replaceSlot(slotId, mutator) {
   const { setup } = currentSetupRecord(state);
   if (!setup) return false;
   setup.slots ||= {};
-  setup.slots[slotId] = mutator(setup.slots[slotId] || null);
+  const nextItem = mutator(setup.slots[slotId] || null);
+  writeLinkedSetupSlot(setups, setup.id, slotId, nextItem);
   return writeState(state);
 }
 

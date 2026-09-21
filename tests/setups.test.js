@@ -13,6 +13,9 @@ import {
   normalizeSetups,
   prefillSetupFromSnapshot,
   setupSummary,
+  ensurePhysicalItemId,
+  physicalItemId,
+  writeLinkedSetupSlot,
 } from '../src/setups.js';
 
 function decoded(overrides = {}) {
@@ -75,6 +78,7 @@ test('a decoded item becomes an item record with its colour codes stripped', () 
   assert.equal(record.recombobulated, true);
   assert.equal(record.source, ITEM_SOURCE.SYNC);
   assert.equal(record.itemUuid, 'uuid-1');
+  assert.equal(record.physicalItemId, 'uuid:uuid-1');
 });
 
 test('recombobulated is false when the counter is absent or zero', () => {
@@ -135,6 +139,25 @@ test('the active pet and its held item fill the pet slots', () => {
   assert.equal(setup.slots.petItem.skyblockId, 'GREEN_BANDANA');
 });
 
+test('autofill derives the active pet level from synced experience and keeps its physical identity', () => {
+  const snapshot = {
+    items: [],
+    pets: [{
+      uuid: 'pet-123',
+      type: 'BEE',
+      rarity: 'COMMON',
+      experience: 100,
+      active: true,
+      heldItem: 'GREEN_BANDANA',
+    }],
+  };
+  const { setup } = prefillSetupFromSnapshot(createSetup('a', 'A'), snapshot);
+  assert.equal(setup.slots.pet.petLevel, 2);
+  assert.equal(setup.slots.pet.physicalItemId, 'pet:pet-123');
+  assert.equal(setup.slots.petItem.displayName, 'Green Bandana');
+  assert.equal(setup.slots.petItem.physicalItemId, 'pet-held:pet-123');
+});
+
 test('an inactive pet is never assumed to be the equipped one', () => {
   const snapshot = { items: [], pets: [{ type: 'ELEPHANT', active: false }, { type: 'HEDGEHOG', active: null }] };
   const { setup } = prefillSetupFromSnapshot(createSetup('a', 'A'), snapshot);
@@ -175,4 +198,57 @@ test('the summary counts filled slots and how many came from a sync', () => {
   assert.equal(summary.filled, 2);
   assert.equal(summary.fromSync, 1);
   assert.equal(summary.total, SLOT_IDS.length);
+});
+
+test('legacy synced items recover their physical identity from the NBT UUID', () => {
+  const setups = normalizeSetups({
+    activeId: 'a',
+    list: [{ id: 'a', slots: { helmet: { displayName: 'Hat', itemUuid: 'old-uuid', source: ITEM_SOURCE.SYNC } } }],
+  });
+  assert.equal(setups.slots, undefined);
+  assert.equal(setups.list[0].slots.helmet.physicalItemId, 'uuid:old-uuid');
+});
+
+test('reusing a manual item creates one stable physical identity', () => {
+  const item = { ...createEmptyItem(), displayName: 'Shared Helmet' };
+  const linked = ensurePhysicalItemId(item, 'shared:normal:helmet');
+  assert.equal(physicalItemId(linked), 'shared:normal:helmet');
+  assert.equal(ensurePhysicalItemId(linked, 'other').physicalItemId, 'shared:normal:helmet');
+});
+
+test('editing one linked setup item updates every reference to the same physical object', () => {
+  const setups = createDefaultSetups();
+  const shared = ensurePhysicalItemId({ ...createEmptyItem(), displayName: 'Helianthus Helmet', reforge: 'mossy' }, 'shared:normal:helmet');
+  setups.list[0].slots.helmet = { ...shared };
+  setups.list[2].slots.helmet = { ...shared };
+
+  writeLinkedSetupSlot(setups, 'pest-kill', 'helmet', { ...shared, reforge: 'mantid', source: ITEM_SOURCE.MANUAL });
+
+  assert.equal(setups.list[0].slots.helmet.reforge, 'mantid');
+  assert.equal(setups.list[2].slots.helmet.reforge, 'mantid');
+  assert.equal(setups.list[0].slots.helmet.physicalItemId, 'shared:normal:helmet');
+});
+
+test('clearing a linked slot removes only that loadout reference', () => {
+  const setups = createDefaultSetups();
+  const shared = ensurePhysicalItemId({ ...createEmptyItem(), displayName: 'Helianthus Helmet' }, 'shared:normal:helmet');
+  setups.list[0].slots.helmet = { ...shared };
+  setups.list[2].slots.helmet = { ...shared };
+
+  writeLinkedSetupSlot(setups, 'pest-kill', 'helmet', null);
+
+  assert.ok(setups.list[0].slots.helmet);
+  assert.equal(setups.list[2].slots.helmet, null);
+});
+
+test('replacing a linked slot with a different physical item does not mutate the old object elsewhere', () => {
+  const setups = createDefaultSetups();
+  const shared = ensurePhysicalItemId({ ...createEmptyItem(), displayName: 'Old Helmet' }, 'shared:normal:helmet');
+  setups.list[0].slots.helmet = { ...shared };
+  setups.list[2].slots.helmet = { ...shared };
+
+  writeLinkedSetupSlot(setups, 'pest-kill', 'helmet', { ...createEmptyItem(), displayName: 'Different Helmet' });
+
+  assert.equal(setups.list[0].slots.helmet.displayName, 'Old Helmet');
+  assert.equal(setups.list[2].slots.helmet.displayName, 'Different Helmet');
 });

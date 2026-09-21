@@ -1,6 +1,7 @@
 import { STORAGE_KEY } from './config.js';
 import { readCachedCatalog } from './item-catalog.js';
 import { gemValuesForSlotType, itemCapabilities } from './item-capabilities.js';
+import { writeLinkedSetupSlot } from './setups.js';
 
 const MANAGED_SLOTS = Object.freeze([
   'helmet', 'chestplate', 'leggings', 'boots',
@@ -31,7 +32,8 @@ function patchSlot(raw, slotId, changes) {
   const setup = activeSetup(raw);
   if (!setup) return;
   setup.slots ||= {};
-  setup.slots[slotId] = { ...(setup.slots[slotId] || {}), ...changes, source: 'manual' };
+  const item = { ...(setup.slots[slotId] || {}), ...changes, source: 'manual' };
+  writeLinkedSetupSlot(raw.profile?.setups, setup.id, slotId, item);
 }
 function setHidden(node, hidden) {
   if (!node) return;

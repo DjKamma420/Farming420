@@ -328,7 +328,10 @@ function bindSettings() {
       // written, so an older backup cannot reintroduce an outdated data shape.
       const restored = validateBackupPayload(await readJsonFile(event.target.files?.[0]));
       writeState(restored.state);
-      location.reload();
+      window.dispatchEvent(new Event('farming420:state-changed'));
+      settingsDialog.innerHTML = settingsMarkup();
+      bindSettings();
+      setStatus('Backup restored.', 'success');
     } catch (error) {
       setStatus(error.message, 'error');
       event.target.value = '';
@@ -338,7 +341,10 @@ function bindSettings() {
   settingsDialog.querySelector('[data-reset-app]')?.addEventListener('click', () => {
     if (!confirm('Delete all locally stored Farming420 profile data on this device? Download a backup first if you need it.')) return;
     localStorage.removeItem(STORAGE_KEY);
-    location.reload();
+    window.dispatchEvent(new Event('farming420:state-changed'));
+    settingsDialog.innerHTML = settingsMarkup();
+    bindSettings();
+    setStatus('Local profile data reset.', 'success');
   });
 
   settingsDialog.querySelector('[data-install-app]')?.addEventListener('click', async () => {

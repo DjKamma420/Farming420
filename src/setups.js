@@ -15,8 +15,9 @@
  */
 
 import { baseRarityFromDisplayed } from './setup-rarity.js';
+import { petLevelFromExperience } from './mooshroom-cow.js';
 
-export const SETUPS_MODEL_VERSION = 2;
+export const SETUPS_MODEL_VERSION = 3;
 
 /** The slots a setup has, in the order the editor shows them. */
 export const SETUP_SLOTS = Object.freeze([
@@ -65,6 +66,7 @@ export function createEmptyItem() {
     skullTexture: null,
     source: ITEM_SOURCE.MANUAL,
     itemUuid: null,
+    physicalItemId: null,
   };
 }
 
@@ -91,6 +93,7 @@ function normalizeSetupItem(item) {
     normalized.rarity = baseRarityFromDisplayed(normalized.rarity, true);
   }
   normalized.rarityBasis = 'base';
+  if (!normalized.physicalItemId && normalized.itemUuid) normalized.physicalItemId = `uuid:${normalized.itemUuid}`;
   return normalized;
 }
 
@@ -139,10 +142,18 @@ function cleanName(value) {
   return String(value ?? '').replace(/§[0-9a-fk-or]/gi, '').trim();
 }
 
+function readableWords(value) {
+  return String(value || '').trim().toLowerCase().split('_').filter(Boolean)
+    .map(word => word[0].toUpperCase() + word.slice(1)).join(' ');
+}
+
 function readablePetName(value) {
-  const words = String(value || '').trim().toLowerCase().split('_').filter(Boolean);
-  if (!words.length) return '';
-  return `${words.map(word => word[0].toUpperCase() + word.slice(1)).join(' ')} Pet`;
+  const words = readableWords(value);
+  return words ? `${words} Pet` : '';
+}
+
+function readableItemName(value) {
+  return readableWords(value);
 }
 
 function gemListFrom(gems) {
@@ -175,7 +186,63 @@ export function itemRecordFromDecoded(decoded) {
     skullTexture: decoded.skullTexture ?? null,
     source: ITEM_SOURCE.SYNC,
     itemUuid: decoded.itemUuid ?? null,
+    physicalItemId: decoded.itemUuid ? `uuid:${decoded.itemUuid}` : null,
   };
+}
+
+
+/** Stable identity for one physical object reused by multiple phase loadouts. */
+export function physicalItemId(item) {
+  const explicit = String(item?.physicalItemId || '').trim();
+  if (explicit) return explicit;
+  const uuid = String(item?.itemUuid || '').trim();
+  return uuid ? `uuid:${uuid}` : null;
+}
+
+/**
+ * Gives a manually entered item a stable identity before another setup starts
+ * referring to the same physical object. Synced items already use their NBT
+ * UUID and never need a fabricated replacement identity.
+ */
+export function ensurePhysicalItemId(item, fallbackId) {
+  if (!item) return null;
+  const existing = physicalItemId(item);
+  return { ...item, physicalItemId: existing || String(fallbackId || '').trim() || null };
+}
+
+/**
+ * Writes one slot and propagates edits to every setup that references the same
+ * physical item. Clearing a slot only removes that loadout reference; it does
+ * not delete the object from other loadouts.
+ */
+export function writeLinkedSetupSlot(setups, setupId, slotId, item) {
+  const list = Array.isArray(setups?.list) ? setups.list : [];
+  const target = list.find(setup => setup?.id === setupId) || null;
+  if (!target) return false;
+  target.slots ||= {};
+  const previousId = physicalItemId(target.slots[slotId]);
+  const nextId = physicalItemId(item);
+
+  if (!item) {
+    target.slots[slotId] = null;
+    return true;
+  }
+
+  // A replacement with a different/no identity is a different physical item
+  // and therefore changes only this loadout.
+  if (!previousId || !nextId || previousId !== nextId) {
+    target.slots[slotId] = item;
+    return true;
+  }
+
+  for (const setup of list) {
+    if (!setup?.slots) continue;
+    for (const id of SLOT_IDS) {
+      if (physicalItemId(setup.slots[id]) !== nextId) continue;
+      setup.slots[id] = { ...item };
+    }
+  }
+  return true;
 }
 
 const isWornArmor = container => container === 'armor';
@@ -216,21 +283,31 @@ export function prefillSetupFromSnapshot(setup, snapshot, { overwrite = false } 
 
   const activePet = pets.find(pet => pet.active === true);
   if (activePet) {
-    const rawLevel = Number(activePet.level);
+    const rarity = activePet.rarity ?? activePet.tier ?? null;
+    const explicitLevel = Number(activePet.level);
+    const derivedLevel = Number.isFinite(explicitLevel)
+      ? Math.max(1, Math.min(100, Math.floor(explicitLevel)))
+      : petLevelFromExperience(activePet.experience, rarity || 'COMMON');
+    const petPhysicalId = activePet.uuid ? `pet:${activePet.uuid}` : null;
     assign('pet', {
       ...createEmptyItem(),
       skyblockId: activePet.type ?? null,
       displayName: readablePetName(activePet.type) || String(activePet.type || ''),
-      rarity: activePet.rarity ?? activePet.tier ?? null,
-      petLevel: Number.isFinite(rawLevel) ? rawLevel : null,
+      rarity,
+      petLevel: derivedLevel,
       source: ITEM_SOURCE.SYNC,
+      physicalItemId: petPhysicalId,
     });
     if (activePet.heldItem) {
       assign('petItem', {
         ...createEmptyItem(),
         skyblockId: activePet.heldItem,
-        displayName: activePet.heldItem,
+        displayName: readableItemName(activePet.heldItem) || activePet.heldItem,
         source: ITEM_SOURCE.SYNC,
+        // A held item belongs to this concrete pet in the profile payload.
+        // This links repeated phase references without pretending the API gave
+        // the held item its own UUID.
+        physicalItemId: activePet.uuid ? `pet-held:${activePet.uuid}` : null,
       });
     }
   }

@@ -35,10 +35,20 @@ test('every setup slot knows which enchantment family it belongs to', () => {
   }
 });
 
-test('a slot offers exactly the verified enchantments that apply to it', () => {
-  const helmet = enchantRowsFor('helmet', {});
-  assert.deepEqual(helmet.map(row => row.id), ['pesterminator', 'thorns', 'sunset']);
-  assert.deepEqual(enchantRowsFor('equipment1', {}).map(row => row.id), ['green_thumb']);
+test('slots offer the complete verified enchant set for their family and exact slot', () => {
+  const helmet = new Set(enchantRowsFor('helmet', {}).map(row => row.id));
+  for (const id of ['growth', 'protection', 'pesterminator', 'aqua_affinity', 'big_brain', 'hecatomb', 'respiration', 'sunset', 'legion']) {
+    assert.equal(helmet.has(id), true, `helmet is missing ${id}`);
+  }
+  assert.equal(helmet.has('counter_strike'), false);
+  assert.equal(helmet.has('depth_strider'), false);
+
+  const necklace = new Set(enchantRowsFor('equipment1', {}).map(row => row.id));
+  for (const id of ['cayenne', 'green_thumb', 'prosperity', 'quantum', 'the_one']) assert.equal(necklace.has(id), true);
+  const cloak = new Set(enchantRowsFor('equipment2', {}).map(row => row.id));
+  assert.equal(cloak.has('quantum'), false);
+  assert.equal(cloak.has('the_one'), false);
+
   // Pets take no enchantments, so the editor shows the section as absent rather
   // than as an empty box waiting to be filled.
   assert.equal(enchantRowsFor('pet', {}).length, 0);
@@ -81,10 +91,10 @@ test('a crop-specific Turbo enchant keeps its own storage key through an edit', 
   assert.deepEqual(withEnchantToggled(item, turbo.storageKey, false), {});
 });
 
-test('turning an enchantment on starts it at level 1, not at its maximum', () => {
-  // Assuming the best case credits Fortune nobody claimed. Understating is the
-  // cheaper error for a planner.
+test('turning an enchantment on starts at its lowest real tier, never its maximum', () => {
   assert.deepEqual(withEnchantToggled({ enchantments: {} }, 'dedication', true), { dedication: 1 });
+  assert.deepEqual(withEnchantToggled({ enchantments: {} }, 'big_brain', true), { big_brain: 3 });
+  assert.deepEqual(withEnchantToggled({ enchantments: {} }, 'cayenne', true), { cayenne: 4 });
 });
 
 test('a level can never be saved above the sourced maximum, and zero turns it off', () => {
@@ -181,4 +191,37 @@ test('a level control is chosen by how many levels there are to show', () => {
 test('the panel lists no entry twice', () => {
   const ids = toolPanelEntryIds();
   assert.equal(new Set(ids).size, ids.length);
+});
+
+test('turning on an incompatible enchant clears the existing peer', () => {
+  assert.deepEqual(
+    withEnchantToggled({ enchantments: { protection: 7 } }, 'blast_protection', true),
+    { blast_protection: 1 },
+  );
+  assert.deepEqual(
+    withEnchantToggled({ enchantments: { big_brain: 5 } }, 'small_brain', true),
+    { small_brain: 3 },
+  );
+});
+
+test('turning on a verified ultimate replaces the previous ultimate', () => {
+  assert.deepEqual(
+    withEnchantToggled({ enchantments: { ultimate_bank: 5, protection: 7 } }, 'sunset', true),
+    { protection: 7, sunset: 1 },
+  );
+});
+
+test('slot-specific rows expose their real minimum and true maximum', () => {
+  const bigBrain = enchantRowsFor('helmet', {}).find(row => row.id === 'big_brain');
+  assert.equal(bigBrain.minLevel, 3);
+  const thorns = enchantRowsFor('helmet', { enchantments: { thorns: 5 } }).find(row => row.id === 'thorns');
+  assert.equal(thorns.maxLevel, 4);
+  assert.equal(thorns.trueMaxLevel, 5);
+  assert.equal(thorns.state, 'special-maxed');
+});
+
+
+test("withEnchantLevel clamps a manually supplied level to the enchantment's real minimum", () => {
+  assert.deepEqual(withEnchantLevel({ enchantments: {} }, 'big_brain', 1, 5), { big_brain: 3 });
+  assert.deepEqual(withEnchantLevel({ enchantments: {} }, 'cayenne', 2, 5), { cayenne: 4 });
 });

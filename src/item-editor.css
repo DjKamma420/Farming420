@@ -270,12 +270,23 @@
 
 .enchant-line.on .enchant-name { color: var(--accent2); }
 
-.enchant-line.enchant-maxed .enchant-name {
-  background: linear-gradient(90deg, #ffe08a, #7ef0b4, #8ab6ff, #ffe08a);
+.enchant-line.enchant-maxed .enchant-name,
+.enchant-line.enchant-special-maxed .enchant-name {
+  background: linear-gradient(90deg, #ffe08a, #7ef0b4, #8ab6ff, #d994ff, #ffe08a);
   background-size: 300% 100%;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  animation: enchant-chroma 5s linear infinite;
+}
+
+.enchant-line.enchant-special-maxed {
+  border-color: #d994ff;
+}
+
+@keyframes enchant-chroma {
+  from { background-position: 0% 50%; }
+  to { background-position: 300% 50%; }
 }
 
 .enchant-tag {
@@ -324,6 +335,8 @@
   .lever-track,
   .lever-track::after,
   .enchant-line { transition: none; }
+  .enchant-line.enchant-maxed .enchant-name,
+  .enchant-line.enchant-special-maxed .enchant-name { animation: none; }
 }
 
 /* --- player-head item art ------------------------------------------------
