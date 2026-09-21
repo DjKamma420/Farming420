@@ -125,7 +125,7 @@ test('Vacuum configuration belongs to Tools and Pests only reads it', () => {
   assert.match(capabilities, /if \(raw\.page !== 'tools'\) return/);
   assert.doesNotMatch(capabilities, /if \(raw\.page !== 'pests'\) return/);
   assert.match(capabilities, /data-vacuum-panel/);
-  assert.match(capabilities, /Pest Vacuum/);
+  assert.match(capabilities, /data-vacuum-section="reforge"/);
 
   assert.match(pests, /raw\?\.profile\?\.vacuumProgress/);
   assert.match(pests, /Configure the physical Vacuum under Tools/);
