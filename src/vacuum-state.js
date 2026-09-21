@@ -32,6 +32,9 @@ export function normalizeVacuumPhysicalState(bucket) {
   if (!selectedVacuumRecord(bucket)) bucket.skyblockId = null;
   bucket[VACUUM_RECOMB_FIELD] = bucket[VACUUM_RECOMB_FIELD] === true;
   bucket.gemSlots = Array.isArray(bucket.gemSlots) ? bucket.gemSlots : [];
+  bucket.enchantments = bucket.enchantments && typeof bucket.enchantments === 'object'
+    ? { ...bucket.enchantments }
+    : {};
   bucket.levels ||= {};
   bucket.owned ||= {};
   return bucket;
