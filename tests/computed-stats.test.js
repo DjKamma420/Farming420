@@ -52,6 +52,25 @@ test('totals are derived from configured source levels, never from an entered en
   assert.equal(totals.effectiveFortune, 23);
   assert.equal(totals.overbloom, 10);
   assert.equal(totals.bonusPestChance, 6);
+  assert.deepEqual(totals.sourceCount, {
+    globalFortune: 1,
+    cropFortune: 1,
+    pestFortune: 0,
+    overbloom: 1,
+    bonusPestChance: 1,
+  });
+});
+
+test('an empty profile has zero configured sources instead of looking fully calculated', () => {
+  const totals = computeTotalsFromEntries(baseState(), [], 'melon');
+  assert.deepEqual(totals.sourceCount, {
+    globalFortune: 0,
+    cropFortune: 0,
+    pestFortune: 0,
+    overbloom: 0,
+    bonusPestChance: 0,
+  });
+  assert.deepEqual(totals.incomplete.globalFortune, []);
 });
 
 test('unmodeled configured source is flagged incomplete instead of using manual marginal input as a total', () => {

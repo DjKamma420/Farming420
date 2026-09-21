@@ -165,8 +165,8 @@ export function renderSetupItemArt({ root = document, rawState = readState(), ma
     rendered += 1;
   });
 
-  root.querySelectorAll('.slot-portrait, [data-item-art-slot]').forEach(card => {
-    const slotId = card.dataset.slot || card.dataset.itemArtSlot || card.closest('[data-slot]')?.dataset.slot;
+  root.querySelectorAll('.slot-portrait').forEach(card => {
+    const slotId = card.dataset.slot || card.closest('[data-slot]')?.dataset.slot;
     if (!slotId) return;
     const item = itemForSetupSlot(rawState, slotId);
     if (!item) {
@@ -264,8 +264,8 @@ function mutationNeedsApply(mutations) {
     return [...mutation.addedNodes].some(node => {
       if (!(node instanceof Element)) return false;
       if (node.matches?.('.official-item-art, .skull-art, .item-art-fallback')) return false;
-      return node.matches?.('[data-pack-asset], .slot-portrait, [data-item-art-slot]')
-        || node.querySelector?.('[data-pack-asset], .slot-portrait, [data-item-art-slot]');
+      return node.matches?.('[data-pack-asset], .slot-portrait')
+        || node.querySelector?.('[data-pack-asset], .slot-portrait');
     });
   });
 }

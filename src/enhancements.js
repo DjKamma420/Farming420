@@ -1,4 +1,3 @@
-import { enchantPresentation } from './enchant-presentation.js';
 import { parseSkyBlockTooltip, recognizeSkyBlockTooltip } from './tooltip-scanner.js';
 
 /**
@@ -18,13 +17,6 @@ const GROUPS = [
   ['Analysis', ['planner', 'research', 'coming']],
   ['Getting started', ['guide', 'setup']],
   ['System', ['settings']],
-];
-
-const HUBS = [
-  ['account', 'Layer 1', 'Account', 'Skills, Garden, Anita and global upgrades.'],
-  ['crops', 'Layer 2', 'Crop', 'Crop-specific Fortune and progression.'],
-  ['tools', 'Layer 3', 'Tool', 'Reforge, enchantments, gemstones and Farming for Dummies.'],
-  ['gear', 'Layer 4', 'Items & Setup', 'Armor, equipment, pets, chips, shards and buffs.'],
 ];
 
 const scannerBySlot = new Map();
@@ -56,36 +48,6 @@ function groupSidebar(root) {
 }
 
 
-function simplifyDashboard(root) {
-  const heading = root.querySelector('.page-head h1');
-  if (!heading || heading.textContent.trim() !== 'Your Farming Progress') return;
-  const content = root.querySelector('.content');
-  const hero = content?.querySelector('.hero-grid');
-  if (!content || !hero || content.querySelector('.layer-hub-grid-addon')) return;
-
-  [...content.children].forEach((node, index) => {
-    if (index > [...content.children].indexOf(hero)) node.classList.add('dashboard-detail-addon');
-  });
-
-  const section = document.createElement('section');
-  section.className = 'dashboard-layer-addon';
-  section.innerHTML = '<div class="section-row"><div><h2>Progress layers</h2><p>Account → Crop → Tool → Items. Details appear only after opening a layer.</p></div></div>';
-
-  const grid = document.createElement('div');
-  grid.className = 'layer-hub-grid-addon';
-
-  for (const [page, eyebrow, title, description] of HUBS) {
-    const button = document.createElement('button');
-    button.className = 'layer-hub-addon';
-    button.innerHTML = `<span>${eyebrow}</span><strong>${title}</strong><p>${description}</p><b>Open →</b>`;
-    button.addEventListener('click', () => clickPage(page));
-    grid.appendChild(button);
-  }
-
-  section.appendChild(grid);
-  hero.insertAdjacentElement('afterend', section);
-}
-
 function enhanceCropWorkspace(root) {
   const heading = root.querySelector('.page-head h1');
   if (!heading || heading.textContent.trim() !== 'Crop progression') return;
@@ -97,11 +59,6 @@ function enhanceCropWorkspace(root) {
   picker.classList.add('crop-picker-addon');
   panel.classList.add('crop-workspace-addon');
   panel.dataset.workspace = '1';
-
-  // Older cached markup can still contain the former pseudo-tabs. They mixed
-  // three different pages into one panel and looked interactive even when the
-  // navigation target was elsewhere. Hide them if an old render survives.
-  panel.querySelector('.layer-tabs')?.setAttribute('hidden', '');
 
   const cropGrid = panel.querySelector(':scope > .card-grid');
   cropGrid?.classList.add('workspace-grid-addon', 'crop-layer-grid-addon');
@@ -131,34 +88,6 @@ function improveToolsPage(root) {
   `;
   context.querySelector('button').addEventListener('click', () => clickPage('crops'));
   heading.insertAdjacentElement('afterend', context);
-}
-
-function decorateEnchantRow(row) {
-  const nameInput = row.querySelector('[data-ench-name], [data-ench-new]');
-  const levelInput = row.querySelector('[data-ench-level], [data-ench-new-level]');
-  if (!nameInput || !levelInput) return;
-
-  const presentation = enchantPresentation(nameInput.value, levelInput.value);
-  row.classList.remove('enchant-maxed', 'enchant-active', 'enchant-missing', 'enchant-unverified');
-  row.classList.add(`enchant-${presentation.state}`);
-  if (presentation.maxLevel !== null) {
-    row.dataset.enchantMax = String(presentation.maxLevel);
-    row.title = presentation.state === 'maxed'
-      ? `Verified max level ${presentation.maxLevel}`
-      : `Verified max level: ${presentation.maxLevel}`;
-  } else {
-    delete row.dataset.enchantMax;
-    row.title = 'Maximum level not verified yet';
-  }
-}
-
-function decorateEnchantments(root) {
-  root.querySelectorAll('.enchant-row').forEach(row => {
-    decorateEnchantRow(row);
-    if (row.dataset.enchantVisualBound === '1') return;
-    row.dataset.enchantVisualBound = '1';
-    row.addEventListener('input', () => decorateEnchantRow(row));
-  });
 }
 
 function normalizeValue(value) {
@@ -246,8 +175,19 @@ function dispatchChange(element) {
   element?.dispatchEvent(new Event('change', { bubbles: true }));
 }
 
+function slotEditorElement(slotId) {
+  return document.querySelector(`[data-item-editor="${slotId}"]`);
+}
+
 function freshSlotElement(slotId, selector) {
-  return document.querySelector(`.slot-editor ${selector.replaceAll('{slot}', slotId)}`);
+  return slotEditorElement(slotId)?.querySelector(selector.replaceAll('{slot}', slotId)) || null;
+}
+
+function enchantRowElement(slotId, enchantId) {
+  const editor = slotEditorElement(slotId);
+  if (!editor) return null;
+  return [...editor.querySelectorAll('[data-ench-row]')]
+    .find(row => normalizeValue(row.dataset.enchRow) === normalizeValue(enchantId)) || null;
 }
 
 function applyScannerResult(slotId, scan) {
@@ -285,29 +225,29 @@ function applyScannerResult(slotId, scan) {
   }
 
   for (const [enchantId, level] of Object.entries(scan.enchantments || {})) {
-    const rows = [...document.querySelectorAll('.slot-editor .enchant-row')];
-    const existing = rows.find(row => normalizeValue(row.querySelector('[data-ench-name]')?.value) === normalizeValue(enchantId));
-    if (existing) {
-      const levelInput = existing.querySelector('[data-ench-level]');
-      if (levelInput) {
-        levelInput.value = String(level);
-        dispatchChange(levelInput);
-      }
-      continue;
+    let row = enchantRowElement(slotId, enchantId);
+    if (!row) continue;
+
+    const toggle = row.querySelector(`[data-ench-toggle="${slotId}"]`);
+    if (toggle && !toggle.checked) {
+      toggle.checked = true;
+      dispatchChange(toggle);
+      row = enchantRowElement(slotId, enchantId);
     }
 
-    const nameInput = freshSlotElement(slotId, `[data-ench-new="{slot}"]`);
-    const levelInput = freshSlotElement(slotId, `[data-ench-new-level="{slot}"]`);
-    const addButton = freshSlotElement(slotId, `[data-ench-add="{slot}"]`);
-    if (!nameInput || !levelInput || !addButton) continue;
-    nameInput.value = enchantId;
-    levelInput.value = String(level);
-    addButton.click();
+    const levelInput = row?.querySelector(`[data-ench-select="${slotId}"]`);
+    if (levelInput) {
+      levelInput.value = String(level);
+      dispatchChange(levelInput);
+    }
   }
 
   for (const gem of scan.gems || []) {
-    const existing = [...document.querySelectorAll(`.slot-editor [data-gem-value="${slotId}"]`)]
-      .some(input => normalizeValue(input.value) === normalizeValue(gem));
+    const editor = slotEditorElement(slotId);
+    const existing = editor
+      ? [...editor.querySelectorAll(`[data-gem-value="${slotId}"]`)]
+        .some(input => normalizeValue(input.value) === normalizeValue(gem))
+      : false;
     if (existing) continue;
     const input = freshSlotElement(slotId, `[data-gem-new="{slot}"]`);
     const addButton = freshSlotElement(slotId, `[data-gem-add="{slot}"]`);
@@ -395,10 +335,8 @@ function bindScannerPanel(panel, editor, slotId) {
   });
 }
 
-function addScreenshotScanner(root) {
-  const editor = root.querySelector('.slot-editor');
-  const nameInput = editor?.querySelector('[data-slot-name]');
-  const slotId = nameInput?.dataset.slotName;
+function attachScreenshotScanner(editor) {
+  const slotId = editor?.dataset.itemEditor;
   if (!editor || !slotId || editor.querySelector('[data-scanner-slot]')) return;
 
   const panel = document.createElement('section');
@@ -430,15 +368,17 @@ function addScreenshotScanner(root) {
   renderScannerPreview(panel, slotId);
 }
 
+function addScreenshotScanners(root) {
+  root.querySelectorAll('.item-editor[data-item-editor]').forEach(attachScreenshotScanner);
+}
+
 function enhance() {
   const root = document.querySelector('#app');
   if (!root) return;
   groupSidebar(root);
-  simplifyDashboard(root);
   enhanceCropWorkspace(root);
   improveToolsPage(root);
-  decorateEnchantments(root);
-  addScreenshotScanner(root);
+  addScreenshotScanners(root);
 }
 
 let scheduled = false;

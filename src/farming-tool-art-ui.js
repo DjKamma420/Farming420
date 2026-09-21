@@ -51,25 +51,9 @@ function enhanceWorkspaceEditor(raw) {
   ensureArtHost(portrait, key, tool ? `${tool} texture` : null);
 }
 
-function enhanceDirectPicker(raw) {
-  document.querySelectorAll('[data-workspace-tool-value]').forEach(button => {
-    const cropId = button.dataset.workspaceToolValue;
-    const tool = toolForCropId(cropId);
-    const key = artKey(raw, cropId);
-    let host = button.querySelector('.workspace-tool-art');
-    if (!host) {
-      host = document.createElement('span');
-      host.className = 'workspace-tool-art';
-      button.prepend(host);
-    }
-    ensureArtHost(host, key, tool ? `${tool} texture` : null);
-  });
-}
-
 export function applyFarmingToolArt() {
   const raw = readState();
   enhanceWorkspaceEditor(raw);
-  enhanceDirectPicker(raw);
 }
 
 function queueApply() {
@@ -85,8 +69,8 @@ function mutationNeedsApply(mutations) {
   return mutations.some(mutation => [...mutation.addedNodes].some(node => {
     if (!(node instanceof Element)) return false;
     if (node.classList.contains('workspace-tool-art')) return false;
-    return node.matches?.('#workspaceToolSelect, [data-tool-editor="1"], [data-workspace-tool-value]')
-      || node.querySelector?.('#workspaceToolSelect, [data-tool-editor="1"], [data-workspace-tool-value]');
+    return node.matches?.('#workspaceToolSelect, [data-tool-editor="1"]')
+      || node.querySelector?.('#workspaceToolSelect, [data-tool-editor="1"]');
   }));
 }
 

@@ -38,6 +38,7 @@ function replaceGlobalInput(raw) {
   const strip = input.closest('.input-strip');
   if (!strip) return;
   const missing = stats.incomplete.globalFortune.length;
+  const sourceCount = Number(stats.sourceCount?.globalFortune || 0);
   const strength = raw.profile?.inputs?.strength;
   const cow = stats.derived?.mooshroomCow;
   const cowDetail = cow?.active
@@ -54,7 +55,9 @@ function replaceGlobalInput(raw) {
       <input id="strengthInput" type="number" min="0" step="1" inputmode="numeric" value="${strength === null || strength === undefined ? '' : Number(strength)}" placeholder="e.g. 850">
       <small>${cowDetail}</small>
     </label>
-    <p>This total is derived from the configured sources and cannot be entered manually.${missing ? ` ${missing} configured source${missing === 1 ? '' : 's'} still need${missing === 1 ? 's' : ''} an exact total formula or input, so this value is marked incomplete.` : ''}</p>`;
+    <p>${sourceCount
+      ? `This total is derived from ${sourceCount} configured source${sourceCount === 1 ? '' : 's'} and cannot be entered manually.${missing ? ` ${missing} source${missing === 1 ? '' : 's'} still need${missing === 1 ? 's' : ''} an exact total formula or input, so this value is marked incomplete.` : ''}`
+      : 'No global Farming Fortune sources are configured yet. The displayed 0 is an empty result, not a completed calculation.'}</p>`;
 
   strip.querySelector('#strengthInput')?.addEventListener('change', event => {
     const next = load();
@@ -75,8 +78,13 @@ function replaceCropInput(raw) {
   const label = input.closest('label');
   if (!label) return;
   const missing = stats.incomplete.cropFortune.length;
+  const sourceCount = Number(stats.sourceCount?.cropFortune || 0);
   label.className = 'inline-output computed-crop-output';
-  label.innerHTML = `<span>Calculated Crop Fortune</span><strong>${shortValue(stats.cropFortune)}</strong>${missing ? `<small>~ ${missing} unresolved source${missing === 1 ? '' : 's'}</small>` : ''}`;
+  label.innerHTML = `<span>${sourceCount ? 'Calculated Crop Fortune' : 'Crop Fortune'}</span><strong>${shortValue(stats.cropFortune)}</strong>${missing
+    ? `<small>~ ${missing} unresolved source${missing === 1 ? '' : 's'}</small>`
+    : sourceCount
+      ? `<small>${sourceCount} configured source${sourceCount === 1 ? '' : 's'}</small>`
+      : '<small>No configured crop sources yet</small>'}`;
 }
 
 function replacePlannerOverbloom(raw) {
@@ -87,8 +95,13 @@ function replacePlannerOverbloom(raw) {
   const label = input.closest('label');
   if (!label) return;
   const missing = stats.incomplete.overbloom.length;
+  const sourceCount = Number(stats.sourceCount?.overbloom || 0);
   label.className = 'revenue-derived-stat';
-  label.innerHTML = `<span>Current Overbloom · calculated</span><strong>${shortValue(stats.overbloom)}</strong>${missing ? `<small>~ ${missing} unresolved source${missing === 1 ? '' : 's'}</small>` : ''}`;
+  label.innerHTML = `<span>Current Overbloom${sourceCount ? ' · calculated' : ''}</span><strong>${shortValue(stats.overbloom)}</strong>${missing
+    ? `<small>~ ${missing} unresolved source${missing === 1 ? '' : 's'}</small>`
+    : sourceCount
+      ? `<small>${sourceCount} configured source${sourceCount === 1 ? '' : 's'}</small>`
+      : '<small>No configured Overbloom sources yet</small>'}`;
 }
 
 function addAccountAudit(raw) {
@@ -98,13 +111,19 @@ function addAccountAudit(raw) {
   if (!heading.includes('Global Account Progression')) return;
   const stats = computeStatTotals(raw, raw.selectedCrop || 'melon');
   const unresolved = stats.incomplete.globalFortune;
+  const sourceCount = Number(stats.sourceCount?.globalFortune || 0);
   const cow = stats.derived?.mooshroomCow;
   const cowText = cow?.active
     ? ` Active Mooshroom Cow contributes ${shortValue(cow.value)} known FF${cow.incomplete ? ' and is not fully resolved yet.' : '.'}`
     : '';
   const panel = document.createElement('section');
   panel.className = 'computed-stat-audit';
-  panel.innerHTML = `<div><span class="eyebrow">Coverage check</span><h2>${shortValue(stats.globalFortune)} Global Farming Fortune</h2><p>${unresolved.length ? `${unresolved.length} configured source${unresolved.length === 1 ? '' : 's'} cannot yet be converted to an exact total. The displayed total is therefore a known minimum, not a guessed result.` : 'Every configured global source currently has a modeled total contribution.'}${cowText}</p></div>`;
+  const coverage = unresolved.length
+    ? `${unresolved.length} of ${sourceCount} configured source${sourceCount === 1 ? '' : 's'} cannot yet be converted to an exact total. The displayed total is therefore a known minimum, not a guessed result.`
+    : sourceCount
+      ? `All ${sourceCount} configured global source${sourceCount === 1 ? '' : 's'} currently have modeled total contributions.`
+      : 'No global Farming Fortune sources are configured yet. The displayed 0 is an empty result, not a completed calculation.';
+  panel.innerHTML = `<div><span class="eyebrow">Coverage check</span><h2>${shortValue(stats.globalFortune)} Global Farming Fortune</h2><p>${coverage}${cowText}</p></div>`;
   const firstPanel = content.querySelector('.computed-output-panel');
   (firstPanel || content.querySelector('.page-head'))?.insertAdjacentElement('afterend', panel);
 }

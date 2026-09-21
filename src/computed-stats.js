@@ -14,7 +14,7 @@ import {
   itemAppliesToActivity,
 } from './activity-mode.js';
 
-export const COMPUTED_STATS_VERSION = 8;
+export const COMPUTED_STATS_VERSION = 9;
 
 export const STAT_AXIS = Object.freeze({
   GLOBAL_FORTUNE: 'globalFortune',
@@ -151,12 +151,20 @@ export function computeTotalsFromEntries(state, entries, cropId = state?.selecte
       overbloom: [],
       bonusPestChance: [],
     },
+    sourceCount: {
+      globalFortune: 0,
+      cropFortune: 0,
+      pestFortune: 0,
+      overbloom: 0,
+      bonusPestChance: 0,
+    },
   };
 
   for (const item of entries) {
     const part = contributionFor(state, item, cropId, mode);
     if (!part) continue;
     totals[part.axis] += part.value;
+    totals.sourceCount[part.axis] += 1;
     if (part.incomplete) totals.incomplete[part.axis].push({ id: part.id, reason: part.reason });
   }
 
@@ -181,6 +189,7 @@ function applyDerivedMechanics(state, totals, mode, cropId) {
 
   if (cow.active) {
     totals.globalFortune += cow.value;
+    totals.sourceCount.globalFortune += 1;
     if (cow.incomplete) {
       totals.incomplete.globalFortune.push({
         id: 'derived-mooshroom-cow',
@@ -189,13 +198,17 @@ function applyDerivedMechanics(state, totals, mode, cropId) {
     }
   }
 
-  if (vacuumPeridot > 0) totals.pestFortune += vacuumPeridot;
+  if (vacuumPeridot > 0) {
+    totals.pestFortune += vacuumPeridot;
+    totals.sourceCount.pestFortune += 1;
+  }
 
   // A Farming Tool belongs to one crop/tool bucket. Peridot is technically
   // Farming Fortune, but its contribution is active only while that physical
   // crop tool is selected, so it lives on this crop's effective Fortune axis.
   if (toolPeridot.active) {
     totals.cropFortune += toolPeridot.value;
+    totals.sourceCount.cropFortune += 1;
     if (toolPeridot.incomplete) {
       totals.incomplete.cropFortune.push({
         id: TOOL_GEM_ENTRY_ID,
@@ -229,6 +242,7 @@ export function computedStatsSnapshot(state, mode = activityModeForState(state))
     overbloomByCrop: Object.fromEntries(CROPS.map(crop => [crop.id, byCrop[crop.id].overbloom])),
     bonusPestChanceByCrop: Object.fromEntries(CROPS.map(crop => [crop.id, byCrop[crop.id].bonusPestChance])),
     incompleteByCrop: Object.fromEntries(CROPS.map(crop => [crop.id, byCrop[crop.id].incomplete])),
+    sourceCountByCrop: Object.fromEntries(CROPS.map(crop => [crop.id, byCrop[crop.id].sourceCount])),
   };
 }
 

@@ -1,18 +1,3 @@
-.workspace-native-tool-select{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
-.workspace-direct-tool-picker{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-.workspace-tool-button{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:center;min-height:58px;padding:10px 12px;text-align:left;border:1px solid rgba(116,255,187,.13);border-radius:13px;background:rgba(3,14,9,.62);color:#eaf8f0;cursor:pointer;font:inherit}
-.workspace-tool-button:hover{border-color:rgba(116,255,187,.32);background:rgba(8,28,19,.72)}
-.workspace-tool-button.selected{border-color:rgba(94,255,177,.54);background:rgba(8,35,23,.78)}
-.workspace-tool-button-state{width:38px;height:23px;border-radius:999px;background:#10241a;border:1px solid rgba(255,255,255,.07);position:relative}
-.workspace-tool-button-state:after{content:"";position:absolute;width:15px;height:15px;left:4px;top:3px;border-radius:50%;background:#5f746a;transition:left .12s ease,background .12s ease}
-.workspace-tool-button.selected .workspace-tool-button-state{background:#145c40}
-.workspace-tool-button.selected .workspace-tool-button-state:after{left:18px;background:#64e5ad}
-.workspace-tool-button-copy{display:grid;gap:2px;min-width:0}
-.workspace-tool-button-copy strong{font-size:.82rem;line-height:1.25;overflow-wrap:anywhere}
-.workspace-tool-button-copy small{font-size:.68rem;color:#8fa69a}
-.workspace-tool-button.selected .workspace-tool-button-copy small{color:#64e5ad}
-@media(max-width:700px){.workspace-direct-tool-picker{grid-template-columns:1fr}}
-
 /* The tool is chosen in the card grid above, which also shows art and tier.
    The native select stays in the DOM because the workspace listens to it. */
 .workspace-tool-picker-hidden {
