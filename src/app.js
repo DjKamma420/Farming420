@@ -1,4 +1,4 @@
-import { CROPS, UPGRADES, HIDDEN_INTERACTIONS, COMING_SOON } from './data.js';
+import { CROPS, UPGRADES } from './data.js';
 import { FARMING_ACCESSORY_GROUPS, farmingAccessoryByItemId } from './farming-accessories.js';
 import { accessoryCapabilityState } from './accessory-capabilities.js';
 import { DATA_SCHEMA_VERSION, STORAGE_KEY } from './config.js';
@@ -6,7 +6,7 @@ import { computeStatTotals } from './computed-stats.js';
 import { activityLabel, activityModeForState } from './activity-mode.js';
 import { ensureProgressBucket, migrateState, toolKeyForCropId } from './migrations.js';
 import { applySnapshotToProgress, isAutoApplied } from './snapshot-apply.js';
-import { LOCATION_STATUS, isSyncFilled, locationFor, manualEntries, manualEntrySummary } from './help-locations.js';
+import { LOCATION_STATUS, isSyncFilled, locationFor } from './help-locations.js';
 import {
   ARMOR_CHAIN,
   ENCHANT_LADDERS,
@@ -75,10 +75,7 @@ const NAV = [
   ['buffs', 'Buffs'],
   ['pests', 'Pests'],
   ['guide', 'Guide 0-60'],
-  ['setup', 'What to enter'],
   ['planner', 'Upgrade Planner'],
-  ['research', 'Mechanics'],
-  ['coming', 'Coming Soon'],
 ];
 
 const defaultState = {
@@ -118,6 +115,7 @@ function loadState() {
     profile: { ...structuredClone(defaultState.profile), ...(migration.state.profile || {}) }
   };
   loaded.schemaVersion = migration.schemaVersion;
+  if (!NAV.some(([id]) => id === loaded.page)) loaded.page = 'dashboard';
 
   // Data written by a newer app version is kept readable but never saved over.
   readOnlyState = migration.isNewer;
@@ -809,44 +807,6 @@ function plannerPage() {
     </div>`;
 }
 
-// Thirty-six rules, four paragraphs each, was one wall of prose roughly four
-// times taller than any other page. What you scan is the name and the effect;
-// what you read when you care is why it is modeled separately and what the app
-// does about it. So the first two stay open and the rest fold away.
-//
-// A <summary> must stay block-level: given `display: flex` it stops counting as
-// the disclosure summary in Chromium and every card renders permanently open,
-// which is the whole regression this avoids. The flex row lives on an inner div.
-function researchCard(entry) {
-  const needsAttention = entry.status === 'VERIFY';
-  return `<details class="research-card" ${needsAttention ? 'open' : ''}>
-    <summary>
-      <div class="research-head">
-        <div><div class="eyebrow">${esc(entry.status)}</div><h3>${esc(entry.name)}</h3></div>
-        ${badge(entry.status, needsAttention ? 'verify' : 'soft')}
-      </div>
-      <p class="research-effect">${esc(entry.effect)}</p>
-    </summary>
-    <div class="research-body">
-      <p><strong>Why separate:</strong> ${esc(entry.why)}</p>
-      <p><strong>App logic:</strong> ${esc(entry.handling)}</p>
-      <a href="${esc(entry.source)}" target="_blank" rel="noreferrer">Open source</a>
-    </div>
-  </details>`;
-}
-
-function researchPage() {
-  const verify = HIDDEN_INTERACTIONS.filter(entry => entry.status === 'VERIFY').length;
-  return `${pageHeader('Mechanics', 'Hidden and nonlinear effects', 'These rules are intentionally modeled separately instead of being treated as simple additive Fortune.')}
-    <div class="filter-line">${badge(`${HIDDEN_INTERACTIONS.length} rules`, 'soft')}${verify ? ` ${badge(`${verify} need verifying`, 'verify')}` : ''}</div>
-    <div class="research-list">${HIDDEN_INTERACTIONS.map(researchCard).join('')}</div>`;
-}
-
-function comingPage() {
-  return `${pageHeader('Coming Soon', 'Announced but not included', 'These entries intentionally have zero planner weight until they are live and verified.')}
-    <div class="research-list">${COMING_SOON.map(x=>`<article class="research-card coming"><div class="research-head"><div><div class="eyebrow">${esc(x.status)}</div><h3>${esc(x.name)}</h3></div>${badge('0 weight','coming')}</div><p>${esc(x.effect)}</p><p>${esc(x.notes)}</p><a href="${esc(x.source)}" target="_blank" rel="noreferrer">Open source</a></article>`).join('')}</div>`;
-}
-
 function drawer() {
   if (!state.drawer) return '';
   const item = UPGRADES.find(x=>x.id===state.drawer);
@@ -910,62 +870,6 @@ function whereToFindSection(item) {
     <p class="find-warn">Check the relevant SkyBlock or Garden menu, item tooltip, or active-effect screen for this value. Use the source below for the current unlock or acquisition route.</p>
     ${location.note ? `<p>${esc(location.note)}</p>` : ''}
     ${location.source ? `<a class="source-btn" href="${esc(location.source)}" target="_blank" rel="noreferrer">Open source</a>` : ''}</div>`;
-}
-
-function setupPage() {
-  const summary = manualEntrySummary();
-  const rows = manualEntries().filter(row => {
-    const term = state.search.trim().toLowerCase();
-    return !term || `${row.entry.name} ${row.entry.category} ${row.entry.notes}`.toLowerCase().includes(term);
-  });
-  // A search has already narrowed the set, so a search shows every match.
-  const visibleFindRows = state.search.trim() ? rows.length : FIND_ROWS_VISIBLE;
-
-  return `${pageHeader('What to enter', 'Values the sync cannot fill', 'A profile sync fills everything the Hypixel API exposes. These are the ones you still have to enter yourself, most valuable first.')}
-    <div class="planner-context">
-      <div><span>Entries total</span><strong>${summary.total}</strong></div>
-      <div><span>Filled by sync</span><strong>${summary.synced}</strong></div>
-      <div><span>You enter</span><strong>${summary.manual}</strong></div>
-      <div><span>Already done</span><strong>${rows.filter(row => isOwned(row.entry)).length}/${rows.length}</strong></div>
-    </div>
-    <div class="find-list">
-      ${findRows(rows.slice(0, visibleFindRows))}
-    </div>
-    ${rows.length > visibleFindRows ? `<details class="find-rest">
-      <summary><div class="find-rest-head"><strong>${rows.length - visibleFindRows} more entries</strong>
-        <span>Lower marginal value than the ones above. Same detail, folded away.</span></div></summary>
-      <div class="find-list">${findRows(rows.slice(visibleFindRows))}</div>
-    </details>` : ''}`;
-}
-
-// The page is ordered most-valuable-first and was showing all of it at once,
-// which made it four times taller than any other page and buried its own
-// headline. The top slice stays fully open -- notes, in-game location and all,
-// because "where do I find this" is the question the page exists to answer --
-// and the tail folds away rather than being cut.
-//
-// A search result is already a narrowed set, so a search shows every match.
-const FIND_ROWS_VISIBLE = 12;
-
-function findRows(rows) {
-  return rows.map(row => {
-        const done = isOwned(row.entry);
-        const gain = Number(row.entry.stepGain || row.entry.rawMarginal || 0);
-        return `<article class="find-row ${done ? 'done' : ''}">
-          <div class="find-main">
-            <div class="eyebrow">${esc(row.entry.category)}${row.entry.cropScope !== 'Any' ? ` \u00b7 ${esc(row.entry.cropScope)}` : ''}</div>
-            <h3>${esc(row.entry.name)}</h3>
-            <p>${esc(row.entry.notes || 'No additional note.')}</p>
-            ${row.location.where ? `<p class="find-where">${esc(row.location.where)}</p>` : '<p class="find-warn">Check the relevant SkyBlock or Garden menu, item tooltip, or active-effect screen for this value, then use the source for current unlock or acquisition details.</p>'}
-          </div>
-          <div class="find-side">
-            ${badge(done ? 'entered' : 'open', done ? 'maxed' : 'missing')}
-            ${gain ? `<span class="find-gain">+${gain.toLocaleString('en-US')}</span>` : ''}
-            <button class="ghost small" data-open="${esc(row.entry.id)}">Open</button>
-            ${row.location.source ? `<a class="ghost small find-link" href="${esc(row.location.source)}" target="_blank" rel="noreferrer">Source</a>` : ''}
-          </div>
-        </article>`;
-      }).join('') || '<div class="empty">No matches.</div>';
 }
 
 // --- Setups -----------------------------------------------------------------
@@ -1428,11 +1332,8 @@ function render({ preserveScroll = true } = {}) {
     case 'buffs': content = genericSectionPage('buffs','Buffs','Temporary Buffs & Mixins','God Potion, mixins, cakes and seasonal effects are kept separate from permanent progression.'); break;
     case 'pests': content = genericSectionPage('pests','Pests','Pest Setup','Pest-specific stats, spawn mechanics and loot logic stay separate from normal crop farming.'); break;
     case 'guide': content = guidePage(); break;
-    case 'setup': content = setupPage(); break;
     case 'setups': content = setupsPage(); break;
     case 'planner': content = plannerPage(); break;
-    case 'research': content = researchPage(); break;
-    case 'coming': content = comingPage(); break;
     default: content = dashboard();
   }
   document.getElementById('app').innerHTML = shell(content);
