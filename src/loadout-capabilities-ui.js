@@ -175,23 +175,26 @@ function statsForMode(raw, cropId, mode) {
 }
 
 function renderVacuumSurface(raw) {
-  // The normal crop tool is shared by Farming and Spawning and stays on Tools.
-  // Vacuum is a Killing-only Pest concern, so configure it on the Pests page
-  // without changing the shared Tools workspace.
-  if (raw.page !== 'pests') return;
+  // Vacuum is a physical tool. Configure it beside the crop tools; Pest pages
+  // only analyze the configured build and never own a second copy of it.
+  if (raw.page !== 'tools') return;
   const content = document.querySelector('.content');
   if (!content) return;
 
+  const anchor = content.querySelector('.sb-tool-picker')
+    || content.querySelector('[data-tool-editor="1"]')
+    || content.querySelector('.page-head');
   let panel = content.querySelector('[data-vacuum-panel]');
   if (!panel) {
     panel = document.createElement('div');
     panel.dataset.vacuumPanel = '1';
     panel.className = 'item-editor pest-loadout-panel rarity-unknown';
-    content.querySelector('.page-head')?.insertAdjacentElement('afterend', panel);
+    anchor?.insertAdjacentElement('afterend', panel);
+  } else if (anchor && panel.previousElementSibling !== anchor) {
+    anchor.insertAdjacentElement('afterend', panel);
   }
 
   const cropId = raw.selectedCrop || 'melon';
-  const spawnStats = statsForMode(raw, cropId, ACTIVITY_MODE.PEST_SPAWN);
   const killStats = statsForMode(raw, cropId, ACTIVITY_MODE.PEST_KILL);
   // Declared here, beside the stats it reads. It had been written into
   // `writeVacuumEntry`, which has no `killStats` -- so the render threw
@@ -207,8 +210,8 @@ function renderVacuumSurface(raw) {
   const entries = UPGRADES.filter(isVacuumItemEntry).filter(item => !reforgeEntries.has(item.id));
   const signature = [
     reforge || '',
-    spawnStats.effectiveFortune,
-    spawnStats.bonusPestChance,
+    bucket.skyblockId || '',
+    bucket.recombobulated ? 1 : 0,
     totalPestFortune,
     killStats.pestFortune,
     killStats.overbloom,
@@ -220,16 +223,14 @@ function renderVacuumSurface(raw) {
   panel.innerHTML = `
     <header class="item-editor-head">
       <div class="item-portrait"><span class="item-portrait-fallback">PE</span></div>
-      <div class="item-identity"><div class="eyebrow">Pest loadouts</div><strong class="item-title">Spawning + Killing totals</strong><span class="item-rarity">Shared values stay shared; only the loadout-specific gear and Vacuum differ.</span></div>
+      <div class="item-identity"><div class="eyebrow">Vacuum</div><strong class="item-title">Pest Vacuum</strong><span class="item-rarity">Physical killing tool for Pest loadouts.</span></div>
     </header>
-    <section class="pest-loadout-stats" aria-label="Pest loadout totals">
-      <div class="pest-loadout-stat"><span>Spawning Farming Fortune</span><strong>${Number(spawnStats.effectiveFortune || 0).toLocaleString('en-US')}</strong></div>
-      <div class="pest-loadout-stat"><span>Bonus Pest Chance</span><strong>${Number(spawnStats.bonusPestChance || 0).toLocaleString('en-US')}</strong></div>
+    <section class="pest-loadout-stats" aria-label="Vacuum Pest totals">
       <div class="pest-loadout-stat"><span>Total Pest Fortune</span><strong>${totalPestFortune.toLocaleString('en-US')}</strong><small>Global + Pest-only (+${Number(killStats.pestFortune || 0).toLocaleString('en-US')})</small></div>
       <div class="pest-loadout-stat"><span>Pest Overbloom</span><strong>${Number(killStats.overbloom || 0).toLocaleString('en-US')}</strong></div>
     </section>
     <section class="item-editor-section">
-      <div class="section-row"><div><h3>Vacuum · Killing only</h3><p>The Vacuum belongs to the Killing loadout. It does not replace the shared crop Tool on the Tools page.</p></div></div>
+      <div class="section-row"><div><h3>Vacuum · Pest killing tool</h3><p>Choose and upgrade the physical Vacuum here. The Pests page uses this exact build for kill calculations.</p></div></div>
     </section>
     <section class="item-editor-section">
       <div class="section-row"><div><h3>Vacuum reforge</h3><p>A Vacuum can have exactly one reforge. Beady contributes to the Killing Pest Fortune total; Buzzing is the damage reforge.</p></div></div>
@@ -251,7 +252,7 @@ function renderVacuumSurface(raw) {
       </div>
     </section>
     <section class="item-editor-section">
-      <div class="section-row"><div><h3>Other Vacuum values</h3><p>Only Vacuum properties belong here. Shared Shards and other general sources remain configured once in their own sections and are included automatically when applicable.</p></div></div>
+      <div class="section-row"><div><h3>Vacuum upgrades</h3><p>Item-local Vacuum upgrades belong here. Shared Shards and general sources remain configured once in their own sections.</p></div></div>
       <div class="enchant-grid">
         ${entries.map(item => {
           const level = vacuumLevel(bucket, item);
