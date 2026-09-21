@@ -101,6 +101,46 @@
   gap: 12px;
 }
 
+.skyblock-redesign .focus-next-scope {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.skyblock-redesign .focus-next-scope h2 {
+  margin: 2px 0 0;
+}
+
+.skyblock-redesign .focus-next-scope-controls {
+  display: flex;
+  align-items: end;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+.skyblock-redesign .focus-next-scope-controls label {
+  display: grid;
+  gap: 5px;
+  min-width: 130px;
+}
+
+.skyblock-redesign .focus-next-scope-controls label > span {
+  color: #8fa294;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.skyblock-redesign .focus-next-scope-controls select {
+  min-width: 130px;
+  border: 1px solid #3c5142;
+  background: #09100b;
+  color: #edf7ef;
+  padding: 9px 10px;
+  border-radius: 4px;
+  font: inherit;
+}
+
 .skyblock-redesign .focus-next-assumption {
   padding: 14px 16px;
   border: 1px solid rgba(125, 160, 134, .28);
@@ -198,6 +238,19 @@
 }
 
 @media (max-width: 650px) {
+  .skyblock-redesign .focus-next-scope,
+  .skyblock-redesign .focus-next-scope-controls {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .skyblock-redesign .focus-next-scope-controls label,
+  .skyblock-redesign .focus-next-scope-controls select {
+    width: 100%;
+    min-width: 0;
+  }
+
   .skyblock-redesign .revenue-panel-head {
     display: block;
   }
