@@ -4,14 +4,15 @@ import { readFileSync } from 'node:fs';
 
 const app = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
 const planner = readFileSync(new URL('../src/revenue-planner.js', import.meta.url), 'utf8');
+const contexts = readFileSync(new URL('../src/farming-context.js', import.meta.url), 'utf8');
 const css = readFileSync(new URL('../src/styles.css', import.meta.url), 'utf8');
 
 test('Dashboard owns the farming event context selector', () => {
   assert.match(app, /FARMING_CONTEXT_OPTIONS/);
   assert.match(app, /data-dashboard-context/);
-  assert.match(app, /Harvest Feast/);
-  assert.match(app, /Grand Feast/);
-  assert.match(app, /Jacob's Contest/);
+  assert.match(contexts, /Harvest Feast/);
+  assert.match(contexts, /Grand Feast/);
+  assert.match(contexts, /Jacob's Contest/);
   assert.match(app, /computeStatTotals\(state, selectedCrop\.id, mode, contextScopes\)/);
 });
 
