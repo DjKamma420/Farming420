@@ -90,29 +90,22 @@ reliably: Hypixel's `name` parameter is deprecated and not guaranteed correct,
 return the key owner's UUID was disabled in August 2023. A UUID field needs no
 third-party service and cannot silently resolve to the wrong account.
 
-## Guide 0-60
+## Info
 
-**Guide 0-60** in the sidebar is a staged walkthrough from the first crop to a
-maxed setup, and it follows your own Farming level: sync your profile and it
-opens at the stage you are actually in, marks the armour sets you have reached
-and names the next one.
+**Info** in the sidebar is the explanation-only hub for new players. It starts
+with a short early-game strategy, an important-places/NPC routing sheet and a
+Pest guide that explains spawning, killing, guaranteed drops and rare drops as
+separate jobs.
 
-Each of the five stages lists its concrete steps. Below them:
+The former **Guide 0-60** now lives inside Info instead of occupying its own
+navigation page. It still follows the player's Farming level, marks reached
+armour milestones, explains pet alternatives, enchantment acquisition and the
+three-phase farming/spawning/killing loadout. Pet cards are informational here;
+actual configuration stays on the dedicated setup pages.
 
-- **Pets** are grouped by what you are doing -- pushing levels, farming crops,
-  spawning Pests, killing Pests -- and each option carries a tier (best, equal,
-  slightly worse, budget) and the reason, including the real breakpoints such as
-  Mooshroom Cow beating a Legendary Elephant above about 1,429 Strength. Tap the
-  one you use and it is remembered.
-- **Enchantments** are shown as ladders: what a level gives, the maximum, and
-  where each level comes from -- plus gates like Turbo-Crop IV needing a Bronze
-  contest result in that crop before it does anything.
-- **The three-phase loadout** is laid out from budget to hypermax, because one
-  setup for farming, spawning and killing always gives something up.
-
-Nothing here is scored or ranked by a computed number: that needs the profit
-engine, and inventing figures would break the correctness rules. The one
-quantitative comparison is quoted from the source with its breakpoint.
+The Pests page is correspondingly analysis-only: Vacuum kill thresholds and the
+Pesthunter Phillip conversion remain there, while explanatory Pest mechanics and
+the crop-to-Pest mapping live under Info.
 
 ## Setups
 
