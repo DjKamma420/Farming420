@@ -77,38 +77,6 @@ function queriedAnchors() {
   return anchors;
 }
 
-/**
- * Anchors known to point at markup that is no longer rendered, and which the
- * change introducing this test does not repair.
- *
- * This list may only shrink. A new orphan fails the first assertion; an entry
- * repaired without being removed fails the second, so it cannot rot into a
- * blanket exemption.
- *
- * All three belong to a second dead region this same test found:
- * `enhancements.js` still targets the gear editor as it existed before
- * `item-editor.js`. That is not a rename -- the editor is `.item-editor` with
- * `.enchant-line` rows now, and the screenshot scanner writes into
- * `[data-ench-name]` inputs the current editor does not emit. Reviving it means
- * re-targeting every field and re-verifying the OCR, which is its own change.
- */
-const KNOWN_ORPHANS = [
-  // The rest of what commit 546c4cb orphaned. Unlike `dashboard-guide.js`,
-  // which this change repairs, these are dead *simplification* passes over the
-  // old dashboard -- hiding a stat tile, rewriting a hero card, folding pages
-  // into a hub. The page they simplified no longer exists, so there is no
-  // behaviour to restore; deleting them is a separate tidy-up.
-  'activity-mode-ui.js .hero-card',
-  'enhancements.js .hero-grid',
-  'revenue-planner.js .hero-card',
-  'ux-simplify.js .fortune-pill',
-  'ux-simplify.js .hero-card',
-  'ux-simplify.js .hero-grid',
-  'enhancements.js .enchant-row',
-  'enhancements.js .layer-tabs',
-  'enhancements.js .slot-editor',
-];
-
 function orphanedAnchors() {
   const produced = producedClasses();
   const seen = new Map();
@@ -121,13 +89,6 @@ function orphanedAnchors() {
 
 test('no module anchors to markup nobody renders', () => {
   const unexpected = [...orphanedAnchors()]
-    .filter(([key]) => !KNOWN_ORPHANS.includes(key))
     .map(([key, entry]) => `${key} - looks for "${entry.selector}"`);
   assert.deepEqual(unexpected, [], `orphaned anchors:\n${unexpected.join('\n')}`);
-});
-
-test('the known-orphan list holds nothing that has since been repaired', () => {
-  const still = orphanedAnchors();
-  const stale = KNOWN_ORPHANS.filter(key => !still.has(key));
-  assert.deepEqual(stale, [], `repaired - delete these from KNOWN_ORPHANS:\n${stale.join('\n')}`);
 });
