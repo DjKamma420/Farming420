@@ -16,3 +16,27 @@
 /* Accessory item-local upgrades */
 .accessory-model-note{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;margin-bottom:20px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);color:var(--muted);font-size:12px;line-height:1.5}.accessory-model-note strong{color:var(--text);white-space:nowrap}.accessory-catalog-card{cursor:default;min-height:0}.accessory-catalog-card:hover{transform:none}.accessory-effect{position:relative;color:#bdd0c4;line-height:1.5;margin:14px 0 0}.accessory-upgrades{position:relative;display:grid;gap:9px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}.accessory-upgrade-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;margin:0!important;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:#08120d}.accessory-upgrade-row span{display:grid;gap:3px}.accessory-upgrade-row strong{color:var(--text);font-size:12px}.accessory-upgrade-row small{color:var(--muted);font-size:10px;line-height:1.35}.accessory-upgrade-row input{margin:0}.accessory-progression-btn{justify-self:start}
 @media (max-width:780px){.accessory-model-note{display:grid}.accessory-upgrade-row{grid-template-columns:1fr}}
+
+
+/* Info hub: explanations only. Configuration and calculated values stay on
+   their task-specific pages, while beginner strategy, locations and reference
+   material live together here. */
+.info-home{display:grid;gap:18px}
+.info-section{border:1px solid var(--line);border-radius:16px;padding:20px;background:linear-gradient(180deg,var(--panel2),var(--panel));box-shadow:var(--shadow);min-width:0}
+.info-section>.section-row:first-child{margin-top:0}
+.info-strategy-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.info-card,.info-place-card{display:grid;gap:7px;align-content:start;border:1px solid var(--line);border-radius:12px;padding:14px;background:rgba(0,0,0,.14);min-width:0}
+.info-card>span,.info-place-card>span{font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--accent2);font-weight:800}
+.info-card>strong,.info-place-card>strong{font-size:16px;color:var(--text)}
+.info-card p,.info-place-card p{margin:0;color:var(--muted);font-size:12px;line-height:1.5}
+.info-card ul{margin:2px 0 0;padding-left:18px;display:grid;gap:5px;color:#bdd0c4;font-size:12px;line-height:1.45}
+.info-place-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.info-pest-loop{margin-top:16px;padding:14px 16px;border:1px solid #3c5142;border-left:3px solid var(--accent);border-radius:10px;background:#09100b}
+.info-pest-loop>strong{display:block;color:var(--text);font-size:14px}
+.info-pest-loop ol{margin:8px 0 8px;padding-left:20px;display:grid;gap:5px;color:#bdd0c4;font-size:12px;line-height:1.45}
+.info-pest-loop p{margin:0;color:var(--muted);font-size:12px;line-height:1.45}
+.info-pest-map-head{margin-top:18px}
+.info-progression>.section-row:first-child h2{margin-top:4px}
+.info-progression .source-btn{margin-top:6px}
+@media(max-width:980px){.info-place-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:720px){.info-section{padding:14px}.info-strategy-grid,.info-place-grid{grid-template-columns:1fr}}

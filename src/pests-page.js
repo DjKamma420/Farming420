@@ -1,33 +1,18 @@
 /**
  * The Pests page.
  *
- * It held one entry -- a card with no art, marked VERIFY -- on a page whose
- * subject is two pipelines that take different stats. The page now teaches the
- * split, because the split is the whole mechanic: Bonus Pest Chance decides
- * whether a pest appears, Overbloom decides what a dead one gives, and Farming
- * Fortune touches only the guaranteed drops in between. A +100 Pest Farming
- * Fortune reforge buys nothing on the rare-drop side, and the number is large
- * enough that nobody guesses that on their own.
- *
- * Every figure here comes from `src/pest-model.js`, which cites its sources.
+ * Explanations and beginner Pest strategy live on the Info page. This page is
+ * now limited to Pest-specific analysis: the configured Vacuum's kill threshold
+ * and Pesthunter Phillip's temporary-Fortune conversion.
  */
 import { STORAGE_KEY } from './config.js';
-import { CROPS } from './data.js';
 import {
-  GARDEN_PESTS,
-  LOOT_PIPELINE,
   PESTHUNTER_PHILIP,
-  PEST_HEALTH,
-  PEST_STAT_SIDES,
-  SPAWN_PIPELINE,
-  UNMODELLED_PESTS,
-  guaranteedDropText,
   philipFortuneFor,
 } from './pest-model.js';
 import { oneShotAdvice, pullsToKill } from './vacuum-damage.js';
 import { selectedVacuumReforge } from './item-capabilities.js';
 import { setTextIfChanged } from './set-text.js';
-import { cropArtUrl } from './skyblock-redesign.js';
 
 function esc(value = '') {
   return String(value).replace(/[&<>"']/g, char => ({
@@ -41,51 +26,6 @@ function load() {
 
 function pageId() {
   return document.querySelector('.sidebar .nav-link.active')?.dataset.page || '';
-}
-
-function pipelineMarkup(steps) {
-  return steps.map((entry, index) => `
-    <li class="pest-step">
-      <span class="pest-step-index">${index + 1}</span>
-      <div><strong>${esc(entry.step)}</strong><p>${esc(entry.detail)}</p></div>
-    </li>`).join('');
-}
-
-function sideMarkup() {
-  return Object.entries(PEST_STAT_SIDES).map(([key, side]) => `
-    <div class="pest-side" data-pest-side="${esc(key)}">
-      <strong>${esc(side.label)}</strong>
-      <p>${esc(side.note)}</p>
-    </div>`).join('');
-}
-
-/** A crop's own art, with its initial as the placeholder underneath. */
-function cropIcon(pest) {
-  const url = cropArtUrl(pest.cropId);
-  const letter = `<span class="pest-crop-letter">${esc(knownCropName(pest).slice(0, 1))}</span>`;
-  if (!url) return `<span class="pest-crop-icon">${letter}</span>`;
-  return `<span class="pest-crop-icon">${letter}<img src="${esc(url)}" alt="" loading="lazy" role="img" aria-label="${esc(knownCropName(pest))}"></span>`;
-}
-
-function knownCropName(pest) {
-  return CROPS.find(crop => crop.id === pest.cropId)?.name || pest.cropId;
-}
-
-function pestTableMarkup() {
-  return GARDEN_PESTS.map(pest => {
-    const drop = guaranteedDropText(pest);
-    // Null, not zero: for the three Greenhouse pests the research records that
-    // the exact live scaling divisor still needs a current table.
-    const perUnit = pest.fortunePerExtraUnit == null
-      ? 'scaling not verified'
-      : `+1 per ${pest.fortunePerExtraUnit} Fortune`;
-    return `<div class="pest-row${pest.status === 'VERIFIED' ? '' : ' pest-row-unverified'}">
-      ${cropIcon(pest)}
-      <div class="pest-main"><strong>${esc(pest.name)}</strong><span>spawns on ${esc(knownCropName(pest))}</span></div>
-      <div class="pest-drop"><strong>${esc(drop || '\u2014')}</strong><span>${esc(perUnit)}</span></div>
-      <div class="pest-vinyl"><strong>${esc(pest.vinyl || '\u2014')}</strong><span>vinyl</span></div>
-    </div>`;
-  }).join('');
 }
 
 function philipMarkup(pests) {
@@ -199,47 +139,7 @@ function vacuumPanelMarkup(raw) {
 }
 
 function panelMarkup(raw) {
-  return `
-    <section class="pest-explainer">
-      <div class="section-row">
-        <div>
-          <h2>Two pipelines, different stats</h2>
-          <p>A pest has to spawn before it can drop anything, and the two halves do not
-            share a stat. This is the part that costs coins when it is guessed.</p>
-        </div>
-      </div>
-      <div class="pest-sides">${sideMarkup()}</div>
-      <div class="pest-pipelines">
-        <div class="pest-pipeline">
-          <h3>Spawn</h3>
-          <ol>${pipelineMarkup(SPAWN_PIPELINE)}</ol>
-        </div>
-        <div class="pest-pipeline">
-          <h3>Loot</h3>
-          <ol>${pipelineMarkup(LOOT_PIPELINE)}</ol>
-        </div>
-      </div>
-      <p class="pest-rule">Since 2026-05-14 the listed non-guaranteed pest drops scale with
-        Overbloom, not Farming Fortune. A +100 Pest Farming Fortune reforge changes the rare-drop
-        chance by nothing at all.</p>
-    </section>
-
-    <section class="pest-bestiary">
-      <div class="section-row">
-        <div>
-          <h2>Which pest, which plot</h2>
-          <p>The plot's crop decides the pest, the pest decides its guaranteed drop and its vinyl.
-            ${GARDEN_PESTS.length} standard types. The guaranteed drop is the one place Farming
-            Fortune does work on pest loot.</p>
-        </div>
-      </div>
-      <div class="pest-list">${pestTableMarkup()}</div>
-      <p class="pest-note">${PEST_HEALTH.normal} HP each. ${esc(PEST_HEALTH.derpyNote)}</p>
-      ${UNMODELLED_PESTS.length ? `<p class="pest-note">Not listed: ${UNMODELLED_PESTS.map(pest =>
-        `${esc(pest.name)}${pest.notes ? ` \u2014 ${esc(pest.notes)}` : ''}`).join('; ')}</p>` : ''}
-    </section>
-
-    ${vacuumPanelMarkup(raw)}
+  return `${vacuumPanelMarkup(raw)}
 
     <details class="pest-philip">
       <summary><div class="pest-philip-head"><div><div class="eyebrow">Pest currency</div>
@@ -252,7 +152,7 @@ function panelMarkup(raw) {
 function applyPestsPage() {
   if (pageId() !== 'pests') return;
   const content = document.querySelector('.content');
-  if (!content || content.querySelector('.pest-explainer')) return;
+  if (!content || content.querySelector('.pest-page-addon')) return;
   const anchor = content.querySelector('.filter-line') || content.querySelector('.page-head');
   if (!anchor) return;
 

@@ -54,6 +54,15 @@ import {
 } from './item-catalog.js';
 import { itemCapabilities } from './item-capabilities.js';
 import {
+  GARDEN_PESTS,
+  LOOT_PIPELINE,
+  PEST_HEALTH,
+  PEST_STAT_SIDES,
+  SPAWN_PIPELINE,
+  UNMODELLED_PESTS,
+  guaranteedDropText,
+} from './pest-model.js';
+import {
   backupFilename,
   createBackupPayload,
   downloadJson,
@@ -74,7 +83,7 @@ const NAV = [
   ['buffs', 'Effects'],
   ['pests', 'Pests'],
   ['qol', 'QoL'],
-  ['guide', 'Guide 0-60'],
+  ['info', 'Info'],
   ['focus', 'Focus on next'],
   ['planner', 'Upgrade Planner'],
 ];
@@ -116,6 +125,7 @@ function loadState() {
     profile: { ...structuredClone(defaultState.profile), ...(migration.state.profile || {}) }
   };
   loaded.schemaVersion = migration.schemaVersion;
+  if (loaded.page === 'guide') loaded.page = 'info';
   if (!NAV.some(([id]) => id === loaded.page)) loaded.page = 'dashboard';
 
   // Data written by a newer app version is kept readable but never saved over.
@@ -1242,17 +1252,159 @@ function farmingLevel() {
   return Number.isFinite(entered) && entered > 0 ? entered : null;
 }
 
-function petChoice(phase) {
-  return state.profile.petChoices?.[phase] || null;
+const BEGINNER_PLACES = Object.freeze([
+  {
+    name: 'Farm Merchant',
+    location: 'Starter farming shop',
+    detail: 'Buy the Rookie Hoe and Rookie Farming Axe here before the Garden becomes your main farming area.',
+  },
+  {
+    name: 'Sam',
+    location: 'Garden unlock',
+    detail: 'At SkyBlock Level 5, speak to Sam to unlock The Garden. From then on, treat the Garden as the main farming hub.',
+  },
+  {
+    name: 'SkyMart',
+    location: 'The Garden',
+    detail: 'Early Garden tools and utility items cost Copper here. Do not spread Copper over every tool; build the crop you actually farm.',
+  },
+  {
+    name: 'Garden Desk',
+    location: 'The Garden',
+    detail: 'Crop Upgrades live here. After the Sundial hand-in, the Desk also gives per-crop Speed settings.',
+  },
+  {
+    name: 'Beth',
+    location: 'Desert Settlement',
+    detail: 'Start her quest early and keep serving her when she visits. The quest later gates the Crop Analyzer.',
+  },
+  {
+    name: 'Jacob & Anita',
+    location: 'Farming contest progression',
+    detail: 'Jacob contests start at Farming 10. Gold results in unique crops feed Anita’s Farming level-cap upgrades later.',
+  },
+  {
+    name: 'Pesthunter Phillip',
+    location: 'Pest progression',
+    detail: 'Pests can be converted into temporary Farming Fortune before longer Pest-farming sessions.',
+  },
+]);
+
+function infoCropName(pest) {
+  return CROPS.find(entry => entry.id === pest.cropId)?.name || pest.cropId;
 }
 
-function guidePage() {
+function infoPipelineMarkup(steps) {
+  return steps.map((entry, index) => `
+    <li class="pest-step">
+      <span class="pest-step-index">${index + 1}</span>
+      <div><strong>${esc(entry.step)}</strong><p>${esc(entry.detail)}</p></div>
+    </li>`).join('');
+}
+
+function infoPestGuide() {
+  return `<section class="info-section" id="info-pests">
+    <div class="section-row">
+      <div>
+        <div class="eyebrow">Pest guide</div>
+        <h2>Two pipelines, different stats</h2>
+        <p>Use this as the mental model before buying Pest upgrades. Spawning, killing, guaranteed drops and rare drops are four different jobs.</p>
+      </div>
+    </div>
+    <div class="pest-sides">
+      ${Object.entries(PEST_STAT_SIDES).map(([key, side]) => `
+        <div class="pest-side" data-pest-side="${esc(key)}">
+          <strong>${esc(side.label)}</strong>
+          <p>${esc(side.note)}</p>
+        </div>`).join('')}
+    </div>
+    <div class="pest-pipelines">
+      <div class="pest-pipeline">
+        <h3>Spawn</h3>
+        <ol>${infoPipelineMarkup(SPAWN_PIPELINE)}</ol>
+      </div>
+      <div class="pest-pipeline">
+        <h3>Loot</h3>
+        <ol>${infoPipelineMarkup(LOOT_PIPELINE)}</ol>
+      </div>
+    </div>
+    <div class="info-pest-loop">
+      <strong>Practical Pest loop from Farming 40</strong>
+      <ol>
+        <li>Farm normally while the Pest cooldown runs.</li>
+        <li>Shortly before it ends, swap to the spawning setup and keep breaking crops.</li>
+        <li>After the Pests spawn, swap to the killing setup and clear them with the Vacuum.</li>
+        <li>Return to the normal farming setup immediately after the clear.</li>
+      </ol>
+      <p>${PEST_HEALTH.normal} HP per normal Pest. Bonus Pest Chance belongs to spawning; Vacuum damage belongs to killing; Farming/Crop Fortune affects guaranteed Pest drops; Overbloom affects the non-guaranteed roll.</p>
+    </div>
+    <div class="section-row info-pest-map-head"><div><h3>Which pest, which crop</h3><p>The crop on the plot decides the standard Pest type.</p></div></div>
+    <div class="pest-list">
+      ${GARDEN_PESTS.map(pest => {
+        const cropName = infoCropName(pest);
+        return `<div class="pest-row${pest.status === 'VERIFIED' ? '' : ' pest-row-unverified'}">
+          <span class="pest-crop-icon"><span class="pest-crop-letter">${esc(cropName.slice(0, 1))}</span></span>
+          <div class="pest-main"><strong>${esc(pest.name)}</strong><span>${esc(cropName)}</span></div>
+          <div class="pest-drop"><strong>${esc(guaranteedDropText(pest) || 'Guaranteed drop scaling not verified')}</strong><span>guaranteed drop</span></div>
+          <div class="pest-vinyl"><strong>${esc(pest.vinyl || '—')}</strong><span>vinyl</span></div>
+        </div>`;
+      }).join('')}
+    </div>
+    ${UNMODELLED_PESTS.length ? `<p class="pest-note">Special Pest types not in the normal crop mapping: ${UNMODELLED_PESTS.map(pest =>
+      `${esc(pest.name)}${pest.notes ? ` — ${esc(pest.notes)}` : ''}`).join('; ')}</p>` : ''}
+  </section>`;
+}
+
+function infoPage() {
+  const earlyStages = STAGES.slice(0, 4);
+  return `${pageHeader('Info', 'Farming Info & Beginner Guide', 'Explanations, beginner strategy and where each system lives. Configuration and calculated values stay on their own tabs.')}
+    <div class="info-home">
+      <section class="info-section info-start">
+        <div class="section-row">
+          <div><div class="eyebrow">Start here</div><h2>Early-game strategy</h2><p>Follow the stage that matches your Farming level. The detailed 0-60 guide remains below.</p></div>
+        </div>
+        <div class="info-strategy-grid">
+          ${earlyStages.map(stage => `<article class="info-card">
+            <span>Farming ${stage.levelFrom}-${stage.levelTo}</span>
+            <strong>${esc(stage.name)}</strong>
+            <p>${esc(stage.summary)}</p>
+            <ul>${stage.steps.slice(0, 4).map(step => `<li>${esc(step)}</li>`).join('')}</ul>
+          </article>`).join('')}
+        </div>
+      </section>
+
+      <section class="info-section" id="info-places">
+        <div class="section-row">
+          <div><div class="eyebrow">Where to go</div><h2>Important places and NPCs</h2><p>Use this as a routing sheet when a guide tells you to buy, unlock or start something.</p></div>
+        </div>
+        <div class="info-place-grid">
+          ${BEGINNER_PLACES.map(place => `<article class="info-place-card">
+            <span>${esc(place.location)}</span>
+            <strong>${esc(place.name)}</strong>
+            <p>${esc(place.detail)}</p>
+          </article>`).join('')}
+        </div>
+      </section>
+
+      ${infoPestGuide()}
+
+      <section class="info-section info-progression" id="info-progression">
+        ${guidePage(true)}
+      </section>
+    </div>`;
+}
+
+function guidePage(embedded = false) {
   const level = farmingLevel();
   const current = level === null ? null : stageForLevel(level);
   const openStage = state.guideStage || current?.id || STAGES[0].id;
   const next = level === null ? null : nextArmorSet(level);
 
-  return `${pageHeader('Guide', 'Farming 0 to 60', 'Every stage from the first crop to a maxed setup, with the alternatives the source names as equal or only slightly worse.')}
+  const header = embedded
+    ? '<div class="section-row"><div><div class="eyebrow">Progression reference</div><h2>Farming 0 to 60</h2><p>Every stage from the first crop to a maxed setup, with sourced alternatives and level gates.</p></div></div>'
+    : pageHeader('Guide', 'Farming 0 to 60', 'Every stage from the first crop to a maxed setup, with the alternatives the source names as equal or only slightly worse.');
+
+  return `${header}
     <div class="planner-context">
       <div><span>Your Farming level</span><strong>${level === null ? 'Unknown' : level}</strong></div>
       <div><span>Current stage</span><strong>${esc(current?.name || 'Sync to find out')}</strong></div>
@@ -1285,16 +1437,15 @@ function guidePage() {
       </div>`).join('')}
     </div>
 
-    <div class="section-row"><div><h2>Pets</h2><p>Your best pet changes between farming, spawning Pests and killing them. Pick the one you use and it is remembered.</p></div></div>
+    <div class="section-row"><div><h2>Pets</h2><p>The useful pet changes between levelling, farming crops, spawning Pests and killing them. These cards explain the role only; pet configuration stays outside Info.</p></div></div>
     ${PET_OPTIONS.map(group => `
       <div class="pet-group">
         <div class="eyebrow">${esc(group.label)}</div>
         <div class="pet-options">
-          ${group.options.map(option => `<button class="pet-option ${petChoice(group.phase) === option.name ? 'chosen' : ''}"
-              data-pet-phase="${esc(group.phase)}" data-pet-name="${esc(option.name)}">
+          ${group.options.map(option => `<article class="pet-option">
             <div class="pet-head">${badge(TIER_LABEL[option.tier], option.tier === 'best' ? 'maxed' : (option.tier === 'budget' ? 'soft' : 'owned'))}<strong>${esc(option.name)}</strong></div>
             <p>${esc(option.note)}</p>
-          </button>`).join('')}
+          </article>`).join('')}
         </div>
       </div>`).join('')}
 
@@ -1330,13 +1481,6 @@ function bindGuide() {
   document.querySelectorAll('[data-guide-stage]').forEach(el => el.addEventListener('click', () => {
     state.guideStage = el.dataset.guideStage; saveState(); render();
   }));
-  document.querySelectorAll('[data-pet-phase]').forEach(el => el.addEventListener('click', () => {
-    state.profile.petChoices ||= {};
-    const phase = el.dataset.petPhase;
-    // Clicking the chosen option again clears it.
-    state.profile.petChoices[phase] = state.profile.petChoices[phase] === el.dataset.petName ? null : el.dataset.petName;
-    saveState(); render();
-  }));
 }
 
 function render({ preserveScroll = true } = {}) {
@@ -1364,9 +1508,9 @@ function render({ preserveScroll = true } = {}) {
     case 'chips': content = genericSectionPage('chips','Garden Chips','Garden Chips','Each chip has its own level path and activation conditions.'); break;
     case 'shards': content = genericSectionPage('shards','Attribute Shards','Shards','Track day/night, pest-conditional and general Farming Fortune shards separately.'); break;
     case 'buffs': content = effectsPage(); break;
-    case 'pests': content = genericSectionPage('pests','Pests','Pest Setup','Pest-specific stats, spawn mechanics and loot logic stay separate from normal crop farming.'); break;
+    case 'pests': content = genericSectionPage('pests','Pests','Pest Analysis','Vacuum kill thresholds and Pesthunter Phillip calculations live here. Explanations and strategy are in Info.'); break;
     case 'qol': content = qolPage(); break;
-    case 'guide': content = guidePage(); break;
+    case 'info': content = infoPage(); break;
     case 'setups': content = setupsPage(); break;
     case 'focus': content = focusNextPage(); break;
     case 'planner': content = plannerPage(); break;
@@ -1377,7 +1521,7 @@ function render({ preserveScroll = true } = {}) {
   if (state.page === 'setups') bindSetups();
   if (['setups', 'accessories'].includes(state.page)) ensureItemCatalog();
   if (state.page === 'tools') bindToolPanel();
-  if (state.page === 'guide') bindGuide();
+  if (state.page === 'info') bindGuide();
 
   if (scrollState) {
     const main = document.querySelector('#app .main');

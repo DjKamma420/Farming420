@@ -12,7 +12,7 @@ const GROUPS = [
   ['Loadout', ['setups', 'gear', 'pets', 'buffs']],
   ['Specialized', ['chips', 'shards', 'pests', 'qol']],
   ['Analysis', ['focus', 'planner']],
-  ['Getting started', ['guide']],
+  ['Getting started', ['info']],
   ['System', ['settings']],
 ];
 
