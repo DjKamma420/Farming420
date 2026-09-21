@@ -73,7 +73,7 @@ export function usesFarmingTool(mode) {
   return normalized === ACTIVITY_MODE.FARM || normalized === ACTIVITY_MODE.PEST_SPAWN;
 }
 
-const CONTEXT_MODE_SCOPES = new Set(['Harvest Feast', 'Jacob Contest', 'Greenhouse']);
+const CONTEXT_MODE_SCOPES = new Set(['Harvest Feast', 'Grand Feast', 'Jacob Contest', 'Greenhouse']);
 
 export function itemAppliesToActivity(item, mode, activeContextScope = null) {
   const normalized = normalizeActivityMode(mode);
@@ -84,7 +84,12 @@ export function itemAppliesToActivity(item, mode, activeContextScope = null) {
   // Existing callers that do not provide a context keep the old behavior:
   // event-only rows stay inactive. Dashboard can opt into one documented
   // context without making that row look permanently active everywhere else.
-  if (contextual && rawScope !== activeContextScope) return false;
+  const contextScopes = new Set(
+    Array.isArray(activeContextScope)
+      ? activeContextScope
+      : activeContextScope ? [activeContextScope] : [],
+  );
+  if (contextual && !contextScopes.has(rawScope)) return false;
   const scope = contextual ? 'Any' : rawScope;
 
   if (normalized === ACTIVITY_MODE.FARM) {
