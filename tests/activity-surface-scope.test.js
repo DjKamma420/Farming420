@@ -17,9 +17,9 @@ test('phase selector is limited to contexts where the selected loadout matters',
 
 test('Tools owns both crop tools and the physical Vacuum', () => {
   assert.match(loadoutUi, /if \(raw\.page !== 'tools'\) return;/);
-  assert.match(loadoutUi, /const anchor = content\.querySelector\('\.sb-tool-picker'\)/);
+  assert.match(loadoutUi, /const anchor = content\.querySelector\('\[data-sb-vacuum\]'\)/);
   assert.match(loadoutUi, /data-vacuum-panel/);
-  assert.match(loadoutUi, /Physical killing tool for Pest loadouts/);
+  assert.match(loadoutUi, /sb-docked-editor sb-tool-editor-collapsed/);
 });
 
 test('Vacuum totals are calculated in Killing context while configuration stays under Tools', () => {
@@ -28,7 +28,7 @@ test('Vacuum totals are calculated in Killing context while configuration stays 
   assert.match(loadoutUi, /setActivityModeOnState\(scoped, mode\)/);
   assert.match(loadoutUi, /applySnapshotToProgress\(scoped,/);
   assert.match(loadoutUi, /const totalPestFortune = Number\(killStats\.globalFortune \|\| 0\) \+ Number\(killStats\.pestFortune \|\| 0\)/);
-  for (const label of ['Total Pest Fortune', 'Pest Overbloom', 'Vacuum · Pest killing tool']) {
+  for (const label of ['Total Pest Fortune', 'Pest Overbloom', 'Vacuum upgrades']) {
     assert.match(loadoutUi, new RegExp(label));
   }
 });
