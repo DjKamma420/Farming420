@@ -34,7 +34,7 @@ test('the reforge panel replaces itself, never the section next to it', () => {
   // panel exists, and every pass then eats another section of the editor.
   const redesign = read('skyblock-redesign.js');
   assert.match(redesign, /const existingPanel = editor\.querySelector\('\.sb-reforge-panel'\)/);
-  assert.match(redesign, /const target = existingPanel \|\| editor\.querySelector\('\.item-editor-section'\)/);
+  assert.match(redesign, /const target = existingPanel \|\| editor\.querySelector\('\[data-tool-section="reforge"\]'\)/);
   assert.match(redesign, /existingPanel\?\.dataset\.sbSignature === signature/);
 });
 
@@ -44,4 +44,19 @@ test('nothing removes a node another module recreates', () => {
   const redesign = read('skyblock-redesign.js');
   assert.match(redesign, /tool-context-addon'\)\?\.classList\.add\('sb-hidden-context'\)/);
   assert.doesNotMatch(redesign, /tool-context-addon'\)\?\.remove\(\)/);
+});
+
+
+test('tool tier is shown before reforge because it selects the physical Mk item first', () => {
+  const itemEditor = read('item-editor.js');
+  const upgrades = itemEditor.indexOf("id: 'upgrades'");
+  const reforge = itemEditor.indexOf("id: 'reforge'");
+  assert.ok(upgrades >= 0 && reforge > upgrades, 'Tool upgrades/Mk tier must precede Reforge');
+
+  const app = read('app.js');
+  assert.match(app, /data-tool-section="\$\{esc\(group\.id\)\}"/);
+
+  const workspace = read('workspace-ui.js');
+  assert.match(workspace, /data-tool-section="upgrades"/);
+  assert.match(workspace, /data-tool-section="reforge"/);
 });
