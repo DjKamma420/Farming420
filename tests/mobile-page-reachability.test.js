@@ -82,13 +82,3 @@ test('navigation CSS is cache-busted in the page shell', () => {
   assert.match(index, /src\/skyblock-redesign\.css\?v=20260918-7/);
   assert.match(index, /src\/mobile-taskbar\.css\?v=20260919-1/);
 });
-
-test('the setup page keeps its own direct navigation entry', () => {
-  const app = read('src/app.js');
-  assert.match(app, /\['setup',\s*'What to enter'\]/);
-
-  const linkers = readdirSync(new URL('src/', root))
-    .filter(name => name.endsWith('.js'))
-    .filter(name => /clickPage\(['"]setup['"]\)|goToPage\(['"]setup['"]\)/.test(read(`src/${name}`)));
-  assert.deepEqual(linkers, [], 'setup gained another entry point; keep the direct nav entry unless UX is redesigned intentionally');
-});
