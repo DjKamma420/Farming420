@@ -240,9 +240,8 @@ function clampLevel(level, maxLevel) {
 }
 
 /**
- * Turning an enchantment on starts it at level 1, never at its maximum.
- * A planner that assumes the best case reports Fortune the player does not
- * have, and understating is the cheaper error.
+ * Turning an enchantment on starts at its lowest obtainable tier, never at its
+ * maximum. Some enchants begin at III/IV rather than I.
  */
 export function withEnchantToggled(item, enchantId, on) {
   const next = { ...(item?.enchantments || {}) };
@@ -277,9 +276,10 @@ export function withEnchantToggled(item, enchantId, on) {
 export function withEnchantLevel(item, enchantId, level, maxLevel = null) {
   const next = { ...(item?.enchantments || {}) };
   const id = String(enchantId);
+  const meta = VERIFIED_FARMING_ENCHANT_META[canonicalEnchantId(id)] || null;
   const value = clampLevel(level, maxLevel);
   if (value <= 0) return withEnchantToggled(item, id, false);
-  next[id] = value;
+  next[id] = Math.max(meta?.minLevel || 1, value);
   return next;
 }
 
