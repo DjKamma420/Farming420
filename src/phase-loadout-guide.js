@@ -9,16 +9,13 @@
  * Pest farming".
  *
  * So this shows the researched loadout for the active phase, states the two-set
- * baseline, and offers the one action that baseline implies: copy the Farming
- * armor into the Killing loadout.
+ * baseline, and offers the one action that baseline implies: reuse the Farming
+ * armor in the Killing loadout.
  *
- * Copying, not referencing. A reference model is the right end state -- the
- * research asks for "references from each phase to physical armor/equipment/pet
- * objects" -- but ten modules read `setup.slots` directly today, and quietly
- * changing what that means under all of them is how regressions happen. Copying
- * records the truth (the player really does wear those pieces in both phases)
- * and nothing in the app infers ownership from setup count, so no figure is
- * double-counted either way.
+ * Slots remain self-contained records for backwards compatibility, but reused
+ * pieces now carry one stable physicalItemId. Editing that object through any
+ * linked loadout updates the other references instead of creating diverging
+ * copies of what is physically one item.
  */
 import { STORAGE_KEY } from './config.js';
 import { ACTIVITY_MODE, activityLabel, activityModeForState, setupIdForActivity } from './activity-mode.js';
@@ -30,6 +27,7 @@ import {
   baselineTiers,
 } from '../research/pest-loadout-progression.js';
 import { setTextIfChanged } from './set-text.js';
+import { ensurePhysicalItemId } from './setups.js';
 
 const ARMOR_SLOTS = Object.freeze(['helmet', 'chestplate', 'leggings', 'boots']);
 const TIER_KEY = 'farming420-pest-loadout-tier';
@@ -118,7 +116,7 @@ function guidanceMarkup(raw) {
         : `Three phases, ${baselineTiers()[0].physicalArmorSets} sets: Farming and Killing wear the same armor. Three tabs here do not mean three wardrobes.`}</span>
     </div>
 
-    ${canCopyArmor ? `<button class="ghost small" data-phase-copy-armor>Copy the Farming armor into this loadout</button>` : ''}
+    ${canCopyArmor ? `<button class="ghost small" data-phase-copy-armor>Reuse the Farming armor in this loadout</button>` : ''}
     <p class="phase-guide-note"><a href="${esc(PEST_LOADOUT_SOURCE)}" target="_blank" rel="noreferrer">Source</a></p>
   </section>`;
 }
@@ -130,10 +128,13 @@ function copyFarmingArmor() {
   if (!farmSetup || !killSetup) return;
   for (const slot of ARMOR_SLOTS) {
     const piece = farmSetup.slots?.[slot];
-    // A structured clone, not a shared object: two setups sharing one object
-    // would make editing one silently edit the other, which is a different bug
-    // from the one this solves.
-    killSetup.slots[slot] = piece ? JSON.parse(JSON.stringify(piece)) : null;
+    if (!piece) {
+      killSetup.slots[slot] = null;
+      continue;
+    }
+    const linked = ensurePhysicalItemId(piece, `shared:${farmSetup.id}:${slot}`);
+    farmSetup.slots[slot] = linked;
+    killSetup.slots[slot] = JSON.parse(JSON.stringify(linked));
   }
   save(next);
   window.dispatchEvent(new Event('farming420:state-changed'));
