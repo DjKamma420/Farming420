@@ -28,9 +28,7 @@ function simplifyTopbar() {
   if (!topbar) return;
   topbar.classList.add('topbar-simplified-addon');
   const cropSwitch = topbar.querySelector('.crop-switch');
-  const fortune = topbar.querySelector('.fortune-pill');
   if (cropSwitch) cropSwitch.hidden = true;
-  if (fortune) fortune.hidden = true;
 }
 
 function uniqueTools() {
@@ -151,39 +149,8 @@ function enhancePlanner(force = false) {
   }
 }
 
-function simplifyDashboard() {
-  if (pageId() !== 'dashboard') return;
-  const content = document.querySelector('.content');
-  if (!content || content.dataset.simplifiedDashboard === '1') return;
-  content.dataset.simplifiedDashboard = '1';
-
-  const hero = content.querySelector('.hero-card.primary');
-  if (hero) {
-    hero.innerHTML = `
-      <div class="eyebrow">Next decision</div>
-      <h2>Open Upgrade Planner</h2>
-      <p>Choose Global or a crop only when you are ready to compare the next upgrade. The dashboard stays account-focused.</p>
-      <button class="primary-btn" type="button" data-open-planner-addon>Open planner</button>
-    `;
-    hero.querySelector('[data-open-planner-addon]')?.addEventListener('click', () => {
-      document.querySelector('.nav-link[data-page="planner"]')?.click();
-    });
-  }
-
-  const statCards = [...content.querySelectorAll('.hero-grid .stat-card')];
-  for (const card of statCards.slice(1)) card.hidden = true;
-
-  const cropFeature = content.querySelector('.crop-feature');
-  if (cropFeature) {
-    const row = cropFeature.previousElementSibling;
-    if (row?.classList.contains('section-row')) row.hidden = true;
-    cropFeature.hidden = true;
-  }
-}
-
 function applyUx() {
   simplifyTopbar();
-  simplifyDashboard();
   enhanceTools();
   enhancePlanner();
 }
