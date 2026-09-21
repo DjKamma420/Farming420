@@ -1248,8 +1248,8 @@ function bindSetups() {
   });
 
   // The lever says whether the item carries the enchantment at all; the select
-  // beside it says at which level. Turning one on starts it at I rather than at
-  // its maximum, so the planner never credits Fortune nobody claimed.
+  // beside it says at which level. Turning one on starts at the enchantment's
+  // lowest obtainable tier rather than at its maximum.
   document.querySelectorAll(`[data-ench-toggle="${slotId}"]`).forEach(el => el.addEventListener('change', event => {
     patch({ enchantments: withEnchantToggled(currentItem(), el.dataset.enchKey, event.target.checked) });
     rerender();
