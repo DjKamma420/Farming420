@@ -139,6 +139,25 @@ test('the active pet and its held item fill the pet slots', () => {
   assert.equal(setup.slots.petItem.skyblockId, 'GREEN_BANDANA');
 });
 
+test('autofill derives the active pet level from synced experience and keeps its physical identity', () => {
+  const snapshot = {
+    items: [],
+    pets: [{
+      uuid: 'pet-123',
+      type: 'BEE',
+      rarity: 'COMMON',
+      experience: 100,
+      active: true,
+      heldItem: 'GREEN_BANDANA',
+    }],
+  };
+  const { setup } = prefillSetupFromSnapshot(createSetup('a', 'A'), snapshot);
+  assert.equal(setup.slots.pet.petLevel, 2);
+  assert.equal(setup.slots.pet.physicalItemId, 'pet:pet-123');
+  assert.equal(setup.slots.petItem.displayName, 'Green Bandana');
+  assert.equal(setup.slots.petItem.physicalItemId, 'pet-held:pet-123');
+});
+
 test('an inactive pet is never assumed to be the equipped one', () => {
   const snapshot = { items: [], pets: [{ type: 'ELEPHANT', active: false }, { type: 'HEDGEHOG', active: null }] };
   const { setup } = prefillSetupFromSnapshot(createSetup('a', 'A'), snapshot);
