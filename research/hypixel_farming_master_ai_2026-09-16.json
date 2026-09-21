@@ -294,7 +294,7 @@
     "preferred":["official current Hypixel patch notes","official Hypixel API docs","current hypixelskyblock.minecraft.wiki","Elite SkyBlock for current Farming-specific data","recent reproducible live tests"],
     "avoid_as_current_authority":["closed wiki.hypixel.net pages","stale Fandom-only claims","old guides predating Greenhouse/Feast/0.26.1/0.27"],
     "important":"Every concrete mechanic used by production calculations should gain a source and lastVerified date in the normalized research/data layer"
-   },
+  },
   "pest_loadout_progression": {
     "last_verified":"2026-09-21",
     "source":"https://eliteskyblock.com/guides/eAb9M5",
