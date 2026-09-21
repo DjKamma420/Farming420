@@ -51,6 +51,7 @@ const NAV_ART = Object.freeze({
   buffs: ['pest_repellent_max', 'pest_repellent'],
   pests: ['pest_trap', 'sprayonator'],
   qol: ['builders_ruler'],
+  info: ['plant_diagnostics_tool'],
   focus: ['super_jacob_system'],
   planner: ['wishing_compass'],
   guide: ['box_of_seeds'],
