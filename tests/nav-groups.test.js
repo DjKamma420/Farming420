@@ -46,3 +46,18 @@ test('no page is listed in two groups', () => {
   const twice = grouped.filter((page, index) => grouped.indexOf(page) !== index);
   assert.deepEqual(twice, [], `listed more than once: ${twice.join(', ')}`);
 });
+
+
+test('Focus on next sits with Upgrade Planner under Analysis', () => {
+  const analysis = enhancements.match(/\['Analysis', \[([^\]]*)\]\]/);
+  assert.ok(analysis, 'Analysis group not found');
+  const pages = [...analysis[1].matchAll(/'([\w-]+)'/g)].map(match => match[1]);
+  assert.deepEqual(pages, ['focus', 'planner']);
+});
+
+test('groups with no remaining navigation entries are skipped', () => {
+  assert.match(
+    enhancements,
+    /const buttons = ids[\s\S]*?\.filter\(Boolean\);[\s\S]*?if \(!buttons\.length\) continue;/,
+  );
+});
