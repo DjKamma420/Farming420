@@ -168,7 +168,7 @@ naming, because each is a different kind of mistake:
 | `profit adapter → live price refresh` | no link; the adapter knows nothing about prices |
 | `profit adapter → computed stats` | reached via `planner-activity-context.js` |
 | `profit adapter → pest model` | no link; the pests page owns that model |
-| `revenue planner → progression.js` | no link; `app.js` and `dashboard-guide.js` use it |
+| `revenue planner → progression.js` | no link; `app.js` owns progression rendering |
 | `revenue planner → profit adapter` | one hop missing: `measured-baseline.js` |
 | `profile-items.js → nbt.js` | one hop missing: `item-normalizer.js` |
 | `live price refresh → hypixel client` | it calls `fetch` directly |
