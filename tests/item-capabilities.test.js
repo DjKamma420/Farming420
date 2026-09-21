@@ -113,3 +113,10 @@ test('the core setup editor gates upgrades with the concrete item capability mod
   assert.match(source, /capabilities\.gemstoneSlots\.length \?/);
   assert.match(source, /synced\?\.pets\?\.some\(pet => pet\?\.active === true\)/);
 });
+
+
+test('changing an exact gemstone never reloads the page', () => {
+  const source = readFileSync(new URL('../src/exact-item-capabilities-ui.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(source, /window\.location\.reload\(\)/);
+  assert.match(source, /patchSlot\(next, slotId, \{ gems \}\);[\s\S]*save\(next\);[\s\S]*farming420:state-changed/);
+});
