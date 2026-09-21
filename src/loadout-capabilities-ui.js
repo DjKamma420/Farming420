@@ -241,19 +241,22 @@ function renderVacuumSurface(raw) {
   panel.dataset.signature = signature;
 
   panel.innerHTML = `
-    <section class="item-editor-section" data-vacuum-section="reforge">
-      <div class="workspace-section-head"><div><h3>Reforge</h3><p>Exactly one Vacuum reforge can be active.</p></div></div>
-      <div class="workspace-choice-list" role="radiogroup" aria-label="Vacuum reforge">
+    <section class="item-editor-section sb-reforge-panel" data-vacuum-section="reforge">
+      <div class="sb-block-title"><div><span class="eyebrow">Reforge</span><h3>Pick what is actually on the Vacuum</h3><p>A Vacuum carries exactly one Vacuum reforge.</p></div></div>
+      <div class="sb-reforge-grid sb-reforge-grid-compact setup-reforge-grid" role="radiogroup" aria-label="Vacuum reforge">
         ${[
-          { id: '', name: 'No reforge', stone: 'Nothing applied' },
+          { id: '', name: 'No reforge', stone: 'Nothing applied', itemId: '' },
           ...FARMING_REFORGES_BY_FAMILY.vacuum,
         ].map(option => {
           const selected = option.id === (reforge || '');
-          return `<label class="workspace-choice ${selected ? 'selected' : ''}">
-            <input type="radio" name="vacuum-workspace-reforge" value="${esc(option.id)}" data-vacuum-reforge-choice="${esc(option.id)}" ${selected ? 'checked' : ''}>
-            <span class="workspace-radio" aria-hidden="true"></span>
-            <span class="workspace-choice-copy"><strong>${esc(option.name)}</strong><small>${esc(option.stone || '')}</small></span>
-          </label>`;
+          const fallback = option.id ? esc(option.name.slice(0, 1).toUpperCase()) : '&ndash;';
+          return `<button type="button" class="sb-reforge-card setup-reforge-card ${selected ? 'selected' : ''} ${option.id ? '' : 'sb-reforge-none'}"
+            role="radio" aria-checked="${selected ? 'true' : 'false'}"
+            data-vacuum-reforge-choice="${esc(option.id)}" data-reforge-id="${esc(option.id)}" data-reforge-item-id="${esc(option.itemId || '')}">
+            <span class="sb-reforge-art"><span class="sb-reforge-fallback">${fallback}</span></span>
+            <span class="sb-reforge-copy"><strong>${esc(option.name)}</strong><small>${esc(option.stone || '')}</small></span>
+            <span class="sb-state-dot" aria-hidden="true"></span>
+          </button>`;
         }).join('')}
       </div>
     </section>
@@ -271,8 +274,9 @@ function renderVacuumSurface(raw) {
       </div>
     </section>`;
 
-  panel.querySelectorAll('[data-vacuum-reforge-choice]').forEach(input => input.addEventListener('change', () => {
-    writeVacuumReforge(input.dataset.vacuumReforgeChoice || null);
+  panel.querySelectorAll('[data-vacuum-reforge-choice]').forEach(button => button.addEventListener('click', event => {
+    event.preventDefault();
+    writeVacuumReforge(button.dataset.vacuumReforgeChoice || null);
   }));
   panel.querySelectorAll('[data-vacuum-toggle]').forEach(input => input.addEventListener('change', event => {
     const item = entries.find(entry => entry.id === input.dataset.vacuumToggle);
