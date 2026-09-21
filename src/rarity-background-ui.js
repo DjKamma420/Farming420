@@ -10,7 +10,6 @@ import { TOOL_TIER_CHAIN, highestChainTier } from './progression-chains.js';
 import { catalogItemByExactId, farmingToolSkyblockId, farmingToolTierRarity } from './exact-farming-items.js';
 import { deriveRarity } from './tool-rarity.js';
 import { vacuumRarity } from './vacuum-state.js';
-import { setTextIfChanged } from './set-text.js';
 
 const RECOMB_ID = 'tool-recombobulator-effect-on-tool-stats';
 const RARITY_CLASSES = Object.freeze([
@@ -64,14 +63,6 @@ function applySetupRarity(root, state, catalog) {
     applyRarityClass(card, rarity);
     applyRarityClass(editor, rarity);
 
-    const rarityLabel = editor?.querySelector('.item-rarity');
-    if (!rarityLabel) continue;
-    const base = normalizeRarity(catalogItem?.tier) || normalizeRarity(item.rarity);
-    const source = item.source === 'sync' ? ' · synced' : '';
-    const label = item.recombobulated && base && base !== rarity
-      ? `${rarity} · base ${base} + Recombobulator${source}`
-      : `${rarity}${source}`;
-    setTextIfChanged(rarityLabel, label);
   }
 }
 
