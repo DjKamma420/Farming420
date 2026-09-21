@@ -93,7 +93,7 @@ const USEFUL_ITEMS = Object.freeze([
   },
 ]);
 
-function usefulItemState(raw) {function usefulItemState(raw) {
+function usefulItemState(raw) {
   raw.profile ||= {};
   raw.profile.usefulItems ||= {};
   return raw.profile.usefulItems;
@@ -150,7 +150,7 @@ function bindUsefulItemToggles(host) {
   }));
 }
 
-function esc(value = '') {function esc(value = '') {
+function esc(value = '') {
   return String(value).replace(/[&<>'"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#039;', '"':'&quot;' }[c]));
 }
 
