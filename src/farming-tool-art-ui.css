@@ -1,32 +1,3 @@
-.skyblock-redesign .workspace-tool-art {
-  position: relative;
-  width: 42px;
-  height: 42px;
-  flex: 0 0 42px;
-  display: grid;
-  place-items: center;
-  border: 1px solid rgba(125, 160, 134, .22);
-  border-radius: 4px;
-  background: #09100b;
-  overflow: hidden;
-}
-
-.skyblock-redesign .workspace-tool-art .official-item-art,
-.skyblock-redesign [data-tool-editor="1"] .item-portrait .official-item-art {
-  position: absolute;
-  inset: 4px;
-  width: calc(100% - 8px);
-  height: calc(100% - 8px);
-  transform: none;
-  object-fit: contain;
-  image-rendering: pixelated;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,.28));
-}
-
-.skyblock-redesign .workspace-tool-button {
-  grid-template-columns: auto auto minmax(0, 1fr);
-}
-
 .skyblock-redesign [data-tool-editor="1"] .item-portrait {
   position: relative;
   /* The tier badge sits on the corner at right:-7px bottom:-7px and is 21px
@@ -34,12 +5,4 @@
      against the frame. Letting it break out of the square is the intended
      look; nothing else in this portrait is larger than the box. */
   overflow: visible;
-}
-
-@media (max-width: 650px) {
-  .skyblock-redesign .workspace-tool-art {
-    width: 36px;
-    height: 36px;
-    flex-basis: 36px;
-  }
 }
