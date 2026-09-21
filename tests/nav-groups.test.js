@@ -55,10 +55,10 @@ test('no page is listed in two groups', () => {
 test('navigation follows the user workflow instead of implementation categories', () => {
   assert.deepEqual(groupedSections(), [
     ['Overview', ['dashboard']],
-    ['Setup', ['crops', 'tools', 'accessories', 'setups', 'gear', 'pets', 'buffs']],
+    ['Profile', ['crops', 'tools', 'accessories', 'setups', 'gear', 'pets', 'buffs']],
     ['Advanced', ['pests', 'chips', 'shards']],
     ['Planning', ['focus', 'planner']],
-    ['Help', ['info', 'qol']],
+    ['Guides', ['info', 'qol']],
     ['System', ['settings']],
   ]);
 });
