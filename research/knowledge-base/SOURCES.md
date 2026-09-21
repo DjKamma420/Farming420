@@ -1,6 +1,6 @@
 # Farming420 Knowledge Base — Source Index
 
-As of: 2026-09-16
+As of: 2026-09-21
 
 This file records the main sources used by the offline Farming knowledge base. A source being listed here does not make every statement on that page automatically current. Pages with known staleness warnings are explicitly marked.
 
@@ -138,3 +138,22 @@ When a new Farming patch changes a system:
 5. Only then promote the mechanic back to ACTIVE in live recommendation logic.
 
 Unknown is not zero. VERIFY facts must not silently score as if their unknown value were a confirmed zero.
+
+
+## Pest-farming loadout progression
+
+### Elite SkyBlock Pest Farming progression guide
+
+URL: https://eliteskyblock.com/guides/eAb9M5
+Last verified: 2026-09-21
+Status: SPECIALIST-COMMUNITY / ACTIVE-STRATEGY
+
+Used for the three Pest-farming phases, the two-physical-armor-set Farming-50 baseline, 3/4 Mossy + 1/4 Mantid Farming/Killing armor, full Mantid spawning armor, short pre-spawn swap timing, Green Bandana Rose Dragon for Farming, and a second Poignant Lucky Clover Rose Dragon for late-game Pest killing. The guide also documents the optional third physical armor set as an extreme min-max progression layer.
+
+### September 2026 two-vs-three Pest set discussion
+
+URL: https://hypixel.net/threads/why-do-you-need-2-sets-for-pest-farming.6148221/
+Last verified: 2026-09-21
+Status: CURRENT-COMMUNITY-CORROBORATION
+
+Corroborates the practical two-set split of Fortune Farming/Killing versus BPC/cooldown Spawning and identifies a third Overbloom-focused kill set as an expensive newer min-max step.
