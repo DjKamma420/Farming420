@@ -9,6 +9,7 @@ import {
   cropBazaarProductId,
   liveCropPriceNote,
   liveCropUnitPrice,
+  liveHarvestFeastMaterialPrice,
 } from '../src/live-crop-price.js';
 
 /**
@@ -130,4 +131,16 @@ test('age is reported in units a reader can judge', () => {
     };
     assert.equal(liveCropPriceNote(price), expected);
   }
+});
+
+
+test('Harvest Feast material price uses the sourced material id and Bazaar liquidation side', () => {
+  const snapshot = snapshotWith({
+    MELON_JUICE: { product_id: 'MELON_JUICE', quick_status: { sellPrice: 910_000, buyPrice: 875_000 } },
+  });
+  const price = liveHarvestFeastMaterialPrice('melon', { snapshot, nowMs: NOW });
+  assert.equal(price.status, CROP_PRICE_STATUS.LIVE);
+  assert.equal(price.productId, 'MELON_JUICE');
+  assert.equal(price.coinsPerUnit, 875_000);
+  assert.equal(price.source, PRICE_SOURCE.BAZAAR);
 });
