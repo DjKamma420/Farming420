@@ -597,6 +597,8 @@ function focusNextMarkup(raw, rows) {
   return rows.slice(0, 30).map((row, index) => {
     const max = Math.max(1, Number(row.item.max || 1));
     const current = level(raw, row.item);
+    const remaining = Math.max(1, max - current);
+    const remainingHours = remaining * FOCUS_AVERAGE_STEP_HOURS;
     const valueLabel = row.modeled === 'overbloom'
       ? `+${row.gain.toLocaleString('en-US')} Overbloom`
       : `+${row.gain.toLocaleString('en-US')} FF`;
@@ -608,7 +610,7 @@ function focusNextMarkup(raw, rows) {
       <div class="planner-main"><strong>${esc(row.item.name)}</strong><span>${esc(row.item.category)} · earned progression</span></div>
       <div class="planner-number"><strong>${valueLabel}</strong><span>next step</span></div>
       <div class="planner-number"><strong>${marginal}</strong><span>benchmark value</span></div>
-      <div class="planner-number"><strong>~${FOCUS_AVERAGE_STEP_HOURS.toFixed(1)} h</strong><span>planning average</span></div>
+      <div class="planner-number"><strong>~${FOCUS_AVERAGE_STEP_HOURS.toFixed(1)} h</strong><span>next step · ~${remainingHours.toFixed(1)} h remaining</span></div>
       <div class="planner-number"><strong>${current}/${max}</strong><span>current progress</span></div>
     </button>`;
   }).join('');
