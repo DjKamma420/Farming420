@@ -190,29 +190,6 @@ function simplifySetupEditor(raw) {
   content.querySelector('[data-setup-add]')?.remove();
 }
 
-function renderDashboardCandidate(raw) {
-  const hero = document.querySelector('.hero-card.primary');
-  if (!hero) return;
-  const mode = activityModeForState(raw);
-  const cropId = selectedCropId(raw);
-  const candidate = plannerCandidates(raw)[0];
-  const signature = `${mode}:${cropId}:${candidate?.item?.id || 'none'}:${candidate?.gain || 0}:${candidate?.rel || 0}`;
-  if (hero.dataset.activityCandidate === signature) return;
-  hero.dataset.activityCandidate = signature;
-
-  hero.innerHTML = candidate ? `
-    <div class="eyebrow">Next upgrade · ${esc(activityLabel(mode))}</div>
-    <h2>${esc(candidate.item.name)}</h2>
-    <p>+${candidate.gain.toLocaleString('en-US')} marginal stat · about ${candidate.rel.toFixed(2)}% relative gain in the current ${esc(cropName(cropId))} ${esc(activityLabel(mode))}.</p>
-    <button class="primary-btn" data-mode-open="${esc(candidate.item.id)}">Open details</button>
-    <div class="planner-mode-note">Farming and Pest Spawning use the crop farming tool. Pest Killing uses the Vacuum. Armor, equipment and pet come from the selected phase set.</div>` : `
-    <div class="eyebrow">Next upgrade · ${esc(activityLabel(mode))}</div>
-    <h2>No calculated upgrade</h2>
-    <p>No active upgrade with a calculated marginal gain is available for this crop and set.</p>`;
-
-  hero.querySelector('[data-mode-open]')?.addEventListener('click', event => openDrawer(event.currentTarget.dataset.modeOpen));
-}
-
 /**
  * The core planner list from `app.js` -- never one an enhancement built.
  *
@@ -265,7 +242,6 @@ function apply() {
     const raw = load();
     injectHeaderSwitch(raw);
     simplifySetupEditor(raw);
-    renderDashboardCandidate(raw);
     renderPlanner(raw);
   } finally {
     applying = false;
