@@ -4,8 +4,10 @@ import { readFileSync } from 'node:fs';
 
 import {
   addBuildParam,
+  addModuleBuildParam,
   buildVersionDocument,
   stampIndexHtml,
+  stampModuleImports,
 } from '../scripts/prepare-pages-deploy.js';
 
 const BUILD = 'abcdef1234567890abcdef1234567890abcdef12';
@@ -35,6 +37,30 @@ test('build query replacement is idempotent for repeated deployment preparation'
     addBuildParam(`src/app.js?build=1111111`, BUILD),
     `src/app.js?build=${BUILD}`,
   );
+});
+
+test('transitive ES module imports receive the same immutable build id', () => {
+  assert.equal(
+    addModuleBuildParam('./computed-stats.js?v=old', BUILD),
+    `./computed-stats.js?v=old&build=${BUILD}`,
+  );
+
+  const source = `import { computeStatTotals } from './computed-stats.js';
+import './side-effect.js';
+export { helper } from './helper.js?v=old';
+const lazy = () => import('./lazy.js');`;
+
+  const stamped = stampModuleImports(source, BUILD);
+  assert.match(stamped, new RegExp(`\\./computed-stats\\.js\\?build=${BUILD}`));
+  assert.match(stamped, new RegExp(`\\./side-effect\\.js\\?build=${BUILD}`));
+  assert.match(stamped, new RegExp(`\\./helper\\.js\\?v=old&build=${BUILD}`));
+  assert.match(stamped, new RegExp(`\\./lazy\\.js\\?build=${BUILD}`));
+});
+
+test('dashboard tolerates an older cached computed-stats module during rollout', () => {
+  const app = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(app, /values\.sourceCount\.(?:globalFortune|cropFortune|overbloom|bonusPestChance)/);
+  assert.match(app, /values\.sourceCount\?\.globalFortune/);
 });
 
 test('deployment version file contains the exact immutable build id', () => {

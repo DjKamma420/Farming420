@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -25,6 +25,38 @@ export function addBuildParam(url, buildId) {
   const params = new URLSearchParams(query);
   params.set('build', assertBuildId(buildId));
   return `${path}?${params.toString()}${hash}`;
+}
+
+export function addModuleBuildParam(specifier, buildId) {
+  const value = String(specifier || '');
+  if (!/^\.{1,2}\/[^?#]+\.js(?:[?#]|$)/.test(value)) return value;
+
+  const hashIndex = value.indexOf('#');
+  const hash = hashIndex >= 0 ? value.slice(hashIndex) : '';
+  const withoutHash = hashIndex >= 0 ? value.slice(0, hashIndex) : value;
+  const queryIndex = withoutHash.indexOf('?');
+  const path = queryIndex >= 0 ? withoutHash.slice(0, queryIndex) : withoutHash;
+  const query = queryIndex >= 0 ? withoutHash.slice(queryIndex + 1) : '';
+  const params = new URLSearchParams(query);
+  params.set('build', assertBuildId(buildId));
+  return `${path}?${params.toString()}${hash}`;
+}
+
+export function stampModuleImports(source, buildId) {
+  const build = assertBuildId(buildId);
+  let output = String(source);
+
+  output = output.replace(
+    /(\b(?:import|export)\s+(?:[^'"]*?\s+from\s+)?['"])(\.{1,2}\/[^'"]+\.js(?:\?[^'"]*)?)(['"])/g,
+    (match, prefix, specifier, suffix) => `${prefix}${addModuleBuildParam(specifier, build)}${suffix}`,
+  );
+
+  output = output.replace(
+    /(\bimport\(\s*['"])(\.{1,2}\/[^'"]+\.js(?:\?[^'"]*)?)(['"]\s*\))/g,
+    (match, prefix, specifier, suffix) => `${prefix}${addModuleBuildParam(specifier, build)}${suffix}`,
+  );
+
+  return output;
 }
 
 export function stampIndexHtml(html, buildId) {
@@ -58,9 +90,15 @@ export function preparePagesDeploy(buildId = process.env.BUILD_ID || process.env
   const build = assertBuildId(buildId);
   const indexUrl = new URL('../index.html', import.meta.url);
   const versionUrl = new URL('../deploy-version.json', import.meta.url);
+  const srcUrl = new URL('../src/', import.meta.url);
   const source = readFileSync(indexUrl, 'utf8');
 
   writeFileSync(indexUrl, stampIndexHtml(source, build));
+  for (const name of readdirSync(srcUrl).filter(entry => entry.endsWith('.js'))) {
+    const moduleUrl = new URL(name, srcUrl);
+    const moduleSource = readFileSync(moduleUrl, 'utf8');
+    writeFileSync(moduleUrl, stampModuleImports(moduleSource, build));
+  }
   writeFileSync(versionUrl, buildVersionDocument(build));
   console.log(`Prepared GitHub Pages deployment for build ${build}.`);
 }
