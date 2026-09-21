@@ -127,3 +127,27 @@ test('every verification date is newer than the last game change it covers', () 
   }
   assert.deepEqual([...new Set(stale)], [], `values verified before the newest game change:\n${stale.join('\n')}`);
 });
+
+test('the misplaced Pest Fortune declaration stays where it is used', () => {
+  // `const totalPestFortune = ... killStats ...` had been written into
+  // `writeVacuumEntry`, which has no `killStats`. Two things broke: the render
+  // threw "totalPestFortune is not defined" so the Vacuum loadout panel never
+  // appeared, and every save of a Vacuum entry threw "killStats is not
+  // defined". Neither showed up in a unit test, because both are runtime
+  // scope errors in a DOM enhancer.
+  const source = read('src/loadout-capabilities-ui.js');
+  const writer = source.match(/function writeVacuumEntry[\s\S]*?\n}/)[0];
+  assert.doesNotMatch(writer, /killStats|totalPestFortune/,
+    'the writer must not reach for render-scope stats');
+  // And it is declared next to the stats it reads.
+  assert.match(source, /const killStats = statsForMode\(raw, cropId, ACTIVITY_MODE\.PEST_KILL\);[\s\S]{0,400}?const totalPestFortune =/);
+});
+
+test('the Vacuum damage model reads the research, not a copy', () => {
+  assert.match(read('src/vacuum-damage.js'), /from '\.\.\/research\/vacuum-damage\.js'/);
+  // No base damage restated in src/.
+  const source = read('src/vacuum-damage.js');
+  for (const value of ['100', '150', '200', '300', '400']) {
+    assert.doesNotMatch(source, new RegExp(`damage:\\s*${value}`), `src restates a base damage (${value})`);
+  }
+});

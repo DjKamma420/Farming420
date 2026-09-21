@@ -2438,3 +2438,57 @@ an error, and is left rather than invented.
 908 node + 7 python tests, overlay audit at 0 findings, planner sweep clean,
 startup smoke test passing, and the Greenhouse panel re-driven in a browser.
 Both findings re-broken on purpose to prove the new tests catch them.
+
+## 0.47.0 -- can your Vacuum one-shot a pest?
+
+The Pests page already said a pest has 600 HP and that damage is judged against
+that "not in the abstract" -- and then left the reader to do it. Meanwhile
+`research/VACUUM_RESEARCH.md` held every number needed, reached by nothing.
+0.46.0 recorded the gap rather than inventing values; this fills it from the
+research.
+
+`research/vacuum-damage.js` holds the tables, `src/vacuum-damage.js` the model,
+and the Pests page asks the question the Pest Killing phase is entirely about.
+
+**Order of operations is the whole thing.** Flat additions first, Buzzing
+doubles after. The research's worked example is the check -- Hooverius 400,
+five books +100, Buzzing x2 = 1,000 -- and it warns in bold that the 900 still
+quoted in older Hooverius trivia is stale after 0.27. Doubling before adding
+gives exactly 900, so a test pins that it does not.
+
+**Pulls, not seconds.** Pull rate, range and travel are not in the research, so
+a seconds-per-kill figure would turn a verified threshold into an invented one.
+
+**Pest Fortune stays apart from general Fortune.** Beady's +100 is Pest-only,
+and since 2026-05-14 non-guaranteed pest drops scale with Overbloom -- so it
+must never be summed into a general figure or a rare-drop roll. `pestOnly` is a
+separate field, and a test asserts the two never merge.
+
+**Neither reforge wins.** The research forbids a universal rule either way:
+Buzzing doubles damage, Beady trades that threshold for the Pest Fortune. The
+advice names only the levers the model has, and says plainly when a Vacuum
+cannot reach one pull at all -- a SkyMart Vacuum maxes at (100+100)x2 = 400,
+under 600.
+
+### A live bug found on the way
+
+`src/loadout-capabilities-ui.js` had
+`const totalPestFortune = ... killStats ...` written into `writeVacuumEntry`,
+which has no `killStats`. Two things were broken on `main`:
+
+- the render threw `totalPestFortune is not defined`, so the Vacuum loadout
+  panel **never appeared** on the Pests page;
+- every save of a Vacuum entry threw `killStats is not defined`.
+
+Both are runtime scope errors inside a DOM enhancer, which is why no unit test
+saw them. The panel now renders with all four stat tiles. A regression test
+asserts the writer never reaches for render-scope stats.
+
+### Verified
+
+921 node + 7 python tests, overlay audit at 0 findings, pests sweep clean on all
+three profiles, startup smoke test passing, and the panel driven in a browser at
+1280px and 412px: 1,000 damage shown as `(400 base +100 books) x2`, one pull
+normal and two under Derpy, 525 for the Beady build, and an honest "no
+combination reaches one pull" on a SkyMart Vacuum. Both defect classes
+re-introduced on purpose -- four tests fail.

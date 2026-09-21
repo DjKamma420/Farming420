@@ -11,6 +11,7 @@
  *
  * Every figure here comes from `src/pest-model.js`, which cites its sources.
  */
+import { STORAGE_KEY } from './config.js';
 import { CROPS } from './data.js';
 import {
   GARDEN_PESTS,
@@ -23,6 +24,8 @@ import {
   guaranteedDropText,
   philipFortuneFor,
 } from './pest-model.js';
+import { VACUUM_BASE_STATS, VACUUM_REFORGES } from '../research/vacuum-damage.js';
+import { oneShotAdvice, pullsToKill } from './vacuum-damage.js';
 import { setTextIfChanged } from './set-text.js';
 import { cropArtUrl } from './skyblock-redesign.js';
 
@@ -30,6 +33,14 @@ function esc(value = '') {
   return String(value).replace(/[&<>"']/g, char => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;',
   }[char]));
+}
+
+function load() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
+}
+
+function save(raw) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(raw)); } catch { /* a full or blocked store must not break the page */ }
 }
 
 function pageId() {
@@ -102,7 +113,107 @@ function philipMarkup(pests) {
     <p class="pest-note">${esc(PESTHUNTER_PHILIP.alternativeUseNote)}</p>`;
 }
 
-function panelMarkup() {
+/** The Vacuum build the player last chose, stored with the rest of the profile. */
+function vacuumBuild(raw) {
+  const stored = raw?.profile?.pestVacuumBuild || {};
+  return {
+    vacuumId: stored.vacuumId || 'INFINI_VACUUM',
+    bookwormBooks: Number(stored.bookwormBooks) || 0,
+    reforge: stored.reforge || '',
+  };
+}
+
+function killResultText(result) {
+  if (!result) return '\u2014';
+  return `${result.damage.totalDamage.toLocaleString('en-US')} damage`;
+}
+
+/**
+ * How the damage breaks down, in the order it is actually applied.
+ *
+ * Spelling out the order is the point: the flat additions come first and
+ * Buzzing doubles afterwards, which is why the research had to warn against the
+ * stale 900 figure that older Hooverius guides still quote.
+ */
+function killBreakdownText(result) {
+  if (!result) return 'Pick a Vacuum';
+  const d = result.damage;
+  const parts = [`${d.baseDamage} base`];
+  if (d.bookwormDamage) parts.push(`+${d.bookwormDamage} books`);
+  if (d.reforgeFlatDamage) parts.push(`+${d.reforgeFlatDamage} reforge`);
+  const sum = parts.join(' ');
+  return d.multiplier > 1 ? `(${sum}) \u00d7${d.multiplier}` : sum;
+}
+
+function killAdviceText(result, advice) {
+  if (!result) return '';
+  if (advice?.alreadyOneShot) return 'One pull per pest.';
+  if (advice?.reachable) return advice.steps.join(' ');
+  return 'No combination in this model reaches one pull on this Vacuum.';
+}
+
+/**
+ * Can this Vacuum take a pest down in one pull?
+ *
+ * The page already said a pest has 600 HP and that damage is judged against
+ * that rather than in the abstract, and then left the reader to do it. The
+ * numbers were in research/VACUUM_RESEARCH.md and reached by nothing.
+ *
+ * It counts pulls, not seconds. Pull rate, range and travel are not in the
+ * research, so a seconds-per-kill figure would turn a verified threshold into
+ * an invented one.
+ */
+function vacuumPanelMarkup(raw) {
+  const build = vacuumBuild(raw);
+  const result = pullsToKill(build);
+  const advice = oneShotAdvice(build);
+  const rows = result?.contexts || [];
+
+  return `<details class="pest-vacuum">
+    <summary>
+      <div class="pest-vacuum-head">
+        <div><div class="eyebrow">Kill side</div><h2>Does your Vacuum one-shot a pest?</h2></div>
+        <span class="pest-note">${esc(killResultText(result))}</span>
+      </div>
+    </summary>
+    <div class="pest-vacuum-body">
+      <label><span>Vacuum</span>
+        <select data-vacuum-id>
+          ${Object.entries(VACUUM_BASE_STATS).map(([id, stats]) => `<option value="${esc(id)}"${build.vacuumId === id ? ' selected' : ''}>${esc(id.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase()))} \u00b7 ${stats.damage}</option>`).join('')}
+        </select>
+        <small>Base damage from the 0.27 table.</small>
+      </label>
+      <label><span>Bookworm books</span>
+        <input data-vacuum-books type="number" min="0" max="5" step="1" value="${build.bookwormBooks}">
+        <small>+20 damage each, up to five.</small>
+      </label>
+      <label><span>Reforge</span>
+        <select data-vacuum-reforge>
+          <option value=""${build.reforge ? '' : ' selected'}>\u2014 none \u2014</option>
+          ${Object.values(VACUUM_REFORGES).map(reforge => `<option value="${esc(reforge.id)}"${build.reforge === reforge.id ? ' selected' : ''}>${esc(reforge.label)}</option>`).join('')}
+        </select>
+        <small>A Vacuum has one reforge, so these are alternatives.</small>
+      </label>
+      <div class="pest-vacuum-out">
+        <strong data-vacuum-damage>${esc(killResultText(result))}</strong>
+        <span data-vacuum-breakdown>${esc(killBreakdownText(result))}</span>
+      </div>
+      <div class="pest-vacuum-pulls" data-vacuum-pulls>
+        ${rows.map(row => `<div class="pest-vacuum-pull${row.oneShot ? ' one-shot' : ''}">
+          <strong>${row.pulls} pull${row.pulls === 1 ? '' : 's'}</strong>
+          <span>${esc(row.label)} \u00b7 ${row.health} HP</span>
+        </div>`).join('')}
+      </div>
+      <p class="pest-note" data-vacuum-advice>${esc(killAdviceText(result, advice))}</p>
+      <p class="pest-note">Pulls, not seconds: pull rate, range and travel are not in the
+        research, so no time estimate is claimed. Beady trades this threshold for
+        +100 Pest-only Farming Fortune \u2014 which raises guaranteed pest drops, not the
+        rare-drop roll \u2014 so neither reforge wins outright.</p>
+    </div>
+  </details>`;
+}
+
+function panelMarkup(raw) {
   return `
     <section class="pest-explainer">
       <div class="section-row">
@@ -143,6 +254,8 @@ function panelMarkup() {
         `${esc(pest.name)}${pest.notes ? ` \u2014 ${esc(pest.notes)}` : ''}`).join('; ')}</p>` : ''}
     </section>
 
+    ${vacuumPanelMarkup(raw)}
+
     <details class="pest-philip">
       <summary><div class="pest-philip-head"><div><div class="eyebrow">Pest currency</div>
         <h2>Pesthunter Phillip conversion</h2></div>
@@ -158,10 +271,50 @@ function applyPestsPage() {
   const anchor = content.querySelector('.filter-line') || content.querySelector('.page-head');
   if (!anchor) return;
 
+  const raw = load();
   const host = document.createElement('div');
   host.className = 'pest-page-addon';
-  host.innerHTML = panelMarkup();
+  host.innerHTML = panelMarkup(raw);
   anchor.insertAdjacentElement('afterend', host);
+
+  // The Vacuum build recomputes in place and writes only the stored build. A
+  // render per keystroke would rebuild the panel under the cursor, which is the
+  // loop shape rule 5 of docs/RENDER_FREEZE_SAFETY.md exists to prevent.
+  const vacuumFields = {
+    vacuumId: host.querySelector('[data-vacuum-id]'),
+    bookwormBooks: host.querySelector('[data-vacuum-books]'),
+    reforge: host.querySelector('[data-vacuum-reforge]'),
+  };
+  const refreshVacuum = () => {
+    const next = load();
+    next.profile ||= {};
+    next.profile.pestVacuumBuild = {
+      vacuumId: vacuumFields.vacuumId?.value || 'INFINI_VACUUM',
+      bookwormBooks: Math.max(0, Math.min(5, Number(vacuumFields.bookwormBooks?.value) || 0)),
+      reforge: vacuumFields.reforge?.value || '',
+    };
+    save(next);
+
+    const build = vacuumBuild(next);
+    const result = pullsToKill(build);
+    const advice = oneShotAdvice(build);
+    setTextIfChanged(host.querySelector('[data-vacuum-damage]'), killResultText(result));
+    setTextIfChanged(host.querySelector('[data-vacuum-breakdown]'), killBreakdownText(result));
+    setTextIfChanged(host.querySelector('[data-vacuum-advice]'), killAdviceText(result, advice));
+    const summaryNote = host.querySelector('.pest-vacuum-head .pest-note');
+    setTextIfChanged(summaryNote, killResultText(result));
+
+    const pulls = host.querySelector('[data-vacuum-pulls]');
+    for (const [index, row] of (result?.contexts || []).entries()) {
+      const node = pulls?.children?.[index];
+      if (!node) continue;
+      setTextIfChanged(node.querySelector('strong'), `${row.pulls} pull${row.pulls === 1 ? '' : 's'}`);
+      node.classList.toggle('one-shot', row.oneShot);
+    }
+  };
+  for (const field of Object.values(vacuumFields)) {
+    field?.addEventListener(field.tagName === 'SELECT' ? 'change' : 'input', refreshVacuum);
+  }
 
   const input = host.querySelector('[data-pest-philip]');
   input?.addEventListener('input', () => {
