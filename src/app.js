@@ -507,10 +507,10 @@ function dashboard() {
     const incomplete = totalIncomplete
       + values.incomplete.overbloom.length
       + values.incomplete.bonusPestChance.length;
-    const configured = values.sourceCount.globalFortune
-      + values.sourceCount.cropFortune
-      + values.sourceCount.overbloom
-      + values.sourceCount.bonusPestChance;
+    const configured = Number(values.sourceCount?.globalFortune || 0)
+      + Number(values.sourceCount?.cropFortune || 0)
+      + Number(values.sourceCount?.overbloom || 0)
+      + Number(values.sourceCount?.bonusPestChance || 0);
     return `
       <article class="stat-card dashboard-crop-result ${entry.id === selectedCrop.id ? 'selected' : ''}">
         <span>${esc(entry.name)}</span>
