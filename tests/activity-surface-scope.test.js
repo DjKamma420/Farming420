@@ -8,7 +8,7 @@ const activityCss = readFileSync(new URL('../src/activity-mode-ui.css', import.m
 const indexHtml = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 
 test('phase selector is limited to contexts where the selected loadout matters', () => {
-  assert.match(activityUi, /const MODE_SWITCH_PAGES = new Set\(\['dashboard', 'setups', 'planner'\]\)/);
+  assert.match(activityUi, /const MODE_SWITCH_PAGES = new Set\(\['dashboard', 'setups', 'focus', 'planner'\]\)/);
   assert.match(activityUi, /if \(!MODE_SWITCH_PAGES\.has\(page\)\) \{[\s\S]*control\?\.remove\(\);[\s\S]*return;/);
   for (const sharedPage of ['tools', 'shards', 'account', 'crops', 'buffs', 'pests']) {
     assert.doesNotMatch(activityUi, new RegExp(`MODE_SWITCH_PAGES[^\\n]*['"]${sharedPage}['"]`));
