@@ -2492,3 +2492,64 @@ three profiles, startup smoke test passing, and the panel driven in a browser at
 normal and two under Derpy, 525 for the Beady build, and an honest "no
 combination reaches one pull" on a SkyMart Vacuum. Both defect classes
 re-introduced on purpose -- four tests fail.
+
+## 0.48.0 -- what goes in each phase loadout
+
+ChatGPT's `pest_loadout_progression` research landed on main. Audited against
+the code first, then implemented the one gap worth closing now.
+
+### The audit
+
+Five data-model rules in the new research, checked against the app:
+
+| Rule | State |
+| --- | --- |
+| three phase loadouts `farming` / `pest-spawn` / `pest-kill` | present |
+| multiple pet copies with different pet items | works; each phase holds its own pet slot |
+| never infer duplicate armor from phase separation | **not violated** -- nothing aggregates cost across setups, and synced items already dedupe by `itemUuid` |
+| references from each phase to physical objects | missing -- each phase holds full copies |
+| a tier distinguishing the two-armor baseline from the optional third | missing |
+
+The timing rule -- the spawn loadout is a short phase, not the gear worn for
+the whole cooldown -- is **not violated either**: the planner keeps three
+separate Coins/h baselines and never blends them into one per-hour figure, so
+it cannot be understating crop output. It simply does not model the split.
+
+So: no wrong numbers anywhere. Two real gaps.
+
+### What shipped
+
+The Setups page showed three tabs and said nothing about what belongs in them
+-- and three empty wardrobes imply you need three, which the research denies
+outright. It now shows the researched loadout for the active phase, states the
+**two**-set baseline in the place that implied three, and offers the one action
+that baseline implies: copy the Farming armor into the Killing loadout.
+
+The progression tier is selectable, and the third set is labelled a luxury with
+the research's own reason -- it "must not be treated as the prerequisite".
+
+### Copying, not referencing, and why
+
+The research asks for references to shared physical objects. Ten modules read
+`setup.slots` directly today, and quietly changing what that means under all of
+them is how regressions happen. Copying records the truth -- the player really
+does wear those pieces in both phases -- and since nothing infers ownership
+from setup count, no figure is double-counted either way. The reference model
+is the right end state and is recorded as the deeper follow-up.
+
+### Two of my own mistakes, both repeats
+
+I rebuilt the phase-to-setup-id mapping instead of importing
+`setupIdForActivity`. The ids are not the mode names -- Spawning is stored as
+`pest` -- so the Spawning phase silently showed the *Farming* loadout. A browser
+probe caught it; no unit test would have.
+
+And for the third time, a test forbade a phrase that the module's own comment
+uses to reject that very claim. That is a helper now.
+
+### Verified
+
+932 node + 7 python tests, overlay audit at 0 findings, setups sweep clean on
+all three profiles, startup smoke test passing, and all three phases plus the
+luxury tier driven in a browser at 1280px and 412px. The architecture-diagram
+test caught the new observer module and the diagram was updated to 25.

@@ -6,7 +6,7 @@ and every module named here must exist. A wrong arrow fails the suite.
 
 ## The shape of the app
 
-One core renders the page. Twenty-four independent modules watch what it
+One core renders the page. Twenty-five independent modules watch what it
 rendered and change it. **The core does not know they exist**, and that is the
 single most important thing to understand here: `app.js` imports none of them,
 and every arrow into it points the wrong way if you draw it as a call graph.
@@ -25,13 +25,14 @@ graph TD
     data_js["Farming data<br/>data.js"]
   end
 
-  subgraph enhance["Enhancement layer — 24 MutationObserver modules over #app"]
+  subgraph enhance["Enhancement layer — 25 MutationObserver modules over #app"]
     revenue_planner_js["Revenue planner<br/>revenue-planner.js"]
     planner_mode_ui_js["Planner modes<br/>planner-mode-ui.js"]
     pests_page_js["Pests page<br/>pests-page.js"]
     foundation_js["Sync + backup UI<br/>foundation.js"]
     skyblock_redesign_js["Redesign shell<br/>skyblock-redesign.js"]
     item_art_coverage_js["Item art<br/>item-art-coverage.js"]
+    phase_loadout_guide_js["Phase loadouts<br/>phase-loadout-guide.js"]
   end
 
   subgraph money["Cost and profit"]
@@ -52,6 +53,7 @@ graph TD
     jacob_contest_model_js["Jacob contests<br/>jacob-contest-model.js"]
     pest_model_js["Pest page model<br/>pest-model.js"]
     pest_mechanics_data_js["Pest mechanics<br/>pest-mechanics-data.js"]
+    activity_mode_js["Activity phases<br/>activity-mode.js"]
   end
 
   subgraph sync["Profile synchronisation"]
@@ -83,6 +85,7 @@ graph TD
   foundation_js -.-> app_js
   skyblock_redesign_js -.-> app_js
   item_art_coverage_js -.-> app_js
+  phase_loadout_guide_js -.-> app_js
 
   revenue_planner_js --> upgrade_cost_resolution_js
   revenue_planner_js --> measured_baseline_js
@@ -103,6 +106,7 @@ graph TD
   contest_estimate_js --> jacob_contest_model_js
   pests_page_js --> pest_model_js
   pest_model_js --> pest_mechanics_data_js
+  phase_loadout_guide_js --> activity_mode_js
 
   foundation_js --> live_sync_js
   live_sync_js --> hypixel_client_js
