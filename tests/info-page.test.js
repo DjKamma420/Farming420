@@ -10,7 +10,7 @@ test('Info replaces the standalone Guide navigation entry', () => {
   assert.match(app, /\['info', 'Info'\]/);
   assert.doesNotMatch(app, /\['guide', 'Guide 0-60'\]/);
   assert.match(app, /loaded\.page === 'guide'\) loaded\.page = 'info'/);
-  assert.match(enhancements, /\['Getting started', \['info'\]\]/);
+  assert.match(enhancements, /\['Guides', \['info', 'qol'\]\]/);
   assert.match(art, /info: \['plant_diagnostics_tool'\]/);
 });
 
