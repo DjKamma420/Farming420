@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 
 import {
   FARMING_REFORGES_BY_FAMILY,
@@ -101,4 +102,14 @@ test('unknown/manual item does not inherit generic upgrades', () => {
   assert.equal(capabilities.canReforge, false);
   assert.equal(capabilities.canRecombobulate, false);
   assert.deepEqual(capabilities.gemstoneSlots, []);
+});
+
+
+test('the core setup editor gates upgrades with the concrete item capability model', () => {
+  const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  assert.match(source, /const capabilities = itemCapabilities\(slotId, item, itemCatalog\)/);
+  assert.match(source, /capabilities\.canReforge \?/);
+  assert.match(source, /capabilities\.canRecombobulate \?/);
+  assert.match(source, /capabilities\.gemstoneSlots\.length \?/);
+  assert.match(source, /synced\?\.pets\?\.some\(pet => pet\?\.active === true\)/);
 });

@@ -49,9 +49,9 @@ import {
   itemsForSlot,
   loadItemCatalog,
   readCachedCatalog,
-  reforgeOptions,
   slotHasOfficialCategory,
 } from './item-catalog.js';
+import { itemCapabilities } from './item-capabilities.js';
 import {
   backupFilename,
   createBackupPayload,
@@ -1075,9 +1075,9 @@ function slotEditor(slotId) {
   const slot = SETUP_SLOTS.find(entry => entry.id === slotId);
   if (!slot) return '';
   const item = slotItem(slotId) || createEmptyItem();
-  const snap = snapshot();
   const catalogItems = itemsForSlot(itemCatalog, slotId);
-  const reforges = optionList(reforgeOptions(snap), item.reforge);
+  const capabilities = itemCapabilities(slotId, item, itemCatalog);
+  const reforges = capabilities.reforges.map(option => ({ value: option.id, source: 'official' }));
   const rows = enchantRowsFor(slotId, item);
   const gems = item.gems || [];
   const filled = Boolean(item.displayName);
@@ -1097,24 +1097,24 @@ function slotEditor(slotId) {
         ${slotHasOfficialCategory(slotId) && !catalogItems.length ? `<span class="find-warn">${esc(catalogNotice || 'The official item list is not loaded, so type the name.')}</span>` : ''}
       </label>
 
-      <label class="settings-field"><span>Reforge</span>
+      ${capabilities.canReforge ? `<label class="settings-field"><span>Reforge</span>
         <input list="reforge-options" type="text" data-slot-reforge="${esc(slotId)}" value="${esc(item.reforge || '')}" placeholder="e.g. mossy">
         <datalist id="reforge-options">${reforges.map(option => `<option value="${esc(option.value)}"></option>`).join('')}</datalist>
-      </label>
+      </label>` : ''}
     </div>
 
-    <div class="item-editor-row">
+    ${capabilities.canRecombobulate ? `<div class="item-editor-row">
       ${leverInput('data-slot-recomb', slotId, '', Boolean(item.recombobulated), 'Recombobulated')}
       <div><strong>Recombobulated</strong><span class="hint">Raises the item one rarity, which raises reforge and gemstone values with it.</span></div>
-    </div>
+    </div>` : ''}
 
     ${rows.length ? `<section class="item-editor-section">
       <div class="section-row"><div><h3>Enchantments</h3><p>Everything that can sit on this ${esc(slot.label.toLowerCase())}. Flip the ones you have, then pick the level.</p></div></div>
       <div class="enchant-grid">${rows.map(row => enchantLine(slotId, row)).join('')}</div>
     </section>` : `<p class="hint">A ${esc(slot.label.toLowerCase())} takes no farming enchantments.</p>`}
 
-    <section class="item-editor-section">
-      <div class="section-row"><div><h3>Gemstones</h3><p>One line per socket.</p></div></div>
+    ${capabilities.gemstoneSlots.length ? `<section class="item-editor-section">
+      <div class="section-row"><div><h3>Gemstones</h3><p>${capabilities.gemstoneSlots.length} official socket${capabilities.gemstoneSlots.length === 1 ? '' : 's'} on this item.</p></div></div>
       <div class="gem-grid">
         ${gems.map((gem, index) => `<div class="gem-line">
           <select data-gem-value="${esc(slotId)}" data-gem-index="${index}">
@@ -1131,7 +1131,7 @@ function slotEditor(slotId) {
           <button class="ghost small" data-gem-add="${esc(slotId)}">Add</button>
         </div>
       </div>
-    </section>
+    </section>` : ''}
   </div>`;
 }
 
@@ -1139,7 +1139,8 @@ function setupsPage() {
   const all = setups();
   const current = activeSetup(all);
   const summary = setupSummary(current);
-  const hasSnapshot = Boolean(snapshot()?.items?.length);
+  const synced = snapshot();
+  const hasSnapshot = Boolean(synced?.items?.length || synced?.pets?.some(pet => pet?.active === true));
 
   return `${pageHeader('Setups', 'Your gear, item by item', 'A setup is one complete configuration you can actually wear. Setups sit beside each other because they are alternatives, never added together.')}
     <div class="setup-tabs">
