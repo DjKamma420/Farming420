@@ -5,18 +5,14 @@ import { readFileSync, readdirSync } from 'node:fs';
 /**
  * A module that anchors to markup nobody renders is silently dead.
  *
- * Commit 546c4cb rewrote the dashboard into the read-only stats overview and
- * dropped `.hero-grid` and `.hero-card.primary`. It touched only `src/app.js`.
- * Three modules anchored to those classes, and from that commit on
- * `dashboard-guide.js` -- the Farming phase, the next armour milestone, the
- * "best next steps" list and the whole 0-60 roadmap -- never rendered again.
- * Nothing failed: the selector simply returned null and the module returned
- * early, which is exactly what it is supposed to do on every other page.
+ * The dashboard rewrite exposed this failure mode: several enhancement modules
+ * kept querying classes that the core app no longer produced, so their code
+ * quietly stopped running. The dashboard is intentionally results-only now,
+ * therefore stale dashboard mutators are removed rather than revived.
  *
- * No unit test saw it, because each module is correct in isolation. The sweep
- * did not see it either, because nothing crashed. What was missing was a check
- * that the two halves still agree, so this asserts the contract itself: every
- * class an enhancer looks for must be a class something in the app writes.
+ * This check guards the actual contract: every literal class used as the anchor
+ * of a querySelector/querySelectorAll call must also be produced somewhere in
+ * the current source tree. There is deliberately no known-orphan allowlist.
  */
 
 const SRC = new URL('../src/', import.meta.url);
