@@ -85,8 +85,18 @@ function bindJumpButtons(section) {
 export function applyDashboardGuide() {
   if (activePage() !== 'dashboard') return;
   const content = document.querySelector('.content');
-  const hero = content?.querySelector('.hero-grid');
-  if (!content || !hero || content.querySelector('.dashboard-guide-merge')) return;
+  /**
+   * The four calculated-stat tiles, which the guide is inserted after.
+   *
+   * This used to read `.hero-grid`. Commit 546c4cb rewrote the dashboard into
+   * the read-only stats overview, dropped that element and touched only
+   * `src/app.js` -- so from then on this selector returned null, the function
+   * returned early on its own landing page, and the Farming phase, the next
+   * armour milestone, the "best next steps" list and the 0-60 roadmap were
+   * simply gone. Nothing threw, so nothing caught it.
+   */
+  const statsGrid = content?.querySelector('.dashboard-results-grid');
+  if (!content || !statsGrid || content.querySelector('.dashboard-guide-merge')) return;
 
   const raw = readState();
   const level = farmingLevel(raw);
@@ -156,7 +166,7 @@ export function applyDashboardGuide() {
     <div class="dashboard-roadmap">${roadmapMarkup(level, current)}</div>
   `;
 
-  hero.insertAdjacentElement('afterend', section);
+  statsGrid.insertAdjacentElement('afterend', section);
   bindJumpButtons(section);
 }
 
