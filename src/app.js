@@ -73,6 +73,7 @@ const NAV = [
   ['shards', 'Shards'],
   ['buffs', 'Effects'],
   ['pests', 'Pests'],
+  ['qol', 'QoL'],
   ['guide', 'Guide 0-60'],
   ['focus', 'Focus on next'],
   ['planner', 'Upgrade Planner'],
@@ -811,6 +812,11 @@ function genericSectionPage(section, kicker, title, text) {
     <div class="${gridClass}">${items.map(x=>card(x)).join('') || '<div class="empty">No matches.</div>'}</div>`;
 }
 
+function qolPage() {
+  return `${pageHeader('QoL', 'Quality of Life', 'Convenience, farm-building and setup tools live here. They are tracked separately from Farming Fortune and profit because their value is saved setup time and easier operation rather than a comparable stat gain.')}
+    <div class="qol-list"><div class="empty">Loading QoL items…</div></div>`;
+}
+
 function focusNextPage() {
   return `${pageHeader('Focus', 'Good to focus on next', 'Earned progression is separated from coin-cost upgrades. Farming420 estimates one next-step session with a fixed planning average and shows the calculated Fortune/Overbloom value beside it.')}
     <div class="focus-next-list"><div class="empty">Calculating focus suggestions…</div></div>`;
@@ -1359,6 +1365,7 @@ function render({ preserveScroll = true } = {}) {
     case 'shards': content = genericSectionPage('shards','Attribute Shards','Shards','Track day/night, pest-conditional and general Farming Fortune shards separately.'); break;
     case 'buffs': content = effectsPage(); break;
     case 'pests': content = genericSectionPage('pests','Pests','Pest Setup','Pest-specific stats, spawn mechanics and loot logic stay separate from normal crop farming.'); break;
+    case 'qol': content = qolPage(); break;
     case 'guide': content = guidePage(); break;
     case 'setups': content = setupsPage(); break;
     case 'focus': content = focusNextPage(); break;
