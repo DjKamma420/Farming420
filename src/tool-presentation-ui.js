@@ -67,8 +67,10 @@ function renderTier(root,crop,state) {
     if(asset){ if(portrait.dataset.packAsset!==asset) portrait.dataset.packAsset=asset; }
     else if('packAsset' in portrait.dataset) delete portrait.dataset.packAsset;
   }
-  const status=card.querySelector('.sb-tool-tier');
-  if(status && status.textContent!==label) status.textContent=label;
+  const badge=card.querySelector('.sb-tool-tier');
+  if(badge){
+    if(badge.textContent!==label) badge.textContent=label;
+  }
 }
 /**
  * Every write below lands in the subtree the observer watches, so the writes
