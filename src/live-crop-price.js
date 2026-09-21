@@ -21,7 +21,7 @@
  * is what they actually receive, and `resolveUnitPrice` falls back to an NPC
  * sell price only where one exists.
  */
-import { cropModel } from './farming-mechanics-data.js';
+import { HARVEST_FEAST_RARE_CROPS, cropModel } from './farming-mechanics-data.js';
 import { PRICE_INTENT, PRICE_SOURCE, readCachedBazaarSnapshot, resolveUnitPrice } from './live-prices.js';
 
 export const CROP_PRICE_STATUS = Object.freeze({
@@ -101,6 +101,60 @@ export function liveCropUnitPrice(cropId, {
     coinsPerUnit: Number(quote.coinsPerUnit),
     reason: null,
     productId,
+    source: quote.source,
+    ageSeconds: Number.isFinite(stamp) ? Math.max(0, Math.round((nowMs - stamp) / 1000)) : null,
+  };
+}
+
+
+
+/**
+ * Live sell value for the selected crop's Harvest Feast material.
+ *
+ * The rare material id is source data from farming-mechanics-data.js. Grand
+ * Feast reuses the same crop material stream; Kernels/Seasoning are progression
+ * and are intentionally not assigned a fake coin value here.
+ */
+export function liveHarvestFeastMaterialPrice(cropId, {
+  snapshot = readCachedBazaarSnapshot(),
+  nowMs = Date.now(),
+} = {}) {
+  const material = HARVEST_FEAST_RARE_CROPS[cropId];
+  if (!material?.itemId) {
+    return {
+      status: CROP_PRICE_STATUS.NO_PRODUCT,
+      coinsPerUnit: null,
+      reason: 'this crop has no Harvest Feast material model',
+      productId: null,
+      source: null,
+      ageSeconds: null,
+    };
+  }
+
+  const quote = resolveUnitPrice({
+    bazaar: snapshot,
+    npc: null,
+    itemId: material.itemId,
+    intent: PRICE_INTENT.LIQUIDATE,
+    nowMs,
+  });
+  if (!quote?.complete || !(Number(quote.coinsPerUnit) > 0)) {
+    return {
+      status: CROP_PRICE_STATUS.NO_QUOTE,
+      coinsPerUnit: null,
+      reason: quote?.reason || 'no fresh Bazaar quote is cached for the Feast material',
+      productId: material.itemId,
+      source: null,
+      ageSeconds: null,
+    };
+  }
+
+  const stamp = Number(snapshot?.lastUpdatedMs);
+  return {
+    status: CROP_PRICE_STATUS.LIVE,
+    coinsPerUnit: Number(quote.coinsPerUnit),
+    reason: null,
+    productId: material.itemId,
     source: quote.source,
     ageSeconds: Number.isFinite(stamp) ? Math.max(0, Math.round((nowMs - stamp) / 1000)) : null,
   };
