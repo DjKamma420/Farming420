@@ -1,7 +1,7 @@
 import { CROPS, UPGRADES } from './data.js';
 import { STORAGE_KEY } from './config.js';
 import { ACTIVITY_MODE, activityLabel, activityModeForState } from './activity-mode.js';
-import { evaluateUpgrade, rankEvaluatedUpgrades } from './revenue-ranking.js';
+import { evaluateUpgrade, rankEvaluatedUpgrades, statDeltas } from './revenue-ranking.js';
 import { CROP_PRICE_STATUS, liveCropPriceNote, liveCropUnitPrice } from './live-crop-price.js';
 import { MEASURED_FEAST_KEY, MEASURED_FIELDS, describeMissing, measuredBaseline } from './measured-baseline.js';
 import { setTextIfChanged } from './set-text.js';
@@ -14,6 +14,9 @@ import {
   plannerProgressBucket,
   setPlannerEconomicsValue,
 } from './planner-activity-context.js';
+
+const PLANNER_BENCHMARK_COINS_PER_HOUR = INTERNET_FARMING_TIME_VALUE_COINS_PER_HOUR;
+const FOCUS_AVERAGE_STEP_HOURS = 1;
 
 const USEFUL_ITEMS = Object.freeze([
   {
@@ -202,6 +205,60 @@ function evaluatedRows(raw) {
           fortuneBase: context.fortuneBase,
           normalCropCoinsPerHour: Number(econ.normalCropCoinsPerHour || 0),
           rareCropCoinsPerHour: Number(econ.rareCropCoinsPerHour || 0),
+        }),
+        activityMode: context.mode,
+        costSource,
+      };
+    })
+    .filter(row => row.modeled && row.gain > 0));
+}
+
+/**
+ * A common income stream translates Fortune and Overbloom into comparable
+ * Coins/h without requiring a manual profit baseline.
+ *
+ * This is a planning benchmark, not a claim about the player's actual farm.
+ * Fortune gets a 20m/h normal-income stream and Overbloom gets a 20m/h
+ * rare-income stream; the active set's real stats still control the marginal
+ * percentage.
+ */
+function benchmarkStreams(item, itemGain) {
+  const deltas = statDeltas(item, itemGain);
+  if (deltas.modeled === 'overbloom') {
+    return { normalCropCoinsPerHour: 0, rareCropCoinsPerHour: PLANNER_BENCHMARK_COINS_PER_HOUR };
+  }
+  return { normalCropCoinsPerHour: PLANNER_BENCHMARK_COINS_PER_HOUR, rareCropCoinsPerHour: 0 };
+}
+
+function benchmarkEvaluatedRows(raw) {
+  const cropId = selectedCropId(raw);
+  const context = plannerActivityContext(raw, cropId);
+
+  return rankEvaluatedUpgrades(UPGRADES
+    .filter(item => item.status === 'ACTIVE')
+    .filter(item => plannerItemApplies(raw, item, cropId))
+    .filter(item => !maxed(raw, item))
+    .map(item => {
+      const itemGain = gain(raw, item);
+      const store = progressBucket(raw, item);
+      const costSource = resolveUpgradeCost(store, item.id);
+      const benchmark = benchmarkStreams(item, itemGain);
+      return {
+        item,
+        ...evaluateUpgrade({
+          item,
+          gain: itemGain,
+          costCoins: costSource.coins,
+          acquisitionMode: costSource.acquisitionMode,
+          directCoinCost: costSource.directCoinCost,
+          activeGrindHours: null,
+          timeValueCoinsPerHour: PLANNER_BENCHMARK_COINS_PER_HOUR,
+          timeValueSource: 'planner_benchmark',
+          currentFortune: context.currentFortune,
+          currentOverbloom: context.currentOverbloom,
+          fortuneBase: context.fortuneBase,
+          normalCropCoinsPerHour: benchmark.normalCropCoinsPerHour,
+          rareCropCoinsPerHour: benchmark.rareCropCoinsPerHour,
         }),
         activityMode: context.mode,
         costSource,
@@ -499,11 +556,83 @@ function rankingMarkup(rows, ready) {
       <div class="rank">${index + 1}</div>
       <div class="planner-main"><strong>${esc(row.item.name)}</strong><span>${esc(row.item.category)} · ${esc(row.modeled === 'overbloom' ? 'Overbloom' : 'Farming Fortune')}</span></div>
       <div class="planner-number"><strong>${valueLabel}</strong><span>${equivalent}</span></div>
-      <div class="planner-number"><strong>${marginalKnown ? `+${compactCoins(row.marginalCoinsHour)}/h` : '—'}</strong><span>${ready ? 'marginal profit' : 'enter baseline'}</span></div>
+      <div class="planner-number"><strong>${marginalKnown ? `+${compactCoins(row.marginalCoinsHour)}/h` : '—'}</strong><span>${ready ? 'benchmark Coins/h' : 'value unavailable'}</span></div>
       <div class="planner-number"><strong>${costLabel}</strong><span>${esc(costNote)}</span></div>
-      <div class="planner-number"><strong>${costKnown && row.payback !== null ? formatPayback(row.payback) : '—'}</strong><span>payback</span></div>
+      <div class="planner-number"><strong>${costKnown && row.payback !== null ? formatPayback(row.payback) : '—'}</strong><span>benchmark payback</span></div>
     </button>`;
   }).join('');
+}
+
+function benchmarkPanel(raw) {
+  const context = plannerActivityContext(raw, selectedCropId(raw));
+  return `<section class="revenue-panel revenue-benchmark">
+    <div class="revenue-panel-head">
+      <div><div class="eyebrow">${esc(activityLabel(context.mode))} calculated value</div><h2>Fortune → Coins</h2></div>
+      <span class="revenue-note">${compactCoins(PLANNER_BENCHMARK_COINS_PER_HOUR)} Coins/h standard stream</span>
+    </div>
+    <div class="benchmark-stat-grid">
+      <div><span>Effective Fortune</span><strong>${Number(context.currentFortune || 0).toLocaleString('en-US')}</strong></div>
+      <div><span>Overbloom</span><strong>${Number(context.currentOverbloom || 0).toLocaleString('en-US')}</strong></div>
+      <div><span>Fortune base</span><strong>${Number(context.fortuneBase || 100).toLocaleString('en-US')}</strong></div>
+    </div>
+    <p class="revenue-help">Marginal Coins/h is calculated from the active set's Fortune or Overbloom against the same ${compactCoins(PLANNER_BENCHMARK_COINS_PER_HOUR)}/h affected-income benchmark. No manual Coins/h baseline is required. This is a comparison value, not a claim about your farm's actual profit.</p>
+  </section>`;
+}
+
+function focusNextRows(raw) {
+  return benchmarkEvaluatedRows(raw)
+    .filter(row => row.acquisitionMode === 'EARNED')
+    .sort((a, b) => {
+      const aValue = Number.isFinite(a.marginalCoinsHour) ? a.marginalCoinsHour : -1;
+      const bValue = Number.isFinite(b.marginalCoinsHour) ? b.marginalCoinsHour : -1;
+      if (aValue !== bValue) return bValue - aValue;
+      const aRank = Number.isFinite(Number(a.item.workbookRank)) ? Number(a.item.workbookRank) : Number.MAX_SAFE_INTEGER;
+      const bRank = Number.isFinite(Number(b.item.workbookRank)) ? Number(b.item.workbookRank) : Number.MAX_SAFE_INTEGER;
+      return aRank - bRank || String(a.item.name || '').localeCompare(String(b.item.name || ''));
+    });
+}
+
+function focusNextMarkup(raw, rows) {
+  if (!rows.length) return '<div class="empty">No modeled earned next steps for the current crop and set.</div>';
+  return rows.slice(0, 30).map((row, index) => {
+    const max = Math.max(1, Number(row.item.max || 1));
+    const current = level(raw, row.item);
+    const remaining = Math.max(1, max - current);
+    const remainingHours = remaining * FOCUS_AVERAGE_STEP_HOURS;
+    const valueLabel = row.modeled === 'overbloom'
+      ? `+${row.gain.toLocaleString('en-US')} Overbloom`
+      : `+${row.gain.toLocaleString('en-US')} FF`;
+    const marginal = Number.isFinite(row.marginalCoinsHour)
+      ? `+${compactCoins(row.marginalCoinsHour)}/h`
+      : '—';
+    return `<button class="planner-row focus-next-row" data-focus-open="${esc(row.item.id)}">
+      <div class="rank">${index + 1}</div>
+      <div class="planner-main"><strong>${esc(row.item.name)}</strong><span>${esc(row.item.category)} · earned progression</span></div>
+      <div class="planner-number"><strong>${valueLabel}</strong><span>next step</span></div>
+      <div class="planner-number"><strong>${marginal}</strong><span>benchmark value</span></div>
+      <div class="planner-number"><strong>~${FOCUS_AVERAGE_STEP_HOURS.toFixed(1)} h</strong><span>next step · ~${remainingHours.toFixed(1)} h remaining</span></div>
+      <div class="planner-number"><strong>${current}/${max}</strong><span>current progress</span></div>
+    </button>`;
+  }).join('');
+}
+
+function enhanceFocusNext() {
+  const host = document.querySelector('.focus-next-list');
+  if (!host || host.dataset.focusNextReady === '1') return;
+  host.dataset.focusNextReady = '1';
+
+  const raw = load();
+  const mode = activityModeForState(raw);
+  const rows = focusNextRows(raw);
+  host.innerHTML = `
+    <section class="focus-next-assumption">
+      <div><div class="eyebrow">${esc(activityLabel(mode))} earned progression</div><h2>Next things worth focusing on</h2></div>
+      <p>Time is separate from upgrades: every next earned step uses a fixed ~${FOCUS_AVERAGE_STEP_HOURS.toFixed(1)} h planning average. It is a scheduling assumption, not an asserted in-game completion time.</p>
+      <p>Value is calculated from the active Fortune/Overbloom against the same ${compactCoins(PLANNER_BENCHMARK_COINS_PER_HOUR)}/h standard stream used by Upgrade Planner.</p>
+    </section>
+    <div class="focus-next-results">${focusNextMarkup(raw, rows)}</div>`;
+
+  host.querySelectorAll('[data-focus-open]').forEach(button => button.addEventListener('click', () => openItem(button.dataset.focusOpen)));
 }
 
 function enhancePlanner() {
@@ -514,17 +643,15 @@ function enhancePlanner() {
 
   const raw = load();
   const mode = activityModeForState(raw);
-  const econ = economics(raw);
-  const ready = Number(econ.normalCropCoinsPerHour || 0) > 0 || Number(econ.rareCropCoinsPerHour || 0) > 0;
-  const rows = evaluatedRows(raw);
+  const ready = true;
+  const rows = benchmarkEvaluatedRows(raw).filter(row => row.acquisitionMode !== 'EARNED');
 
   original.classList.add('planner-v1-source');
   const panel = document.createElement('div');
   panel.className = 'revenue-planner-v2';
-  panel.innerHTML = `${economicsPanel(raw)}
-    ${earnedAssumptionsPanel(raw)}
+  panel.innerHTML = `${benchmarkPanel(raw)}
     ${usefulItemsPanel(raw)}
-    <div class="section-row revenue-ranking-head"><div><h2>${ready ? `Best value now · ${esc(activityLabel(mode))}` : `Best value per Coin · ${esc(activityLabel(mode))}`}</h2><p>${ready ? 'Resolved BUYABLE and EARNED costs are ordered by shortest payback inside the active set; upgrades from the other activity are excluded.' : 'BUYABLE costs use recorded/researched Coins. EARNED time is converted at this set’s baseline or the 20m/h fallback; empty grind time remains unknown.'}</p></div></div>
+    <div class="section-row revenue-ranking-head"><div><h2>Best upgrade value · ${esc(activityLabel(mode))}</h2><p>Coin-cost and unpriced upgrades stay here. Earned progression is excluded and appears under Focus on next. Marginal value and payback use the common ${compactCoins(PLANNER_BENCHMARK_COINS_PER_HOUR)}/h affected-income benchmark.</p></div></div>
     <div class="planner-list revenue-list">${rankingMarkup(rows, ready)}</div>`;
   original.before(panel);
 
@@ -619,6 +746,7 @@ function enhancePlanner() {
 
 function apply() {
   enhancePlanner();
+  enhanceFocusNext();
 }
 
 function boot() {

@@ -74,6 +74,7 @@ const NAV = [
   ['buffs', 'Effects'],
   ['pests', 'Pests'],
   ['guide', 'Guide 0-60'],
+  ['focus', 'Focus on next'],
   ['planner', 'Upgrade Planner'],
 ];
 
@@ -810,9 +811,14 @@ function genericSectionPage(section, kicker, title, text) {
     <div class="${gridClass}">${items.map(x=>card(x)).join('') || '<div class="empty">No matches.</div>'}</div>`;
 }
 
+function focusNextPage() {
+  return `${pageHeader('Focus', 'Good to focus on next', 'Earned progression is separated from coin-cost upgrades. Farming420 estimates one next-step session with a fixed planning average and shows the calculated Fortune/Overbloom value beside it.')}
+    <div class="focus-next-list"><div class="empty">Calculating focus suggestions…</div></div>`;
+}
+
 function plannerPage() {
   const candidates = plannerCandidates().slice(0,20);
-  return `${pageHeader('Planner', 'What should you do next?', 'The current prototype ranks marginal gain at your present Fortune level. The target system will rank profit, payback and unlock paths.')}
+  return `${pageHeader('Planner', 'Upgrades', 'Coin-cost upgrades stay here. Earned progression and time-based goals live in Focus on next, so buying decisions are not mixed with grind priorities.')}
     <div class="planner-context">
       <div><span>Crop</span><strong>${esc(crop().name)}</strong></div>
       <div><span>Global FF</span><strong>${Number(state.profile.globalFortune||0)}</strong></div>
@@ -1355,6 +1361,7 @@ function render({ preserveScroll = true } = {}) {
     case 'pests': content = genericSectionPage('pests','Pests','Pest Setup','Pest-specific stats, spawn mechanics and loot logic stay separate from normal crop farming.'); break;
     case 'guide': content = guidePage(); break;
     case 'setups': content = setupsPage(); break;
+    case 'focus': content = focusNextPage(); break;
     case 'planner': content = plannerPage(); break;
     default: content = dashboard();
   }
