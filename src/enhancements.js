@@ -9,10 +9,10 @@
  */
 const GROUPS = [
   ['Overview', ['dashboard']],
-  ['Setup', ['crops', 'tools', 'accessories', 'setups', 'gear', 'pets', 'buffs']],
+  ['Profile', ['crops', 'tools', 'accessories', 'setups', 'gear', 'pets', 'buffs']],
   ['Advanced', ['pests', 'chips', 'shards']],
   ['Planning', ['focus', 'planner']],
-  ['Help', ['info', 'qol']],
+  ['Guides', ['info', 'qol']],
   ['System', ['settings']],
 ];
 
