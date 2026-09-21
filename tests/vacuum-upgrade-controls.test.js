@@ -52,5 +52,5 @@ test('exact Vacuum sections anchor around reforge and upgrades without observer 
   assert.match(exact, /insertAdjacentElement\('beforebegin', progression\)/);
   assert.match(exact, /querySelector\('\[data-vacuum-section="upgrades"\]'\)/);
   assert.match(exact, /insertAdjacentElement\('afterend', gemstones\)/);
-  assert.match(exact, /oldProgression\?\.dataset\.signature === signature && oldGemstones\?\.dataset\.signature === signature/);
+  assert.match(exact, /oldProgression\?\.dataset\.signature === signature[\s\S]*oldEnchantments\?\.dataset\.signature === signature[\s\S]*oldGemstones\?\.dataset\.signature === signature/);
 });
