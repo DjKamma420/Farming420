@@ -31,9 +31,9 @@ test('physical progression cards use the official resolved item tier and non-ite
   assert.match(uiSource, /attributeFilter:\s*\['data-physical-item-id'\]/);
 });
 
-test('rarity label writes are idempotent inside the observed app subtree', () => {
-  assert.match(uiSource, /setTextIfChanged\(rarityLabel, label\)/);
-  assert.doesNotMatch(uiSource, /rarityLabel\.textContent\s*=/);
+test('rarity presentation does not depend on removed item identity labels', () => {
+  assert.doesNotMatch(uiSource, /\.item-rarity/);
+  assert.doesNotMatch(uiSource, /setTextIfChanged/);
 });
 
 test('rarity backgrounds do not depend on some other editor loading the item catalog first', () => {
