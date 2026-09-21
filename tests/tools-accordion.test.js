@@ -96,7 +96,7 @@ test('tapping the active tool toggles its docked editor closed and open', () => 
   assert.match(src, /let collapsedToolKey = null/);
   assert.match(
     src,
-    /if \(clickedKey === selectedKey\) \{[\s\S]*collapsedToolKey = collapsedToolKey === selectedKey \? null : selectedKey;[\s\S]*dockToolEditor\(\);/,
+    /if \(activeToolSurface === 'tool' && clickedKey === selectedKey\) \{[\s\S]*collapsedToolKey = collapsedToolKey === selectedKey \? null : selectedKey;[\s\S]*dockToolEditor\(\);/,
   );
   assert.match(
     css,
@@ -135,4 +135,26 @@ test('rarity styling cannot redraw a seam between an expanded tool and its edito
     css,
     /\.sb-tool-grid > \.sb-docked-editor\.rarity-surface \{[^}]*box-shadow:\s*0 10px 24px rgba\(0, 0, 0, \.18\)/s,
   );
+});
+
+
+test('Vacuum is a first-class card in the same Tools accordion', () => {
+  const src = read('skyblock-redesign.js');
+  assert.match(src, /data-sb-vacuum="1"/);
+  assert.match(src, /<strong>Pest Vacuum<\/strong>/);
+  assert.match(src, /let activeToolSurface = 'tool'/);
+  assert.match(src, /function handleVacuumCardClick\(\)/);
+  assert.match(src, /activeToolSurface = 'vacuum'/);
+});
+
+test('Vacuum and crop tools share the same docked-editor behavior', () => {
+  const src = read('skyblock-redesign.js');
+  const body = src.slice(src.indexOf('function dockToolEditor()'));
+  const fn = body.slice(0, body.indexOf('\n}\n') + 3);
+  assert.match(fn, /const vacuumEditor = document\.querySelector\('\[data-vacuum-panel\]'\)/);
+  assert.match(fn, /const editor = vacuumSelected \? vacuumEditor : toolEditor/);
+  assert.match(fn, /const inactiveEditor = vacuumSelected \? toolEditor : vacuumEditor/);
+  assert.match(fn, /vacuumSelected \? vacuumCollapsed : collapsedToolKey === selectedKey/);
+  assert.match(fn, /selected\.insertAdjacentElement\('afterend', editor\)/);
+  assert.doesNotMatch(fn, /cloneNode/);
 });
