@@ -15,6 +15,91 @@ import {
   setPlannerEconomicsValue,
 } from './planner-activity-context.js';
 
+const USEFUL_ITEMS = Object.freeze([
+  {
+    id: 'squeaky-mousemat',
+    name: 'Squeaky Mousemat',
+    group: 'Farming QoL',
+    purpose: 'Save and snap exact yaw/pitch so a farm stays aligned without manual camera correction.',
+  },
+  {
+    id: 'sundial',
+    name: 'Sundial',
+    group: 'Farming QoL',
+    purpose: 'Unlock per-crop Speed settings at the Garden Desk so speed control is no longer tied to Rancher\'s Boots.',
+  },
+  {
+    id: 'builders-wand',
+    name: "Builder's Wand",
+    group: 'Farm building',
+    purpose: 'Place large connected surfaces faster when building or rebuilding custom farms.',
+  },
+  {
+    id: 'builders-ruler',
+    name: "Builder's Ruler",
+    group: 'Farm building',
+    purpose: 'Place or remove long lines of blocks for fast lanes, borders and farm structure work.',
+  },
+  {
+    id: 'infinidirt-wand',
+    name: 'InfiniDirt™ Wand',
+    group: 'Farm building',
+    purpose: 'Supply dirt on demand and feed building tools without repeatedly restocking blocks.',
+  },
+  {
+    id: 'basket-of-seeds',
+    name: 'Basket of Seeds',
+    group: 'Farm building',
+    purpose: 'Plant long crop rows quickly after the farm structure is finished.',
+  },
+  {
+    id: 'block-zapper',
+    name: 'Block Zapper',
+    group: 'Farm building',
+    purpose: 'Remove connected player-placed blocks quickly when correcting or redesigning a farm.',
+  },
+  {
+    id: 'prismapump',
+    name: 'Prismapump',
+    group: 'Farm building',
+    purpose: 'Lay out water channels faster for crop farms that need irrigation.',
+  },
+]);
+
+function usefulItemState(raw) {
+  raw.profile ||= {};
+  raw.profile.usefulItems ||= {};
+  return raw.profile.usefulItems;
+}
+
+function usefulItemsPanel(raw) {
+  const owned = usefulItemState(raw);
+  const ownedCount = USEFUL_ITEMS.filter(item => owned[item.id] === true).length;
+  const groups = [...new Set(USEFUL_ITEMS.map(item => item.group))];
+
+  return `<section class="revenue-panel useful-items-panel">
+    <div class="revenue-panel-head">
+      <div><div class="eyebrow">Quality of life</div><h2>Useful items</h2></div>
+      <span class="revenue-note">${ownedCount}/${USEFUL_ITEMS.length} marked owned</span>
+    </div>
+    <p class="revenue-help useful-items-help">These are convenience and farm-building upgrades. They stay outside the Farming Fortune / profit ranking because their value is time saved and easier farm operation rather than a clean FF number.</p>
+    <div class="useful-item-groups">
+      ${groups.map(group => `<section class="useful-item-group">
+        <h3>${esc(group)}</h3>
+        <div class="useful-item-list">
+          ${USEFUL_ITEMS.filter(item => item.group === group).map(item => {
+            const checked = owned[item.id] === true;
+            return `<label class="useful-item-row ${checked ? 'owned' : ''}">
+              <input type="checkbox" data-useful-item="${esc(item.id)}" ${checked ? 'checked' : ''}>
+              <span><strong>${esc(item.name)}</strong><small>${esc(item.purpose)}</small></span>
+            </label>`;
+          }).join('')}
+        </div>
+      </section>`).join('')}
+    </div>
+  </section>`;
+}
+
 function esc(value = '') {
   return String(value).replace(/[&<>'"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#039;', '"':'&quot;' }[c]));
 }
@@ -438,6 +523,7 @@ function enhancePlanner() {
   panel.className = 'revenue-planner-v2';
   panel.innerHTML = `${economicsPanel(raw)}
     ${earnedAssumptionsPanel(raw)}
+    ${usefulItemsPanel(raw)}
     <div class="section-row revenue-ranking-head"><div><h2>${ready ? `Best value now · ${esc(activityLabel(mode))}` : `Best value per Coin · ${esc(activityLabel(mode))}`}</h2><p>${ready ? 'Resolved BUYABLE and EARNED costs are ordered by shortest payback inside the active set; upgrades from the other activity are excluded.' : 'BUYABLE costs use recorded/researched Coins. EARNED time is converted at this set’s baseline or the 20m/h fallback; empty grind time remains unknown.'}</p></div></div>
     <div class="planner-list revenue-list">${rankingMarkup(rows, ready)}</div>`;
   original.before(panel);
@@ -447,6 +533,14 @@ function enhancePlanner() {
     const cropId = selectedCropId(next);
     const nextMode = activityModeForState(next);
     setPlannerEconomicsValue(next, cropId, nextMode, event.target.dataset.revenueInput, event.target.value);
+    save(next);
+    window.dispatchEvent(new Event('farming420:state-changed'));
+  }));
+
+  panel.querySelectorAll('[data-useful-item]').forEach(input => input.addEventListener('change', event => {
+    const next = load();
+    const usefulItems = usefulItemState(next);
+    usefulItems[event.target.dataset.usefulItem] = event.target.checked;
     save(next);
     window.dispatchEvent(new Event('farming420:state-changed'));
   }));
