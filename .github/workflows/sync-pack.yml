@@ -12,6 +12,14 @@ name: Sync official SkyBlock pack
 
 on:
   workflow_dispatch:
+  # A change to the sync machinery should exercise the real network path once,
+  # not wait for the next weekly cron. The generated pack branch still opens a
+  # reviewable PR and does not push assets straight into the triggering branch.
+  push:
+    paths:
+      - ".github/workflows/sync-pack.yml"
+      - "scripts/sync-hypixel-pack.py"
+      - "scripts/audit-farming-models.js"
   schedule:
     # Weekly. The pack changes with game updates; a run that finds the same
     # SHA-1 downloads nothing and opens nothing unless the Farming model audit
