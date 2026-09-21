@@ -193,16 +193,19 @@ function enhanceTools(root) {
   const head = content?.querySelector('.page-head');
   if (head && !content.querySelector('.workspace-context')) head.insertAdjacentHTML('afterend', `<div class="workspace-context">${toolSelector(state)}</div>`);
   const sections = [...editor.querySelectorAll('.item-editor-section')];
-  const reforge = sections.find(s => s.querySelector('h3')?.textContent.trim() === 'Reforge');
+  const reforge = editor.querySelector('[data-tool-section="reforge"]')
+    || sections.find(s => s.querySelector('h3')?.textContent.trim() === 'Reforge');
   if (reforge) {
     reforge.innerHTML = catalogItem?.cannotReforge === true
       ? `<div class="workspace-section-head"><div><h3>Reforge</h3><p>${esc(catalogItem.name)} is explicitly marked cannot_reforge by Hypixel.</p></div></div>`
       : `<div class="workspace-section-head"><div><h3>Reforge</h3><p>Exactly one farming-tool reforge can be active${catalogItem ? ` on ${esc(catalogItem.name)}` : ''}.</p></div></div><div class="workspace-choice-list">${reforgeRows(active)}</div>${recommendationBox(crop, active)}`;
   }
-  const upgrades = sections.find(s => s.querySelector('h3')?.textContent.trim() === 'Tool upgrades');
+  const upgrades = editor.querySelector('[data-tool-section="upgrades"]')
+    || sections.find(s => s.querySelector('h3')?.textContent.trim() === 'Tool upgrades');
   const canRecomb = !catalogItem || canRecombobulateItem('tool', catalogItem);
   if (upgrades) upgrades.innerHTML = `<div class="workspace-section-head"><div><h3>Tool progression</h3><p>${catalogItem ? `Exact item: ${esc(catalogItem.name)} (${esc(catalogItem.id)}).` : 'Official item data is loading; verified offline rules are used temporarily.'}</p></div></div><div class="workspace-level-list">${tierRow(bucket)}${levelRow('Farming Tool level','Tool counter level.',TOOL_LEVEL_ID,entryLevel(bucket,TOOL_LEVEL_ID),50)}${levelRow('Overclocker 3000','Applications extending the tool-level cap.',OVERCLOCKER_ID,entryLevel(bucket,OVERCLOCKER_ID),10)}${levelRow('Farming for Dummies','Book applications on this tool.',DUMMIES_ID,entryLevel(bucket,DUMMIES_ID),5)}${rarityRow(bucket, catalogItem, entryEnabled(bucket, RECOMB_ID), canRecomb, highestChainTier(bucket, TOOL_TIER_CHAIN))}${canRecomb ? `<label class="workspace-level-row workspace-toggle-row"><div><strong>Recombobulator 3000</strong><small>Current item state.</small></div><input type="checkbox" data-tool-recomb ${entryEnabled(bucket, RECOMB_ID)?'checked':''}></label>` : ''}</div>`;
-  const finish = sections.find(s => /Gemstone|rarity/i.test(s.querySelector('h3')?.textContent || ''));
+  const finish = editor.querySelector('[data-tool-section="finish"]')
+    || sections.find(s => /Gemstone|rarity/i.test(s.querySelector('h3')?.textContent || ''));
   if (finish) finish.innerHTML = gemstoneSection(bucket, catalogItem);
   content?.querySelectorAll('.workspace-secondary-analysis').forEach(node => node.remove());
   const scored = [...(content?.querySelectorAll('.section-row') || [])].find(row => row.querySelector('h2')?.textContent.includes('Every scored tool entry'));
