@@ -492,6 +492,13 @@ function dashboard() {
   const stats = computeStatTotals(state, selectedCrop.id, mode);
   const marker = count => count ? ' ~' : '';
   const number = value => Number(value || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
+  const sourceNote = (values, axis) => {
+    const sources = Number(values.sourceCount?.[axis] || 0);
+    const unresolved = values.incomplete?.[axis]?.length || 0;
+    if (!sources) return 'No configured sources in this context';
+    if (unresolved) return `${sources} configured source${sources === 1 ? '' : 's'} · ${unresolved} unresolved`;
+    return `${sources} configured source${sources === 1 ? '' : 's'} · fully modeled`;
+  };
   const cropRows = CROPS.map(entry => {
     const values = computeStatTotals(state, entry.id, mode);
     const totalFortune = values.globalFortune + values.cropFortune;
@@ -500,13 +507,21 @@ function dashboard() {
     const incomplete = totalIncomplete
       + values.incomplete.overbloom.length
       + values.incomplete.bonusPestChance.length;
+    const configured = values.sourceCount.globalFortune
+      + values.sourceCount.cropFortune
+      + values.sourceCount.overbloom
+      + values.sourceCount.bonusPestChance;
     return `
       <article class="stat-card dashboard-crop-result ${entry.id === selectedCrop.id ? 'selected' : ''}">
         <span>${esc(entry.name)}</span>
         <strong>${number(totalFortune)} FF${marker(totalIncomplete)}</strong>
         <small>Global FF ${number(values.globalFortune)} · Crop FF ${number(values.cropFortune)}</small>
         <small>Overbloom ${number(values.overbloom)}${marker(values.incomplete.overbloom.length)} · BPC ${number(values.bonusPestChance)}${marker(values.incomplete.bonusPestChance.length)}</small>
-        ${incomplete ? '<small>~ contains sources that are not fully modeled yet</small>' : '<small>fully calculated from known sources</small>'}
+        ${incomplete
+          ? '<small>~ contains sources that are not fully modeled yet</small>'
+          : configured
+            ? '<small>fully calculated from configured sources</small>'
+            : '<small>No configured sources in this context</small>'}
       </article>`;
   }).join('');
 
@@ -517,21 +532,25 @@ function dashboard() {
         <span>Global Farming Fortune</span>
         <strong>${number(stats.globalFortune)}${marker(stats.incomplete.globalFortune.length)}</strong>
         <small>Account-wide Fortune before crop-specific Fortune is added</small>
+        <small>${sourceNote(stats, 'globalFortune')}</small>
       </article>
       <article class="stat-card">
         <span>Pest Fortune</span>
         <strong>${number(stats.pestFortune)}${marker(stats.incomplete.pestFortune.length)}</strong>
         <small>Pest/Vacuum Fortune in the active context</small>
+        <small>${sourceNote(stats, 'pestFortune')}</small>
       </article>
       <article class="stat-card">
         <span>Overbloom</span>
         <strong>${number(stats.overbloom)}${marker(stats.incomplete.overbloom.length)}</strong>
         <small>Calculated rare-crop multiplier stat</small>
+        <small>${sourceNote(stats, 'overbloom')}</small>
       </article>
       <article class="stat-card">
         <span>Bonus Pest Chance</span>
         <strong>${number(stats.bonusPestChance)}${marker(stats.incomplete.bonusPestChance.length)}</strong>
         <small>Calculated BPC for the active set</small>
+        <small>${sourceNote(stats, 'bonusPestChance')}</small>
       </article>
     </div>
 
