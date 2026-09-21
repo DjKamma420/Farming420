@@ -121,3 +121,25 @@ test('derived cache overwrites legacy manual global and crop end values', () => 
   assert.notEqual(state.profile.cropFortune.melon, 9999);
   assert.equal(state.profile.plannerEconomics.melon.overbloom, snapshot.overbloomByCrop.melon);
 });
+
+
+test('event-scoped sources only enter totals when their context is active', () => {
+  const state = baseState();
+  state.profile.levels.normal = 1;
+  state.profile.levels.feast = 2;
+  state.profile.levels.contest = 3;
+  const entries = [
+    { id: 'normal', metric: 'Crop Yield', section: 'account', modeScope: 'Any', cropScope: 'Any', status: 'ACTIVE', max: 1, stepGain: 10 },
+    { id: 'feast', metric: 'Crop Yield', section: 'buffs', modeScope: 'Harvest Feast', cropScope: 'Any', status: 'ACTIVE', max: 5, stepGain: 5 },
+    { id: 'contest', metric: 'Crop Yield', section: 'chips', modeScope: 'Jacob Contest', cropScope: 'Any', status: 'ACTIVE', max: 20, stepGain: 7 },
+  ];
+
+  const normal = computeTotalsFromEntries(state, entries, 'melon', 'farm');
+  assert.equal(normal.globalFortune, 10);
+
+  const feast = computeTotalsFromEntries(state, entries, 'melon', 'farm', 'Harvest Feast');
+  assert.equal(feast.globalFortune, 20);
+
+  const contest = computeTotalsFromEntries(state, entries, 'melon', 'farm', 'Jacob Contest');
+  assert.equal(contest.globalFortune, 31);
+});
