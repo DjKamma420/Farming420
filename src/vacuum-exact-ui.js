@@ -1,5 +1,7 @@
 import { STORAGE_KEY } from './config.js';
 import { loadItemCatalog, readCachedCatalog } from './item-catalog.js';
+import { enchantRowsFor, withEnchantLevel, withEnchantToggled } from './item-editor.js';
+import { VACUUM_BUG_BLENDER } from './vacuum-data-patches.js';
 import {
   GARDEN_VACUUM_ITEMS,
   availableOfficialGemstoneSlots,
@@ -46,6 +48,7 @@ function bucketOf(raw) {
   bucket.owned ||= {};
   bucket.costs ||= {};
   bucket.manualGain ||= {};
+  bucket.enchantments ||= {};
   return normalizeVacuumPhysicalState(bucket);
 }
 
@@ -86,6 +89,81 @@ function costText(slot) {
   const coins = officialGemstoneUnlockCoins(slot);
   if (coins) parts.push(`${coins.toLocaleString('en-US')} Coins`);
   return parts.join(' + ');
+}
+
+function toRoman(value) {
+  const numerals = [[10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']];
+  let rest = Math.max(0, Math.floor(Number(value) || 0));
+  if (!rest) return '0';
+  let out = '';
+  for (const [size, numeral] of numerals) {
+    while (rest >= size) { out += numeral; rest -= size; }
+  }
+  return out;
+}
+
+function vacuumEnchantLine(row) {
+  const minLevel = Math.max(1, Number(row.minLevel) || 1);
+  const levels = row.maxLevel
+    ? [...new Set([
+      ...Array.from({ length: Math.max(0, row.maxLevel - minLevel + 1) }, (_, index) => index + minLevel),
+      row.level,
+    ].filter(value => value > 0))].sort((a, b) => a - b)
+    : [...new Set([row.level, 1, 2, 3, 4, 5].filter(value => value > 0))].sort((a, b) => a - b);
+  const maximum = row.maxLevel
+    ? `max ${esc(toRoman(row.maxLevel))}${row.trueMaxLevel > row.maxLevel ? ` · special ${esc(toRoman(row.trueMaxLevel))}` : ''}`
+    : 'level unknown';
+
+  return `<div class="enchant-line enchant-${esc(row.state)} ${row.active ? 'on' : 'off'}" data-vacuum-ench-row="${esc(row.storageKey)}">
+    <label class="lever" title="${esc(`${row.label} on this Vacuum`)}">
+      <input type="checkbox" data-vacuum-ench-toggle="${esc(row.storageKey)}" ${row.active ? 'checked' : ''}>
+      <span class="lever-track" aria-hidden="true"></span>
+      <span class="sr-only">${esc(`${row.label} on this Vacuum`)}</span>
+    </label>
+    <span class="enchant-name">${esc(row.label)}${row.kind === 'ultimate' ? '<em class="enchant-tag">ultimate</em>' : ''}${row.known ? '' : '<em class="enchant-tag unknown">not verified</em>'}</span>
+    <select class="enchant-level" data-vacuum-ench-select="${esc(row.storageKey)}" data-vacuum-ench-max="${row.maxLevel || 0}" ${row.active ? '' : 'disabled'}>
+      ${levels.map(level => `<option value="${level}" ${level === row.level ? 'selected' : ''}>${esc(toRoman(level))}</option>`).join('')}
+    </select>
+    <span class="enchant-max">${maximum}</span>
+  </div>`;
+}
+
+function enchantmentsForBucket(bucket) {
+  const enchantments = { ...(bucket.enchantments || {}) };
+  const modeledBugBlender = Math.max(0, Math.min(
+    VACUUM_BUG_BLENDER.max,
+    Number(bucket.levels?.[VACUUM_BUG_BLENDER.id] || 0),
+  ));
+  if (modeledBugBlender > Number(enchantments.bug_blender || 0)) {
+    enchantments.bug_blender = modeledBugBlender;
+  }
+  return enchantments;
+}
+
+function persistVacuumEnchantments(bucket, enchantments) {
+  bucket.enchantments = { ...(enchantments || {}) };
+  const bugBlenderLevel = Math.max(0, Math.min(
+    VACUUM_BUG_BLENDER.max,
+    Number(bucket.enchantments.bug_blender || 0),
+  ));
+  if (bugBlenderLevel > 0) {
+    bucket.levels[VACUUM_BUG_BLENDER.id] = bugBlenderLevel;
+    bucket.owned[VACUUM_BUG_BLENDER.id] = true;
+  } else {
+    delete bucket.levels[VACUUM_BUG_BLENDER.id];
+    delete bucket.owned[VACUUM_BUG_BLENDER.id];
+  }
+}
+
+function enchantmentsHtml(bucket) {
+  const item = { enchantments: enchantmentsForBucket(bucket) };
+  const rows = enchantRowsFor('vacuum', item);
+  if (!rows.length) return '';
+
+  return `<section class="item-editor-section" data-vacuum-enchantments="1">
+    <div class="section-row"><div><h3>Enchantments</h3><p>Everything that can sit on this Vacuum. Flip the ones you have, then pick the level.</p></div></div>
+    <div class="enchant-grid">${rows.map(vacuumEnchantLine).join('')}</div>
+  </section>`;
 }
 
 function progressionHtml(bucket) {
@@ -149,6 +227,21 @@ function bind(section) {
   section.querySelector('[data-vacuum-recomb]')?.addEventListener('change', event => write(bucket => {
     bucket.recombobulated = event.target.checked === true;
   }));
+  section.querySelectorAll('[data-vacuum-ench-toggle]').forEach(input => input.addEventListener('change', event => write(bucket => {
+    const item = { enchantments: enchantmentsForBucket(bucket) };
+    persistVacuumEnchantments(
+      bucket,
+      withEnchantToggled(item, input.dataset.vacuumEnchToggle, event.target.checked),
+    );
+  })));
+  section.querySelectorAll('[data-vacuum-ench-select]').forEach(select => select.addEventListener('change', event => write(bucket => {
+    const item = { enchantments: enchantmentsForBucket(bucket) };
+    const max = Number(select.dataset.vacuumEnchMax || 0) || null;
+    persistVacuumEnchantments(
+      bucket,
+      withEnchantLevel(item, select.dataset.vacuumEnchSelect, event.target.value, max),
+    );
+  })));
   section.querySelectorAll('[data-vacuum-gem-unlocked]').forEach(input => input.addEventListener('change', event => write(bucket => {
     const item = catalogItem(bucket);
     const count = socketCount(bucket, item);
@@ -175,17 +268,26 @@ export function applyExactVacuumUI() {
     const raw = load();
     const bucket = bucketOf(raw);
     const oldProgression = panel.querySelector('[data-vacuum-exact]');
+    const oldEnchantments = panel.querySelector('[data-vacuum-enchantments]');
     const oldGemstones = panel.querySelector('[data-vacuum-gemstones]');
-    const signature = `${bucket.skyblockId || ''}|${bucket.recombobulated ? 1 : 0}|${JSON.stringify(bucket.gemSlots || [])}|${readCachedCatalog()?.fetchedAt || ''}`;
-    if (oldProgression?.dataset.signature === signature && oldGemstones?.dataset.signature === signature) return;
+    const signature = `${bucket.skyblockId || ''}|${bucket.recombobulated ? 1 : 0}|${JSON.stringify(enchantmentsForBucket(bucket))}|${JSON.stringify(bucket.gemSlots || [])}|${readCachedCatalog()?.fetchedAt || ''}`;
+    if (oldProgression?.dataset.signature === signature
+      && oldEnchantments?.dataset.signature === signature
+      && oldGemstones?.dataset.signature === signature) return;
 
     oldProgression?.remove();
+    oldEnchantments?.remove();
     oldGemstones?.remove();
 
     const progressionWrapper = document.createElement('div');
     progressionWrapper.innerHTML = progressionHtml(bucket);
     const progression = progressionWrapper.firstElementChild;
     progression.dataset.signature = signature;
+
+    const enchantmentWrapper = document.createElement('div');
+    enchantmentWrapper.innerHTML = enchantmentsHtml(bucket);
+    const enchantments = enchantmentWrapper.firstElementChild;
+    if (enchantments) enchantments.dataset.signature = signature;
 
     const gemstoneWrapper = document.createElement('div');
     gemstoneWrapper.innerHTML = gemstonesHtml(bucket);
@@ -195,6 +297,11 @@ export function applyExactVacuumUI() {
     const reforge = panel.querySelector('[data-vacuum-section="reforge"]');
     if (reforge) reforge.insertAdjacentElement('beforebegin', progression);
     else panel.prepend(progression);
+
+    if (enchantments) {
+      if (reforge) reforge.insertAdjacentElement('afterend', enchantments);
+      else progression.insertAdjacentElement('afterend', enchantments);
+    }
 
     const upgrades = panel.querySelector('[data-vacuum-section="upgrades"]');
     if (upgrades) upgrades.insertAdjacentElement('afterend', gemstones);
@@ -219,7 +326,7 @@ function mutationNeedsApply(mutations) {
   return mutations.some(mutation => {
     if (mutation.target instanceof Element && mutation.target.matches('[data-vacuum-panel]')) {
       return [...mutation.addedNodes].some(node => !(node instanceof Element)
-        || !node.matches?.('[data-vacuum-exact], [data-vacuum-gemstones]'));
+        || !node.matches?.('[data-vacuum-exact], [data-vacuum-enchantments], [data-vacuum-gemstones]'));
     }
     return [...mutation.addedNodes].some(node => node instanceof Element && (
       node.matches?.('[data-vacuum-panel]') || node.querySelector?.('[data-vacuum-panel]')
