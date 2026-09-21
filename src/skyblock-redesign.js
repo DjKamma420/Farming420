@@ -264,6 +264,7 @@ function storeReforge(reforgeId) {
     bucket.owned[scoredId] = true;
   }
   writeState(state);
+  window.dispatchEvent(new Event('farming420:state-changed'));
 }
 
 function decorateNavigation() {
