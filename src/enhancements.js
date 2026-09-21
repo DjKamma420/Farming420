@@ -8,11 +8,11 @@
  * left behind here.
  */
 const GROUPS = [
-  ['Progress', ['dashboard', 'accessories', 'crops', 'tools']],
-  ['Loadout', ['setups', 'gear', 'pets', 'buffs']],
-  ['Specialized', ['chips', 'shards', 'pests', 'qol']],
-  ['Analysis', ['focus', 'planner']],
-  ['Getting started', ['info']],
+  ['Overview', ['dashboard']],
+  ['Setup', ['crops', 'tools', 'accessories', 'setups', 'gear', 'pets', 'buffs']],
+  ['Advanced', ['pests', 'chips', 'shards']],
+  ['Planning', ['focus', 'planner']],
+  ['Help', ['info', 'qol']],
   ['System', ['settings']],
 ];
 
