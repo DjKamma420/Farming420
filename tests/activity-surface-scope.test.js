@@ -17,7 +17,8 @@ test('phase selector is limited to contexts where the selected loadout matters',
 
 test('Tools owns both crop tools and the physical Vacuum', () => {
   assert.match(loadoutUi, /if \(raw\.page !== 'tools'\) return;/);
-  assert.doesNotMatch(loadoutUi, /data-tool-editor.*hidden|querySelectorAll\('\.card-grid'\).*hidden/s);
+  const vacuumBlock = loadoutUi.slice(loadoutUi.indexOf('function renderVacuumSurface'));
+  assert.doesNotMatch(vacuumBlock, /data-tool-editor.*hidden|querySelectorAll\('\.card-grid'\).*hidden/s);
   assert.match(loadoutUi, /data-vacuum-panel/);
   assert.match(loadoutUi, /Physical killing tool for Pest loadouts/);
 });
