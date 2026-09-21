@@ -79,6 +79,13 @@ test('the unit is one of the three states, never invented', () => {
   }
 });
 
+test('pet switches are equipment decisions, not earned progression', () => {
+  const pet = UPGRADE_COSTS['pet-switch-to-best-farming-pet'];
+  assert.ok(pet);
+  assert.equal(pet.unit, null);
+  assert.match(pet.reason, /no price research/i);
+});
+
 test('the accessors answer honestly', () => {
   const priced = Object.entries(UPGRADE_COSTS)
     .find(([, record]) => typeof record.coins === 'number' && record.coins > 0);
