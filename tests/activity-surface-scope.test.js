@@ -15,20 +15,20 @@ test('phase selector is limited to contexts where the selected loadout matters',
   }
 });
 
-test('Tools remains the shared crop-tool workspace even when Killing is selected', () => {
-  assert.doesNotMatch(loadoutUi, /raw\.page !== 'tools'/);
+test('Tools owns both crop tools and the physical Vacuum', () => {
+  assert.match(loadoutUi, /if \(raw\.page !== 'tools'\) return;/);
   assert.doesNotMatch(loadoutUi, /data-tool-editor.*hidden|querySelectorAll\('\.card-grid'\).*hidden/s);
-  assert.match(loadoutUi, /if \(raw\.page !== 'pests'\) return;/);
-  assert.match(loadoutUi, /does not replace the shared crop Tool on the Tools page/);
+  assert.match(loadoutUi, /data-vacuum-panel/);
+  assert.match(loadoutUi, /Physical killing tool for Pest loadouts/);
 });
 
-test('Pests workspace combines Spawning and Killing totals and owns the Vacuum', () => {
-  assert.match(loadoutUi, /statsForMode\(raw, cropId, ACTIVITY_MODE\.PEST_SPAWN\)/);
+test('Vacuum totals are calculated in Killing context while configuration stays under Tools', () => {
   assert.match(loadoutUi, /statsForMode\(raw, cropId, ACTIVITY_MODE\.PEST_KILL\)/);
+  assert.doesNotMatch(loadoutUi, /statsForMode\(raw, cropId, ACTIVITY_MODE\.PEST_SPAWN\)/);
   assert.match(loadoutUi, /setActivityModeOnState\(scoped, mode\)/);
   assert.match(loadoutUi, /applySnapshotToProgress\(scoped,/);
   assert.match(loadoutUi, /const totalPestFortune = Number\(killStats\.globalFortune \|\| 0\) \+ Number\(killStats\.pestFortune \|\| 0\)/);
-  for (const label of ['Bonus Pest Chance', 'Total Pest Fortune', 'Pest Overbloom', 'Vacuum · Killing only']) {
+  for (const label of ['Total Pest Fortune', 'Pest Overbloom', 'Vacuum · Pest killing tool']) {
     assert.match(loadoutUi, new RegExp(label));
   }
 });
