@@ -163,6 +163,23 @@ test('Vacuum and crop tools share the same docked-editor behavior', () => {
 });
 
 
+test('Vacuum reforge picker uses the same compact cards as crop tools', () => {
+  const src = read('skyblock-redesign.js');
+  const start = src.indexOf('function vacuumReforgePanel()');
+  const end = src.indexOf('\nfunction toolPortrait()', start);
+  assert.ok(start >= 0 && end > start, 'vacuumReforgePanel block not found');
+  const fn = src.slice(start, end);
+  assert.match(fn, /data-vacuum-section="reforge"/);
+  assert.match(fn, /className = 'sb-reforge-panel item-editor-section'/);
+  assert.match(fn, /class="sb-reforge-grid"/);
+  assert.match(fn, /class="sb-reforge-card/);
+  assert.match(fn, /class="sb-reforge-art"/);
+  assert.match(fn, /class="sb-reforge-copy"/);
+  assert.match(fn, /class="sb-state-dot"/);
+  assert.match(fn, /data-sb-vacuum-reforge/);
+  assert.match(src, /\n\s*vacuumReforgePanel\(\);/);
+});
+
 test('Vacuum uses the same workspace editor primitives as crop tools', () => {
   const vacuum = read('loadout-capabilities-ui.js');
   assert.match(vacuum, /panel\.className = 'item-editor rarity-unknown sb-docked-editor sb-tool-editor-collapsed'/);
