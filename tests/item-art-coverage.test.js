@@ -106,7 +106,8 @@ test('setup portraits have exactly one writer', () => {
   const setupArt = readFileSync(new URL('../src/item-art-ui.js', import.meta.url), 'utf8');
   assert.doesNotMatch(coverage, /decorateSetupItems\(/);
   assert.doesNotMatch(coverage, /\.slot-portrait, \[data-item-art-slot\]/);
-  assert.match(setupArt, /root\.querySelectorAll\('\.slot-portrait, \[data-item-art-slot\]'\)/);
+  assert.match(setupArt, /root\.querySelectorAll\('\.slot-portrait'\)/);
+  assert.doesNotMatch(setupArt, /data-item-art-slot|itemArtSlot/);
 });
 
 test('physical progression cards resolve exact names and deliberate suffix stripping', () => {
