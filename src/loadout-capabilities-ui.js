@@ -10,6 +10,7 @@ import {
   selectedVacuumReforge,
 } from './item-capabilities.js';
 import { petLevelFromExperience } from './mooshroom-cow.js';
+import { writeLinkedSetupSlot } from './setups.js';
 
 const PET_RARITIES = Object.freeze(['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY', 'MYTHIC']);
 let applying = false;
@@ -40,7 +41,8 @@ function patchSlot(slotId, changes) {
   const setup = activeSetup(raw);
   if (!setup) return;
   setup.slots ||= {};
-  setup.slots[slotId] = { ...(setup.slots[slotId] || {}), ...changes, source: 'manual' };
+  const item = { ...(setup.slots[slotId] || {}), ...changes, source: 'manual' };
+  writeLinkedSetupSlot(raw.profile?.setups, setup.id, slotId, item);
   save(raw);
   window.dispatchEvent(new Event('farming420:state-changed'));
 }
