@@ -1557,7 +1557,7 @@ function bind() {
     try {
       const restored = validateBackupPayload(await readJsonFile(e.target.files?.[0]));
       localStorage.setItem(STORAGE_KEY, JSON.stringify(restored.state));
-      location.reload();
+      window.dispatchEvent(new Event('farming420:state-changed'));
     } catch (error) {
       alert(error.message);
       e.target.value='';
