@@ -43,6 +43,7 @@ import {
   normalizeSetups,
   prefillSetupFromSnapshot,
   setupSummary,
+  writeLinkedSetupSlot,
 } from './setups.js';
 import {
   intrinsicEnchantmentsForCatalogItem,
@@ -1004,8 +1005,7 @@ function slotItem(slotId) {
 
 function writeSlot(slotId, item) {
   const all = setups();
-  const current = all.list.find(entry => entry.id === all.activeId);
-  current.slots[slotId] = item;
+  writeLinkedSetupSlot(all, all.activeId, slotId, item);
   saveState();
 }
 
@@ -1231,6 +1231,9 @@ function bindSetups() {
       // recombobulator raises the shown rarity, which the editor states
       // separately rather than folding into this base value.
       rarity: chosen?.tier ?? currentItem().rarity,
+      // Choosing a different catalogue item means a different physical object.
+      physicalItemId: changingItem ? null : currentItem().physicalItemId,
+      itemUuid: changingItem ? null : currentItem().itemUuid,
     });
     rerender();
   });
