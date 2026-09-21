@@ -10,7 +10,7 @@
 const GROUPS = [
   ['Progress', ['dashboard', 'accessories', 'crops', 'tools']],
   ['Loadout', ['setups', 'gear', 'pets', 'buffs']],
-  ['Specialized', ['chips', 'shards', 'pests']],
+  ['Specialized', ['chips', 'shards', 'pests', 'qol']],
   ['Analysis', ['focus', 'planner']],
   ['Getting started', ['guide']],
   ['System', ['settings']],

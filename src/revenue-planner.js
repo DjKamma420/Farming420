@@ -29,50 +29,74 @@ const USEFUL_ITEMS = Object.freeze([
   {
     id: 'squeaky-mousemat',
     name: 'Squeaky Mousemat',
-    group: 'Farming QoL',
+    group: 'Farm control',
+    role: 'Camera alignment',
     purpose: 'Save and snap exact yaw/pitch so a farm stays aligned without manual camera correction.',
+    benefit: 'Makes a repeatable farming angle part of the setup instead of something you have to reconstruct after moving, warping or correcting the camera.',
+    workflow: 'Save the farm\'s intended yaw/pitch once, then snap back to it before starting a farming session.',
   },
   {
     id: 'sundial',
     name: 'Sundial',
-    group: 'Farming QoL',
+    group: 'Farm control',
+    role: 'Speed presets',
     purpose: 'Unlock per-crop Speed settings at the Garden Desk so speed control is no longer tied to Rancher\'s Boots.',
+    benefit: 'Keeps movement speed as a crop/farm setting, which makes switching between farming layouts less dependent on manually adjusting your boots.',
+    workflow: 'Store the speed required by each crop layout at the Garden Desk and use the matching preset when changing farms.',
   },
   {
     id: 'builders-wand',
     name: "Builder's Wand",
     group: 'Farm building',
+    role: 'Bulk construction',
     purpose: 'Place large connected surfaces faster when building or rebuilding custom farms.',
+    benefit: 'Cuts down repetitive block placement on broad floors, walls and other large connected sections.',
+    workflow: 'Use it for the bulk geometry first, then finish edges and small corrections with more precise building tools.',
   },
   {
     id: 'builders-ruler',
     name: "Builder's Ruler",
     group: 'Farm building',
+    role: 'Long straight edits',
     purpose: 'Place or remove long lines of blocks for fast lanes, borders and farm structure work.',
+    benefit: 'Handles straight repetitive structure work more efficiently than placing or breaking the same line block by block.',
+    workflow: 'Use it for lanes, borders, dividers and other long straight sections where the line itself is the repeated task.',
   },
   {
     id: 'infinidirt-wand',
     name: 'InfiniDirt™ Wand',
     group: 'Farm building',
+    role: 'Dirt supply',
     purpose: 'Supply dirt on demand and feed building tools without repeatedly restocking blocks.',
+    benefit: 'Removes repeated inventory restocking from dirt-heavy farm construction.',
+    workflow: 'Keep it available while laying large dirt platforms so construction tools can keep drawing dirt without manual refill trips.',
   },
   {
     id: 'basket-of-seeds',
     name: 'Basket of Seeds',
     group: 'Farm building',
+    role: 'Crop planting',
     purpose: 'Plant long crop rows quickly after the farm structure is finished.',
+    benefit: 'Separates planting from structure work and avoids placing every crop individually once the geometry is complete.',
+    workflow: 'Finish the farm shape and irrigation first, then use it to populate the prepared crop rows.',
   },
   {
     id: 'block-zapper',
     name: 'Block Zapper',
     group: 'Farm building',
+    role: 'Cleanup and redesign',
     purpose: 'Remove connected player-placed blocks quickly when correcting or redesigning a farm.',
+    benefit: 'Speeds up teardown when a connected section of a custom build needs to be removed or rebuilt.',
+    workflow: 'Use it for deliberate connected cleanup; isolate the section you want to remove before using it near finished structure.',
   },
   {
     id: 'prismapump',
     name: 'Prismapump',
     group: 'Farm building',
+    role: 'Irrigation',
     purpose: 'Lay out water channels faster for crop farms that need irrigation.',
+    benefit: 'Reduces repeated water placement while constructing long irrigation runs.',
+    workflow: 'Use it while building the water channels, before final planting, so irrigation is part of the farm structure rather than a later correction.',
   },
 ]);
 
@@ -86,13 +110,19 @@ function usefulItemsPanel(raw) {
   const owned = usefulItemState(raw);
   const ownedCount = USEFUL_ITEMS.filter(item => owned[item.id] === true).length;
   const groups = [...new Set(USEFUL_ITEMS.map(item => item.group))];
+  const missingCount = USEFUL_ITEMS.length - ownedCount;
 
-  return `<section class="revenue-panel useful-items-panel">
+  return `<section class="revenue-panel useful-items-panel qol-detail-panel">
     <div class="revenue-panel-head">
       <div><div class="eyebrow">Quality of life</div><h2>Useful items</h2></div>
       <span class="revenue-note">${ownedCount}/${USEFUL_ITEMS.length} marked owned</span>
     </div>
-    <p class="revenue-help useful-items-help">These are convenience and farm-building upgrades. They stay outside the Farming Fortune / profit ranking because their value is time saved and easier farm operation rather than a clean FF number.</p>
+    <p class="revenue-help useful-items-help">These are convenience, control and farm-building upgrades. They stay outside the Farming Fortune / profit ranking because their value is time saved and easier farm operation rather than a clean FF number.</p>
+    <div class="qol-summary-grid">
+      <div><span>Owned</span><strong>${ownedCount}</strong></div>
+      <div><span>Still missing</span><strong>${missingCount}</strong></div>
+      <div><span>Tracked separately</span><strong>No FF ranking</strong></div>
+    </div>
     <div class="useful-item-groups">
       ${groups.map(group => `<section class="useful-item-group">
         <h3>${esc(group)}</h3>
@@ -101,13 +131,30 @@ function usefulItemsPanel(raw) {
             const checked = owned[item.id] === true;
             return `<label class="useful-item-row ${checked ? 'owned' : ''}">
               <input type="checkbox" data-useful-item="${esc(item.id)}" ${checked ? 'checked' : ''}>
-              <span><strong>${esc(item.name)}</strong><small>${esc(item.purpose)}</small></span>
+              <span class="useful-item-copy">
+                <span class="useful-item-heading"><strong>${esc(item.name)}</strong><em>${esc(item.role)}</em></span>
+                <small>${esc(item.purpose)}</small>
+                <span class="useful-item-detail-grid">
+                  <span><b>Why it helps</b><span>${esc(item.benefit)}</span></span>
+                  <span><b>How to use it</b><span>${esc(item.workflow)}</span></span>
+                </span>
+              </span>
             </label>`;
           }).join('')}
         </div>
       </section>`).join('')}
     </div>
   </section>`;
+}
+
+function bindUsefulItemToggles(host) {
+  host.querySelectorAll('[data-useful-item]').forEach(input => input.addEventListener('change', event => {
+    const next = load();
+    const usefulItems = usefulItemState(next);
+    usefulItems[event.target.dataset.usefulItem] = event.target.checked;
+    save(next);
+    window.dispatchEvent(new Event('farming420:state-changed'));
+  }));
 }
 
 function esc(value = '') {
@@ -741,6 +788,16 @@ function enhanceFocusNext() {
   host.querySelectorAll('[data-focus-open]').forEach(button => button.addEventListener('click', () => openItem(button.dataset.focusOpen)));
 }
 
+function enhanceQol() {
+  const host = document.querySelector('.qol-list');
+  if (!host || host.dataset.qolReady === '1') return;
+  host.dataset.qolReady = '1';
+
+  const raw = load();
+  host.innerHTML = usefulItemsPanel(raw);
+  bindUsefulItemToggles(host);
+}
+
 function enhancePlanner() {
   const content = document.querySelector('.content');
   const original = content?.querySelector('.planner-list');
@@ -762,7 +819,6 @@ function enhancePlanner() {
   const panel = document.createElement('div');
   panel.className = 'revenue-planner-v2';
   panel.innerHTML = `${benchmarkPanel(raw)}
-    ${usefulItemsPanel(raw)}
     <div class="section-row revenue-ranking-head"><div><h2>${esc(rankingTitle)}</h2><p>${esc(rankingHelp)}</p></div></div>
     <div class="planner-list revenue-list">${rankingMarkup(rows, ready)}</div>`;
   original.before(panel);
@@ -772,14 +828,6 @@ function enhancePlanner() {
     const cropId = selectedCropId(next);
     const nextMode = activityModeForState(next);
     setPlannerEconomicsValue(next, cropId, nextMode, event.target.dataset.revenueInput, event.target.value);
-    save(next);
-    window.dispatchEvent(new Event('farming420:state-changed'));
-  }));
-
-  panel.querySelectorAll('[data-useful-item]').forEach(input => input.addEventListener('change', event => {
-    const next = load();
-    const usefulItems = usefulItemState(next);
-    usefulItems[event.target.dataset.usefulItem] = event.target.checked;
     save(next);
     window.dispatchEvent(new Event('farming420:state-changed'));
   }));
@@ -859,6 +907,7 @@ function enhancePlanner() {
 function apply() {
   enhancePlanner();
   enhanceFocusNext();
+  enhanceQol();
 }
 
 function boot() {

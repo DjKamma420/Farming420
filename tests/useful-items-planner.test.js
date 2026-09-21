@@ -4,8 +4,9 @@ import { readFileSync } from 'node:fs';
 
 const read = path => readFileSync(new URL(`../src/${path}`, import.meta.url), 'utf8');
 
-test('upgrade planner exposes the farming and building QoL checklist', () => {
-  const src = read('revenue-planner.js');
+test('QoL has its own detailed page and stays out of the upgrade ranking', () => {
+  const revenue = read('revenue-planner.js');
+  const app = read('app.js');
   for (const name of [
     'Squeaky Mousemat',
     'Sundial',
@@ -16,15 +17,24 @@ test('upgrade planner exposes the farming and building QoL checklist', () => {
     'Block Zapper',
     'Prismapump',
   ]) {
-    assert.ok(src.includes(name), `missing useful item: ${name}`);
+    assert.ok(revenue.includes(name), `missing useful item: ${name}`);
   }
-  assert.match(src, /data-useful-item=/, 'useful items must be directly trackable');
-  assert.match(src, /profile\.usefulItems/, 'owned state must live in the profile');
+
+  assert.match(app, /\['qol', 'QoL'\]/, 'QoL needs a dedicated navigation destination');
+  assert.match(app, /class="qol-list"/, 'QoL page needs its own render host');
+  assert.match(revenue, /function enhanceQol\(\)/);
+  assert.match(revenue, /data-useful-item=/, 'useful items must be directly trackable');
+  assert.match(revenue, /profile\.usefulItems/, 'owned state must live in the profile');
+  assert.match(revenue, /Why it helps/);
+  assert.match(revenue, /How to use it/);
   assert.match(
-    src,
+    revenue,
     /stay outside the Farming Fortune \/ profit ranking/,
     'QoL items must not be presented as comparable FF/profit upgrades',
   );
+
+  const planner = revenue.slice(revenue.indexOf('function enhancePlanner()'), revenue.indexOf('function apply()'));
+  assert.doesNotMatch(planner, /usefulItemsPanel\(raw\)/, 'Upgrade Planner must not render the QoL checklist');
 });
 
 test('dashboard shows the in-game farm reference command', () => {
