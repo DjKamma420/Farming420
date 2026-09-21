@@ -19,13 +19,17 @@ function navEntries() {
   return [...pages, ...utilities];
 }
 
-function groupedPages() {
+function groupedSections() {
   const block = enhancements.match(/const GROUPS = \[([\s\S]*?)\n\];/);
   assert.ok(block, 'GROUPS table not found in enhancements.js');
-  return [...block[1].matchAll(/'([\w-]+)'/g)]
-    .map(m => m[1])
-    // Group labels contain spaces or start uppercase; page ids do not.
-    .filter(name => name === name.toLowerCase() && !name.includes(' '));
+  return [...block[1].matchAll(/\['([^']+)', \[([^\]]*)\]\]/g)].map(([, label, ids]) => [
+    label,
+    [...ids.matchAll(/'([\w-]+)'/g)].map(match => match[1]),
+  ]);
+}
+
+function groupedPages() {
+  return groupedSections().flatMap(([, pages]) => pages);
 }
 
 test('every nav page is in exactly one group', () => {
@@ -48,11 +52,15 @@ test('no page is listed in two groups', () => {
 });
 
 
-test('Focus on next sits with Upgrade Planner under Analysis', () => {
-  const analysis = enhancements.match(/\['Analysis', \[([^\]]*)\]\]/);
-  assert.ok(analysis, 'Analysis group not found');
-  const pages = [...analysis[1].matchAll(/'([\w-]+)'/g)].map(match => match[1]);
-  assert.deepEqual(pages, ['focus', 'planner']);
+test('navigation follows the user workflow instead of implementation categories', () => {
+  assert.deepEqual(groupedSections(), [
+    ['Overview', ['dashboard']],
+    ['Setup', ['crops', 'tools', 'accessories', 'setups', 'gear', 'pets', 'buffs']],
+    ['Advanced', ['pests', 'chips', 'shards']],
+    ['Planning', ['focus', 'planner']],
+    ['Help', ['info', 'qol']],
+    ['System', ['settings']],
+  ]);
 });
 
 test('groups with no remaining navigation entries are skipped', () => {
