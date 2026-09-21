@@ -754,7 +754,7 @@ function toolEntryLine(item) {
 
 function toolItemPanel() {
   return `<div class="item-editor rarity-unknown" data-tool-editor="1">
-    ${TOOL_PANEL.map(group => `<section class="item-editor-section">
+    ${TOOL_PANEL.map(group => `<section class="item-editor-section" data-tool-section="${esc(group.id)}">
       <div class="section-row"><div><h3>${esc(group.title)}</h3><p>${esc(group.note)}</p></div></div>
       <div class="enchant-grid">${group.entries.map(id => toolEntryLine(TOOL_PANEL_ENTRIES.get(id))).join('')}</div>
     </section>`).join('')}

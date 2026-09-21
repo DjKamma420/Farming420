@@ -331,6 +331,22 @@ const FARMING_TOOL_REFORGE_ENTRY_IDS = Object.freeze(
 );
 
 export const TOOL_PANEL = Object.freeze([
+  // Tool tier is the highest-level branch after choosing the physical tool.
+  // Reforge and every other modifier belong to the selected Mk. item, so the
+  // tier/progression section must come first in the editor.
+  Object.freeze({
+    id: 'upgrades',
+    title: 'Tool upgrades',
+    note: 'Counters and tiers that live on the tool itself.',
+    control: 'level',
+    entries: Object.freeze([
+      'tool-tool-base-counter-fortune',
+      'tool-overclocker-3000',
+      'tool-farming-for-dummies',
+      'tool-mk-ii',
+      'tool-mk-iii',
+    ]),
+  }),
   Object.freeze({
     id: 'reforge',
     title: 'Reforge',
@@ -348,19 +364,6 @@ export const TOOL_PANEL = Object.freeze([
       'tool-enchant-dedication',
       'tool-enchant-harvesting-vi',
       'tool-enchant-turbo-crop',
-    ]),
-  }),
-  Object.freeze({
-    id: 'upgrades',
-    title: 'Tool upgrades',
-    note: 'Counters and tiers that live on the tool itself.',
-    control: 'level',
-    entries: Object.freeze([
-      'tool-tool-base-counter-fortune',
-      'tool-overclocker-3000',
-      'tool-farming-for-dummies',
-      'tool-mk-ii',
-      'tool-mk-iii',
     ]),
   }),
   Object.freeze({
