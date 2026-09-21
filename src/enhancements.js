@@ -9,7 +9,7 @@
  * missing here.
  */
 const GROUPS = [
-  ['Progress', ['dashboard', 'account', 'accessories', 'crops', 'tools']],
+  ['Progress', ['dashboard', 'accessories', 'crops', 'tools']],
   ['Loadout', ['setups', 'gear', 'pets', 'buffs']],
   ['Specialized', ['chips', 'shards', 'pests']],
   ['Analysis', ['planner', 'research', 'coming']],
@@ -46,7 +46,7 @@ function groupSidebar(root) {
 
 function enhanceCropWorkspace(root) {
   const heading = root.querySelector('.page-head h1');
-  if (!heading || heading.textContent.trim() !== 'Crop progression') return;
+  if (!heading || heading.textContent.trim() !== 'Garden & Crop Progression') return;
 
   const picker = root.querySelector('.crop-grid');
   const panel = root.querySelector('.crop-detail-panel');
