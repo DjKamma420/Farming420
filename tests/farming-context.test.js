@@ -6,7 +6,7 @@ import {
   FARMING_CONTEXT_OPTIONS,
   farmingContextForState,
   farmingContextLabel,
-  farmingContextScope,
+  farmingContextScopes,
   isGrandFeastContext,
   isHarvestFeastContext,
   normalizeFarmingContext,
@@ -19,10 +19,10 @@ test('farming contexts cover every currently modeled event scope used by Dashboa
     'grand-feast',
     'jacob-contest',
   ]);
-  assert.equal(farmingContextScope(FARMING_CONTEXT.HARVEST_FEAST), 'Harvest Feast');
-  assert.equal(farmingContextScope(FARMING_CONTEXT.GRAND_FEAST), 'Harvest Feast');
-  assert.equal(farmingContextScope(FARMING_CONTEXT.JACOB_CONTEST), 'Jacob Contest');
-  assert.equal(farmingContextScope(FARMING_CONTEXT.NORMAL), null);
+  assert.deepEqual(farmingContextScopes(FARMING_CONTEXT.HARVEST_FEAST), ['Harvest Feast']);
+  assert.deepEqual(farmingContextScopes(FARMING_CONTEXT.GRAND_FEAST), ['Harvest Feast', 'Grand Feast']);
+  assert.deepEqual(farmingContextScopes(FARMING_CONTEXT.JACOB_CONTEST), ['Jacob Contest']);
+  assert.deepEqual(farmingContextScopes(FARMING_CONTEXT.NORMAL), []);
 });
 
 test('unknown saved contexts fall back to normal farming', () => {
