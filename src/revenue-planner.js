@@ -789,8 +789,13 @@ function focusScopePanel(raw, scope) {
   </section>`;
 }
 
-function focusNextMarkup(raw, rows) {
-  if (!rows.length) return '<div class="empty">No tracked progression goals for the current crop and set.</div>';
+function focusNextMarkup(raw, rows, scope = focusScope()) {
+  if (!rows.length) {
+    const empty = scope === 'crop'
+      ? 'No tracked crop-specific progression goals remain for the selected crop.'
+      : 'No tracked global progression goals remain.';
+    return `<div class="empty">${esc(empty)}</div>`;
+  }
   return rows.slice(0, 30).map((row, index) => {
     const max = Math.max(1, Number(row.item.max || 1));
     const current = level(raw, row.item);
@@ -839,7 +844,7 @@ function renderFocusNext(host, raw) {
       <p>Time is separate from upgrades: every tracked progression step uses a fixed ~${FOCUS_AVERAGE_STEP_HOURS.toFixed(1)} h planning average. It is a scheduling assumption, not an asserted in-game completion time.</p>
       ${objectiveHelp}
     </section>
-    <div class="focus-next-results">${focusNextMarkup(raw, rows)}</div>`;
+    <div class="focus-next-results">${focusNextMarkup(raw, rows, scope)}</div>`;
 
   host.querySelector('[data-focus-scope]')?.addEventListener('change', event => {
     localStorage.setItem(FOCUS_SCOPE_KEY, event.target.value === 'crop' ? 'crop' : 'global');
