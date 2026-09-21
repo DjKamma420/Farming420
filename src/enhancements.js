@@ -1,3 +1,24 @@
+import { parseSkyBlockTooltip, recognizeSkyBlockTooltip } from './tooltip-scanner.js';
+
+/**
+ * Every nav page belongs to exactly one group.
+ *
+ * Pages left out of this table are not dropped -- they stay in the nav, ahead
+ * of the groups, because `groupSidebar` appends groups after whatever it did
+ * not move. With `setups`, `guide` and `setup` missing, the rail opened with a
+ * set of items and two bare letters before Dashboard, which is not where a
+ * first-time reader looks. `tests/nav-groups.test.js` fails if a page is
+ * missing here.
+ */
+const GROUPS = [
+  ['Progress', ['dashboard', 'account', 'accessories', 'crops', 'tools']],
+  ['Loadout', ['setups', 'gear', 'pets', 'buffs']],
+  ['Specialized', ['chips', 'shards', 'pests']],
+  ['Analysis', ['planner', 'research', 'coming']],
+  ['Getting started', ['guide', 'setup']],
+  ['System', ['settings']],
+];
+
 const scannerBySlot = new Map();
 
 function clickPage(id) {
@@ -314,39 +335,41 @@ function bindScannerPanel(panel, editor, slotId) {
   });
 }
 
-function addScreenshotScanners(root) {
-  root.querySelectorAll('.item-editor[data-item-editor]').forEach(editor => {
-    const slotId = editor.dataset.itemEditor;
-    if (!slotId || editor.querySelector('[data-scanner-slot]')) return;
+function attachScreenshotScanner(editor) {
+  const slotId = editor?.dataset.itemEditor;
+  if (!editor || !slotId || editor.querySelector('[data-scanner-slot]')) return;
+
   const panel = document.createElement('section');
-    panel.className = 'scanner-panel-addon';
-    panel.dataset.scannerSlot = slotId;
-    panel.tabIndex = 0;
-    panel.innerHTML = `
-      <div class="scanner-head-addon">
-        <div><div class="eyebrow">Screenshot scanner</div><h3>Read this item from a tooltip</h3></div>
-        <label class="ghost small scanner-file-addon">Choose image<input data-scan-file type="file" accept="image/png,image/jpeg,image/webp" hidden></label>
-      </div>
-      <p class="scanner-copy-addon">Drop or paste a SkyBlock tooltip screenshot here. OCR runs in your browser; recognized values are reviewed before they change this slot.</p>
-      <div class="scanner-actions-addon">
-        <button class="primary-btn" type="button" data-scan-image>Scan screenshot</button>
-        <button class="ghost small" type="button" data-scan-parse>Parse text</button>
-      </div>
-      <progress class="scanner-progress-addon" data-scan-progress max="1" value="0" hidden></progress>
-      <div class="hint" data-scan-status></div>
-      <details class="scanner-text-addon">
-        <summary>Recognized / pasted tooltip text</summary>
-        <textarea data-scan-text rows="7" spellcheck="false" placeholder="You can also paste tooltip text here and parse it without OCR."></textarea>
-      </details>
-      <div class="scanner-result-addon" data-scan-result></div>
-      <button class="primary-btn scanner-apply-addon" type="button" data-scan-apply disabled>Apply recognized fields to this slot</button>
-    `;
+  panel.className = 'scanner-panel-addon';
+  panel.dataset.scannerSlot = slotId;
+  panel.tabIndex = 0;
+  panel.innerHTML = `
+    <div class="scanner-head-addon">
+      <div><div class="eyebrow">Screenshot scanner</div><h3>Read this item from a tooltip</h3></div>
+      <label class="ghost small scanner-file-addon">Choose image<input data-scan-file type="file" accept="image/png,image/jpeg,image/webp" hidden></label>
+    </div>
+    <p class="scanner-copy-addon">Drop or paste a SkyBlock tooltip screenshot here. OCR runs in your browser; recognized values are reviewed before they change this slot.</p>
+    <div class="scanner-actions-addon">
+      <button class="primary-btn" type="button" data-scan-image>Scan screenshot</button>
+      <button class="ghost small" type="button" data-scan-parse>Parse text</button>
+    </div>
+    <progress class="scanner-progress-addon" data-scan-progress max="1" value="0" hidden></progress>
+    <div class="hint" data-scan-status></div>
+    <details class="scanner-text-addon">
+      <summary>Recognized / pasted tooltip text</summary>
+      <textarea data-scan-text rows="7" spellcheck="false" placeholder="You can also paste tooltip text here and parse it without OCR."></textarea>
+    </details>
+    <div class="scanner-result-addon" data-scan-result></div>
+    <button class="primary-btn scanner-apply-addon" type="button" data-scan-apply disabled>Apply recognized fields to this slot</button>
+  `;
 
-    editor.prepend(panel);
-    bindScannerPanel(panel, editor, slotId);
-    renderScannerPreview(panel, slotId);
+  editor.prepend(panel);
+  bindScannerPanel(panel, editor, slotId);
+  renderScannerPreview(panel, slotId);
+}
 
-  });
+function addScreenshotScanners(root) {
+  root.querySelectorAll('.item-editor[data-item-editor]').forEach(attachScreenshotScanner);
 }
 
 function enhance() {
