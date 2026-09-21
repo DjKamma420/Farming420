@@ -78,24 +78,11 @@ test('the page answers the render-freeze checklist', () => {
   assert.match(page, /import \{ setTextIfChanged \} from '\.\/set-text\.js'/);
   assert.doesNotMatch(page, /\.textContent\s*=/);
 
-  // Rule 5: a runtime enhancer may write storage only in direct response to a
-  // user action, and may not dispatch a render-causing event at all. This page
-  // stores the Vacuum build from an input handler, which is allowed; what it
-  // must never do is write from the observer path or fire state-changed.
+  // Rule 5: Pests is now read-only for the Vacuum. Configuration lives under
+  // Tools, so this page must neither write Vacuum state nor dispatch a render.
   assert.doesNotMatch(page, /farming420:state-changed/);
-  const writes = [...page.matchAll(/localStorage\.setItem/g)];
-  assert.equal(writes.length, 1, 'the only storage write is the shared save() helper');
-  assert.match(page, /function save\(raw\) \{[\s\S]*?localStorage\.setItem/);
-  // `save` is only reached from a handler. What runs on the observer pass is
-  // the synchronous body of `applyPestsPage` up to where the handlers are
-  // defined, and that part must not write. (Handler *bodies* live inside this
-  // function too, so slicing at the first `addEventListener` would wrongly
-  // include them.)
-  const apply = page.match(/function applyPestsPage[\s\S]*?\n}/)[0];
-  const synchronous = apply.slice(0, apply.indexOf('const refreshVacuum'));
-  assert.ok(synchronous.length > 0, 'the handler definitions moved; re-anchor this slice');
-  assert.doesNotMatch(synchronous, /save\(/, 'the observer path must not write storage');
-  assert.match(apply, /refreshVacuum\);?\s*\)?;?/, 'the write path is a bound handler');
+  assert.doesNotMatch(page, /localStorage\.setItem/);
+  assert.doesNotMatch(page, /data-vacuum-id|data-vacuum-books|data-vacuum-reforge/);
 
   // Rule 6: nothing interactive is cloned.
   assert.doesNotMatch(page, /cloneNode/);
@@ -128,4 +115,19 @@ test('no enhancer is imported for a utility', () => {
   const helper = read('set-text.js').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
   assert.doesNotMatch(helper, /MutationObserver|addEventListener|document\.|localStorage/);
   assert.doesNotMatch(helper, /^(?!import|export|function|\s|\}|$)/m);
+});
+
+
+test('Vacuum configuration belongs to Tools and Pests only reads it', () => {
+  const pests = read('pests-page.js');
+  const capabilities = read('loadout-capabilities-ui.js');
+
+  assert.match(capabilities, /if \(raw\.page !== 'tools'\) return/);
+  assert.doesNotMatch(capabilities, /if \(raw\.page !== 'pests'\) return/);
+  assert.match(capabilities, /data-vacuum-panel/);
+  assert.match(capabilities, /Pest Vacuum/);
+
+  assert.match(pests, /raw\?\.profile\?\.vacuumProgress/);
+  assert.match(pests, /Configure the physical Vacuum under Tools/);
+  assert.doesNotMatch(pests, /<select data-vacuum-id>/);
 });
