@@ -2,7 +2,7 @@
   "meta": {
     "title": "Hypixel SkyBlock Farming Master Knowledge Base",
     "format_version": "1.0.0-repo",
-    "as_of": "2026-09-18",
+    "as_of": "2026-09-21",
     "target_reader": "AI/optimizer",
     "status": "canonical research entry point; newer verified live behavior overrides this file",
     "source_chat_artifact": "hypixel_farming_master_ai_2026-09-16.json",
@@ -294,5 +294,34 @@
     "preferred":["official current Hypixel patch notes","official Hypixel API docs","current hypixelskyblock.minecraft.wiki","Elite SkyBlock for current Farming-specific data","recent reproducible live tests"],
     "avoid_as_current_authority":["closed wiki.hypixel.net pages","stale Fandom-only claims","old guides predating Greenhouse/Feast/0.26.1/0.27"],
     "important":"Every concrete mechanic used by production calculations should gain a source and lastVerified date in the normalized research/data layer"
+  },
+  "pest_loadout_progression": {
+    "last_verified":"2026-09-21",
+    "source":"https://eliteskyblock.com/guides/eAb9M5",
+    "corroboration":"https://hypixel.net/threads/why-do-you-need-2-sets-for-pest-farming.6148221/",
+    "core_rule":"Keep Farming, Pest Spawning and Pest Killing as three logical phases even when phases reuse the same physical gear.",
+    "midgame_pre_rose_dragon":{
+      "logical_phases":3,
+      "normal_physical_armor_sets":2,
+      "farming":{"armor":"3/4 Mossy + 1/4 Mantid Helianthus or current progression equivalent","equipment":"Rooted/Blossom-style Fortune equipment","pet_role":"Fortune farming pet"},
+      "spawning":{"armor":"full Mantid Helianthus","equipment":"Squeaky Pesthunter equipment + Pest Vest","pet_role":"Mosquito/Slug with Brown Bandana","timing":"swap only shortly before effective Pest cooldown expiry"},
+      "killing":{"armor":"reuse Farming armor","pet_role":"Pest-killing pet such as Hedgehog; Poignant Clover when appropriate"}
+    },
+    "endgame_two_armor_baseline":{
+      "physical_armor_sets":2,
+      "farming_and_killing_armor":"3/4 Mossy + 1/4 Mantid Helianthus",
+      "spawning_armor":"full Mantid Helianthus",
+      "farming_pet":"Rose Dragon with Green Bandana",
+      "spawning_pet":"Mosquito with Brown Bandana",
+      "killing_pet":"Rose Dragon",
+      "full_minmax_pet_copy_rule":"A second Rose Dragon with Poignant Lucky Clover can be dedicated to Killing while the Green Bandana Rose Dragon remains dedicated to Farming."
+    },
+    "ultra_minmax_optional_third_set":{
+      "status":"luxury",
+      "farming":"full Mossy Helianthus + Rooted Farming equipment + Green Bandana Rose Dragon",
+      "spawning":"full Mantid Helianthus + Squeaky Pesthunter/Pest Vest + Brown Bandana Mosquito",
+      "killing":"3/4 Mossy + 1/4 Mantid Helianthus + Thorny equipment + Poignant Lucky Clover Rose Dragon"
+    },
+    "data_model_rule":"Phase loadouts may reference the same physical armor/equipment object; do not infer duplicates from phase separation."
   }
 }
