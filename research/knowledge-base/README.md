@@ -1,7 +1,7 @@
 # Farming420 Offline Knowledge Base
 
 Status: ACTIVE research corpus
-As of: 2026-09-17
+As of: 2026-09-21
 Primary reader: AI agents with no Internet access and no prior Hypixel SkyBlock knowledge
 
 This directory is the long-form companion to `research/hypixel_farming_master_ai_2026-09-16.json`. Read this file first, then the chapters below, then the machine-oriented JSON. The goal is not brevity. The goal is to preserve enough definitions, rules, context, caveats, and source provenance that an offline AI can reason about current Farming without silently filling gaps from memory.
@@ -45,6 +45,7 @@ The closed former official wiki must not be used as a current mechanics source. 
 - `45-greenhouse-live-model-2026-09-17.md`: current Greenhouse passive-economics boundary, complete Aug-20 multiplier table, 72h base-crop decay, and planned-vs-live separation.
 - `46-live-price-model-2026-09-17.md`: official Bazaar/NPC price plumbing, direction-aware quotes, freshness/cache rules, and unresolved AH/BIN boundaries.
 - `47-item-model-audit-and-structural-gaps-2026-09-17.md`: sync-time Farming model coverage, head/non-pack model provenance, unresolved-model gate, and complete Farming-tool reforge exclusivity.
+- `50-three-phase-farming-pest-loadouts.md`: Farming/Spawning/Killing phase separation, two-armor-set progression, timed spawn swapping, Rose Dragon pet-item split, and optional third-set min-maxing.
 - `SOURCES.md`: source index and verification notes.
 
 Existing specialized research files remain authoritative for their narrow verified slices when newer than a chapter here, including `core-fortune.js`, `gear-fortune.js`, `equipment-fortune.js`, `pet-switching.js`, and the runtime verification tests.
