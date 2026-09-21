@@ -56,6 +56,6 @@ test('Fortune and Overbloom are converted to a common Coins per hour benchmark',
   assert.match(planner, /statDeltas\(item, itemGain\)/);
   assert.match(planner, /normalCropCoinsPerHour: PLANNER_BENCHMARK_COINS_PER_HOUR/);
   assert.match(planner, /rareCropCoinsPerHour: PLANNER_BENCHMARK_COINS_PER_HOUR/);
-  assert.match(planner, /No manual Coins\/h baseline is required/);
-  assert.match(planner, /comparison value, not a claim about your farm's actual profit/);
+  assert.match(planner, /Marginal value and payback use the common/);
+  assert.doesNotMatch(planner, /Fortune → Coins/);
 });
