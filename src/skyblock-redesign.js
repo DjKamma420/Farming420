@@ -428,7 +428,7 @@ function reforgePanel() {
   // is *not* the panel picks Enchantments once the panel exists, and each pass
   // would then eat another section of the editor.
   const existingPanel = editor.querySelector('.sb-reforge-panel');
-  const target = existingPanel || editor.querySelector('.item-editor-section');
+  const target = existingPanel || editor.querySelector('[data-tool-section="reforge"]');
   if (!target) return;
 
   const cropId = activeCropId();
