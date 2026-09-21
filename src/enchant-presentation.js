@@ -1,3 +1,4 @@
+import './vacuum-data-patches.js';
 import { UPGRADES } from './data.js';
 
 const ENCHANTMENTS_SOURCE = 'https://hypixelskyblock.minecraft.wiki/w/Enchantments';
@@ -134,6 +135,7 @@ export const LEGACY_FARMING_ENCHANT_META = Object.freeze({
 
 /** Guard that corresponding scored mechanics still exist in runtime data. */
 const REQUIRED_RUNTIME_ENTRIES = Object.freeze({
+  bug_blender: 'vacuum-enchant-bug-blender',
   dedication: 'tool-enchant-dedication',
   cultivating: 'tool-enchant-cultivating-x',
   harvesting: 'tool-enchant-harvesting-vi',
