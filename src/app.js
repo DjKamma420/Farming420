@@ -8,7 +8,7 @@ import {
   FARMING_CONTEXT_OPTIONS,
   farmingContextForState,
   farmingContextLabel,
-  farmingContextScope,
+  farmingContextScopes,
   isGrandFeastContext,
   isHarvestFeastContext,
 } from './farming-context.js';
@@ -584,8 +584,8 @@ function dashboard() {
   const mode = activityModeForState(state);
   const selectedCrop = crop();
   const context = farmingContextForState(state);
-  const contextScope = farmingContextScope(context);
-  const stats = computeStatTotals(state, selectedCrop.id, mode, contextScope);
+  const contextScopes = farmingContextScopes(context);
+  const stats = computeStatTotals(state, selectedCrop.id, mode, contextScopes);
   const estimate = dashboardProfitEstimate(selectedCrop.id, mode, context, stats);
   const measuredValues = estimate.values || {};
   const marker = count => count ? ' ~' : '';
@@ -610,7 +610,7 @@ function dashboard() {
     : `${farmingContextLabel(context)}-only configured effects are included in the totals below.`;
 
   const cropRows = CROPS.map(entry => {
-    const values = computeStatTotals(state, entry.id, mode, contextScope);
+    const values = computeStatTotals(state, entry.id, mode, contextScopes);
     const totalFortune = values.globalFortune + values.cropFortune;
     const totalIncomplete = values.incomplete.globalFortune.length
       + values.incomplete.cropFortune.length;
