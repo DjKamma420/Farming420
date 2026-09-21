@@ -75,7 +75,8 @@ function queriedSelectors() {
 function queriedAnchors() {
   const anchors = [];
   for (const { module, selector } of queriedSelectors()) {
-    const first = selector.match(/^\s*[^,]*?\.([A-Za-z][A-Za-z0-9_-]*)/);
+    const structural = selector.replace(/\$\{[^}]*\}/g, '');
+    const first = structural.match(/^\s*[^,]*?\.([A-Za-z][A-Za-z0-9_-]*)/);
     if (first) anchors.push({ module, selector, cls: first[1] });
   }
   return anchors;
@@ -90,10 +91,13 @@ function producedDataAttributes() {
   for (const source of sources.values()) {
     // Literal markup emitted by template strings / HTML snippets.
     for (const [, tag] of source.matchAll(/<([\s\S]*?)>/g)) {
-      for (const [, attr] of tag.matchAll(/\b(data-[A-Za-z0-9_-]+)(?=\s*=|\s|$)/g)) produced.add(attr);
+      for (const [, attr] of tag.matchAll(/\b(data-[A-Za-z0-9_-]+)(?=\s*=|\s|\$\{|$)/g)) produced.add(attr);
     }
     // Programmatic writes.
     for (const [, key] of source.matchAll(/\.dataset\.([A-Za-z][A-Za-z0-9]*)\s*=/g)) produced.add(toDataAttribute(key));
+    for (const [, body] of source.matchAll(/dataset\s*:\s*\{([^}]*)\}/g)) {
+      for (const [, key] of body.matchAll(/\b([A-Za-z][A-Za-z0-9]*)\s*:/g)) produced.add(toDataAttribute(key));
+    }
     for (const [, attr] of source.matchAll(/\.setAttribute\(\s*['"](data-[A-Za-z0-9_-]+)['"]/g)) produced.add(attr);
     // Shared HTML helpers whose attribute name is supplied as an argument.
     for (const [, attr] of source.matchAll(/\bleverInput\(\s*['"](data-[A-Za-z0-9_-]+)['"]/g)) produced.add(attr);
