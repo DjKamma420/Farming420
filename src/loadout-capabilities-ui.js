@@ -143,6 +143,31 @@ function vacuumLevel(bucket, item) {
   return bucket.owned?.[item.id] ? 1 : 0;
 }
 
+function vacuumUpgradeRow(bucket, item) {
+  const max = Math.max(1, Number(item.max || 1));
+  const level = vacuumLevel(bucket, item);
+  const note = item.notes || item.metric || 'Vacuum upgrade';
+
+  if (max === 1) {
+    return `<label class="workspace-level-row workspace-toggle-row">
+      <div><strong>${esc(item.name)}</strong><small>${esc(note)}</small></div>
+      <input type="checkbox" data-vacuum-toggle="${esc(item.id)}" ${level > 0 ? 'checked' : ''}>
+    </label>`;
+  }
+
+  return `<div class="workspace-level-row">
+    <div><strong>${esc(item.name)}</strong><small>${esc(note)}</small></div>
+    <div class="workspace-stepper">
+      <button type="button" data-vacuum-step="-1" data-vacuum-entry="${esc(item.id)}" aria-label="Decrease ${esc(item.name)}">−</button>
+      <select data-vacuum-number="${esc(item.id)}" aria-label="${esc(item.name)} level">
+        ${Array.from({ length: max + 1 }, (_, value) => `<option value="${value}" ${value === level ? 'selected' : ''}>${value}</option>`).join('')}
+      </select>
+      <button type="button" data-vacuum-step="1" data-vacuum-entry="${esc(item.id)}" aria-label="Increase ${esc(item.name)}">+</button>
+      <span>/ ${max}</span>
+    </div>
+  </div>`;
+}
+
 function writeVacuumEntry(item, patch) {
   const raw = load();
   const bucket = ensureVacuumBucket(raw);
@@ -252,19 +277,9 @@ function renderVacuumSurface(raw) {
       </div>
     </section>
     <section class="item-editor-section">
-      <div class="section-row"><div><h3>Vacuum upgrades</h3><p>Item-local Vacuum upgrades belong here. Shared Shards and general sources remain configured once in their own sections.</p></div></div>
-      <div class="enchant-grid">
-        ${entries.map(item => {
-          const level = vacuumLevel(bucket, item);
-          const max = Math.max(1, Number(item.max || 1));
-          const on = level > 0;
-          return `<div class="enchant-line ${on ? 'on' : 'off'}">
-            <label class="lever"><input type="checkbox" data-vacuum-toggle="${esc(item.id)}" ${on ? 'checked' : ''}><span class="lever-track"></span></label>
-            <span class="enchant-name">${esc(item.name)}</span>
-            ${max > 1 ? `<input class="enchant-level" type="number" min="1" max="${max}" value="${level || 1}" data-vacuum-level="${esc(item.id)}" ${on ? '' : 'disabled'}>` : '<span></span>'}
-            <span class="enchant-max">${item.stepGain ? `+${Number(item.stepGain).toLocaleString('en-US')} / step` : item.metric}</span>
-          </div>`;
-        }).join('') || '<p class="hint">No other modeled Vacuum values are available yet.</p>'}
+      <div class="workspace-section-head"><div><h3>Vacuum upgrades</h3><p>Use the same 0-to-max progression controls as the farming tools. Zero means the upgrade is not applied.</p></div></div>
+      <div class="workspace-level-list">
+        ${entries.map(item => vacuumUpgradeRow(bucket, item)).join('') || '<p class="hint">No other modeled Vacuum values are available yet.</p>'}
       </div>
     </section>`;
 
@@ -276,14 +291,23 @@ function renderVacuumSurface(raw) {
     const item = entries.find(entry => entry.id === input.dataset.vacuumToggle);
     if (!item) return;
     if (!event.target.checked) writeVacuumEntry(item, { clear: true });
-    else writeVacuumEntry(item, { levels: { [item.id]: Math.max(1, vacuumLevel(bucket, item)) }, owned: { [item.id]: true } });
+    else writeVacuumEntry(item, { levels: { [item.id]: 1 }, owned: { [item.id]: true } });
   }));
-  panel.querySelectorAll('[data-vacuum-level]').forEach(input => input.addEventListener('change', event => {
-    const item = entries.find(entry => entry.id === input.dataset.vacuumLevel);
+  panel.querySelectorAll('[data-vacuum-number]').forEach(select => select.addEventListener('change', event => {
+    const item = entries.find(entry => entry.id === select.dataset.vacuumNumber);
     if (!item) return;
     const max = Math.max(1, Number(item.max || 1));
-    const level = Math.max(1, Math.min(max, Math.floor(Number(event.target.value) || 1)));
-    writeVacuumEntry(item, { levels: { [item.id]: level }, owned: { [item.id]: true } });
+    const level = Math.max(0, Math.min(max, Math.floor(Number(event.target.value) || 0)));
+    if (level === 0) writeVacuumEntry(item, { clear: true });
+    else writeVacuumEntry(item, { levels: { [item.id]: level }, owned: { [item.id]: true } });
+  }));
+  panel.querySelectorAll('[data-vacuum-step]').forEach(button => button.addEventListener('click', () => {
+    const item = entries.find(entry => entry.id === button.dataset.vacuumEntry);
+    if (!item) return;
+    const max = Math.max(1, Number(item.max || 1));
+    const next = Math.max(0, Math.min(max, vacuumLevel(bucket, item) + Number(button.dataset.vacuumStep || 0)));
+    if (next === 0) writeVacuumEntry(item, { clear: true });
+    else writeVacuumEntry(item, { levels: { [item.id]: next }, owned: { [item.id]: true } });
   }));
 }
 
