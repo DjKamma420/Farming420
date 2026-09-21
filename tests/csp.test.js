@@ -4,11 +4,11 @@ import { readFileSync } from 'node:fs';
 
 /**
  * `index.html` ships a strict Content Security Policy. Inline styles/scripts are
- * forbidden even though the screenshot scanner allows two explicit hosts for
- * its on-demand OCR runtime and language data.
+ * forbidden. Runtime scripts stay first-party and network access is limited to
+ * the APIs and image hosts the application still uses.
  */
 const read = name => readFileSync(new URL(`../src/${name}`, import.meta.url), 'utf8');
-const RUNTIME_MODULES = ['app.js', 'enhancements.js', 'foundation.js', 'tooltip-scanner.js'];
+const RUNTIME_MODULES = ['app.js', 'enhancements.js', 'foundation.js'];
 const indexHtml = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 
 test('the shipped CSP still forbids inline styles and scripts', () => {
@@ -20,12 +20,12 @@ test('the shipped CSP still forbids inline styles and scripts', () => {
   assert.ok(!csp.includes("'unsafe-eval'"));
 });
 
-test('OCR network access is restricted to the explicit runtime and trained-data hosts', () => {
+test('the removed OCR runtime has no remaining CSP privileges', () => {
   const csp = indexHtml.match(/Content-Security-Policy"\s+content="([^"]+)"/)?.[1] ?? '';
-  assert.match(csp, /script-src[^;]*https:\/\/cdn\.jsdelivr\.net/);
-  assert.match(csp, /connect-src[^;]*https:\/\/cdn\.jsdelivr\.net/);
-  assert.match(csp, /connect-src[^;]*https:\/\/tessdata\.projectnaptha\.com/);
-  assert.match(csp, /worker-src[^;]*blob:/);
+  assert.doesNotMatch(csp, /cdn\.jsdelivr\.net/);
+  assert.doesNotMatch(csp, /tessdata\.projectnaptha\.com/);
+  assert.match(csp, /script-src\s+'self'(;|$)/);
+  assert.match(csp, /connect-src\s+'self'\s+https:\/\/api\.hypixel\.net(;|$)/);
 });
 
 test('the CSP meta tag carries no directive that a meta tag cannot apply', () => {

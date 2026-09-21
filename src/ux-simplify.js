@@ -68,7 +68,7 @@ function enhanceTools() {
     <div>
       <div class="eyebrow">Physical tool</div>
       <strong>Choose the tool you want to inspect</strong>
-      <p>Scanner imports do not depend on this selection.</p>
+      <p>This selection controls which physical farming tool is shown below.</p>
     </div>
     <select data-tool-focus aria-label="Physical farming tool">
       ${tools.map(tool => `<option value="${tool.cropIds[0]}" ${tool.key === selectedKey ? 'selected' : ''}>${tool.tool}${tool.cropNames.length > 1 ? ` · ${tool.cropNames.join(' / ')}` : ''}</option>`).join('')}
