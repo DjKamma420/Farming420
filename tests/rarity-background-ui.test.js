@@ -19,6 +19,7 @@ test('rarity presentation covers every physical farming item surface', () => {
   assert.match(uiSource, /\.sb-tool-card\[data-sb-tool-crop/);
   assert.match(uiSource, /data-tool-editor/);
   assert.match(uiSource, /data-vacuum-panel/);
+  assert.match(uiSource, /\.sb-tool-card\[data-sb-vacuum\]/);
   assert.match(uiSource, /effectiveSetupItemRarity/);
   assert.match(uiSource, /vacuumRarity/);
   assert.match(uiSource, /deriveRarity/);

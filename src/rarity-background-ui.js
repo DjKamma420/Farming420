@@ -128,9 +128,11 @@ function applyToolRarity(root, state, catalog) {
 }
 
 function applyVacuumRarity(root, state) {
+  const rarity = vacuumRarity(state?.profile?.vacuumProgress || {});
   const panel = root.querySelector('[data-vacuum-panel]');
-  if (!panel) return;
-  applyRarityClass(panel, vacuumRarity(state?.profile?.vacuumProgress || {}));
+  const card = root.querySelector('.sb-tool-card[data-sb-vacuum]');
+  if (panel) applyRarityClass(panel, rarity);
+  if (card) applyRarityClass(card, rarity);
 }
 
 export function applyRarityBackgrounds(root = document) {

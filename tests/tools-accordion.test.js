@@ -141,7 +141,10 @@ test('rarity styling cannot redraw a seam between an expanded tool and its edito
 test('Vacuum is a first-class card in the same Tools accordion', () => {
   const src = read('skyblock-redesign.js');
   assert.match(src, /data-sb-vacuum="1"/);
-  assert.match(src, /<strong>Pest Vacuum<\/strong>/);
+  assert.match(src, /vacuumRecordById\(vacuumBucket\.skyblockId\)/);
+  assert.match(src, /img\(vacuumIconUrl, selectedVacuum\?\.name \|\| 'Pest Vacuum'\)/);
+  assert.match(src, /selectedVacuum\?\.name \|\| 'Pest Vacuum'/);
+  assert.match(src, /String\(vacuumBucket\.skyblockId \|\| ''\)/);
   assert.match(src, /let activeToolSurface = 'tool'/);
   assert.match(src, /function handleVacuumCardClick\(\)/);
   assert.match(src, /activeToolSurface = 'vacuum'/);
@@ -157,4 +160,17 @@ test('Vacuum and crop tools share the same docked-editor behavior', () => {
   assert.match(fn, /vacuumSelected \? vacuumCollapsed : collapsedToolKey === selectedKey/);
   assert.match(fn, /selected\.insertAdjacentElement\('afterend', editor\)/);
   assert.doesNotMatch(fn, /cloneNode/);
+});
+
+
+test('Vacuum uses the same workspace editor primitives as crop tools', () => {
+  const vacuum = read('loadout-capabilities-ui.js');
+  assert.match(vacuum, /panel\.className = 'item-editor rarity-unknown sb-docked-editor sb-tool-editor-collapsed'/);
+  assert.doesNotMatch(vacuum, /panel\.className = 'item-editor pest-loadout-panel/);
+  assert.match(vacuum, /class="workspace-section-head"/);
+  assert.match(vacuum, /class="workspace-choice-list"/);
+  assert.match(vacuum, /class="workspace-choice \$\{selected \? 'selected' : ''\}"/);
+  assert.match(vacuum, /class="workspace-radio"/);
+  assert.match(vacuum, /class="workspace-level-list"/);
+  assert.match(vacuum, /class="workspace-stepper"/);
 });

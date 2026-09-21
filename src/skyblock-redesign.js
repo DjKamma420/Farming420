@@ -3,6 +3,7 @@ import { STORAGE_KEY } from './config.js';
 import { toolKeyForCropId } from './migrations.js';
 import { TOOL_TIER_CHAIN, highestChainTier } from './progression-chains.js';
 import { ITEM_ASSET_BASE_URL, loadItemAssetManifest } from './item-assets.js';
+import { GARDEN_VACUUM_ITEMS, vacuumRecordById } from './exact-farming-items.js';
 
 const GOAL_KEY = 'farming420-reforge-goal-v1';
 
@@ -392,14 +393,18 @@ function toolPicker() {
   const cropId = activeCropId();
   const state = readState();
   const selectedKey = toolKeyForCropId(cropId);
+  const vacuumBucket = state?.profile?.vacuumProgress || {};
+  const selectedVacuum = vacuumRecordById(vacuumBucket.skyblockId);
+  const vacuumArtRecord = selectedVacuum || GARDEN_VACUUM_ITEMS[0];
+  const vacuumIconUrl = assetByCandidates([String(vacuumArtRecord?.id || '').toLowerCase()]);
   const section = document.createElement('section');
   section.className = 'sb-tool-picker';
   section.innerHTML = `<div class="sb-block-title"><div><span class="eyebrow">Farming Toolkit</span><h2>Choose a physical tool or Vacuum</h2></div><span class="sb-hint">Each item opens the same compact editor pattern. Crop tools define the crop context; Vacuum is independent.</span></div>
     <div class="sb-tool-grid">
       <button class="sb-tool-card sb-vacuum-card ${activeToolSurface === 'vacuum' ? 'selected' : ''}" data-sb-vacuum="1">
-        <span class="sb-tool-art"><span class="sb-tool-fallback">V</span></span>
-        <span class="sb-tool-copy"><strong>Pest Vacuum</strong><small>Pest killing tool</small></span>
-        <span class="sb-tool-tier">Vacuum</span>
+        <span class="sb-tool-art">${img(vacuumIconUrl, selectedVacuum?.name || 'Pest Vacuum')}<span class="sb-tool-fallback">V</span></span>
+        <span class="sb-tool-copy"><strong>${selectedVacuum?.name || 'Pest Vacuum'}</strong><small>${selectedVacuum ? 'Pest killing tool' : 'Select Vacuum model'}</small></span>
+        <span class="sb-tool-tier">${selectedVacuum?.rarity || 'Vacuum'}</span>
         <span class="sb-state-dot" aria-hidden="true"></span>
       </button>
       ${uniqueTools().map(tool => {
@@ -415,7 +420,7 @@ function toolPicker() {
     }).join('')}</div>`;
   // Rebuilt only when the selection or a tier actually changed. Rebuilding on
   // every pass would feed the observer that calls this and wedge the page.
-  const signature = `${selectedKey}|${uniqueTools().map(tool => toolTierFor(state, tool.crops[0].id)).join(',')}`;
+  const signature = `${selectedKey}|${String(vacuumBucket.skyblockId || '')}|${uniqueTools().map(tool => toolTierFor(state, tool.crops[0].id)).join(',')}`;
   const existing = content.querySelector('.sb-tool-picker');
   if (existing?.dataset.sbSignature === signature) return;
   section.dataset.sbSignature = signature;
