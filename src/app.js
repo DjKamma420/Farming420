@@ -1050,19 +1050,23 @@ function leverInput(attribute, slotId, key, checked, label) {
 }
 
 function enchantLine(slotId, row) {
+  const minLevel = Math.max(1, Number(row.minLevel) || 1);
   const levels = row.maxLevel
     ? [...new Set([
-      ...Array.from({ length: row.maxLevel }, (_, index) => index + 1),
+      ...Array.from({ length: Math.max(0, row.maxLevel - minLevel + 1) }, (_, index) => index + minLevel),
       row.level,
     ].filter(value => value > 0))].sort((a, b) => a - b)
     : [...new Set([row.level, 1, 2, 3, 4, 5].filter(value => value > 0))].sort((a, b) => a - b);
+  const maximum = row.maxLevel
+    ? `max ${esc(toRoman(row.maxLevel))}${row.trueMaxLevel > row.maxLevel ? ` · special ${esc(toRoman(row.trueMaxLevel))}` : ''}`
+    : 'level unknown';
   return `<div class="enchant-line enchant-${esc(row.state)} ${row.active ? 'on' : 'off'}" data-ench-row="${esc(row.storageKey)}">
       ${leverInput('data-ench-toggle', slotId, row.storageKey, row.active, `${row.label} on this item`)}
       <span class="enchant-name">${esc(row.label)}${row.kind === 'ultimate' ? '<em class="enchant-tag">ultimate</em>' : ''}${row.known ? '' : '<em class="enchant-tag unknown">not verified</em>'}</span>
       <select class="enchant-level" data-ench-select="${esc(slotId)}" data-ench-key="${esc(row.storageKey)}" data-ench-max="${row.maxLevel || 0}" ${row.active ? '' : 'disabled'}>
         ${levels.map(level => `<option value="${level}" ${level === row.level ? 'selected' : ''}>${esc(toRoman(level))}</option>`).join('')}
       </select>
-      <span class="enchant-max">${row.maxLevel ? `max ${esc(toRoman(row.maxLevel))}` : 'level unknown'}</span>
+      <span class="enchant-max">${maximum}</span>
     </div>`;
 }
 
