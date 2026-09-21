@@ -59,6 +59,7 @@ import {
   PEST_HEALTH,
   PEST_STAT_SIDES,
   SPAWN_PIPELINE,
+  UNMODELLED_PESTS,
   guaranteedDropText,
 } from './pest-model.js';
 import {
@@ -1349,6 +1350,8 @@ function infoPestGuide() {
         </div>`;
       }).join('')}
     </div>
+    ${UNMODELLED_PESTS.length ? `<p class="pest-note">Special Pest types not in the normal crop mapping: ${UNMODELLED_PESTS.map(pest =>
+      `${esc(pest.name)}${pest.notes ? ` — ${esc(pest.notes)}` : ''}`).join('; ')}</p>` : ''}
   </section>`;
 }
 
