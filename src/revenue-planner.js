@@ -523,27 +523,8 @@ function enhancePlanner() {
   panel.querySelectorAll('[data-revenue-open]').forEach(button => button.addEventListener('click', () => openItem(button.dataset.revenueOpen)));
 }
 
-function enhanceDashboard() {
-  const hero = document.querySelector('.hero-card.primary');
-  if (!hero || hero.dataset.revenueHeroReady === '1') return;
-  const raw = load();
-  const mode = activityModeForState(raw);
-  const econ = economics(raw);
-  const ready = Number(econ.normalCropCoinsPerHour || 0) > 0 || Number(econ.rareCropCoinsPerHour || 0) > 0;
-  if (!ready) return;
-  const best = evaluatedRows(raw)[0];
-  if (!best || best.payback === null) return;
-  hero.dataset.revenueHeroReady = '1';
-  hero.innerHTML = `<div class="eyebrow">Next upgrade by payback · ${esc(activityLabel(mode))}</div>
-    <h2>${esc(best.item.name)}</h2>
-    <p>+${compactCoins(best.marginalCoinsHour)}/h marginal profit · ${formatPayback(best.payback)} payback at the current ${esc(cropFor(raw)?.name || '')} ${esc(activityLabel(mode))} baseline.</p>
-    <button class="primary-btn" data-revenue-hero-open="${esc(best.item.id)}">Open details</button>`;
-  hero.querySelector('[data-revenue-hero-open]')?.addEventListener('click', () => openItem(best.item.id));
-}
-
 function apply() {
   enhancePlanner();
-  enhanceDashboard();
 }
 
 function boot() {
