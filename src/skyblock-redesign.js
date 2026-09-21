@@ -4,6 +4,11 @@ import { toolKeyForCropId } from './migrations.js';
 import { TOOL_TIER_CHAIN, highestChainTier } from './progression-chains.js';
 import { ITEM_ASSET_BASE_URL, loadItemAssetManifest } from './item-assets.js';
 import { GARDEN_VACUUM_ITEMS, vacuumRecordById } from './exact-farming-items.js';
+import {
+  FARMING_REFORGES_BY_FAMILY,
+  applyVacuumReforge,
+  selectedVacuumReforge,
+} from './item-capabilities.js';
 
 const GOAL_KEY = 'farming420-reforge-goal-v1';
 
@@ -273,6 +278,21 @@ function storeReforge(reforgeId) {
   window.dispatchEvent(new Event('farming420:state-changed'));
 }
 
+function vacuumProgressBucket(state) {
+  state.profile ||= {};
+  const bucket = state.profile.vacuumProgress ||= {};
+  bucket.levels ||= {};
+  bucket.owned ||= {};
+  bucket.costs ||= {};
+  bucket.manualGain ||= {};
+  return bucket;
+}
+
+function storeVacuumReforge(reforgeId) {
+  const state = readState();
+  applyVacuumReforge(vacuumProgressBucket(state), reforgeId || null);
+  writeState(state);
+}
 function decorateNavigation() {
   const sidebar = document.querySelector('.sidebar');
   if (!sidebar) return;
@@ -535,6 +555,39 @@ function reforgePanel() {
   }));
 }
 
+function vacuumReforgePanel() {
+  if (pageId() !== 'tools') return;
+  const editor = document.querySelector('[data-vacuum-panel]');
+  const target = editor?.querySelector('[data-vacuum-section="reforge"]');
+  if (!target) return;
+
+  const state = readState();
+  const chosen = selectedVacuumReforge(state?.profile?.vacuumProgress || {});
+  const signature = chosen || 'none';
+  if (target.dataset.sbVacuumReforgeSignature === signature) return;
+
+  target.className = 'sb-reforge-panel item-editor-section';
+  target.dataset.sbVacuumReforgeSignature = signature;
+  target.innerHTML = `<div class="sb-block-title"><div><span class="eyebrow">Reforge</span><h3>Pick what is actually on the Vacuum</h3></div></div>
+    <div class="sb-reforge-grid" role="radiogroup" aria-label="Reforge on this Vacuum">
+      <button class="sb-reforge-card sb-reforge-none ${chosen ? '' : 'selected'}" role="radio" aria-checked="${chosen ? 'false' : 'true'}" data-sb-vacuum-reforge="">
+        <span class="sb-reforge-art"><span class="sb-reforge-fallback">&ndash;</span></span>
+        <span class="sb-reforge-copy"><strong>No reforge</strong><small>Nothing on it</small><span>Pick this when the Vacuum carries no reforge yet.</span></span>
+        <span class="sb-state-dot" aria-hidden="true"></span>
+      </button>
+      ${FARMING_REFORGES_BY_FAMILY.vacuum.map(reforge => {
+      const iconUrl = assetByCandidates([reforge.itemId, reforge.id]);
+      return `<button class="sb-reforge-card ${chosen === reforge.id ? 'selected' : ''}" role="radio" aria-checked="${chosen === reforge.id ? 'true' : 'false'}" data-sb-vacuum-reforge="${reforge.id}">
+        <span class="sb-reforge-art">${img(iconUrl, reforge.name)}<span class="sb-reforge-fallback">${reforge.name.slice(0, 1)}</span></span>
+        <span class="sb-reforge-copy"><strong>${reforge.name}</strong><small>${reforge.stone}</small><span>${reforge.stone}</span></span>
+        <span class="sb-state-dot" aria-hidden="true"></span>
+      </button>`;
+    }).join('')}</div>`;
+
+  target.querySelectorAll('[data-sb-vacuum-reforge]').forEach(button => button.addEventListener('click', () => {
+    storeVacuumReforge(button.dataset.sbVacuumReforge);
+  }));
+}
 function toolPortrait() {
   if (pageId() !== 'tools') return;
   const portrait = document.querySelector('.sb-tool-card.selected[data-sb-tool-crop] .sb-tool-art');
@@ -568,6 +621,7 @@ function apply() {
     syncToolSurfaceSelection();
     dockToolEditor();
     reforgePanel();
+    vacuumReforgePanel();
     toolPortrait();
     restyleCards();
     document.documentElement.classList.add('skyblock-redesign');
