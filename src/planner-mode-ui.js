@@ -15,6 +15,7 @@ import { JACOB_BRACKETS, JACOB_PARTICIPATION_REWARD } from './jacob-contest-mode
 import { plannerActivityContext } from './planner-activity-context.js';
 import { PLANNER_MODES, plannerModeById, relevanceScore } from './planner-modes.js';
 import { setTextIfChanged } from './set-text.js';
+import { formatNumber } from './format-number.js';
 
 function esc(value = '') {
   return String(value).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;' }[c]));
@@ -85,7 +86,7 @@ function relevantRows(raw, mode) {
 
 function rowMarkup(row, index) {
   const max = Number(row.item.max || 1);
-  const gainText = row.gain > 0 ? `+${row.gain.toLocaleString('en-US')}` : 'dynamic';
+  const gainText = row.gain > 0 ? `+${formatNumber(row.gain)}` : 'dynamic';
   return `<button class="planner-row planner-mode-row" data-mode-open="${esc(row.item.id)}">
     <div class="rank">${index + 1}</div>
     <div class="planner-main"><strong>${esc(row.item.name)}</strong><span>${esc(row.item.category)} · ${esc(row.item.metric)}</span></div>
@@ -115,7 +116,7 @@ function personalBestFor(raw) {
 }
 
 function formatCollection(value) {
-  return Number.isFinite(value) ? value.toLocaleString('en-US') : '\u2014';
+  return Number.isFinite(value) ? formatNumber(value) : '\u2014';
 }
 
 /**

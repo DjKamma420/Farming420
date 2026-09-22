@@ -13,6 +13,7 @@ import {
 import { oneShotAdvice, pullsToKill } from './vacuum-damage.js';
 import { selectedVacuumReforge } from './item-capabilities.js';
 import { setTextIfChanged } from './set-text.js';
+import { formatNumber } from './format-number.js';
 
 function esc(value = '') {
   return String(value).replace(/[&<>"']/g, char => ({
@@ -37,13 +38,13 @@ function philipMarkup(pests) {
       <input data-pest-philip type="number" min="0" step="1" value="${result ? result.requested : 0}">
     </label>
     <div class="pest-philip-result">
-      <strong data-pest-philip-out>${result ? `+${result.fortune.toLocaleString('en-US')} Farming Fortune` : '—'}</strong>
+      <strong data-pest-philip-out>${result ? `+${formatNumber(result.fortune)} Farming Fortune` : '—'}</strong>
       <span data-pest-philip-note>${result
-        ? `${result.spent.toLocaleString('en-US')} pests for ${PESTHUNTER_PHILIP.durationMinutes} minutes${result.capped ? ` · capped at ${PESTHUNTER_PHILIP.pestCap}` : ''}`
+        ? `${formatNumber(result.spent)} pests for ${PESTHUNTER_PHILIP.durationMinutes} minutes${result.capped ? ` · capped at ${PESTHUNTER_PHILIP.pestCap}` : ''}`
         : 'Enter a pest count'}</span>
     </div>
     <p class="pest-note">${PESTHUNTER_PHILIP.fortunePerPest} Farming Fortune per pest, up to
-      ${PESTHUNTER_PHILIP.maxFortune.toLocaleString('en-US')} at ${PESTHUNTER_PHILIP.pestCap} pests
+      ${formatNumber(PESTHUNTER_PHILIP.maxFortune)} at ${PESTHUNTER_PHILIP.pestCap} pests
       (version ${esc(PESTHUNTER_PHILIP.version)}). An earlier snapshot caps at
       +${older.maxFortune} for ${older.pestCap} pests; if that is what you see in game, yours is the older one.</p>
     <p class="pest-note">${esc(PESTHUNTER_PHILIP.alternativeUseNote)}</p>`;
@@ -62,7 +63,7 @@ function vacuumBuild(raw) {
 
 function killResultText(result) {
   if (!result) return '\u2014';
-  return `${result.damage.totalDamage.toLocaleString('en-US')} damage`;
+  return `${formatNumber(result.damage.totalDamage)} damage`;
 }
 
 /**
@@ -173,9 +174,9 @@ function applyPestsPage() {
     // observed subtree: assigning the same string still replaces the text node
     // and emits another childList mutation. That is rule 2 of
     // docs/RENDER_FREEZE_SAFETY.md and the exact shape of the PR #90 freeze.
-    setTextIfChanged(out, result ? `+${result.fortune.toLocaleString('en-US')} Farming Fortune` : '—');
+    setTextIfChanged(out, result ? `+${formatNumber(result.fortune)} Farming Fortune` : '—');
     setTextIfChanged(note, result
-      ? `${result.spent.toLocaleString('en-US')} pests for ${PESTHUNTER_PHILIP.durationMinutes} minutes${result.capped ? ` · capped at ${PESTHUNTER_PHILIP.pestCap}` : ''}`
+      ? `${formatNumber(result.spent)} pests for ${PESTHUNTER_PHILIP.durationMinutes} minutes${result.capped ? ` · capped at ${PESTHUNTER_PHILIP.pestCap}` : ''}`
       : 'Enter a pest count');
   });
 }

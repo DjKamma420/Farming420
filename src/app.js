@@ -79,6 +79,7 @@ import {
   readJsonFile,
   validateBackupPayload,
 } from './backup.js';
+import { FRACTION_2, formatNumber } from './format-number.js';
 
 const NAV = [
   ['dashboard', 'Dashboard'],
@@ -453,7 +454,7 @@ function card(item, compact=false) {
       </div>
       <div class="card-meta">
         ${max > 1 ? `<span>Level ${level}/${max}</span>` : `<span>${isOwned(item) ? 'Owned' : 'Not set'}</span>`}
-        ${gain ? `<span>+${Number(gain).toLocaleString('en-US')} ${esc(item.metric === 'Crop Yield' ? 'Fortune/step' : item.metric)}</span>` : '<span>dynamic</span>'}
+        ${gain ? `<span>+${formatNumber(Number(gain))} ${esc(item.metric === 'Crop Yield' ? 'Fortune/step' : item.metric)}</span>` : '<span>dynamic</span>'}
       </div>
       <div class="progress"><i data-progress="${Math.min(100,(level/max)*100)}"></i></div>
       <div class="chips">
@@ -513,7 +514,7 @@ function compactDashboardCoins(value) {
   if (number >= 1_000_000_000) return `${(number / 1_000_000_000).toFixed(number >= 10_000_000_000 ? 1 : 2)}b`;
   if (number >= 1_000_000) return `${(number / 1_000_000).toFixed(number >= 10_000_000 ? 1 : 2)}m`;
   if (number >= 1_000) return `${(number / 1_000).toFixed(number >= 10_000 ? 1 : 2)}k`;
-  return Math.round(number).toLocaleString('en-US');
+  return formatNumber(Math.round(number));
 }
 
 function dashboardMeasuredValues(cropId, mode) {
@@ -589,7 +590,7 @@ function dashboard() {
   const estimate = dashboardProfitEstimate(selectedCrop.id, mode, context, stats);
   const measuredValues = estimate.values || {};
   const marker = count => count ? ' ~' : '';
-  const number = value => Number(value || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
+  const number = value => formatNumber(Number(value || 0), FRACTION_2);
   const effectiveIncomplete = stats.incomplete.globalFortune.length
     + stats.incomplete.cropFortune.length
     + stats.incomplete.pestFortune.length;
@@ -981,9 +982,9 @@ function plannerPage() {
       ${candidates.map((x,i)=>`<button class="planner-row" data-open="${x.item.id}">
         <div class="rank">${i+1}</div>
         <div class="planner-main"><strong>${esc(x.item.name)}</strong><span>${esc(x.item.category)} · ${esc(x.item.metric)}</span></div>
-        <div class="planner-number"><strong>+${x.gain.toLocaleString('en-US')}</strong><span>marginal</span></div>
+        <div class="planner-number"><strong>+${formatNumber(x.gain)}</strong><span>marginal</span></div>
         <div class="planner-number"><strong>${x.rel.toFixed(2)}%</strong><span>relative</span></div>
-        <div class="planner-number"><strong>${x.cost?`${Math.round(x.cost).toLocaleString('en-US')} Coins`:'—'}</strong><span>${x.efficiency!==null?`${x.efficiency.toFixed(3)} / 1M`:'Cost missing'}</span></div>
+        <div class="planner-number"><strong>${x.cost?`${formatNumber(Math.round(x.cost))} Coins`:'—'}</strong><span>${x.efficiency!==null?`${x.efficiency.toFixed(3)} / 1M`:'Cost missing'}</span></div>
       </button>`).join('') || '<div class="empty">No calculated upgrades for the current state.</div>'}
     </div>`;
 }
@@ -1004,7 +1005,7 @@ function drawer() {
     <div class="drawer-section"><h3>Ownership & Level</h3>
       ${max>1 ? `<div class="stepper"><button data-step="-1" data-id="${item.id}">−</button><strong>${level}/${max}</strong><button data-step="1" data-id="${item.id}">+</button><button class="ghost small" data-max="${item.id}">Max</button></div>` : `<label class="switch-row"><span>Owned</span><input type="checkbox" data-owned="${item.id}" ${isOwned(item)?'checked':''}></label>`}
     </div>
-    <div class="drawer-section"><h3>Evaluation</h3><div class="detail-grid"><div><span>Next step</span><strong>+${gainFor(item).toLocaleString('en-US')}</strong></div><div><span>Relative effect</span><strong>${relativeGainPct(item).toFixed(2)}%</strong></div></div>
+    <div class="drawer-section"><h3>Evaluation</h3><div class="detail-grid"><div><span>Next step</span><strong>+${formatNumber(gainFor(item))}</strong></div><div><span>Relative effect</span><strong>${relativeGainPct(item).toFixed(2)}%</strong></div></div>
       <label>Next cost (Coins)<input type="number" data-cost="${item.id}" value="${esc(cost)}" placeholder="optional"></label>
       <label>Manual marginal value<input type="number" step="0.01" data-manual="${item.id}" value="${esc(manual)}" placeholder="only for dynamic values"></label>
     </div>
