@@ -36,6 +36,31 @@ Before merging a change that adds `MutationObserver`, `queueMicrotask`, `request
 
 If any answer is unclear, the change is not ready to merge.
 
+## The invariant is checked, not just reviewed
+
+`scripts/browser-idempotence-smoke.html` drives every page in real headless
+Chrome, re-announces the **same** state three times per page, and compares the
+node count and markup length of `#app` before and after. Nothing changed, so
+nothing may change. `scripts/browser-startup-smoke.sh` runs it in CI and fails
+the build on any difference.
+
+Until this existed the rule above was enforced by review and by hand-driving a
+browser. That is how `dashboard-guide.js` stayed silently dead for four days
+after a render rewrite dropped the element it anchored to: nothing crashed, so
+nothing complained.
+
+Both failure modes are covered, and each was proven by deliberately introducing
+it before this was merged:
+
+| Violation | How it surfaces |
+|---|---|
+| an observer writes unconditionally into the subtree it watches | the harness never finishes; the existing freeze timeout fires |
+| a listener appends on every state change without a guard | `IDEMPOTENCE_DRIFT`, naming the page and the node delta |
+
+The harness reports the number of pages it actually drove, and the shell rejects
+a verdict carrying fewer than five. A check that quietly tests nothing is worse
+than no check, because it reads as a pass.
+
 ## Incident log
 
 ### 2026-09-17 — PR #90 setup selection freeze

@@ -37,6 +37,10 @@ fi
 run_chrome_dump() {
   local url="$1"
   local output="$2"
+  # Virtual time is spent by every timer the page waits on. A plain startup dump
+  # needs 5s; a harness that drives all thirteen pages needs more, and silently
+  # truncating it would dump a half-finished verdict that still greps as OK.
+  local virtual_time="${3:-5000}"
   : >"$CHROME_LOG"
   set +e
   # GitHub's hosted runner can spend more than 20 seconds cold-starting Chrome
@@ -56,7 +60,7 @@ run_chrome_dump() {
     --disable-sync \
     --metrics-recording-only \
     --no-first-run \
-    --virtual-time-budget=5000 \
+    --virtual-time-budget="$virtual_time" \
     --enable-logging=stderr \
     --log-level=0 \
     --dump-dom "$url" >"$output" 2>"$CHROME_LOG"
@@ -128,3 +132,31 @@ if [[ "$HELMET_LINE" == *"rarity-divine"* ]]; then
 fi
 
 echo "Browser smoke test passed: Dashboard, Setups picker, and canonical recombobulated rarity background render in headless Chrome."
+
+IDEMPOTENCE_DOM="${RUNNER_TEMP:-/tmp}/farming420-idempotence-dom.html"
+run_chrome_dump "${BASE_URL}scripts/browser-idempotence-smoke.html" "$IDEMPOTENCE_DOM" 30000
+
+# The harness reports the page count it actually drove. A verdict without one,
+# or with too few pages, means it fell over before testing anything -- which
+# must fail rather than read as a pass.
+IDEMPOTENCE_VERDICT="$(grep -o 'IDEMPOTENCE_[A-Z]* pages=[0-9]*' "$IDEMPOTENCE_DOM" | head -n 1 || true)"
+if [[ -z "$IDEMPOTENCE_VERDICT" ]]; then
+  echo "The idempotence harness produced no verdict; it did not finish" >&2
+  sed -n '1,80p' "$IDEMPOTENCE_DOM" >&2 || true
+  exit 1
+fi
+
+IDEMPOTENCE_PAGES="${IDEMPOTENCE_VERDICT##*pages=}"
+if (( IDEMPOTENCE_PAGES < 5 )); then
+  echo "The idempotence harness only reached $IDEMPOTENCE_PAGES page(s); it is not testing the app" >&2
+  sed -n '1,80p' "$IDEMPOTENCE_DOM" >&2 || true
+  exit 1
+fi
+
+if [[ "$IDEMPOTENCE_VERDICT" != IDEMPOTENCE_OK* ]]; then
+  echo "Re-applying the same UI state changed the DOM -- docs/RENDER_FREEZE_SAFETY.md" >&2
+  sed -n '1,80p' "$IDEMPOTENCE_DOM" >&2 || true
+  exit 1
+fi
+
+echo "Idempotence smoke test passed: re-applying the same state on $IDEMPOTENCE_PAGES pages changed nothing."
