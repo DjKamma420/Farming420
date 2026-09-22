@@ -11,6 +11,7 @@ import {
 } from './item-capabilities.js';
 import { petLevelFromExperience } from './mooshroom-cow.js';
 import { writeLinkedSetupSlot } from './setups.js';
+import { formatNumber } from './format-number.js';
 
 const PET_RARITIES = Object.freeze(['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY', 'MYTHIC']);
 let applying = false;
@@ -266,8 +267,8 @@ function renderVacuumSurface(raw) {
     <section class="item-editor-section" data-vacuum-section="totals">
       <div class="workspace-section-head"><div><h3>Pest totals</h3><p>Calculated from the configured Vacuum and the active Killing setup.</p></div></div>
       <div class="pest-loadout-stats" aria-label="Vacuum Pest totals">
-        <div class="pest-loadout-stat"><span>Total Pest Fortune</span><strong>${totalPestFortune.toLocaleString('en-US')}</strong><small>Global + Pest-only (+${Number(killStats.pestFortune || 0).toLocaleString('en-US')})</small></div>
-        <div class="pest-loadout-stat"><span>Pest Overbloom</span><strong>${Number(killStats.overbloom || 0).toLocaleString('en-US')}</strong></div>
+        <div class="pest-loadout-stat"><span>Total Pest Fortune</span><strong>${formatNumber(totalPestFortune)}</strong><small>Global + Pest-only (+${formatNumber(Number(killStats.pestFortune || 0))})</small></div>
+        <div class="pest-loadout-stat"><span>Pest Overbloom</span><strong>${formatNumber(Number(killStats.overbloom || 0))}</strong></div>
       </div>
     </section>`;
 

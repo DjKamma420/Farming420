@@ -1,4 +1,5 @@
 import { ACTIVITY_MODE, normalizeActivityMode } from './activity-mode.js';
+import { formatNumber } from './format-number.js';
 
 export const PLANNER_UPGRADE_TARGET = Object.freeze({
   FARMING_FORTUNE: 'farming-fortune',
@@ -115,7 +116,7 @@ export function plannerUpgradeValueText(item, gain) {
   const target = plannerUpgradeTarget(item);
   const value = Number(gain);
   const hasPositiveValue = Number.isFinite(value) && value > 0;
-  const formatted = hasPositiveValue ? value.toLocaleString('en-US') : '';
+  const formatted = hasPositiveValue ? formatNumber(value) : '';
 
   switch (target) {
     case PLANNER_UPGRADE_TARGET.BONUS_PEST_CHANCE:

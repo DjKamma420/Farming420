@@ -2553,3 +2553,57 @@ uses to reject that very claim. That is a helper now.
 all three profiles, startup smoke test passing, and all three phases plus the
 luxury tier driven in a browser at 1280px and 412px. The architecture-diagram
 test caught the new observer module and the diagram was updated to 25.
+
+---
+
+# Overnight run — measured bug and performance work
+
+Standing instruction: work through this list autonomously, keep every step
+shippable, and stop at a clean point rather than mid-change.
+
+## How the list was built
+
+Not from guessing. A CPU profile of boot at 412px with 4x CPU throttling, plus
+an instrumented render pass. Two hypotheses died on contact with the numbers:
+
+- **`localStorage` + `JSON.parse` traffic is not a problem.** Boot reads 160 KB
+  across 36 parses and a state change re-reads 73 KB across 15 -- but that is
+  **1.8 ms and 3.2 ms** respectively, even throttled. A shared state cache would
+  have been effort spent on nothing, and would have risked the one-writer rule.
+- **Render latency is fine.** The DOM settles 56 ms after a state change.
+
+What the profile actually shows, with boot at ~830 ms of active CPU inside a
+4.8 s window and three long tasks totalling 357 ms:
+
+| Self time | Where |
+|---:|---|
+| 3.6% | `app.js :: render` -- full `#app` innerHTML rebuild |
+| 2.6% | `app.js :: number` -- number formatting |
+
+`number` is ~15% of all active CPU. That is one `toLocaleString` per value, and
+each call builds a fresh `Intl.NumberFormat`.
+
+## Queue
+
+- [ ] **P1. Cache the number formatters.** 27 `toLocaleString` call sites across
+      8 modules. One side-effect-free `src/format-number.js` holding cached
+      `Intl.NumberFormat` instances. Output must stay byte-identical, including
+      for `NaN`, `Infinity`, negatives and `null` -- proven by a test that
+      compares against `toLocaleString` directly, not by reasoning about it.
+- [ ] **P2. Re-measure after P1** and record the delta. If the win is not real,
+      say so and revert rather than keep a change that bought nothing.
+- [ ] **P3. `app.js :: render`.** The biggest single cost. Investigate before
+      touching: a full innerHTML rebuild is also what makes the 25 observers
+      correct, so this is not a free win and may be left alone deliberately.
+- [ ] **B1. Hunt the `Number(null) === 0` family.** This defect class has
+      already shipped twice. Find every guard that coerces before checking for
+      absence.
+- [ ] **B2. Observer idempotence sweep.** Applying the same UI state twice must
+      converge to a no-op. Verify per module in a real browser, not by reading.
+
+## Rules for this run
+
+1. Measure before fixing; record the number, not an impression.
+2. A change that cannot be proven to work gets reverted, not shipped.
+3. Every step ends green: full suite, overlay audit, startup smoke test.
+4. Never invent a SkyBlock value to make a calculation come out.

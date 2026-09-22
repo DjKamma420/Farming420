@@ -12,6 +12,7 @@ import {
   normalizeActivityMode,
   setActivityModeOnState,
 } from './activity-mode.js';
+import { formatNumber } from './format-number.js';
 
 let scheduled = false;
 let applying = false;
@@ -219,17 +220,17 @@ function renderPlanner(raw) {
     context.innerHTML = `
       <div><span>Crop</span><strong>${esc(cropName(cropId))}</strong></div>
       <div><span>Set</span><strong>${esc(activityLabel(mode))}</strong></div>
-      <div><span>Effective FF</span><strong>${Number(stats.effectiveFortune || 0).toLocaleString('en-US')}</strong></div>
-      <div><span>Overbloom</span><strong>${Number(stats.overbloom || 0).toLocaleString('en-US')}</strong></div>`;
+      <div><span>Effective FF</span><strong>${formatNumber(Number(stats.effectiveFortune || 0))}</strong></div>
+      <div><span>Overbloom</span><strong>${formatNumber(Number(stats.overbloom || 0))}</strong></div>`;
   }
 
   list.innerHTML = candidates.length ? candidates.map((candidate, index) => `
     <button class="planner-row" data-mode-open="${esc(candidate.item.id)}">
       <div class="rank">${index + 1}</div>
       <div class="planner-main"><strong>${esc(candidate.item.name)}</strong><span>${esc(candidate.item.category)} · ${esc(candidate.item.metric)}</span></div>
-      <div class="planner-number"><strong>+${candidate.gain.toLocaleString('en-US')}</strong><span>marginal</span></div>
+      <div class="planner-number"><strong>+${formatNumber(candidate.gain)}</strong><span>marginal</span></div>
       <div class="planner-number"><strong>${candidate.rel.toFixed(2)}%</strong><span>relative</span></div>
-      <div class="planner-number"><strong>${candidate.cost ? `${Math.round(candidate.cost).toLocaleString('en-US')} Coins` : '—'}</strong><span>${candidate.efficiency !== null ? `${candidate.efficiency.toFixed(3)} / 1M` : 'Cost missing'}</span></div>
+      <div class="planner-number"><strong>${candidate.cost ? `${formatNumber(Math.round(candidate.cost))} Coins` : '—'}</strong><span>${candidate.efficiency !== null ? `${candidate.efficiency.toFixed(3)} / 1M` : 'Cost missing'}</span></div>
     </button>`).join('') : '<div class="empty">No calculated upgrades for the current crop and set.</div>';
 
   list.querySelectorAll('[data-mode-open]').forEach(button => button.addEventListener('click', () => openDrawer(button.dataset.modeOpen)));

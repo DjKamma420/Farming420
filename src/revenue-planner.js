@@ -21,6 +21,7 @@ import {
   plannerProgressBucket,
   setPlannerEconomicsValue,
 } from './planner-activity-context.js';
+import { formatNumber } from './format-number.js';
 
 const PLANNER_BENCHMARK_COINS_PER_HOUR = INTERNET_FARMING_TIME_VALUE_COINS_PER_HOUR;
 const FOCUS_AVERAGE_STEP_HOURS = 1;
@@ -391,20 +392,20 @@ function compactCoins(value) {
   if (abs >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(2)}b`;
   if (abs >= 1_000_000) return `${(value / 1_000_000).toFixed(2)}m`;
   if (abs >= 1_000) return `${(value / 1_000).toFixed(1)}k`;
-  return Math.round(value).toLocaleString('en-US');
+  return formatNumber(Math.round(value));
 }
 
 function formatPayback(hours) {
   if (!Number.isFinite(hours)) return '—';
   if (hours < 1) return `${Math.round(hours * 60)} min`;
   if (hours < 100) return `${hours.toFixed(1)} h`;
-  return `${Math.round(hours).toLocaleString('en-US')} h`;
+  return `${formatNumber(Math.round(hours))} h`;
 }
 
 function formatHours(hours) {
   if (!Number.isFinite(hours)) return '—';
   if (hours < 10) return `${hours.toFixed(1)} h`;
-  return `${Math.round(hours).toLocaleString('en-US')} h`;
+  return `${formatNumber(Math.round(hours))} h`;
 }
 
 function openItem(itemId) {
@@ -484,7 +485,7 @@ function fortuneUsedText(context) {
   const farming = Number(stats.globalFortune || 0);
   const crop = Number(stats.cropFortune || 0);
   if (farming + crop <= 0) return 'No Fortune is known yet, so this counts plain drops only.';
-  return `Multiplied by the ${(farming + crop).toLocaleString('en-US')} Fortune your profile works out (${farming.toLocaleString('en-US')} Farming + ${crop.toLocaleString('en-US')} Crop).`;
+  return `Multiplied by the ${formatNumber((farming + crop))} Fortune your profile works out (${formatNumber(farming)} Farming + ${formatNumber(crop)} Crop).`;
 }
 
 /**
@@ -709,7 +710,7 @@ function benchmarkPanel(raw) {
       <div class="benchmark-stat-grid">
         <div><span>Primary target</span><strong>Bonus Pest Chance</strong></div>
         <div><span>Primary target</span><strong>Pest cooldown ↓</strong></div>
-        <div><span>Secondary Farming Fortune</span><strong>${Number(context.currentFortune || 0).toLocaleString('en-US')}</strong></div>
+        <div><span>Secondary Farming Fortune</span><strong>${formatNumber(Number(context.currentFortune || 0))}</strong></div>
       </div>
       <p class="revenue-help">The Spawning set is a short crop-breaking phase near the effective Pest cooldown. Bonus Pest Chance and cooldown reduction are primary; Farming Fortune only values crop output during those breaks. BPC and cooldown are not converted into FF-equivalent or benchmark Coins/h without a verified spawn-value formula.</p>
     </section>`;
