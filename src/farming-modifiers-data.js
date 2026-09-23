@@ -172,6 +172,7 @@ export const FARMING_SHARDS_027 = Object.freeze({
   rat: Object.freeze({ id: 'rat', name: 'Rat Shard', status: 'ACTIVE_REPORTED_0_27', source: SOURCE.current027ShardReport, effects: Object.freeze({ extraSprayonatorMaterialChance: 0.10 }) }),
   mosquito: Object.freeze({ id: 'mosquito', name: 'Mosquito Shard', status: 'ACTIVE_REPORTED_0_27', source: SOURCE.current027ShardReport, effects: Object.freeze({ enchantedCropDropProbabilityPerBreak: 0.0001 }) }),
   mudworm: Object.freeze({ id: 'mudworm', name: 'Mudworm Shard', status: 'ACTIVE_REPORTED_0_27', source: SOURCE.current027ShardReport, effects: Object.freeze({ visitorArrivalTimeReductionPercent: 10 }), interactionStatus: 'VERIFY_STACKING' }),
+  ladybug: Object.freeze({ id: 'ladybug', name: 'Ladybug Shard', status: 'ACTIVE', source: 'https://hypixel-skyblock.fandom.com/wiki/Attributes/List/Rare', effects: Object.freeze({ visitorCopperPercent: 10 }) }),
   locust: Object.freeze({ id: 'locust', name: 'Locust Shard', status: 'ACTIVE_REPORTED_0_27', source: SOURCE.current027ShardReport, effects: Object.freeze({ cropGrowth: 10 }) }),
   timestalkClone: Object.freeze({ id: 'timestalk-clone', name: 'Timestalk Clone Shard', status: 'ACTIVE_REPORTED_0_27', source: SOURCE.current027ShardReport, effects: Object.freeze({ greenhouseGrowthSpeedPercent: 5 }), interactionStatus: 'VERIFY_STACKING' }),
   mite: Object.freeze({ id: 'mite', name: 'Mite Shard', status: 'ACTIVE_REPORTED_0_27', source: SOURCE.current027ShardReport, effects: Object.freeze({ atmosphericFilterStrengthPercent: 20 }) }),

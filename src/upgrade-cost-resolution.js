@@ -1,6 +1,10 @@
 import { UPGRADE_COSTS, missingCostReason } from './upgrade-costs.js';
 import { stepCostForUpgrade, stepCostModelForUpgrade } from './upgrade-step-costs.js';
-import { marketRoutesForUpgrade, resolveUpgradeMarketAverage } from './upgrade-market-routes.js';
+import {
+  marketRoutesForUpgrade,
+  resolveUpgradeMarketAverage,
+  stepMarketRoutesForUpgrade,
+} from './upgrade-market-routes.js';
 
 function acquisitionModeFor(record) {
   if (record?.unit === 'coins') return 'BUYABLE';
@@ -17,9 +21,9 @@ function configuredLevel(store, itemId) {
 function researchedRecordFor(store, itemId) {
   const id = String(itemId || '');
   const model = stepCostModelForUpgrade(id);
+  const currentLevel = configuredLevel(store, id);
+  const targetLevel = currentLevel + 1;
   if (model) {
-    const currentLevel = configuredLevel(store, id);
-    const targetLevel = currentLevel + 1;
     const record = stepCostForUpgrade(id, targetLevel);
     return {
       record,
@@ -31,6 +35,21 @@ function researchedRecordFor(store, itemId) {
         : `no researched next-step route for target level/count ${targetLevel}`,
     };
   }
+
+  // Some systems (notably Attribute Shards) have exact market-quantity steps
+  // even though their costs do not live in the generated research snapshot.
+  // Treat those explicit routes as step-aware so "next cost" buys the number
+  // of shards needed for the next level, not one shard.
+  if (stepMarketRoutesForUpgrade(id, targetLevel)) {
+    return {
+      record: { unit: 'coins' },
+      currentLevel,
+      targetLevel,
+      stepAware: true,
+      missingReason: null,
+    };
+  }
+
   return {
     record: UPGRADE_COSTS[id] || null,
     currentLevel: null,

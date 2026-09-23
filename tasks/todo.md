@@ -151,6 +151,15 @@ Raw JSON import is safe but inconvenient. Production live sync needs a small ser
 
 ### 4. Market data and valuation
 
+Implemented in the current pricing pass:
+- compact automatic price tags use rolling 90-day market averages only (k / m / b notation)
+- generic upgrade drawers show next cost and priced remaining cost to max
+- Attribute Shards expose one-shard price, current-level shard-equivalent value and exact remaining shard quantity/cost to level 10
+- physical Farming Tool and setup-item editors calculate an estimated rebuild value from the base item plus installed priced reforge stone, Recombobulator, enchantments, gemstones and modeled consumable tool upgrades
+- missing component prices make the shown build value a lower bound rather than silently becoming zero
+- Visitor filtering now means Visitor-system mechanics (arrival/cooldown, rarity, Visitor Copper/rewards), not Farming Fortune that merely scales from Visitor progress
+- Ladybug / Pretty Clothes is included as the Visitor-Copper Attribute Shard
+
 Still required:
 
 - Bazaar sell routes and timestamps

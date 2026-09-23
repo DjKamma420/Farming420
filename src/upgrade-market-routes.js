@@ -12,6 +12,10 @@ import {
   marketAverageLabel,
   readCachedMarketAverage,
 } from './market-average-prices.js';
+import {
+  FARMING_SHARD_MARKET,
+  shardsForAttributeStep,
+} from './shard-price-model.js';
 
 const bz = (itemTag, quantity = 1) => Object.freeze({
   market: MARKET_KIND.BAZAAR,
@@ -27,8 +31,66 @@ const ah = (itemTag, quantity = 1) => Object.freeze({
 });
 const route = (...components) => Object.freeze([Object.freeze(components)]);
 const alternatives = (...paths) => Object.freeze(paths.map(path => Object.freeze(path)));
+const traded = (itemTag, quantity = 1) => alternatives(
+  [bz(itemTag, quantity)],
+  [ah(itemTag, quantity)],
+);
+
+const SHARD_ENTRY_ROUTES = Object.freeze(Object.fromEntries(
+  Object.entries(FARMING_SHARD_MARKET).map(([itemId, record]) => [
+    itemId,
+    alternatives(...record.itemTags.map(itemTag => [bz(itemTag)])),
+  ]),
+));
+
+const SHARD_STEP_ROUTES = Object.freeze(Object.fromEntries(
+  Object.entries(FARMING_SHARD_MARKET).map(([itemId, record]) => [
+    itemId,
+    Object.freeze(Object.fromEntries(
+      Array.from({ length: 10 }, (_, index) => {
+        const targetLevel = index + 1;
+        const quantity = shardsForAttributeStep(itemId, targetLevel);
+        return [
+          targetLevel,
+          alternatives(...record.itemTags.map(itemTag => [bz(itemTag, quantity)])),
+        ];
+      }),
+    )),
+  ]),
+));
 
 const ENTRY_ROUTES = Object.freeze({
+  ...SHARD_ENTRY_ROUTES,
+  'accessory-relic-of-power-perfect-peridot-effect': traded('RELIC_OF_POWER'),
+  'accessory-fermento-artifact': traded('FERMENTO_ARTIFACT'),
+  'accessory-helianthus-relic': traded('HELIANTHUS_RELIC'),
+  'tool-overclocker-3000': traded('OVERCLOCKER_3000', 10),
+  'tool-farming-for-dummies': traded('FARMING_FOR_DUMMIES', 5),
+  'tool-recombobulator-effect-on-tool-stats': traded('RECOMBOBULATOR_3000'),
+  'tool-gem-perfect-peridot-on-farming-tool': traded('PERFECT_PERIDOT_GEM'),
+  'tool-reforge-blessed-reforge': traded('BLESSED_FRUIT'),
+  'tool-reforge-bountiful-reforge': traded('GOLDEN_BALL'),
+  'tool-reforge-earthy-reforge': traded('LARGE_WALNUT'),
+  'tool-reforge-deep-fried-reforge': traded('HASHBROWN'),
+  'tool-reforge-overpriced-reforge': traded('OVERPRICED_DRINK'),
+  'vacuum-reforge-beady-pest-only-farming-fortune': traded('BEADY_EYES'),
+  'armor-reforge-mossy-on-full-armor': traded('OVERGROWN_GRASS', 4),
+  'armor-gem-perfect-peridot-on-full-armor': traded('PERFECT_PERIDOT_GEM', 4),
+  'equipment-reforge-rooted-on-full-equipment': traded('BURROWING_SPORES', 4),
+  'equipment-reforge-thorny-on-full-mythic-equipment-ff': traded('BLOOMING_THORNS', 4),
+  'equipment-reforge-thorny-on-full-mythic-equipment-overbloom': traded('BLOOMING_THORNS', 4),
+  'pet-item-green-bandana': traded('GREEN_BANDANA'),
+  'pet-item-lucky-clover-poignant-lucky-clover': traded('POIGNANT_LUCKY_CLOVER'),
+  'garden-chip-cropshot-chip': traded('CROPSHOT_GARDEN_CHIP'),
+  'garden-chip-hypercharge-chip-next-level': traded('HYPERCHARGE_GARDEN_CHIP'),
+  'garden-chip-rarefinder-chip': traded('RAREFINDER_CHIP'),
+  'garden-chip-overdrive-chip': traded('OVERDRIVE_GARDEN_CHIP'),
+  'garden-chip-quickdraw-chip': traded('QUICKDRAW_GARDEN_CHIP'),
+  'garden-chip-synthesis-chip': traded('SYNTHESIS_GARDEN_CHIP'),
+  'garden-chip-evergreen-chip': traded('EVERGREEN_GARDEN_CHIP'),
+  'garden-chip-vermin-vaporizer-chip': traded('VERMIN_VAPORIZER_GARDEN_CHIP'),
+  'garden-chip-mechamind-chip': traded('MECHAMIND_GARDEN_CHIP'),
+  'garden-chip-sowledge-chip': traded('SOWLEDGE_GARDEN_CHIP'),
   'armor-enchant-pesterminator-vi-on-full-armor': route(bz('PESTHUNTING_GUIDE', 4)),
   'armor-enchant-sunset-v-day-overbloom': route(bz('ENCHANTMENT_SUNSET_5', 4)),
   'armor-helianthus-armor-base-stats': route(
@@ -48,6 +110,7 @@ const ENTRY_ROUTES = Object.freeze({
 });
 
 const STEP_ROUTES = Object.freeze({
+  ...SHARD_STEP_ROUTES,
   'tool-enchant-cultivating-x': Object.freeze({
     1: route(bz('ENCHANTMENT_CULTIVATING_1')),
   }),
@@ -96,10 +159,16 @@ const STEP_ROUTES = Object.freeze({
   }),
 });
 
+export function stepMarketRoutesForUpgrade(itemId, targetLevel) {
+  const id = String(itemId || '');
+  if (targetLevel == null) return null;
+  return STEP_ROUTES[id]?.[Number(targetLevel)] || null;
+}
+
 export function marketRoutesForUpgrade(itemId, targetLevel = null) {
   const id = String(itemId || '');
   if (targetLevel != null && STEP_ROUTES[id]) {
-    return STEP_ROUTES[id][Number(targetLevel)] || null;
+    return stepMarketRoutesForUpgrade(id, targetLevel);
   }
   return ENTRY_ROUTES[id] || null;
 }

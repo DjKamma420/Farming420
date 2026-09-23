@@ -142,6 +142,25 @@ test('permanent stacks charge one additional 90-day-priced consumable, not the f
   });
 });
 
+test('Attribute Shard next cost uses the shard quantity required for the target level', async () => {
+  await withStorage(async () => {
+    const id = 'attribute-shard-cricket-pest-fortune';
+    cacheBazaar('SHARD_CRICKET', 100_000);
+
+    const level0 = resolveUpgradeCost(storeFor(id, 0), id);
+    assert.equal(level0.targetLevel, 1);
+    assert.equal(level0.coins, 100_000);
+
+    const level1 = resolveUpgradeCost(storeFor(id, 1), id);
+    assert.equal(level1.targetLevel, 2);
+    assert.equal(level1.coins, 200_000, 'Uncommon level 2 needs two additional shards');
+
+    const level9 = resolveUpgradeCost(storeFor(id, 9), id);
+    assert.equal(level9.targetLevel, 10);
+    assert.equal(level9.coins, 1_600_000, 'Uncommon level 10 needs sixteen additional shards');
+  });
+});
+
 test('already researched tool modifiers have reachable 90-day next-step prices', async () => {
   await withStorage(async () => {
     const cases = [

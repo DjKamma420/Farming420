@@ -19,6 +19,8 @@ import {
   averageHarvestFeastMaterialPrice,
 } from './average-crop-price.js';
 import { costOriginNote, resolveUpgradeCost } from './upgrade-cost-resolution.js';
+import { formatApproxCoins } from './compact-coins.js';
+import { upgradePriceSummary } from './upgrade-price-summary.js';
 import { MEASURED_FEAST_KEY, measuredBaseline } from './measured-baseline.js';
 import { ensureProgressBucket, migrateState, toolKeyForCropId } from './migrations.js';
 import { applySnapshotToProgress, isAutoApplied } from './snapshot-apply.js';
@@ -81,6 +83,13 @@ import {
   slotHasOfficialCategory,
 } from './item-catalog.js';
 import { itemCapabilities } from './item-capabilities.js';
+import { FARMING_TOOL_REFORGES } from './farming-reforges.js';
+import { farmingToolSkyblockId } from './exact-farming-items.js';
+import {
+  physicalItemBuildValue,
+  physicalItemValueComponents,
+  refreshPhysicalItemBuildValue,
+} from './physical-item-value.js';
 import {
   GARDEN_PESTS,
   LOOT_PIPELINE,
@@ -461,6 +470,17 @@ function card(item, compact=false) {
   const gain = gainFor(item);
   const cropLimited = item.cropScope !== 'Any';
   const isShard = item.section === 'shards' || item.category === 'Attribute Shard';
+  const pricing = upgradePriceSummary(itemStore(item), item);
+  const priceTagCoins = isShard
+    ? pricing.unitShardCoins
+    : level >= max
+      ? pricing.entryMarketCoins
+      : pricing.costToMaxCoins ?? pricing.entryMarketCoins;
+  const priceTagLabel = isShard
+    ? '1 shard'
+    : level >= max
+      ? 'value'
+      : pricing.costToMaxCoins != null ? 'to max' : 'item';
   return `
     <button class="item-card ${status} ${isShard ? 'shard-card' : ''} ${compact ? 'compact' : ''}" data-open="${esc(item.id)}">
       <div class="card-layer"></div>
@@ -470,6 +490,7 @@ function card(item, compact=false) {
           <div class="eyebrow">${esc(item.category)}</div>
           <div class="item-title">${esc(item.name)}</div>
         </div>
+        ${priceTagCoins != null ? badge(`${formatApproxCoins(priceTagCoins)} · ${priceTagLabel}`, 'price-tag') : ''}
         ${badge(item.status === 'VERIFY' ? 'verify' : (isMaxed(item) ? 'max' : isOwned(item) ? 'owned' : 'missing'), status)}
         ${isSynced(item) ? badge('derived', 'synced') : ''}
       </div>
@@ -897,6 +918,42 @@ assertToolPanelEntries(UPGRADES.map(entry => entry.id));
 
 const TOOL_PANEL_ENTRIES = new Map(UPGRADES.map(entry => [entry.id, entry]));
 
+const TURBO_ENCHANT_KEY_BY_CROP = Object.freeze({
+  wheat: 'turbo_wheat',
+  carrot: 'turbo_carrot',
+  potato: 'turbo_potato',
+  pumpkin: 'turbo_pumpkin',
+  melon: 'turbo_melon',
+  mushroom: 'turbo_mushrooms',
+  cactus: 'turbo_cactus',
+  'sugar-cane': 'turbo_cane',
+  'cocoa-beans': 'turbo_coco',
+  'nether-wart': 'turbo_warts',
+  sunflower: 'turbo_sunflower',
+  moonflower: 'turbo_moonflower',
+  'wild-rose': 'turbo_wild_rose',
+});
+
+function buildValueText(value) {
+  if (value?.totalCoins == null) return '—';
+  return `${value.complete ? '' : '≥ '}${formatApproxCoins(value.totalCoins)}`;
+}
+
+const physicalValueRefreshes = new Set();
+function queuePhysicalValueRefresh(slotId, item, extraComponents = []) {
+  const components = physicalItemValueComponents(slotId, item, { extraComponents });
+  const key = components.map(row => `${row.itemTag}:${row.quantity}`).sort().join('|');
+  if (!key || physicalValueRefreshes.has(key)) return;
+  physicalValueRefreshes.add(key);
+  refreshPhysicalItemBuildValue(slotId, item, { extraComponents })
+    .then(updated => {
+      if (updated > 0) globalThis.dispatchEvent?.(new Event('farming420:item-value-updated'));
+    })
+    .catch(() => {});
+}
+
+
+
 function setEntryLevel(item, level) {
   const store = itemStore(item);
   const max = Number(item.max || 1);
@@ -922,6 +979,66 @@ function clearExclusivePeers(item) {
   }
 }
 
+function currentToolBuildRecord() {
+  const mk3 = TOOL_PANEL_ENTRIES.get('tool-mk-iii');
+  const mk2 = TOOL_PANEL_ENTRIES.get('tool-mk-ii');
+  const tier = mk3 && isOwned(mk3) ? 3 : mk2 && isOwned(mk2) ? 2 : 1;
+  const skyblockId = farmingToolSkyblockId(crop().tool, tier);
+  const reforge = FARMING_TOOL_REFORGES.find(row => {
+    const entry = TOOL_PANEL_ENTRIES.get(`tool-reforge-${row.id}-reforge`);
+    return entry && isOwned(entry);
+  })?.id || null;
+
+  const enchantments = {};
+  const enchantRows = [
+    ['tool-enchant-cultivating-x', 'cultivating'],
+    ['tool-enchant-dedication', 'dedication'],
+    ['tool-enchant-harvesting-vi', 'harvesting'],
+  ];
+  for (const [entryId, enchantKey] of enchantRows) {
+    const entry = TOOL_PANEL_ENTRIES.get(entryId);
+    const level = entry ? currentLevel(entry) : 0;
+    if (level > 0) enchantments[enchantKey] = level;
+  }
+  const turbo = TOOL_PANEL_ENTRIES.get('tool-enchant-turbo-crop');
+  const turboLevel = turbo ? currentLevel(turbo) : 0;
+  const turboKey = TURBO_ENCHANT_KEY_BY_CROP[state.selectedCrop];
+  if (turboLevel > 0 && turboKey) enchantments[turboKey] = turboLevel;
+
+  const recomb = TOOL_PANEL_ENTRIES.get('tool-recombobulator-effect-on-tool-stats');
+  const peridot = TOOL_PANEL_ENTRIES.get('tool-gem-perfect-peridot-on-farming-tool');
+  const overclocker = TOOL_PANEL_ENTRIES.get('tool-overclocker-3000');
+  const dummies = TOOL_PANEL_ENTRIES.get('tool-farming-for-dummies');
+  const extraComponents = [
+    { id: 'overclocker', label: 'Overclocker 3000', itemTag: 'OVERCLOCKER_3000', quantity: overclocker ? currentLevel(overclocker) : 0 },
+    { id: 'farming-for-dummies', label: 'Farming for Dummies', itemTag: 'FARMING_FOR_DUMMIES', quantity: dummies ? currentLevel(dummies) : 0 },
+  ].filter(row => row.quantity > 0);
+
+  return {
+    item: {
+      skyblockId,
+      displayName: crop().tool,
+      reforge,
+      recombobulated: Boolean(recomb && isOwned(recomb)),
+      enchantments,
+      gems: peridot && isOwned(peridot) ? ['PERFECT PERIDOT'] : [],
+    },
+    extraComponents,
+  };
+}
+
+function toolBuildValuePanel() {
+  const build = currentToolBuildRecord();
+  const value = physicalItemBuildValue('tool', build.item, { extraComponents: build.extraComponents });
+  const missing = value.missing.length
+    ? `${value.missing.length} component${value.missing.length === 1 ? '' : 's'} still unpriced`
+    : 'base item + installed priced upgrades';
+  return `<div class="setup-bar tool-build-value" data-tool-build-value>
+    <div><div class="eyebrow">Estimated build value</div><strong>${esc(buildValueText(value))}</strong>
+    <div class="hint">${esc(missing)} · rolling 90-day market averages</div></div>
+  </div>`;
+}
+
 function toolEntryLine(item) {
   const max = Number(item.max || 1);
   const level = currentLevel(item);
@@ -929,6 +1046,10 @@ function toolEntryLine(item) {
   const control = levelControlFor(max);
   const state = isMaxed(item) ? 'maxed' : on ? 'active' : 'missing';
   const gain = Number(item.stepGain || 0);
+  const pricing = upgradePriceSummary(itemStore(item), item);
+  const remainingText = pricing.costToMaxCoins != null && currentLevel(item) < max
+    ? `${pricing.costToMaxComplete ? '' : '≥ '}${formatApproxCoins(pricing.costToMaxCoins)} to max`
+    : '';
 
   const levelControl = control === 'lever'
     ? ''
@@ -943,12 +1064,12 @@ function toolEntryLine(item) {
       ${leverInput('data-tool-toggle', item.id, '', on, `${item.name} on this tool`)}
       <span class="enchant-name">${esc(item.name)}</span>
       ${levelControl || '<span></span>'}
-      <span class="enchant-max">${max > 1 ? `max ${control === 'number' ? max : esc(toRoman(max))}` : gain ? `+${gain} FF` : 'owned or not'}</span>
+      <span class="enchant-max">${remainingText || (max > 1 ? `max ${control === 'number' ? max : esc(toRoman(max))}` : gain ? `+${gain} FF` : 'owned or not')}</span>
     </div>`;
 }
 
 function toolItemPanel() {
-  return `<div class="item-editor rarity-unknown" data-tool-editor="1">
+  return `${toolBuildValuePanel()}<div class="item-editor rarity-unknown" data-tool-editor="1">
     ${TOOL_PANEL.map(group => `<section class="item-editor-section" data-tool-section="${esc(group.id)}">
       <div class="section-row"><div><h3>${esc(group.title)}</h3><p>${esc(group.note)}</p></div></div>
       <div class="enchant-grid">${group.entries.map(id => toolEntryLine(TOOL_PANEL_ENTRIES.get(id))).join('')}</div>
@@ -958,6 +1079,8 @@ function toolItemPanel() {
 
 function bindToolPanel() {
   const rerender = () => { saveState(); render(); };
+  const build = currentToolBuildRecord();
+  queuePhysicalValueRefresh('tool', build.item, build.extraComponents);
   document.querySelectorAll('[data-tool-toggle]').forEach(el => el.addEventListener('change', event => {
     const item = TOOL_PANEL_ENTRIES.get(el.dataset.toolToggle);
     if (!item) return;
@@ -1022,11 +1145,22 @@ function drawer() {
   const max = Number(item.max||1);
   const store = itemStore(item);
   const costSource = resolveUpgradeCost(store, item.id);
-  const costText = costSource.acquisitionMode === 'BUYABLE' && costSource.coins > 0
-    ? `${formatNumber(Math.round(costSource.coins))} Coins`
+  const pricing = upgradePriceSummary(store, item);
+  const costText = pricing.nextCostCoins != null
+    ? formatApproxCoins(pricing.nextCostCoins)
     : costSource.acquisitionMode === 'EARNED'
       ? 'Earned progression'
       : '—';
+  const toMaxText = level >= max
+    ? 'Maxed'
+    : pricing.costToMaxCoins != null
+      ? `${pricing.costToMaxComplete ? '' : '≥ '}${formatApproxCoins(pricing.costToMaxCoins)}`
+      : '—';
+  const toMaxNote = [
+    pricing.remainingEarnedSteps ? `${pricing.remainingEarnedSteps} earned step${pricing.remainingEarnedSteps === 1 ? '' : 's'}` : '',
+    pricing.remainingUnknownSteps ? `${pricing.remainingUnknownSteps} unpriced step${pricing.remainingUnknownSteps === 1 ? '' : 's'}` : '',
+  ].filter(Boolean).join(' · ');
+  const isShard = item.section === 'shards' || item.category === 'Attribute Shard';
   const manual = store.manualGain[item.id] ?? '';
   return `<div class="drawer-backdrop" data-close-drawer><aside class="drawer">
     <div class="drawer-top"><div><div class="eyebrow">${esc(item.category)}</div><h2>${esc(item.name)}</h2></div><button class="close" data-close-drawer>×</button></div>
@@ -1036,7 +1170,15 @@ function drawer() {
       ${max>1 ? `<div class="stepper"><button data-step="-1" data-id="${item.id}">−</button><strong>${level}/${max}</strong><button data-step="1" data-id="${item.id}">+</button><button class="ghost small" data-max="${item.id}">Max</button></div>` : `<label class="switch-row"><span>Owned</span><input type="checkbox" data-owned="${item.id}" ${isOwned(item)?'checked':''}></label>`}
     </div>
     <div class="drawer-section"><h3>Evaluation</h3><div class="detail-grid"><div><span>Next step</span><strong>+${formatNumber(gainFor(item))}</strong></div><div><span>Relative effect</span><strong>${relativeGainPct(item).toFixed(2)}%</strong></div></div>
-      <div class="detail-grid"><div><span>Next cost</span><strong>${esc(costText)}</strong><small>${esc(costOriginNote(costSource))}</small></div></div>
+      <div class="detail-grid">
+        <div><span>Next cost</span><strong>${esc(costText)}</strong><small>${esc(costOriginNote(costSource))}</small></div>
+        <div><span>Cost to max</span><strong>${esc(toMaxText)}</strong><small>${esc(toMaxNote || (pricing.costToMaxComplete ? 'all remaining priced steps included' : 'remaining market route incomplete'))}</small></div>
+      </div>
+      ${isShard ? `<div class="detail-grid shard-price-details">
+        <div><span>1 shard</span><strong>${esc(pricing.unitShardCoins != null ? formatApproxCoins(pricing.unitShardCoins) : '—')}</strong></div>
+        <div><span>Current level value</span><strong>${esc(pricing.currentShardValueCoins != null ? formatApproxCoins(pricing.currentShardValueCoins) : '—')}</strong><small>${pricing.shardCountOwned ?? '—'} shard${pricing.shardCountOwned === 1 ? '' : 's'} equivalent</small></div>
+        <div><span>Shards to max</span><strong>${pricing.shardCountToMax ?? '—'}</strong><small>${esc(pricing.costToMaxCoins != null ? formatApproxCoins(pricing.costToMaxCoins) : 'price unavailable')}</small></div>
+      </div>` : ''}
       <label>Manual marginal value<input type="number" step="0.01" data-manual="${item.id}" value="${esc(manual)}" placeholder="only for dynamic values"></label>
     </div>
     ${whereToFindSection(item)}
@@ -1201,9 +1343,11 @@ function slotEditor(slotId) {
   const rows = enchantRowsFor(slotId, item);
   const gems = item.gems || [];
   const filled = Boolean(item.displayName);
+  const buildValue = filled ? physicalItemBuildValue(slotId, item) : null;
 
   return `<div class="item-editor ${esc(rarityClass(item.rarity))}" data-item-editor="${esc(slotId)}">
     <header class="item-editor-head item-editor-actions">
+      ${filled ? `<div class="item-build-value"><span>Estimated build value</span><strong>${esc(buildValueText(buildValue))}</strong><small>${buildValue.complete ? 'base + installed priced upgrades' : `${buildValue.missing.length} component${buildValue.missing.length === 1 ? '' : 's'} still unpriced`}</small></div>` : ''}
       <button class="ghost small" data-slot-clear="${esc(slotId)}" ${filled ? '' : 'disabled'}>Clear slot</button>
     </header>
 
@@ -1497,6 +1641,8 @@ function bindSetups() {
   const slotId = state.setupSlot;
   if (!slotId) return;
   const currentItem = () => slotItem(slotId) || createEmptyItem();
+  const itemForValue = currentItem();
+  if (itemForValue?.displayName) queuePhysicalValueRefresh(slotId, itemForValue);
   // Any hand edit makes the slot the player's own, so a later sync prefill
   // leaves it alone instead of overwriting their work.
   const patch = changes => writeSlot(slotId, { ...currentItem(), ...changes, source: ITEM_SOURCE.MANUAL });
@@ -2035,5 +2181,10 @@ window.addEventListener('farming420:state-changed', () => {
 // that would replace interactive DOM under the user. The Dashboard is the one
 // core-rendered surface that needs an immediate repaint for its price cards.
 window.addEventListener('farming420:market-average-updated', () => {
-  if (state.page === 'dashboard') render();
+  const safePricePages = new Set(['dashboard', 'accessories', 'crops', 'gear', 'pets', 'chips', 'shards', 'buffs', 'pests', 'qol', 'planner', 'focus']);
+  if (safePricePages.has(state.page)) render();
+});
+
+window.addEventListener('farming420:item-value-updated', () => {
+  if (state.page === 'setups' || state.page === 'tools') render();
 });
