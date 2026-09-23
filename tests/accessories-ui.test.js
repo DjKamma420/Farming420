@@ -50,7 +50,7 @@ test('accessory cards expose Recombobulator and farming-relevant Strength Enrich
   assert.match(source, /Strength Enrichment/);
   assert.match(source, /baseRarity.*effectiveRarity/);
   assert.match(source, /farmingAccessoryByItemId/);
-  assert.equal(ACCESSORY_CAPABILITIES_VERIFIED, '2026-09-18');
+  assert.equal(ACCESSORY_CAPABILITIES_VERIFIED, '2026-09-23');
 });
 
 test('accessory state is persistent and the Accessories page loads the official item catalog', () => {
