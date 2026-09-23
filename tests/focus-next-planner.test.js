@@ -18,7 +18,7 @@ test('Upgrade Planner combines all setup rows without mixing earned progression 
   assert.match(planner, /allSetBenchmarkRows\(raw\)\.filter\(row => row\.acquisitionMode !== 'EARNED'\)/);
   assert.match(planner, /PLANNER_ACTIVITY_MODES/);
   assert.match(planner, /aggregateUpgradeRows/);
-  const rendered = planner.match(/panel\.innerHTML = `\$\{benchmarkPanel\(raw\)\}[\s\S]*?<div class="planner-list revenue-list">/);
+  const rendered = planner.match(/panel\.innerHTML = `\$\{maxingPanel\(raw\)\}[\s\S]*?\$\{benchmarkPanel\(raw\)\}[\s\S]*?<div class="planner-list revenue-list">/);
   assert.ok(rendered, 'planner benchmark markup not found');
   assert.doesNotMatch(rendered[0], /earnedAssumptionsPanel|economicsPanel/);
 });
