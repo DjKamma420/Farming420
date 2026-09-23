@@ -374,8 +374,9 @@ export const UPGRADES = [
     "manualDefault": null,
     "rawMarginal": 4,
     "hypercharge": false,
-    "notes": "Current Greenhouse tool system: each tool level grants +4 Fortune for its crop(s), up to +200 at level 50. Mk. II/Mk. III and Overclocker 3000 gate later levels; levels 41-50 each require an Overclocker 3000.",
-    "source": "https://hypixel-skyblock.fandom.com/wiki/Eclipse_Hoe",
+    "notes": "Each Farming Tool level grants +4 Crop Fortune for that specialized tool, up to +200 at level 50. Mk. II unlocks at 15, Mk. III at 30, and levels 41-50 require Overclocker 3000s.",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Tools",
+    "lastVerified": "2026-09-23",
     "workbookRank": 12
   },
   {
@@ -392,8 +393,9 @@ export const UPGRADES = [
     "manualDefault": null,
     "rawMarginal": 0,
     "hypercharge": false,
-    "notes": "Raises the tool tier/rarity and is required for later tool levels. It also changes reforge and gemstone scaling, so its exact marginal Fortune is setup-dependent.",
-    "source": "https://hypixel-skyblock.fandom.com/wiki/Eclipse_Hoe",
+    "notes": "Specialized Farming Tools upgrade to Mk. II at Farming Tool level 15. The tier changes rarity/scaling, so its exact marginal Fortune depends on the complete current item state.",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Tools",
+    "lastVerified": "2026-09-23",
     "workbookRank": null
   },
   {
@@ -410,8 +412,9 @@ export const UPGRADES = [
     "manualDefault": null,
     "rawMarginal": 0,
     "hypercharge": false,
-    "notes": "Final crafted tier for specialized farming tools. Required for the high-level portion of the level path; rarity also affects reforges and gemstone value.",
-    "source": "https://hypixel-skyblock.fandom.com/wiki/Eclipse_Hoe",
+    "notes": "Specialized Farming Tools upgrade to Mk. III at Farming Tool level 30. The tier changes rarity/scaling, so its exact marginal Fortune depends on the complete current item state.",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Tools",
+    "lastVerified": "2026-09-23",
     "workbookRank": null
   },
   {
@@ -428,8 +431,9 @@ export const UPGRADES = [
     "manualDefault": null,
     "rawMarginal": 0,
     "hypercharge": false,
-    "notes": "One is required for each Farming Tool level from 41 through 50. Ten are required to unlock level 50; the Fortune itself is counted by Farming Tool level to avoid double counting.",
-    "source": "https://hypixel-skyblock.fandom.com/wiki/Eclipse_Hoe",
+    "notes": "Farming Tool levels 41-50 require Overclocker 3000s cumulatively: one additional Overclocker for each level, ten total to reach level 50. Fortune is counted by tool level, not again here.",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Tools",
+    "lastVerified": "2026-09-23",
     "workbookRank": null
   },
   {
@@ -913,15 +917,16 @@ export const UPGRADES = [
     "metric": "Crop Yield",
     "modeScope": "Any",
     "cropScope": "Any",
-    "status": "ACTIVE",
+    "status": "VERIFY",
     "max": 1,
     "stepGain": 0,
-    "manualDefault": 280,
-    "rawMarginal": 280,
+    "manualDefault": null,
+    "rawMarginal": 0,
     "hypercharge": false,
-    "notes": "Linked to Pet_Calculator: compare candidate pet contribution against your currently equipped pet instead of adding both.",
-    "source": "https://hypixel.net/threads/hypixel-skyblock-0-26-1-new-player-improvements-harvest-feast-changes-healing-revamp-and-more.6127383/",
-    "workbookRank": 1
+    "notes": "Do not rank this as a flat Fortune gain. Rose Dragon contribution is profile-dependent: its level-200 base stat and perks scale with Farming level, Crop Milestones and other unique maxed Farming Pets. Compare a computed legal candidate against the currently active pet; never add both.",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Rose_Dragon_Pet",
+    "lastVerified": "2026-09-23",
+    "workbookRank": null
   },
   {
     "id": "attribute-shard-firefly-or-lunar-moth-shard",
@@ -1016,8 +1021,9 @@ export const UPGRADES = [
     "manualDefault": null,
     "rawMarginal": 15,
     "hypercharge": true,
-    "notes": "+15 FF on God Potion. Cookie permits direct consumption.",
-    "source": "https://hypixel-skyblock.fandom.com/wiki/Celestial_Mason_Jar",
+    "notes": "+15 Farming Fortune for the God Potion duration; Cookie Buff also permits direct consumption. This temporary Farming Fortune is Hypercharge-eligible.",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Celestial_Mason_Jar",
+    "lastVerified": "2026-09-23",
     "workbookRank": 19
   },
   {
@@ -1170,15 +1176,16 @@ export const UPGRADES = [
     "manualDefault": null,
     "rawMarginal": 1,
     "hypercharge": false,
-    "notes": "+1 permanent Overbloom per use, up to 5.",
-    "source": "https://hypixel.net/threads/hypixel-skyblock-0-26-1-new-player-improvements-harvest-feast-changes-healing-revamp-and-more.6127383/",
+    "notes": "Permanent consumable: +1 Overbloom per Feast Burger, up to five consumed for +5 total.",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Feast_Burger",
+    "lastVerified": "2026-09-23",
     "workbookRank": null
   },
   {
     "id": "pet-item-lucky-clover-poignant-lucky-clover",
     "category": "Pet Item",
     "section": "pets",
-    "name": "Lucky Clover / Poignant Lucky Clover",
+    "name": "Poignant Lucky Clover",
     "metric": "Rare Crops",
     "modeScope": "Any",
     "cropScope": "Any",
@@ -1188,8 +1195,9 @@ export const UPGRADES = [
     "manualDefault": null,
     "rawMarginal": 13,
     "hypercharge": false,
-    "notes": "Poignant Lucky Clover now gives +13 Overbloom; mutually exclusive pet item.",
-    "source": "https://hypixel.net/threads/hypixel-skyblock-0-26-1-new-player-improvements-harvest-feast-changes-healing-revamp-and-more.6127383/",
+    "notes": "Poignant Lucky Clover grants +13 Overbloom. It occupies the pet-item slot, so its effect is mutually exclusive with another held pet item.",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Poignant_Lucky_Clover",
+    "lastVerified": "2026-09-23",
     "workbookRank": null
   },
   {
@@ -1206,8 +1214,9 @@ export const UPGRADES = [
     "manualDefault": null,
     "rawMarginal": 1,
     "hypercharge": false,
-    "notes": "+1 Overbloom per tier during day, max +5; revamped from Moonlit.",
-    "source": "https://hypixel.net/threads/april-21-fossil-essence-shop-farming-toolkit-harvest-feast-changes.6083245/",
+    "notes": "+1 Overbloom per enchantment level during the day, up to +5 at Sunset V. Its separate night effect reduces Garden Visitor cooldown while breaking crops.",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Sunset",
+    "lastVerified": "2026-09-23",
     "workbookRank": null
   },
   {
@@ -1260,8 +1269,9 @@ export const UPGRADES = [
     "manualDefault": null,
     "rawMarginal": 2,
     "hypercharge": false,
-    "notes": "+2 BPC per Carnival perk tier, max +6.",
-    "source": "https://hypixel.net/threads/march-31-harvest-feast-event.6080784/",
+    "notes": "+2 Bonus Pest Chance per Feast Crashers tier during Harvest Feast, up to +6 at III.",
+    "source": "https://hypixel.net/threads/hypixel-skyblock-0-24-4-harvest-feast-event-fossil-essence-shop-and-more.6089392/",
+    "lastVerified": "2026-09-23",
     "workbookRank": null
   },
   {
@@ -1333,8 +1343,9 @@ export const UPGRADES = [
     "manualDefault": null,
     "rawMarginal": 3,
     "hypercharge": false,
-    "notes": "Mason Jar also grants +3 Wisdom.",
-    "source": "https://hypixel-skyblock.fandom.com/wiki/Celestial_Mason_Jar",
+    "notes": "Celestial Mason Jar also grants +3 Global Wisdom for its active duration.",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Celestial_Mason_Jar",
+    "lastVerified": "2026-09-23",
     "workbookRank": null
   },
   {
@@ -1351,8 +1362,9 @@ export const UPGRADES = [
     "manualDefault": null,
     "rawMarginal": 20,
     "hypercharge": false,
-    "notes": "At max pet level, Intelligent Specimen grants +20% Farming Tool Exp. This is separate from Farming Wisdom.",
-    "source": "https://hypixel.net/threads/hypixel-skyblock-0-26-1-new-player-improvements-harvest-feast-changes-healing-revamp-and-more.6127383/",
+    "notes": "At max pet level, UNCOMMON and higher Orchid Mantis grants +20% Farming Tool Exp from Intelligent Specimen; COMMON grants +10%.",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Orchid_Mantis_Pet",
+    "lastVerified": "2026-09-23",
     "workbookRank": null
   },
   {
@@ -1510,7 +1522,8 @@ export const UPGRADES = [
     "rawMarginal": 48,
     "hypercharge": false,
     "notes": "Blooming Thorns gives up to +12 FF per Mythic equipment piece. Full four-piece reference +48. Replaces Rooted, so use manual marginal override for an actual swap.",
-    "source": "https://hypixel.net/threads/list-of-item-in-skyblock-update-1-81.6151548/",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Blooming_Thorns",
+    "lastVerified": "2026-09-23",
     "workbookRank": 12
   },
   {
@@ -1528,7 +1541,8 @@ export const UPGRADES = [
     "rawMarginal": 6,
     "hypercharge": false,
     "notes": "Up to +1.5 Overbloom per Mythic piece = +6 on four pieces, before the separate Thorny Bonus from Thorns tiers. Replaces Rooted.",
-    "source": "https://hypixel.net/threads/list-of-item-in-skyblock-update-1-81.6151548/",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Blooming_Thorns",
+    "lastVerified": "2026-09-23",
     "workbookRank": null
   },
   {
@@ -1565,8 +1579,9 @@ export const UPGRADES = [
     "manualDefault": null,
     "rawMarginal": 100,
     "hypercharge": false,
-    "notes": "Beady vacuum reforge grants +100 Farming Fortune on Pests. Pest drop scaling uses /600, not the normal crop /100 scaling.",
-    "source": "https://hypixel-skyblock.fandom.com/wiki/Module:Inventory_slot/Tooltips",
+    "notes": "Beady grants +100 Farming Fortune on Pests while applied to a Vacuum. Pest rewards use their documented crop/drop-specific scaling; do not apply the obsolete /600 shortcut as general pest Fortune scaling.",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Beady_Eyes",
+    "lastVerified": "2026-09-23",
     "workbookRank": null
   },
   {
