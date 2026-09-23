@@ -287,11 +287,9 @@
 .revenue-economics[open] > summary .revenue-panel-head::after { content: '▾'; }
 .revenue-economics:not([open]) { padding-bottom: 0; }
 
-/* Measured baseline.
-   `src/profit-engine.js` shipped complete and imported by nothing. This is its
-   entry point: the four numbers a player can read off their own farm, folded
-   inside the baseline panel it feeds, because a second economics panel
-   elsewhere would be two writers for one concern. */
+/* Measured throughput.
+   The player enters only farm throughput. Coin values are read-only rolling
+   90-day market averages beside those measurements. */
 .revenue-measured {
   margin-top: 14px;
   border: 1px solid #2c3d31;
@@ -343,11 +341,35 @@
   min-width: 0;
 }
 
-/* The rare-crop pair is allowed to stay empty: no verified base chance exists
-   outside a Harvest Feast, so that stream stays unknown rather than zero. */
-.revenue-measured-grid label.revenue-measured-optional {
+/* Feast context is optional; its market value is display-only. */
+.revenue-measured-grid .revenue-measured-optional {
   border-left: 2px solid #4a3f18;
   padding-left: 10px;
+}
+
+.revenue-measured-market {
+  display: grid;
+  gap: 5px;
+  align-content: start;
+  min-width: 0;
+  padding: 9px 10px;
+  border: 1px solid #2c3d31;
+  border-radius: 4px;
+  background: #07100a;
+}
+.revenue-measured-market > span {
+  color: #9fb0a3;
+  font-size: 12px;
+  font-weight: 800;
+}
+.revenue-measured-market > strong {
+  color: #edf7ef;
+  font-size: 14px;
+}
+.revenue-measured-market > small {
+  color: #7d8f82;
+  font-size: 11px;
+  line-height: 1.35;
 }
 
 .revenue-measured-grid input {
