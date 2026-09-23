@@ -5,6 +5,7 @@ import {
   MARKET_KIND,
   MARKET_SIDE,
   fetchMarketAverage,
+  marketAverageTimestampLabel,
   timeWeightedAverage,
   volumeWeightedAuctionAverage,
   writeCachedMarketAverage,
@@ -26,6 +27,14 @@ async function withStorage(run) {
   };
   try { return await run(map); } finally { globalThis.localStorage = previous; }
 }
+
+test('market freshness labels are deterministic UTC timestamps', () => {
+  assert.equal(
+    marketAverageTimestampLabel({ computedAtMs: Date.parse('2026-09-23T12:34:56Z') }),
+    'as of 2026-09-23 12:34 UTC',
+  );
+  assert.equal(marketAverageTimestampLabel(null), 'price time unavailable');
+});
 
 test('Bazaar history is time weighted over the 90-day window', () => {
   const rows = [
