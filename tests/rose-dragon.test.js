@@ -57,6 +57,25 @@ const MAXED_OTHERS = [
   active: false,
 }));
 
+test('Rose Dragon level is derived from profile XP when the API has no explicit level field', () => {
+  const value = state();
+  value.profile.setups.list[0].slots.pet.petLevel = null;
+  value.profile.normalizedSnapshot.pets[0].level = null;
+  value.profile.normalizedSnapshot.pets[0].experience = 214_023_230;
+  const result = roseDragonContribution(value);
+  assert.equal(result.level, 200);
+  assert.equal(result.overbloom, 40);
+});
+
+test('an unhatched Rose Dragon egg has known zero stats and needs no Farming or Garden inputs', () => {
+  const value = state({ level: 1, farmingLevel: null, cropMilestoneTotal: null });
+  const result = roseDragonContribution(value);
+  assert.equal(result.level, 1);
+  assert.equal(result.globalFortune, 0);
+  assert.equal(result.overbloom, 0);
+  assert.equal(result.incomplete, false);
+});
+
 test('level 200 Rose Dragon matches the sourced max formula before Symbiosis', () => {
   const result = roseDragonContribution(state());
   assert.equal(result.active, true);
