@@ -83,6 +83,13 @@ import {
   slotHasOfficialCategory,
 } from './item-catalog.js';
 import { itemCapabilities } from './item-capabilities.js';
+import { FARMING_TOOL_REFORGES } from './farming-reforges.js';
+import { farmingToolSkyblockId } from './exact-farming-items.js';
+import {
+  physicalItemBuildValue,
+  physicalItemValueComponents,
+  refreshPhysicalItemBuildValue,
+} from './physical-item-value.js';
 import {
   GARDEN_PESTS,
   LOOT_PIPELINE,
@@ -907,6 +914,42 @@ assertToolPanelEntries(UPGRADES.map(entry => entry.id));
 
 const TOOL_PANEL_ENTRIES = new Map(UPGRADES.map(entry => [entry.id, entry]));
 
+const TURBO_ENCHANT_KEY_BY_CROP = Object.freeze({
+  wheat: 'turbo_wheat',
+  carrot: 'turbo_carrot',
+  potato: 'turbo_potato',
+  pumpkin: 'turbo_pumpkin',
+  melon: 'turbo_melon',
+  mushroom: 'turbo_mushrooms',
+  cactus: 'turbo_cactus',
+  'sugar-cane': 'turbo_cane',
+  'cocoa-beans': 'turbo_coco',
+  'nether-wart': 'turbo_warts',
+  sunflower: 'turbo_sunflower',
+  moonflower: 'turbo_moonflower',
+  'wild-rose': 'turbo_wild_rose',
+});
+
+function buildValueText(value) {
+  if (value?.totalCoins == null) return '—';
+  return `${value.complete ? '' : '≥ '}${formatApproxCoins(value.totalCoins)}`;
+}
+
+const physicalValueRefreshes = new Set();
+function queuePhysicalValueRefresh(slotId, item, extraComponents = []) {
+  const components = physicalItemValueComponents(slotId, item, { extraComponents });
+  const key = components.map(row => `${row.itemTag}:${row.quantity}`).sort().join('|');
+  if (!key || physicalValueRefreshes.has(key)) return;
+  physicalValueRefreshes.add(key);
+  refreshPhysicalItemBuildValue(slotId, item, { extraComponents })
+    .then(updated => {
+      if (updated > 0) globalThis.dispatchEvent?.(new Event('farming420:item-value-updated'));
+    })
+    .catch(() => {});
+}
+
+
+
 function setEntryLevel(item, level) {
   const store = itemStore(item);
   const max = Number(item.max || 1);
@@ -932,6 +975,67 @@ function clearExclusivePeers(item) {
   }
 }
 
+function currentToolBuildRecord() {
+  const mk3 = TOOL_PANEL_ENTRIES.get('tool-mk-iii');
+  const mk2 = TOOL_PANEL_ENTRIES.get('tool-mk-ii');
+  const tier = mk3 && isOwned(mk3) ? 3 : mk2 && isOwned(mk2) ? 2 : 1;
+  const skyblockId = farmingToolSkyblockId(crop().tool, tier);
+  const reforge = FARMING_TOOL_REFORGES.find(row => {
+    const entry = TOOL_PANEL_ENTRIES.get(`tool-reforge-${row.id}-reforge`);
+    return entry && isOwned(entry);
+  })?.id || null;
+
+  const enchantments = {};
+  const enchantRows = [
+    ['tool-enchant-cultivating-x', 'cultivating'],
+    ['tool-enchant-dedication', 'dedication'],
+    ['tool-enchant-harvesting-vi', 'harvesting'],
+  ];
+  for (const [entryId, enchantKey] of enchantRows) {
+    const entry = TOOL_PANEL_ENTRIES.get(entryId);
+    const level = entry ? currentLevel(entry) : 0;
+    if (level > 0) enchantments[enchantKey] = level;
+  }
+  const turbo = TOOL_PANEL_ENTRIES.get('tool-enchant-turbo-crop');
+  const turboLevel = turbo ? currentLevel(turbo) : 0;
+  const turboKey = TURBO_ENCHANT_KEY_BY_CROP[state.selectedCrop];
+  if (turboLevel > 0 && turboKey) enchantments[turboKey] = turboLevel;
+
+  const recomb = TOOL_PANEL_ENTRIES.get('tool-recombobulator-effect-on-tool-stats');
+  const peridot = TOOL_PANEL_ENTRIES.get('tool-gem-perfect-peridot-on-farming-tool');
+  const overclocker = TOOL_PANEL_ENTRIES.get('tool-overclocker-3000');
+  const dummies = TOOL_PANEL_ENTRIES.get('tool-farming-for-dummies');
+  const extraComponents = [
+    { id: 'overclocker', label: 'Overclocker 3000', itemTag: 'OVERCLOCKER_3000', quantity: overclocker ? currentLevel(overclocker) : 0 },
+    { id: 'farming-for-dummies', label: 'Farming for Dummies', itemTag: 'FARMING_FOR_DUMMIES', quantity: dummies ? currentLevel(dummies) : 0 },
+  ].filter(row => row.quantity > 0);
+
+  return {
+    item: {
+      skyblockId,
+      displayName: crop().tool,
+      reforge,
+      recombobulated: Boolean(recomb && isOwned(recomb)),
+      enchantments,
+      gems: peridot && isOwned(peridot) ? ['PERFECT PERIDOT'] : [],
+    },
+    extraComponents,
+  };
+}
+
+function toolBuildValuePanel() {
+  const build = currentToolBuildRecord();
+  const value = physicalItemBuildValue('tool', build.item, { extraComponents: build.extraComponents });
+  queuePhysicalValueRefresh('tool', build.item, build.extraComponents);
+  const missing = value.missing.length
+    ? `${value.missing.length} component${value.missing.length === 1 ? '' : 's'} still unpriced`
+    : 'base item + installed priced upgrades';
+  return `<div class="setup-bar tool-build-value" data-tool-build-value>
+    <div><div class="eyebrow">Estimated build value</div><strong>${esc(buildValueText(value))}</strong>
+    <div class="hint">${esc(missing)} · rolling 90-day market averages</div></div>
+  </div>`;
+}
+
 function toolEntryLine(item) {
   const max = Number(item.max || 1);
   const level = currentLevel(item);
@@ -939,6 +1043,10 @@ function toolEntryLine(item) {
   const control = levelControlFor(max);
   const state = isMaxed(item) ? 'maxed' : on ? 'active' : 'missing';
   const gain = Number(item.stepGain || 0);
+  const pricing = upgradePriceSummary(itemStore(item), item);
+  const remainingText = pricing.costToMaxCoins != null && currentLevel(item) < max
+    ? `${pricing.costToMaxComplete ? '' : '≥ '}${formatApproxCoins(pricing.costToMaxCoins)} to max`
+    : '';
 
   const levelControl = control === 'lever'
     ? ''
@@ -953,12 +1061,12 @@ function toolEntryLine(item) {
       ${leverInput('data-tool-toggle', item.id, '', on, `${item.name} on this tool`)}
       <span class="enchant-name">${esc(item.name)}</span>
       ${levelControl || '<span></span>'}
-      <span class="enchant-max">${max > 1 ? `max ${control === 'number' ? max : esc(toRoman(max))}` : gain ? `+${gain} FF` : 'owned or not'}</span>
+      <span class="enchant-max">${remainingText || (max > 1 ? `max ${control === 'number' ? max : esc(toRoman(max))}` : gain ? `+${gain} FF` : 'owned or not')}</span>
     </div>`;
 }
 
 function toolItemPanel() {
-  return `<div class="item-editor rarity-unknown" data-tool-editor="1">
+  return `${toolBuildValuePanel()}<div class="item-editor rarity-unknown" data-tool-editor="1">
     ${TOOL_PANEL.map(group => `<section class="item-editor-section" data-tool-section="${esc(group.id)}">
       <div class="section-row"><div><h3>${esc(group.title)}</h3><p>${esc(group.note)}</p></div></div>
       <div class="enchant-grid">${group.entries.map(id => toolEntryLine(TOOL_PANEL_ENTRIES.get(id))).join('')}</div>
@@ -1230,9 +1338,12 @@ function slotEditor(slotId) {
   const rows = enchantRowsFor(slotId, item);
   const gems = item.gems || [];
   const filled = Boolean(item.displayName);
+  const buildValue = filled ? physicalItemBuildValue(slotId, item) : null;
+  if (filled) queuePhysicalValueRefresh(slotId, item);
 
   return `<div class="item-editor ${esc(rarityClass(item.rarity))}" data-item-editor="${esc(slotId)}">
     <header class="item-editor-head item-editor-actions">
+      ${filled ? `<div class="item-build-value"><span>Estimated build value</span><strong>${esc(buildValueText(buildValue))}</strong><small>${buildValue.complete ? 'base + installed priced upgrades' : `${buildValue.missing.length} component${buildValue.missing.length === 1 ? '' : 's'} still unpriced`}</small></div>` : ''}
       <button class="ghost small" data-slot-clear="${esc(slotId)}" ${filled ? '' : 'disabled'}>Clear slot</button>
     </header>
 
@@ -2064,5 +2175,10 @@ window.addEventListener('farming420:state-changed', () => {
 // that would replace interactive DOM under the user. The Dashboard is the one
 // core-rendered surface that needs an immediate repaint for its price cards.
 window.addEventListener('farming420:market-average-updated', () => {
-  if (state.page === 'dashboard') render();
+  const safePricePages = new Set(['dashboard', 'accessories', 'crops', 'gear', 'pets', 'chips', 'shards', 'buffs', 'pests', 'qol', 'planner', 'focus']);
+  if (safePricePages.has(state.page)) render();
+});
+
+window.addEventListener('farming420:item-value-updated', () => {
+  if (state.page === 'setups' || state.page === 'tools') render();
 });
