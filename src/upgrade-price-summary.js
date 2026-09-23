@@ -1,5 +1,6 @@
 import { resolveUpgradeCost } from './upgrade-cost-resolution.js';
 import {
+  marketCostContextForUpgrade,
   resolveUpgradeMarketAverage,
   stepMarketRoutesForUpgrade,
 } from './upgrade-market-routes.js';
@@ -48,6 +49,7 @@ export function upgradePriceSummary(store, item, {
   const maxLevel = Math.max(1, Number(item?.max || 1));
   const currentLevel = configuredLevel(store, item);
   const shard = farmingShardMarket(id);
+  const marketCostContext = marketCostContextForUpgrade(id);
 
   const entryMarket = resolveMarket(id, null);
   const entryMarketCoins = entryMarket?.complete ? positiveCoins(entryMarket.coins) : null;
@@ -64,6 +66,8 @@ export function upgradePriceSummary(store, item, {
     return Object.freeze({
       currentLevel,
       maxLevel,
+      costKind: marketCostContext.costKind,
+      costDisplayLabel: marketCostContext.displayLabel,
       entryMarketCoins,
       entryMarketComputedAtMs,
       nextCostCoins: 0,
@@ -152,6 +156,8 @@ export function upgradePriceSummary(store, item, {
   return Object.freeze({
     currentLevel,
     maxLevel,
+    costKind: marketCostContext.costKind,
+    costDisplayLabel: marketCostContext.displayLabel,
     entryMarketCoins,
     entryMarketComputedAtMs,
     nextCostCoins: firstStepCoins,
