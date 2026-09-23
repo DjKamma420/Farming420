@@ -349,7 +349,7 @@ test('Brown Bandana remains incomplete until eligible Pest Bestiary tiers are kn
   });
   assert.equal(known.complete, false, 'the empty current Pest setup still prevents a complete before/after comparison');
   assert.equal(known.after.petItem.bonusPestChance, 20);
-  assert.equal(known.after.totals.bonusPestChance, 20);
+  assert.equal(known.after.totals.bonusPestChance, 100, '80 Helianthus base BPC + 20 Brown Bandana');
   assert.ok(known.reasons.includes('current phase setup does not contain a complete armor/equipment loadout'));
 });
 
@@ -368,7 +368,7 @@ test('Brown Bandana reads eligible Pest Bestiary tiers directly from the normali
 
   assert.equal(result.after.petItem.complete, true);
   assert.equal(result.after.petItem.bonusPestChance, 20);
-  assert.equal(result.after.totals.bonusPestChance, 20);
+  assert.equal(result.after.totals.bonusPestChance, 100, '80 Helianthus base BPC + 20 Brown Bandana');
   assert.ok(!result.after.supportGaps.some(reason => reason.includes('Eligible Pest Bestiary tier total')));
   assert.equal(result.complete, false, 'the empty current Pest setup remains the only comparison blocker here');
   assert.ok(result.reasons.includes('current phase setup does not contain a complete armor/equipment loadout'));
