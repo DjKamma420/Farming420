@@ -4,6 +4,7 @@ import { CROPS, UPGRADES } from './data.js';
 import { toolKeyForCropId } from './migrations.js';
 import { mooshroomCowContribution } from './mooshroom-cow.js';
 import { roseDragonContribution } from './rose-dragon.js';
+import { pestSpawnPetContribution } from './pest-spawn-pets.js';
 import { VACUUM_REFORGE_EFFECT_ENTRY_IDS, selectedVacuumReforge } from './item-capabilities.js';
 import { vacuumPeridotFortune } from './vacuum-state.js';
 import { TOOL_GEM_ENTRY_ID, toolGemstoneContribution } from './tool-gemstone-contribution.js';
@@ -34,7 +35,7 @@ import {
   squeakyFortuneForPieces,
 } from './equipment-fortune.js';
 
-export const COMPUTED_STATS_VERSION = 13;
+export const COMPUTED_STATS_VERSION = 14;
 
 const SETUP_LOCAL_PET_ITEM_ENTRY_IDS = new Set([
   'pet-item-green-bandana',
@@ -364,6 +365,7 @@ function pestSetupGearContribution(state, mode, derivedContext = {}) {
 function applyDerivedMechanics(state, totals, mode, cropId, derivedContext = {}) {
   const cow = mooshroomCowContribution(state);
   const roseDragon = roseDragonContribution(state);
+  const pestSpawnPet = pestSpawnPetContribution(state, cropId, derivedContext);
   const setupPetItem = setupPetItemForState(state, mode, derivedContext);
   const pestSetupGear = pestSetupGearContribution(state, mode, derivedContext);
   const vacuumPeridot = mode === ACTIVITY_MODE.PEST_KILL
@@ -376,6 +378,7 @@ function applyDerivedMechanics(state, totals, mode, cropId, derivedContext = {})
     strength: state?.profile?.inputs?.strength ?? null,
     mooshroomCow: cow,
     roseDragon,
+    pestSpawnPet,
     setupPetItem,
     pestSetupGear,
     vacuumPeridotFortune: vacuumPeridot,
@@ -409,6 +412,41 @@ function applyDerivedMechanics(state, totals, mode, cropId, derivedContext = {})
         id: 'derived-rose-dragon',
         reason,
       });
+    }
+  }
+
+  if (pestSpawnPet.active) {
+    if (pestSpawnPet.globalFortune) {
+      totals.globalFortune += pestSpawnPet.globalFortune;
+      totals.sourceCount.globalFortune += 1;
+    }
+    if (pestSpawnPet.cropFortune) {
+      totals.cropFortune += pestSpawnPet.cropFortune;
+      totals.sourceCount.cropFortune += 1;
+    }
+    if (mode === ACTIVITY_MODE.PEST_SPAWN && pestSpawnPet.bonusPestChance) {
+      totals.bonusPestChance += pestSpawnPet.bonusPestChance;
+      totals.sourceCount.bonusPestChance += 1;
+    }
+    for (const reason of pestSpawnPet.globalFortuneReasons || []) {
+      totals.incomplete.globalFortune.push({
+        id: `derived-${String(pestSpawnPet.id || 'pest-pet').toLowerCase()}`,
+        reason,
+      });
+    }
+    for (const reason of pestSpawnPet.cropFortuneReasons || []) {
+      totals.incomplete.cropFortune.push({
+        id: `derived-${String(pestSpawnPet.id || 'pest-pet').toLowerCase()}`,
+        reason,
+      });
+    }
+    if (mode === ACTIVITY_MODE.PEST_SPAWN) {
+      for (const reason of pestSpawnPet.bpcReasons || []) {
+        totals.incomplete.bonusPestChance.push({
+          id: `derived-${String(pestSpawnPet.id || 'pest-pet').toLowerCase()}`,
+          reason,
+        });
+      }
     }
   }
 
@@ -496,6 +534,7 @@ export function computedStatsSnapshot(state, mode = activityModeForState(state))
     strength: state?.profile?.inputs?.strength ?? null,
     mooshroomCow: byCrop[selectedCrop]?.derived?.mooshroomCow || null,
     roseDragon: byCrop[selectedCrop]?.derived?.roseDragon || null,
+    pestSpawnPet: byCrop[selectedCrop]?.derived?.pestSpawnPet || null,
     globalFortune: byCrop[selectedCrop]?.globalFortune || 0,
     cropFortuneByCrop: Object.fromEntries(CROPS.map(crop => [crop.id, byCrop[crop.id].cropFortune])),
     pestFortuneByCrop: Object.fromEntries(CROPS.map(crop => [crop.id, byCrop[crop.id].pestFortune])),
