@@ -2,13 +2,13 @@ import { ACTIVITY_MODE, normalizeActivityMode, setupIdForActivity, usesFarmingTo
 import { computeStatTotals } from './computed-stats.js';
 import { applySnapshotToProgress, cropsForToolItem } from './snapshot-apply.js';
 import { isHelianthusArmorPiece } from './armor-fortune.js';
-import { isBlossomPiece } from './equipment-fortune.js';
+import { isBlossomPiece, isPestEquipmentPiece } from './equipment-fortune.js';
 import { activeSetup, normalizeSetups } from './setups.js';
 import { GARDEN_VACUUM_ITEMS } from './exact-farming-items.js';
 import { gardenLevelFromExperience } from './garden-level.js';
 import { setupPetItemContribution } from './setup-pet-items.js';
 
-export const SETUP_CANDIDATE_EVALUATOR_VERSION = 4;
+export const SETUP_CANDIDATE_EVALUATOR_VERSION = 5;
 
 const SETUP_LOCAL_PET_ITEM_ENTRY_IDS = Object.freeze([
   'pet-item-green-bandana',
@@ -22,6 +22,7 @@ const STAT_FIELDS = Object.freeze([
   'effectiveFortune',
   'overbloom',
   'bonusPestChance',
+  'pestCooldownReductionPct',
 ]);
 
 function cloned(value) {
@@ -157,7 +158,7 @@ function setupSupportGaps(setup) {
       gaps.push(`${slotId} base Farming stats are not modeled for ${item.displayName || item.skyblockId || 'this armor item'}`);
     }
     const reforge = String(item.reforge || '').trim().toLowerCase();
-    if (reforge && reforge !== 'mossy') {
+    if (reforge && !['mossy', 'mantid'].includes(reforge)) {
       gaps.push(`${slotId} armor reforge ${reforge} is not modeled in setup evaluation`);
     }
     gaps.push(...peridotQualityGaps(item, slotId));
@@ -166,11 +167,11 @@ function setupSupportGaps(setup) {
   for (const slotId of ['equipment1', 'equipment2', 'equipment3', 'equipment4']) {
     const item = slots[slotId];
     if (!item) continue;
-    if (!isBlossomPiece(item)) {
+    if (!isBlossomPiece(item) && !isPestEquipmentPiece(item)) {
       gaps.push(`${slotId} base Farming stats are not modeled for ${item.displayName || item.skyblockId || 'this equipment item'}`);
     }
     const reforge = String(item.reforge || '').trim().toLowerCase();
-    if (reforge && !['rooted', 'thorny'].includes(reforge)) {
+    if (reforge && !['rooted', 'thorny', 'squeaky'].includes(reforge)) {
       gaps.push(`${slotId} equipment reforge ${reforge} is not modeled in setup evaluation`);
     }
   }
@@ -238,7 +239,10 @@ export function evaluateSetupCandidate(state, candidate, options = {}) {
     cropId,
     phase,
     activeContextScope,
-    { eligiblePestBestiaryTiers: options.eligiblePestBestiaryTiers ?? snapshot?.bestiary?.eligiblePestTierTotal ?? null },
+    {
+      eligiblePestBestiaryTiers: options.eligiblePestBestiaryTiers ?? snapshot?.bestiary?.eligiblePestTierTotal ?? null,
+      recentPestKills: options.recentPestKills ?? null,
+    },
   );
 
   const afterState = normalizedState(state);
@@ -258,7 +262,10 @@ export function evaluateSetupCandidate(state, candidate, options = {}) {
     cropId,
     phase,
     activeContextScope,
-    { eligiblePestBestiaryTiers: options.eligiblePestBestiaryTiers ?? snapshot?.bestiary?.eligiblePestTierTotal ?? null },
+    {
+      eligiblePestBestiaryTiers: options.eligiblePestBestiaryTiers ?? snapshot?.bestiary?.eligiblePestTierTotal ?? null,
+      recentPestKills: options.recentPestKills ?? null,
+    },
   );
 
   const freshness = candidateFreshness(candidate);
