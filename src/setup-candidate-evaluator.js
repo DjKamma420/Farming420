@@ -138,6 +138,14 @@ function peridotQualityGaps(item, slotId) {
     .map(value => `${slotId} uses ${value}; non-Perfect Peridot setup contribution is not modeled yet`);
 }
 
+function missingWearableSlots(setup) {
+  const slots = setup?.slots || {};
+  return [
+    'helmet', 'chestplate', 'leggings', 'boots',
+    'equipment1', 'equipment2', 'equipment3', 'equipment4',
+  ].filter(slotId => !slots[slotId]);
+}
+
 function setupSupportGaps(setup) {
   const gaps = [];
   const slots = setup?.slots || {};
@@ -241,6 +249,7 @@ export function evaluateSetupCandidate(state, candidate, options = {}) {
   const beforeState = normalizedState(state);
   const beforeSetupId = setupForPhase(beforeState, phase);
   const beforeSetup = activeSetup(beforeState.profile.setups);
+  const beforeMissingSlots = missingWearableSlots(beforeSetup);
   const beforePetItem = petItemForPhase(beforeSetup, snapshot, phase, options);
   const beforeSupportGaps = uniqueReasons([
     ...setupSupportGaps(beforeSetup),
@@ -256,6 +265,7 @@ export function evaluateSetupCandidate(state, candidate, options = {}) {
   setupForPhase(afterState, phase);
   const afterSetupId = activateCandidate(afterState, candidate);
   const afterSetup = activeSetup(afterState.profile.setups);
+  const afterMissingSlots = missingWearableSlots(afterSetup);
   const afterPetItem = petItemForPhase(afterSetup, snapshot, phase, options);
   const afterSupportGaps = uniqueReasons([
     ...setupSupportGaps(afterSetup),
@@ -275,7 +285,8 @@ export function evaluateSetupCandidate(state, candidate, options = {}) {
 
   if (!candidate || typeof candidate !== 'object') reasons.push('candidate is missing');
   if (candidate?.valid === false) reasons.push('candidate violates setup constraints');
-  if (!candidate?.wearableComplete) reasons.push('candidate does not contain a complete observed armor/equipment loadout');
+  if (beforeMissingSlots.length) reasons.push('current phase setup does not contain a complete armor/equipment loadout');
+  if (!candidate?.wearableComplete || afterMissingSlots.length) reasons.push('candidate does not contain a complete observed armor/equipment loadout');
   if (!freshness.fresh) reasons.push('candidate ownership is not currently verified by fresh item and pet profile data');
   if (!snapshot) reasons.push('normalized profile snapshot is unavailable');
   if (!afterSetupId) reasons.push('candidate setup is unavailable');
@@ -300,6 +311,8 @@ export function evaluateSetupCandidate(state, candidate, options = {}) {
     currentObserved: Boolean(candidate?.currentObserved),
     freshness,
     before: Object.freeze({
+      wearableComplete: beforeMissingSlots.length === 0,
+      missingSlots: Object.freeze(beforeMissingSlots),
       totals: beforeTotals,
       incomplete: Object.freeze(beforeIncomplete),
       supportGaps: Object.freeze(beforeSupportGaps),
@@ -308,6 +321,8 @@ export function evaluateSetupCandidate(state, candidate, options = {}) {
       skipped: Object.freeze(beforeApply.skipped),
     }),
     after: Object.freeze({
+      wearableComplete: afterMissingSlots.length === 0,
+      missingSlots: Object.freeze(afterMissingSlots),
       totals: afterTotals,
       incomplete: Object.freeze(afterIncomplete),
       supportGaps: Object.freeze(afterSupportGaps),
