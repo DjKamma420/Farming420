@@ -47,6 +47,24 @@ test('physical item build value includes base item, reforge, recomb, enchants an
   );
 });
 
+test('replacement value freshness is limited by the oldest priced component', () => {
+  const item = {
+    skyblockId: 'HELIANTHUS_HELMET',
+    displayName: 'Helianthus Helmet',
+    recombobulated: true,
+    enchantments: {},
+    gems: [],
+  };
+  const result = physicalItemBuildValue('helmet', item, {
+    readQuote: descriptor => ({
+      ...descriptor,
+      coinsPerUnit: 1_000_000,
+      computedAtMs: descriptor.itemTag === 'HELIANTHUS_HELMET' ? 2_000 : 1_000,
+    }),
+  });
+  assert.equal(result.computedAtMs, 1_000);
+});
+
 test('missing component prices make the build value a lower bound instead of silently zero', () => {
   const item = {
     skyblockId: 'BLOSSOM_NECKLACE',
