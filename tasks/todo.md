@@ -124,7 +124,8 @@ Implemented above enumeration:
 - Mantid and Squeaky are now rarity-scaled from the actual setup pieces; Helianthus/Pesterminator/Pesthunter/Pest Vest BPC and additive Pest cooldown reduction are setup-local too
 - Mantid's 10-minute kill stack is explicit runtime context: missing recent-kill state stays incomplete instead of assuming zero or max
 - Mosquito and Slug are now setup-local modeled spawning pets: level-scaled BPC, Mosquito visitor-based Sugar Cane Fortune, and conditional Legendary Slug Sprayonator Fortune
-- Legendary Slug never guesses plot spray state; callers must supply Sprayonator-active context before Repugnant Aroma can be treated as complete
+- Legendary Slug never guesses plot spray state
+- the Setups objective panel now exposes the two non-profile runtime facts directly: recent Pest kills (capped at the 20-kill Mantid effect threshold) and tri-state Sprayonator plot status; empty/unknown values remain unknown rather than becoming zero/false
 
 Objective evaluation is now implemented above raw stat deltas:
 - Normal Crop and Jacob Contest maximize complete modeled crop-output Fortune

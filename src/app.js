@@ -69,6 +69,11 @@ import {
   setupObjectiveForActivity,
 } from './setup-objective-evaluation.js';
 import {
+  normalizeRecentPestKills,
+  normalizeSprayonatorActive,
+  setupRuntimeContextForState,
+} from './setup-runtime-context.js';
+import {
   intrinsicEnchantmentsForCatalogItem,
   itemsForSlot,
   loadItemCatalog,
@@ -1290,8 +1295,9 @@ function setupObjectivePanel() {
 
   const objective = activeSetupObjective();
   const mode = activityModeForState(state);
+  const runtimeContext = setupRuntimeContextForState(state);
   const candidates = buildSetupCandidates(synced, { phase: mode });
-  const result = evaluateSetupObjective(state, candidates, { objective });
+  const result = evaluateSetupObjective(state, candidates, { objective, ...runtimeContext });
   const candidateById = new Map(candidates.map(candidate => [candidate.id, candidate]));
   const frontierRows = result.rows.filter(row => row.frontier).slice(0, 4);
 
@@ -1302,7 +1308,23 @@ function setupObjectivePanel() {
           <option value="${SETUP_OBJECTIVE.JACOB_CONTEST}" ${objective === SETUP_OBJECTIVE.JACOB_CONTEST ? 'selected' : ''}>Jacob Contest</option>
         </select>
       </label>`
-    : '';
+    : mode === ACTIVITY_MODE.PEST_SPAWN
+      ? `<div class="setup-runtime-context">
+          <label class="inline-input">Pests killed in last 10m
+            <input type="number" min="0" max="20" step="1" placeholder="unknown"
+              data-setup-recent-pest-kills
+              value="${runtimeContext.recentPestKills === null ? '' : runtimeContext.recentPestKills}">
+          </label>
+          <label class="inline-input">Sprayonator on this plot
+            <select data-setup-sprayonator-active>
+              <option value="" ${runtimeContext.sprayonatorActive === null ? 'selected' : ''}>Unknown</option>
+              <option value="true" ${runtimeContext.sprayonatorActive === true ? 'selected' : ''}>Yes</option>
+              <option value="false" ${runtimeContext.sprayonatorActive === false ? 'selected' : ''}>No</option>
+            </select>
+          </label>
+          <div class="hint">20 kills is the Mantid cap. Empty/Unknown stays unknown, never zero.</div>
+        </div>`
+      : '';
 
   let headline = 'No complete owned candidate can be scored yet';
   let detail = 'Unknown mechanics and missing runtime context stay unknown instead of becoming zero.';
@@ -1397,8 +1419,9 @@ function bindSetups() {
       if (!synced) return;
       const objective = activeSetupObjective();
       const mode = activityModeForState(state);
+      const runtimeContext = setupRuntimeContextForState(state);
       const candidates = buildSetupCandidates(synced, { phase: mode });
-      const analysis = evaluateSetupObjective(state, candidates, { objective });
+      const analysis = evaluateSetupObjective(state, candidates, { objective, ...runtimeContext });
       const candidateId = button.dataset.setupObjectiveApply;
       const row = analysis.rows.find(entry =>
         entry.candidateId === candidateId && entry.eligible && entry.frontier);
@@ -1422,6 +1445,24 @@ function bindSetups() {
       state.setupSlot = null;
       rerender();
     });
+  });
+
+  document.querySelector('[data-setup-recent-pest-kills]')?.addEventListener('change', event => {
+    state.profile ||= {};
+    state.profile.setupRuntimeContext ||= {};
+    state.profile.setupRuntimeContext.recentPestKills = event.target.value === ''
+      ? null
+      : normalizeRecentPestKills(event.target.value);
+    state.setupRecommendationNotice = null;
+    rerender();
+  });
+
+  document.querySelector('[data-setup-sprayonator-active]')?.addEventListener('change', event => {
+    state.profile ||= {};
+    state.profile.setupRuntimeContext ||= {};
+    state.profile.setupRuntimeContext.sprayonatorActive = normalizeSprayonatorActive(event.target.value);
+    state.setupRecommendationNotice = null;
+    rerender();
   });
 
   document.querySelector('[data-setup-farm-objective]')?.addEventListener('change', event => {
