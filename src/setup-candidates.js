@@ -125,9 +125,10 @@ function observedSets(snapshot, kind) {
       deduped.set(signature, group);
       continue;
     }
+    const existingWasCurrent = existing.currentObserved;
     existing.currentObserved ||= group.currentObserved;
     existing.origins.push(...group.origins);
-    if (group.currentObserved && !existing.currentObserved) {
+    if (group.currentObserved && !existingWasCurrent) {
       existing.id = group.id;
       existing.label = group.label;
     }
