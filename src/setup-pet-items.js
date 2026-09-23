@@ -24,6 +24,7 @@ function result({
   complete = true,
   reasons = [],
   source = null,
+  activityScope = 'any',
 } = {}) {
   return Object.freeze({
     id,
@@ -33,6 +34,7 @@ function result({
     complete,
     reasons: Object.freeze([...reasons]),
     source,
+    activityScope,
     lastVerified: SETUP_PET_ITEM_VERIFIED,
   });
 }
@@ -82,12 +84,14 @@ export function setupPetItemContribution(item, context = {}) {
         complete: false,
         reasons: ['Eligible Pest Bestiary tier total is unavailable for Brown Bandana'],
         source: SETUP_PET_ITEM_SOURCE.BROWN_BANDANA,
+        activityScope: 'pest-spawn',
       });
     }
     return result({
       id,
       bonusPestChance: Math.min(45, Math.round(eligibleTiers * 0.2 * 1e10) / 1e10),
       source: SETUP_PET_ITEM_SOURCE.BROWN_BANDANA,
+      activityScope: 'pest-spawn',
     });
   }
 
