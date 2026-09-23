@@ -25,7 +25,7 @@ test('the removed OCR runtime has no remaining CSP privileges', () => {
   assert.doesNotMatch(csp, /cdn\.jsdelivr\.net/);
   assert.doesNotMatch(csp, /tessdata\.projectnaptha\.com/);
   assert.match(csp, /script-src\s+'self'(;|$)/);
-  assert.match(csp, /connect-src\s+'self'\s+https:\/\/api\.hypixel\.net(;|$)/);
+  assert.match(csp, /connect-src\s+'self'\s+https:\/\/api\.hypixel\.net\s+https:\/\/sky\.coflnet\.com(;|$)/);
 });
 
 test('the CSP meta tag carries no directive that a meta tag cannot apply', () => {
