@@ -35,14 +35,21 @@ function explicitPetLevel(value) {
   return Math.max(1, Math.min(100, Math.floor(number)));
 }
 
-export function petLevelFromExperience(experience, rarity = 'COMMON') {
+export function petLevelFromExperience(experience, rarity = 'COMMON', {
+  maxLevel = 100,
+  extraLevelXp = null,
+} = {}) {
   let remaining = finiteNonNegative(experience);
   if (remaining === null) return null;
   const offset = PET_RARITY_OFFSET[String(rarity || 'COMMON').toUpperCase()] ?? 0;
+  const cap = Math.max(1, Math.floor(Number(maxLevel) || 100));
+  const extra = finiteNonNegative(extraLevelXp);
   let level = 1;
-  while (level < 100) {
-    const required = PET_LEVEL_XP[Math.min(offset + level - 1, PET_LEVEL_XP.length - 1)];
-    if (!Number.isFinite(required) || remaining < required) break;
+  while (level < cap) {
+    const required = level < 100
+      ? PET_LEVEL_XP[Math.min(offset + level - 1, PET_LEVEL_XP.length - 1)]
+      : extra;
+    if (!Number.isFinite(required) || required <= 0 || remaining < required) break;
     remaining -= required;
     level += 1;
   }
