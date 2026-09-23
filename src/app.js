@@ -1026,7 +1026,6 @@ function currentToolBuildRecord() {
 function toolBuildValuePanel() {
   const build = currentToolBuildRecord();
   const value = physicalItemBuildValue('tool', build.item, { extraComponents: build.extraComponents });
-  queuePhysicalValueRefresh('tool', build.item, build.extraComponents);
   const missing = value.missing.length
     ? `${value.missing.length} component${value.missing.length === 1 ? '' : 's'} still unpriced`
     : 'base item + installed priced upgrades';
@@ -1076,6 +1075,8 @@ function toolItemPanel() {
 
 function bindToolPanel() {
   const rerender = () => { saveState(); render(); };
+  const build = currentToolBuildRecord();
+  queuePhysicalValueRefresh('tool', build.item, build.extraComponents);
   document.querySelectorAll('[data-tool-toggle]').forEach(el => el.addEventListener('change', event => {
     const item = TOOL_PANEL_ENTRIES.get(el.dataset.toolToggle);
     if (!item) return;
@@ -1339,7 +1340,6 @@ function slotEditor(slotId) {
   const gems = item.gems || [];
   const filled = Boolean(item.displayName);
   const buildValue = filled ? physicalItemBuildValue(slotId, item) : null;
-  if (filled) queuePhysicalValueRefresh(slotId, item);
 
   return `<div class="item-editor ${esc(rarityClass(item.rarity))}" data-item-editor="${esc(slotId)}">
     <header class="item-editor-head item-editor-actions">
@@ -1637,6 +1637,8 @@ function bindSetups() {
   const slotId = state.setupSlot;
   if (!slotId) return;
   const currentItem = () => slotItem(slotId) || createEmptyItem();
+  const itemForValue = currentItem();
+  if (itemForValue?.displayName) queuePhysicalValueRefresh(slotId, itemForValue);
   // Any hand edit makes the slot the player's own, so a later sync prefill
   // leaves it alone instead of overwriting their work.
   const patch = changes => writeSlot(slotId, { ...currentItem(), ...changes, source: ITEM_SOURCE.MANUAL });
