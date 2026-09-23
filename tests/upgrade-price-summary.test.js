@@ -36,6 +36,30 @@ test('shards expose unit value, owned-equivalent value and exact remaining cost 
   assert.equal(summary.costToMaxComplete, true);
 });
 
+test('cost-to-max freshness uses the oldest market component timestamp', () => {
+  const id = 'attribute-shard-cricket-pest-fortune';
+  const summary = upgradePriceSummary(
+    { levels: { [id]: 7 }, owned: { [id]: true } },
+    { id, max: 10 },
+    {
+      resolveMarket: (_id, targetLevel) => {
+        if (targetLevel == null) return { complete: true, coins: 100_000, computedAtMs: 4_000 };
+        const rows = {
+          8: { coins: 800_000, computedAtMs: 3_000 },
+          9: { coins: 1_200_000, computedAtMs: 1_000 },
+          10: { coins: 1_600_000, computedAtMs: 2_000 },
+        };
+        return { complete: true, ...rows[targetLevel] };
+      },
+      resolveCost: () => ({ acquisitionMode: 'UNKNOWN', coins: 0 }),
+    },
+  );
+
+  assert.equal(summary.entryMarketComputedAtMs, 4_000);
+  assert.equal(summary.nextCostComputedAtMs, 3_000);
+  assert.equal(summary.costToMaxComputedAtMs, 1_000);
+});
+
 test('maxed rows have zero remaining cost without pretending their current value is zero', () => {
   const id = 'attribute-shard-galaxy-fish-shard';
   const summary = upgradePriceSummary(
