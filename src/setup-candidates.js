@@ -1,5 +1,6 @@
 import { ACTIVITY_MODE, normalizeActivityMode, usesFarmingTool } from './activity-mode.js';
 import { isFarmingArmorCatalogItem, isFarmingEquipmentCatalogItem } from './item-catalog.js';
+import { farmingPetById } from './setup-pet-catalog.js';
 import {
   createSetup,
   itemRecordFromDecoded,
@@ -147,6 +148,7 @@ function petCandidates(snapshot) {
   const pets = Array.isArray(snapshot?.pets) ? snapshot.pets : [];
   return pets
     .filter(pet => pet && typeof pet === 'object' && pet.type)
+    .filter(pet => Boolean(farmingPetById(pet.type)))
     .map((pet, index) => {
       const records = itemRecordsFromSnapshotPet(pet);
       const stableId = pet.uuid || `index:${pet.index ?? index}`;
