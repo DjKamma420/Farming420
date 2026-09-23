@@ -256,6 +256,10 @@ test('garden normalization preserves plot ids, upgrades, visitors and unknown ke
   assert.deepEqual(snapshot.garden.unlockedPlotIds, ['plot_a', 'plot_b']);
   assert.equal(snapshot.garden.unlockedPlotCount, 2);
   assert.equal(snapshot.garden.cropUpgrades.wheat, 4);
+  assert.equal(snapshot.garden.cropMilestones.wheat, 9);
+  assert.equal(snapshot.garden.cropMilestoneTotal, 9);
+  assert.equal(snapshot.garden.cropMilestoneMaxTotal, 598);
+  assert.equal(snapshot.provenance['garden.cropMilestoneTotal'].status, PROFILE_DATA_STATUS.DERIVED);
   assert.equal(snapshot.garden.visitors.visits, 100);
   assert.deepEqual(snapshot.garden.visitors.completed, { SAM: 5 });
   assert.equal(snapshot.garden.visitors.totalCompleted, 80);
@@ -269,6 +273,36 @@ test('missing Garden XP keeps Garden level unknown instead of inventing level 1'
   assert.equal(snapshot.garden.experience, null);
   assert.equal(snapshot.garden.level, null);
   assert.equal(snapshot.provenance['garden.level'].status, PROFILE_DATA_STATUS.UNKNOWN);
+});
+
+
+test('missing resources_collected keeps Crop Milestones unknown instead of zero', () => {
+  const snapshot = normalizeGardenPayload({ garden: { crop_upgrade_levels: {} } });
+  assert.equal(snapshot.garden.resourcesCollected, null);
+  assert.equal(snapshot.garden.cropMilestoneTotal, null);
+  assert.equal(snapshot.provenance['garden.resourcesCollected'].status, PROFILE_DATA_STATUS.HIDDEN);
+  assert.equal(snapshot.provenance['garden.cropMilestoneTotal'].status, PROFILE_DATA_STATUS.UNKNOWN);
+});
+
+test('a later Garden response without resource counters preserves the last known milestone facts', () => {
+  const base = normalizeGardenPayload({
+    garden: {
+      resources_collected: { WHEAT: 80 },
+      crop_upgrade_levels: {},
+    },
+  });
+  const patch = normalizeGardenPayload({
+    garden: {
+      garden_experience: 999,
+      crop_upgrade_levels: {},
+    },
+  });
+  const merged = mergeProfileSnapshots(base, patch);
+  assert.equal(merged.garden.resourcesCollected.WHEAT, 80);
+  assert.equal(merged.garden.cropMilestones.wheat, 2);
+  assert.equal(merged.garden.cropMilestoneTotal, 2);
+  assert.equal(merged.provenance['garden.resourcesCollected'].status, PROFILE_DATA_STATUS.HIDDEN);
+  assert.equal(merged.provenance['garden.cropMilestoneTotal'].status, PROFILE_DATA_STATUS.UNKNOWN);
 });
 
 test('snapshot merge combines profile and Garden sections without losing either', () => {
