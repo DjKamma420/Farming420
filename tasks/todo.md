@@ -91,20 +91,31 @@ must compare a computed legal candidate against the currently active pet.
 entries, valid dates, non-empty sources, and no citations to the closed official
 wiki.
 
-### 2. Build farming setup candidates from normalized facts
+### 2. Build farming setup candidates from normalized facts — Candidate enumeration implemented
 
-The profile snapshot can now see raw items and pets. It still needs a pure setup layer that understands mutually exclusive choices without double counting:
+The pure ownership/state layer is now implemented in `src/setup-candidates.js`.
 
-- normal crop farming setup
-- pest farming/vacuum setup
-- Jacob Contest setup
-- budget/progression setup
-- endgame/max-profit setup
-- separate armor/equipment loadout sets
-- one active pet + one pet item per candidate
-- progression path such as Elephant/Mooshroom Cow/Hedgehog/Rose Dragon according to verified mechanics and use case
+Implemented:
 
-Do **not** implement those choices until each mechanic/value used by the setup evaluator is sourced and current.
+- reconstruct currently equipped and saved Hypixel armor loadout sets from physical item locations
+- reconstruct currently equipped and saved equipment loadout sets independently
+- preserve physical UUID identity when one item appears in multiple saved/active loadouts
+- enumerate legal owned armor × equipment × pet combinations without calling one of them "best"
+- keep each pet's held item attached to that exact physical pet
+- preserve source freshness (`AUTO` / `HIDDEN` / `UNKNOWN`) on candidate data
+- Farming and Spawning candidates require a crop tool; Killing candidates require a Vacuum
+- preserve explicit Rose Dragon levels through 200; do not force Rose Dragon XP through the ordinary level-100 pet curve
+- expose the candidate inventory through `detectFarmingProfile(snapshot)`
+
+Still required before this area is closed:
+
+- evaluate complete candidates by verified context-specific mechanics rather than raw-stat shortcuts
+- normal crop / Jacob Contest / Pest Spawn / Pest Kill objective evaluation
+- budget/progression versus endgame/max-profit candidate classes
+- profile-aware Rose Dragon contribution and legal before/after pet comparison
+- convert an evaluated candidate into a user-selectable setup without overwriting manual setup choices
+
+The evaluator must keep mutually exclusive complete states separate and must not invent values for missing data.
 
 ### 3. Live profile proxy
 
