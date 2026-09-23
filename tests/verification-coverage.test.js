@@ -3,56 +3,24 @@ import assert from 'node:assert/strict';
 import { UPGRADES } from '../src/data.js';
 
 /**
- * A ratchet on rule 2 of `AGENTS.md`: every non-trivial mechanic carries a
- * source and a `lastVerified` date.
- *
- * Today 72 entries are `ACTIVE` -- they feed live recommendations -- and only 12
- * of them carry a date. The other 60 drive the planner's rankings with no record
- * of when anyone last checked them against the game. `tasks/todo.md` has called
- * that the highest-priority gap for a while, and it is real work: it needs the
- * current sources opened one mechanic at a time, not a mass date-stamp, which
- * rule 2 exists to prevent.
- *
- * This file does not do that work. It stops the gap growing while it is done.
- *
- * The list below may only shrink. Dating an entry fails the second test, which
- * asks you to delete its line; adding a new undated `ACTIVE` entry fails the
- * first, which names it. Both failures are one-line edits, and both keep the
- * number honest instead of letting it drift upward unnoticed.
+ * Enforce rule 2 of `AGENTS.md`: every ACTIVE planner mechanic must carry a
+ * source and an honest `lastVerified` date. Uncertain/profile-dependent
+ * mechanics belong in VERIFY instead of receiving an invented static value.
  */
-
-/** `ACTIVE` entries with no `lastVerified`. Delete a line when you date one. */
-const UNDATED_ACTIVE = [
-  'armor-enchant-sunset-v-day-overbloom',
-  'consumable-feast-burger-permanent-overbloom',
-  'equipment-reforge-thorny-on-full-mythic-equipment-ff',
-  'equipment-reforge-thorny-on-full-mythic-equipment-overbloom',
-  'harvest-feast-feast-crashers-iii',
-  'mixin-celestial-mason-jar',
-  'mixin-celestial-mason-jar-wisdom',
-  'pet-item-lucky-clover-poignant-lucky-clover',
-  'pet-orchid-mantis-intelligent-specimen',
-  'pet-switch-to-best-farming-pet',
-  'tool-mk-ii',
-  'tool-mk-iii',
-  'tool-overclocker-3000',
-  'tool-tool-base-counter-fortune',
-  'vacuum-reforge-beady-pest-only-farming-fortune',
-];
 
 const active = UPGRADES.filter(entry => entry.status === 'ACTIVE');
 const undated = active.filter(entry => !entry.lastVerified).map(entry => entry.id).sort();
 
-test('no new ACTIVE entry arrives without a verification date', () => {
-  const added = undated.filter(id => !UNDATED_ACTIVE.includes(id));
-  assert.deepEqual(added, [],
-    `these ACTIVE entries are new and undated -- verify them, or mark them VERIFY:\n${added.join('\n')}`);
+test('every ACTIVE entry has a verification date', () => {
+  assert.deepEqual(undated, [], `ACTIVE without lastVerified:\n${undated.join('\n')}`);
 });
 
-test('the undated list holds nothing that has since been verified', () => {
-  const fixed = UNDATED_ACTIVE.filter(id => !undated.includes(id));
-  assert.deepEqual(fixed, [],
-    `verified since this list was written -- delete these lines:\n${fixed.join('\n')}`);
+test('profile-dependent pet switching is not ranked as a flat ACTIVE gain', () => {
+  const entry = UPGRADES.find(item => item.id === 'pet-switch-to-best-farming-pet');
+  assert.ok(entry, 'pet-switch upgrade entry exists');
+  assert.equal(entry.status, 'VERIFY');
+  assert.equal(entry.rawMarginal, 0);
+  assert.equal(entry.manualDefault, null);
 });
 
 test('every ACTIVE entry cites a source, dated or not', () => {
