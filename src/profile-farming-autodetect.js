@@ -2,6 +2,7 @@ import { FARMING_TOOL_ITEM_IDS, GARDEN_VACUUM_ITEMS } from './exact-farming-item
 import { isFarmingArmorCatalogItem, isFarmingEquipmentCatalogItem } from './item-catalog.js';
 import { GARDEN_CHIPS, TEMPORARY_FARMING_MODIFIERS } from './farming-modifiers-data.js';
 import { PROFILE_DATA_STATUS } from './profile-normalizer.js';
+import { buildSetupCandidateInventory } from './setup-candidates.js';
 
 export const FARMING_AUTODETECT_VERSION = 1;
 
@@ -186,6 +187,7 @@ export function detectFarmingProfile(snapshot) {
   const physical = groupItems(snapshot?.items);
   const activePet = detectActivePet(snapshot);
   const pets = petViews(snapshot);
+  const candidateInventory = buildSetupCandidateInventory(snapshot);
 
   const activeArmor = physical.armor.filter(item => item.activeEquipped);
   const activeEquipment = physical.equipment.filter(item => item.activeEquipped);
@@ -208,6 +210,7 @@ export function detectFarmingProfile(snapshot) {
       equipment: Object.freeze({ status: itemStatus, items: Object.freeze(activeEquipment) }),
       pet: activePet,
     }),
+    candidateInventory,
     setupHints: Object.freeze({
       farming: Object.freeze({
         autoTools: Object.freeze(physical.tools.map(item => item.skyblockId)),
