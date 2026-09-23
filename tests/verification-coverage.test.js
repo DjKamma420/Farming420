@@ -3,101 +3,24 @@ import assert from 'node:assert/strict';
 import { UPGRADES } from '../src/data.js';
 
 /**
- * A ratchet on rule 2 of `AGENTS.md`: every non-trivial mechanic carries a
- * source and a `lastVerified` date.
- *
- * Today 72 entries are `ACTIVE` -- they feed live recommendations -- and only 12
- * of them carry a date. The other 60 drive the planner's rankings with no record
- * of when anyone last checked them against the game. `tasks/todo.md` has called
- * that the highest-priority gap for a while, and it is real work: it needs the
- * current sources opened one mechanic at a time, not a mass date-stamp, which
- * rule 2 exists to prevent.
- *
- * This file does not do that work. It stops the gap growing while it is done.
- *
- * The list below may only shrink. Dating an entry fails the second test, which
- * asks you to delete its line; adding a new undated `ACTIVE` entry fails the
- * first, which names it. Both failures are one-line edits, and both keep the
- * number honest instead of letting it drift upward unnoticed.
+ * Enforce rule 2 of `AGENTS.md`: every ACTIVE planner mechanic must carry a
+ * source and an honest `lastVerified` date. Uncertain/profile-dependent
+ * mechanics belong in VERIFY instead of receiving an invented static value.
  */
-
-/** `ACTIVE` entries with no `lastVerified`. Delete a line when you date one. */
-const UNDATED_ACTIVE = [
-  'accessory-fermento-artifact',
-  'accessory-helianthus-relic',
-  'accessory-relic-of-power-perfect-peridot-effect',
-  'account-skill-farming-skill-level',
-  'account-upgrade-elizabeth-garden-farming-fortune',
-  'anita-extra-farming-fortune-perk',
-  'armor-enchant-pesterminator-vi-on-full-armor',
-  'armor-enchant-sunset-v-day-overbloom',
-  'armor-gem-perfect-peridot-on-full-armor',
-  'armor-helianthus-armor-base-stats',
-  'armor-helianthus-armor-bpc',
-  'armor-helianthus-feast-set-bonus',
-  'armor-reforge-mossy-on-full-armor',
-  'chocolate-factory-chocolate-factory-cocoa-perk',
-  'chocolate-factory-refined-dark-cacao-permanent-bonus',
-  'consumable-feast-burger-permanent-overbloom',
-  'crop-progression-crop-upgrade-selected-crop',
-  'equipment-blossom-set-visitor-bonus',
-  'equipment-reforge-thorny-on-full-mythic-equipment-ff',
-  'equipment-reforge-thorny-on-full-mythic-equipment-overbloom',
-  'garden-chip-cropshot-chip',
-  'garden-chip-evergreen-chip',
-  'garden-chip-hypercharge-chip-next-level',
-  'garden-chip-mechamind-chip',
-  'garden-chip-overdrive-chip',
-  'garden-chip-quickdraw-chip',
-  'garden-chip-rarefinder-chip',
-  'garden-chip-sowledge-chip',
-  'garden-chip-synthesis-chip',
-  'garden-chip-vermin-vaporizer-chip',
-  'garden-garden-plots-unlocked',
-  'harvest-feast-feast-crashers-iii',
-  'harvest-feast-fortunate-feasting-v',
-  'jacob-accessory-anita-accessory-crop-bonus',
-  'jacob-personal-best-perk-selected-crop',
-  'mixin-celestial-mason-jar',
-  'mixin-celestial-mason-jar-wisdom',
-  'mixin-melon-juice-mixin',
-  'pet-item-green-bandana',
-  'pet-item-lucky-clover-poignant-lucky-clover',
-  'pet-orchid-mantis-intelligent-specimen',
-  'pet-switch-to-best-farming-pet',
-  'temporary-atmospheric-filter-spring',
-  'temporary-buff-pesthunter-phillip-buff',
-  'temporary-buff-refined-dark-cacao-truffle-temporary-stack',
-  'temporary-chocolate-century-cake',
-  'temporary-harvest-harbinger-v',
-  'temporary-magic-8-ball-ff-roll',
-  'tool-enchant-cultivating-x',
-  'tool-enchant-dedication',
-  'tool-enchant-harvesting-vi',
-  'tool-farming-for-dummies',
-  'tool-gem-perfect-peridot-on-farming-tool',
-  'tool-mk-ii',
-  'tool-mk-iii',
-  'tool-overclocker-3000',
-  'tool-reforge-blessed-reforge',
-  'tool-reforge-bountiful-reforge',
-  'tool-tool-base-counter-fortune',
-  'vacuum-reforge-beady-pest-only-farming-fortune',
-];
 
 const active = UPGRADES.filter(entry => entry.status === 'ACTIVE');
 const undated = active.filter(entry => !entry.lastVerified).map(entry => entry.id).sort();
 
-test('no new ACTIVE entry arrives without a verification date', () => {
-  const added = undated.filter(id => !UNDATED_ACTIVE.includes(id));
-  assert.deepEqual(added, [],
-    `these ACTIVE entries are new and undated -- verify them, or mark them VERIFY:\n${added.join('\n')}`);
+test('every ACTIVE entry has a verification date', () => {
+  assert.deepEqual(undated, [], `ACTIVE without lastVerified:\n${undated.join('\n')}`);
 });
 
-test('the undated list holds nothing that has since been verified', () => {
-  const fixed = UNDATED_ACTIVE.filter(id => !undated.includes(id));
-  assert.deepEqual(fixed, [],
-    `verified since this list was written -- delete these lines:\n${fixed.join('\n')}`);
+test('profile-dependent pet switching is not ranked as a flat ACTIVE gain', () => {
+  const entry = UPGRADES.find(item => item.id === 'pet-switch-to-best-farming-pet');
+  assert.ok(entry, 'pet-switch upgrade entry exists');
+  assert.equal(entry.status, 'VERIFY');
+  assert.equal(entry.rawMarginal, 0);
+  assert.equal(entry.manualDefault, null);
 });
 
 test('every ACTIVE entry cites a source, dated or not', () => {

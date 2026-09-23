@@ -11,7 +11,7 @@ import {
 const byId = new Map(UPGRADES.map(entry => [entry.id, entry]));
 
 test('the core Fortune verification slice is current and uses the maintained wiki', () => {
-  assert.equal(CORE_FORTUNE_VERIFIED, '2026-09-16');
+  assert.equal(CORE_FORTUNE_VERIFIED, '2026-09-23');
   assert.equal(CORE_FORTUNE_SOURCE, 'https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune');
   assert.ok(CORE_FORTUNE_VERIFIED >= '2026-08-01', 'verification predates the newest relevant farming changes');
   assert.ok(!CORE_FORTUNE_SOURCE.includes('wiki.hypixel.net'), 'the closed official wiki cannot be used');

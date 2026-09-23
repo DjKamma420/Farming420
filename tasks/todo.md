@@ -76,18 +76,20 @@ The item decoder stores raw facts only. It deliberately does not calculate Fortu
 
 ## Current correctness gaps
 
-### 1. Verify the game-data layer
+### 1. Verify the game-data layer — Closed 2026-09-23
 
-**Highest priority.** `src/data.js` contains researched mechanics and source URLs, but the entries do not yet carry an honest per-entry `lastVerified` date. Do not mass-fill dates.
+All `ACTIVE` planner mechanics in `src/data.js` now carry a current source and
+an honest `lastVerified` date. The verification was done source-by-source; it
+was not a mass date stamp. Values that cannot be represented as a reliable
+static marginal gain remain `VERIFY`.
 
-Required process:
+The important example is the farming-pet switch: the old flat +280 planner gain
+was removed because Rose Dragon is profile-dependent. The future setup evaluator
+must compare a computed legal candidate against the currently active pet.
 
-1. group entries by source/mechanic
-2. open the current primary/strongest source
-3. verify the exact number/condition/scope against the current game version
-4. add `lastVerified` only after verification
-5. downgrade uncertain entries to `VERIFY` or remove planner weight rather than guessing
-6. add/update tests that require active planner mechanics to have `lastVerified`
+`tests/verification-coverage.test.js` now enforces zero undated `ACTIVE`
+entries, valid dates, non-empty sources, and no citations to the closed official
+wiki.
 
 ### 2. Build farming setup candidates from normalized facts
 
@@ -151,8 +153,8 @@ Two bugs already found by real-browser verification and now tested:
 
 ## Next development sequence
 
-1. **Current-mechanics verification pass for `src/data.js` with real `lastVerified` values.**
-2. Build pure farming setup candidate generation from normalized items/pets.
+1. ~~Current-mechanics verification pass for `src/data.js` with real `lastVerified` values.~~ **Closed 2026-09-23.**
+2. **Build pure farming setup candidate generation from normalized items/pets.**
 3. Add server-side live-profile proxy.
 4. Add market data/valuation.
 5. Implement the tested profit engine.
