@@ -240,6 +240,29 @@ export const CARROLYN_CROP_FORTUNE_ENTRIES = Object.freeze([
 
 for (const entry of CARROLYN_CROP_FORTUNE_ENTRIES) upsertEntry(entry);
 
+export const LADYBUG_PRETTY_CLOTHES_ENTRY = Object.freeze({
+  id: 'attribute-shard-ladybug-pretty-clothes',
+  attribute: 'Pretty Clothes',
+  category: 'Attribute Shard',
+  section: 'shards',
+  name: 'Ladybug Shard - Pretty Clothes',
+  metric: 'Visitor Copper',
+  modeScope: 'Any',
+  cropScope: 'Any',
+  status: 'ACTIVE',
+  max: 10,
+  stepGain: 1,
+  manualDefault: null,
+  rawMarginal: 1,
+  hypercharge: false,
+  notes: '+1% Copper from Garden Visitors per level, max +10%. This changes Visitor rewards directly and therefore belongs in the Visitor upgrade filter.',
+  source: 'https://hypixel-skyblock.fandom.com/wiki/Attributes/List/Rare',
+  lastVerified: '2026-09-23',
+  workbookRank: null,
+});
+
+upsertEntry(LADYBUG_PRETTY_CLOTHES_ENTRY);
+
 // Intentionally unresolved: current references disagree on the total Garden /
 // Pest Bestiary Farming Fortune after later pest additions. Keep VERIFY until a
 // current authoritative value is available instead of hard-coding 66 or 96.
