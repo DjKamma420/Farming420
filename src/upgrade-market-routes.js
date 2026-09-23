@@ -36,6 +36,37 @@ const traded = (itemTag, quantity = 1) => alternatives(
   [ah(itemTag, quantity)],
 );
 
+export const MARKET_COST_KIND = Object.freeze({
+  ACQUISITION: 'acquisition',
+  RECURRING_CONSUMABLE: 'recurring-consumable',
+});
+
+const MARKET_COST_CONTEXT = Object.freeze({
+  'mixin-celestial-mason-jar': Object.freeze({
+    costKind: MARKET_COST_KIND.RECURRING_CONSUMABLE,
+    displayLabel: 'per use',
+  }),
+  'mixin-melon-juice-mixin': Object.freeze({
+    costKind: MARKET_COST_KIND.RECURRING_CONSUMABLE,
+    displayLabel: 'per use',
+  }),
+  'temporary-harvest-harbinger-v': Object.freeze({
+    costKind: MARKET_COST_KIND.RECURRING_CONSUMABLE,
+    displayLabel: 'per use',
+  }),
+  'temporary-buff-refined-dark-cacao-truffle-temporary-stack': Object.freeze({
+    costKind: MARKET_COST_KIND.RECURRING_CONSUMABLE,
+    displayLabel: 'per use',
+  }),
+});
+
+export function marketCostContextForUpgrade(itemId) {
+  return MARKET_COST_CONTEXT[String(itemId || '')] || Object.freeze({
+    costKind: MARKET_COST_KIND.ACQUISITION,
+    displayLabel: null,
+  });
+}
+
 const SHARD_ENTRY_ROUTES = Object.freeze(Object.fromEntries(
   Object.entries(FARMING_SHARD_MARKET).map(([itemId, record]) => [
     itemId,
@@ -66,6 +97,10 @@ const ENTRY_ROUTES = Object.freeze({
   'jacob-accessory-anita-accessory-crop-bonus': route(ah('ANITA_ARTIFACT')),
   'temporary-atmospheric-filter-spring': route(ah('ATMOSPHERIC_FILTER')),
   'temporary-magic-8-ball-ff-roll': route(ah('MAGIC_8_BALL')),
+  'mixin-celestial-mason-jar': route(bz('CELESTIAL_MASON_JAR')),
+  'mixin-melon-juice-mixin': route(ah('MELON_JUICE_MIXIN')),
+  'temporary-harvest-harbinger-v': route(ah('POTION_harvest_harbinger')),
+  'temporary-buff-refined-dark-cacao-truffle-temporary-stack': route(bz('REFINED_DARK_CACOA_TRUFFLE')),
   'tool-overclocker-3000': traded('OVERCLOCKER_3000', 10),
   'tool-farming-for-dummies': traded('FARMING_FOR_DUMMIES', 5),
   'tool-recombobulator-effect-on-tool-stats': traded('RECOMBOBULATOR_3000'),
