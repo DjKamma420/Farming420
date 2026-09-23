@@ -9,6 +9,7 @@ function trimFixed(value, digits = 2) {
 }
 
 export function compactCoinNumber(value) {
+  if (value === null || value === undefined || value === '') return null;
   const number = Number(value);
   if (!Number.isFinite(number)) return null;
   const sign = number < 0 ? '-' : '';
