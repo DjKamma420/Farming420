@@ -2,7 +2,7 @@ import { CROPS, UPGRADES } from './data.js';
 import { FARMING_ACCESSORY_GROUPS, farmingAccessoryByItemId } from './farming-accessories.js';
 import { accessoryCapabilityState } from './accessory-capabilities.js';
 import { DATA_SCHEMA_VERSION, STORAGE_KEY } from './config.js';
-import { computeStatTotals } from './computed-stats.js';
+import { applyComputedStatsToState, computeStatTotals } from './computed-stats.js';
 import { ACTIVITY_MODE, activityLabel, activityModeForState } from './activity-mode.js';
 import {
   FARMING_CONTEXT_OPTIONS,
@@ -1660,7 +1660,17 @@ function render({ preserveScroll = true } = {}) {
   if (state.page === 'tools') bindToolPanel();
   if (state.page === 'info') bindGuide();
 
-  if (scrollState) {
+  // Restoring a scroll position that is already zero still costs a full forced
+  // layout: assigning `scrollTop` and calling `window.scrollTo` make the browser
+  // lay out the markup that was assigned one line earlier. Measured at 412px
+  // with 4x CPU throttling this block was 166 ms of a 338 ms boot -- more than
+  // building every page's markup -- and at boot there is provably nothing to
+  // restore, because the document was just created at the origin.
+  const hasScrollToRestore = Boolean(scrollState && (
+    scrollState.main || scrollState.nav || scrollState.windowX || scrollState.windowY || relativeAnchor
+  ));
+
+  if (hasScrollToRestore) {
     const main = document.querySelector('#app .main');
     const nav = document.querySelector('#app .sidebar nav');
     if (main) main.scrollTop = scrollState.main;
@@ -1801,6 +1811,20 @@ function bind() {
     }
   });
 }
+
+// Warm the derived stat cache before the first paint.
+//
+// `computed-stats-ui.js` used to do this on its first observer pass, find the
+// stored cache stale, write it, and dispatch `farming420:state-changed` to make
+// the core pick it up -- a second full render of a page that had just been
+// rendered. Doing it here instead means the enhancer's comparison finds nothing
+// to change and stays silent, which is also what rule 5 of
+// `docs/RENDER_FREEZE_SAFETY.md` asks of it.
+//
+// `saveState` is a no-op while the stored data came from a newer app version,
+// so this cannot write over state this build does not understand.
+applyComputedStatsToState(state);
+saveState();
 
 render();
 
