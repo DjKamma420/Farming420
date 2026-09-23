@@ -95,7 +95,7 @@ export const FARMING_PETS = Object.freeze([
     id: 'ROSE_DRAGON',
     name: 'Rose Dragon Pet',
     rarities: Object.freeze(['LEGENDARY']),
-    levelMin: 100,
+    levelMin: 1,
     levelMax: 200,
     source: 'https://hypixelskyblock.minecraft.wiki/w/Rose_Dragon_Pet',
     lastVerified: '2026-09-23',
