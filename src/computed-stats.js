@@ -3,6 +3,7 @@ import './vacuum-data-patches.js';
 import { CROPS, UPGRADES } from './data.js';
 import { toolKeyForCropId } from './migrations.js';
 import { mooshroomCowContribution } from './mooshroom-cow.js';
+import { roseDragonContribution } from './rose-dragon.js';
 import { VACUUM_REFORGE_EFFECT_ENTRY_IDS, selectedVacuumReforge } from './item-capabilities.js';
 import { vacuumPeridotFortune } from './vacuum-state.js';
 import { TOOL_GEM_ENTRY_ID, toolGemstoneContribution } from './tool-gemstone-contribution.js';
@@ -17,7 +18,7 @@ import { activeSetup } from './setups.js';
 import { gardenLevelFromExperience } from './garden-level.js';
 import { setupPetItemContribution } from './setup-pet-items.js';
 
-export const COMPUTED_STATS_VERSION = 11;
+export const COMPUTED_STATS_VERSION = 12;
 
 const SETUP_LOCAL_PET_ITEM_ENTRY_IDS = new Set([
   'pet-item-green-bandana',
@@ -243,6 +244,7 @@ function applySetupPetItem(totals, contribution) {
 
 function applyDerivedMechanics(state, totals, mode, cropId, derivedContext = {}) {
   const cow = mooshroomCowContribution(state);
+  const roseDragon = roseDragonContribution(state);
   const setupPetItem = setupPetItemForState(state, mode, derivedContext);
   const vacuumPeridot = mode === ACTIVITY_MODE.PEST_KILL
     ? vacuumPeridotFortune(state?.profile?.vacuumProgress || {})
@@ -253,6 +255,7 @@ function applyDerivedMechanics(state, totals, mode, cropId, derivedContext = {})
   totals.derived = {
     strength: state?.profile?.inputs?.strength ?? null,
     mooshroomCow: cow,
+    roseDragon,
     setupPetItem,
     vacuumPeridotFortune: vacuumPeridot,
     toolPeridotFortune: toolPeridot,
@@ -265,6 +268,25 @@ function applyDerivedMechanics(state, totals, mode, cropId, derivedContext = {})
       totals.incomplete.globalFortune.push({
         id: 'derived-mooshroom-cow',
         reason: cow.reasons.join('; '),
+      });
+    }
+  }
+
+  if (roseDragon.active) {
+    totals.globalFortune += roseDragon.globalFortune;
+    totals.overbloom += roseDragon.overbloom;
+    totals.sourceCount.globalFortune += 1;
+    totals.sourceCount.overbloom += 1;
+    for (const reason of roseDragon.fortuneIncompleteReasons) {
+      totals.incomplete.globalFortune.push({
+        id: 'derived-rose-dragon',
+        reason,
+      });
+    }
+    for (const reason of roseDragon.overbloomIncompleteReasons) {
+      totals.incomplete.overbloom.push({
+        id: 'derived-rose-dragon',
+        reason,
       });
     }
   }
@@ -319,6 +341,7 @@ export function computedStatsSnapshot(state, mode = activityModeForState(state))
     selectedCrop,
     strength: state?.profile?.inputs?.strength ?? null,
     mooshroomCow: byCrop[selectedCrop]?.derived?.mooshroomCow || null,
+    roseDragon: byCrop[selectedCrop]?.derived?.roseDragon || null,
     globalFortune: byCrop[selectedCrop]?.globalFortune || 0,
     cropFortuneByCrop: Object.fromEntries(CROPS.map(crop => [crop.id, byCrop[crop.id].cropFortune])),
     pestFortuneByCrop: Object.fromEntries(CROPS.map(crop => [crop.id, byCrop[crop.id].pestFortune])),
