@@ -29,7 +29,7 @@ test('Dashboard Coins per hour is source-driven instead of a fixed 20m claim', (
 test('the old Fortune to Coins information card is gone from Upgrade Planner', () => {
   assert.doesNotMatch(planner, /Fortune → Coins/);
   assert.match(planner, /PLANNER_BENCHMARK_COINS_PER_HOUR/);
-  assert.match(planner, /Best upgrade value/);
+  assert.match(planner, /Recommended upgrades · all sets/);
 });
 
 test('Dashboard estimate controls collapse to phone width', () => {
