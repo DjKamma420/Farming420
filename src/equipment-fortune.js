@@ -14,6 +14,39 @@ const BLOSSOM_NAMES = Object.freeze([
   'blossom bracelet',
 ]);
 
+export const SQUEAKY_FORTUNE_BY_RARITY = Object.freeze({
+  COMMON: 2,
+  UNCOMMON: 4,
+  RARE: 6,
+  EPIC: 8,
+  LEGENDARY: 10,
+  MYTHIC: 12,
+});
+
+export const SQUEAKY_BPC_BY_RARITY = Object.freeze({
+  COMMON: 0.5,
+  UNCOMMON: 0.5,
+  RARE: 1,
+  EPIC: 1.5,
+  LEGENDARY: 2,
+  MYTHIC: 2.5,
+});
+
+export const SQUEAKY_COOLDOWN_REDUCTION_PCT_PER_PIECE = 2.5;
+
+const PESTHUNTER_IDS = Object.freeze(new Set([
+  'PESTHUNTERS_NECKLACE',
+  'PESTHUNTERS_CLOAK',
+  'PESTHUNTERS_BELT',
+  'PESTHUNTERS_GLOVES',
+]));
+export const PEST_VEST_ID = 'PEST_VEST';
+const PESTHUNTER_BPC_PER_PIECE = 5;
+const PESTHUNTER_COOLDOWN_REDUCTION_PCT_PER_PIECE = 10;
+const PEST_VEST_BPC = 10;
+const PEST_VEST_COOLDOWN_REDUCTION_PCT = 15;
+const ERADICATOR_FORTUNE_BY_PIECES = Object.freeze({ 0: 0, 1: 0, 2: 50, 3: 75, 4: 100 });
+
 function clean(value) {
   return String(value ?? '').replace(/§[0-9a-fk-or]/gi, '').trim();
 }
@@ -33,6 +66,78 @@ export function blossomPieceCount(pieces) {
 
 export function blossomBaseFortune(pieces) {
   return blossomPieceCount(pieces) * 7;
+}
+
+function normalizedSkyblockId(piece) {
+  return String(piece?.skyblockId || '').trim().toUpperCase();
+}
+
+export function isPesthunterPiece(piece) {
+  const id = normalizedSkyblockId(piece);
+  if (PESTHUNTER_IDS.has(id)) return true;
+  const name = normalizeName(piece?.displayName || piece?.name);
+  return name.startsWith('pesthunter s ') || name.startsWith('pesthunters ');
+}
+
+export function isPestVest(piece) {
+  if (normalizedSkyblockId(piece) === PEST_VEST_ID) return true;
+  return normalizeName(piece?.displayName || piece?.name) === 'pest vest';
+}
+
+export function isPestEquipmentPiece(piece) {
+  return isPesthunterPiece(piece) || isPestVest(piece);
+}
+
+export function pesthunterPieceCount(pieces) {
+  return (pieces || []).filter(isPesthunterPiece).length;
+}
+
+export function pestEquipmentBaseBonusPestChance(pieces) {
+  return (pieces || []).reduce((sum, piece) => {
+    if (isPestVest(piece)) return sum + PEST_VEST_BPC;
+    if (isPesthunterPiece(piece)) return sum + PESTHUNTER_BPC_PER_PIECE;
+    return sum;
+  }, 0);
+}
+
+export function pestEquipmentBaseCooldownReductionPct(pieces) {
+  return (pieces || []).reduce((sum, piece) => {
+    if (isPestVest(piece)) return sum + PEST_VEST_COOLDOWN_REDUCTION_PCT;
+    if (isPesthunterPiece(piece)) return sum + PESTHUNTER_COOLDOWN_REDUCTION_PCT_PER_PIECE;
+    return sum;
+  }, 0);
+}
+
+export function pesthunterEradicatorFortune(pieces) {
+  return ERADICATOR_FORTUNE_BY_PIECES[pesthunterPieceCount(pieces)] || 0;
+}
+
+export function squeakyPieceCount(pieces) {
+  return (pieces || []).filter(piece => String(piece?.reforge || '').toLowerCase() === 'squeaky').length;
+}
+
+export function squeakyFortuneForPiece(piece) {
+  if (String(piece?.reforge || '').toLowerCase() !== 'squeaky') return 0;
+  const rarity = effectiveSetupItemRarity(piece);
+  return Number(SQUEAKY_FORTUNE_BY_RARITY[rarity] || 0);
+}
+
+export function squeakyFortuneForPieces(pieces) {
+  return (pieces || []).reduce((sum, piece) => sum + squeakyFortuneForPiece(piece), 0);
+}
+
+export function squeakyBaseBonusPestChanceForPiece(piece) {
+  if (String(piece?.reforge || '').toLowerCase() !== 'squeaky') return 0;
+  const rarity = effectiveSetupItemRarity(piece);
+  return Number(SQUEAKY_BPC_BY_RARITY[rarity] || 0);
+}
+
+export function squeakyBaseBonusPestChanceForPieces(pieces) {
+  return (pieces || []).reduce((sum, piece) => sum + squeakyBaseBonusPestChanceForPiece(piece), 0);
+}
+
+export function squeakyCooldownReductionPct(pieces) {
+  return squeakyPieceCount(pieces) * SQUEAKY_COOLDOWN_REDUCTION_PCT_PER_PIECE;
 }
 
 export function rootedFortuneForPiece(piece) {
