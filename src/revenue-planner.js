@@ -33,6 +33,7 @@ import {
   matchesUpgradeFilter,
   upgradeFilterTags,
 } from './planner-upgrade-filters.js';
+import { plannerMaxSummary } from './planner-max-summary.js';
 
 const PLANNER_BENCHMARK_COINS_PER_HOUR = INTERNET_FARMING_TIME_VALUE_COINS_PER_HOUR;
 const FOCUS_AVERAGE_STEP_HOURS = 1;
@@ -813,6 +814,35 @@ function benchmarkPanel(raw) {
   return '';
 }
 
+function maxingPanel(raw) {
+  const summary = plannerMaxSummary(raw);
+  const costText = summary.costComplete
+    ? `${compactCoins(summary.knownCostCoins)} Coins`
+    : summary.knownCostCoins > 0
+      ? `≥ ${compactCoins(summary.knownCostCoins)} Coins`
+      : 'Price incomplete';
+  const progressText = `${summary.completionPercent.toFixed(1)}%`;
+  const earnedText = summary.remainingEarnedSteps > 0
+    ? formatNumber(summary.remainingEarnedSteps)
+    : '0';
+  const priceNote = summary.costComplete
+    ? 'all remaining buyable steps priced'
+    : `${formatNumber(summary.remainingUnknownPriceSteps)} remaining price step${summary.remainingUnknownPriceSteps === 1 ? '' : 's'} unknown`;
+
+  return `<section class="revenue-panel revenue-maxing">
+    <div class="revenue-panel-head">
+      <div><div class="eyebrow">Permanent farming progression</div><h2>Maxing progress</h2></div>
+      <span class="revenue-note">${formatNumber(summary.maxedTargets)}/${formatNumber(summary.trackedTargets)} tracked targets maxed</span>
+    </div>
+    <div class="benchmark-stat-grid">
+      <div><span>Cost until maxed out</span><strong>${esc(costText)}</strong><small>${esc(priceNote)}</small></div>
+      <div><span>Farming maxed</span><strong>${esc(progressText)}</strong><small>${formatNumber(summary.currentSteps)}/${formatNumber(summary.totalSteps)} permanent levels / steps</small></div>
+      <div><span>Earned progress remaining</span><strong>${esc(earnedText)}</strong><small>counts toward the percentage, not direct coin cost</small></div>
+    </div>
+    <p class="revenue-help">Temporary buffs and mutually exclusive tool-reforge choices are excluded from the cumulative maxing total. Shared physical purchases are counted once. Unknown market routes stay visibly incomplete instead of being treated as free.</p>
+  </section>`;
+}
+
 function focusScope() {
   return localStorage.getItem(FOCUS_SCOPE_KEY) === 'crop' ? 'crop' : 'global';
 }
@@ -979,7 +1009,8 @@ function enhancePlanner() {
   original.classList.add('planner-v1-source');
   const panel = document.createElement('div');
   panel.className = 'revenue-planner-v2';
-  panel.innerHTML = `${benchmarkPanel(raw)}
+  panel.innerHTML = `${maxingPanel(raw)}
+    ${benchmarkPanel(raw)}
     <div class="section-row revenue-ranking-head"><div><h2>${esc(rankingTitle)}</h2><p>${esc(rankingHelp)}</p></div><span class="revenue-note">${rows.length}/${allRows.length} shown</span></div>
     ${upgradeFilterMarkup(allRows, activeFilter)}
     <div class="planner-list revenue-list">${rankingMarkup(rows, ready)}</div>`;
