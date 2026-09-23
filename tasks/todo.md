@@ -2592,9 +2592,19 @@ each call builds a fresh `Intl.NumberFormat`.
       compares against `toLocaleString` directly, not by reasoning about it.
 - [ ] **P2. Re-measure after P1** and record the delta. If the win is not real,
       say so and revert rather than keep a change that bought nothing.
-- [ ] **P3. `app.js :: render`.** The biggest single cost. Investigate before
-      touching: a full innerHTML rebuild is also what makes the 25 observers
-      correct, so this is not a free win and may be left alone deliberately.
+- [x] **P3. `app.js :: render`.** Done, and the render *model* was left alone --
+      the win was elsewhere. Instrumenting the phases showed boot renders the
+      Dashboard **three times** and spends 166 ms of a 338 ms total restoring a
+      scroll position of zero. Guarding the restore and warming the derived
+      cache in the core took boot render cost to **82.6 ms (-76%)** without
+      touching the innerHTML rebuild the observers depend on.
+- [ ] **P4. `pack-item-art.js` still forces one extra boot render.** When the
+      art manifest arrives it dispatches `farming420:state-changed`, which
+      rebuilds the whole app so the coverage layer repaints. The dispatch is
+      load-bearing -- that observer watches `childList` only, so clearing the
+      `data-coverage-art` stamps does not wake it -- so removing it needs either
+      a narrower event the art layer listens for, or a re-run hook exported from
+      `item-art-coverage.js`. Worth ~40 ms; its own change.
 - [ ] **B1. Hunt the `Number(null) === 0` family.** This defect class has
       already shipped twice. Find every guard that coerces before checking for
       absence.
