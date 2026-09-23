@@ -33,11 +33,12 @@ test('current farming-pet rarity ranges stay explicit instead of free text', () 
   assert.deepEqual([...petRarities('ROSE_DRAGON')], ['LEGENDARY']);
 });
 
-test('Rose Dragon keeps its special 100-200 level range while normal pets use 1-100', () => {
-  assert.deepEqual(petLevelBounds('ROSE_DRAGON'), { min: 100, max: 200 });
+test('Rose Dragon preserves unhatched levels and caps at 200 while normal pets cap at 100', () => {
+  assert.deepEqual(petLevelBounds('ROSE_DRAGON'), { min: 1, max: 200 });
   assert.deepEqual(petLevelBounds('MOOSHROOM_COW'), { min: 1, max: 100 });
-  assert.equal(clampPetLevel('ROSE_DRAGON', 50), 100);
+  assert.equal(clampPetLevel('ROSE_DRAGON', 50), 50);
   assert.equal(clampPetLevel('ROSE_DRAGON', 250), 200);
+  assert.equal(clampPetLevel('ROSE_DRAGON', null), null);
   assert.equal(clampPetLevel('MOOSHROOM_COW', 73.9), 73);
 });
 
