@@ -1,9 +1,10 @@
-import { ACTIVITY_MODE, normalizeActivityMode, setupIdForActivity } from './activity-mode.js';
+import { ACTIVITY_MODE, normalizeActivityMode, setupIdForActivity, usesFarmingTool } from './activity-mode.js';
 import { computeStatTotals } from './computed-stats.js';
-import { applySnapshotToProgress } from './snapshot-apply.js';
+import { applySnapshotToProgress, cropsForToolItem } from './snapshot-apply.js';
 import { isHelianthusArmorPiece } from './armor-fortune.js';
 import { isBlossomPiece } from './equipment-fortune.js';
 import { activeSetup, normalizeSetups } from './setups.js';
+import { GARDEN_VACUUM_ITEMS } from './exact-farming-items.js';
 
 export const SETUP_CANDIDATE_EVALUATOR_VERSION = 1;
 
@@ -85,6 +86,27 @@ function candidateFreshness(candidate) {
     items: sourceStatus.items || 'UNKNOWN',
     pets: sourceStatus.pets || 'UNKNOWN',
     fresh: itemsFresh && petsFresh,
+  });
+}
+
+const VACUUM_IDS = new Set(GARDEN_VACUUM_ITEMS.map(item => item.id));
+
+function handItemObservation(snapshot, phase, cropId) {
+  const items = Array.isArray(snapshot?.items) ? snapshot.items : [];
+  if (usesFarmingTool(phase)) {
+    const matches = items.filter(item => cropsForToolItem(item).includes(cropId));
+    return Object.freeze({
+      kind: 'farming-tool',
+      observed: matches.length > 0,
+      itemIds: Object.freeze(matches.map(item => item.skyblockId).filter(Boolean)),
+    });
+  }
+
+  const matches = items.filter(item => VACUUM_IDS.has(String(item?.skyblockId || '').trim().toUpperCase()));
+  return Object.freeze({
+    kind: 'vacuum',
+    observed: matches.length > 0,
+    itemIds: Object.freeze(matches.map(item => item.skyblockId).filter(Boolean)),
   });
 }
 
@@ -172,6 +194,7 @@ export function evaluateSetupCandidate(state, candidate, options = {}) {
   const afterTotals = computeStatTotals(afterState, cropId, phase, activeContextScope);
 
   const freshness = candidateFreshness(candidate);
+  const handItem = handItemObservation(snapshot || {}, phase, cropId);
   const beforeIncomplete = incompleteParts(beforeTotals);
   const afterIncomplete = incompleteParts(afterTotals);
   const reasons = [];
@@ -182,12 +205,11 @@ export function evaluateSetupCandidate(state, candidate, options = {}) {
   if (!freshness.fresh) reasons.push('candidate ownership is not currently verified by fresh item and pet profile data');
   if (!snapshot) reasons.push('normalized profile snapshot is unavailable');
   if (!afterSetupId) reasons.push('candidate setup is unavailable');
+  if (!handItem.observed) reasons.push(`no observed ${handItem.kind} is available for this phase and crop`);
   if (beforeIncomplete.length) reasons.push('current phase setup has incomplete stat mechanics');
   if (afterIncomplete.length) reasons.push('candidate setup has incomplete stat mechanics');
   if (beforeSupportGaps.length) reasons.push(...beforeSupportGaps);
   if (afterSupportGaps.length) reasons.push(...afterSupportGaps);
-  if (beforeApply.skipped.length) reasons.push(...beforeApply.skipped);
-  if (afterApply.skipped.length) reasons.push(...afterApply.skipped);
 
   return Object.freeze({
     version: SETUP_CANDIDATE_EVALUATOR_VERSION,
@@ -198,6 +220,7 @@ export function evaluateSetupCandidate(state, candidate, options = {}) {
     currentSetupId: beforeSetupId,
     candidateSetupId: afterSetupId,
     requiredHandItemKind: candidate?.requiredHandItemKind || null,
+    handItem,
     legal: candidate?.valid !== false,
     wearableComplete: Boolean(candidate?.wearableComplete),
     currentObserved: Boolean(candidate?.currentObserved),
