@@ -38,6 +38,7 @@ export function evaluateUpgrade({
   gain = 0,
   costCoins = 0,
   acquisitionMode = 'BUYABLE',
+  costKind = 'acquisition',
   directCoinCost = 0,
   activeGrindHours = null,
   timeValueCoinsPerHour = INTERNET_FARMING_TIME_VALUE_COINS_PER_HOUR,
@@ -56,6 +57,7 @@ export function evaluateUpgrade({
   const route = acquisitionMode === 'EARNED'
     ? 'EARNED'
     : acquisitionMode === 'UNKNOWN' ? 'UNKNOWN' : 'BUYABLE';
+  const recurringConsumable = costKind === 'recurring-consumable';
 
   let cost = 0;
   let costKnown = false;
@@ -104,6 +106,7 @@ export function evaluateUpgrade({
     ...deltas,
     gain: finiteNonNegative(gain),
     acquisitionMode: route,
+    costKind,
     cost,
     costKnown,
     activeGrindHours: grindHours,
@@ -114,10 +117,10 @@ export function evaluateUpgrade({
     economicsReady,
     marginalCoinsHour,
     fortuneEquivalent,
-    payback: costKnown && marginalCoinsHour !== null
+    payback: !recurringConsumable && costKnown && marginalCoinsHour !== null
       ? paybackHours({ costCoins: cost, marginalCoinsHour })
       : null,
-    coinsPerEffectiveFortune: costKnown
+    coinsPerEffectiveFortune: !recurringConsumable && costKnown
       ? coinsPerEffectiveFortune({ costCoins: cost, deltaFortuneEquivalent: fortuneEquivalent })
       : null,
   };
