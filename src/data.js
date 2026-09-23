@@ -471,7 +471,7 @@ export const UPGRADES = [
     "hypercharge": false,
     "notes": "+5 Crop Fortune per level for its crop, maxing at +35 Crop Fortune at Turbo-Crop VII. VI comes from a Turbo Gourd and VII from an Enchanted Turbo Gourd; I-V are contests/Librarian and book combining.",
     "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune",
-    "lastVerified": "2026-09-16",
+    "lastVerified": "2026-09-23",
     "workbookRank": 26
   },
   {
