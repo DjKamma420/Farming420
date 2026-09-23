@@ -188,9 +188,19 @@ Verified setup-local rules implemented:
 - Brown Bandana: +0.2 Bonus Pest Chance per eligible Pest Bestiary tier, capped
   at +45. It is applied only in the Pest Spawning phase.
 
-Brown Bandana intentionally remains incomplete when the eligible tier sum is
-unknown. The calculator must not substitute total Pest Bestiary because
-Timestalk Clone and Zombuddy do not count for Brown Bandana.
+Brown Bandana reads the eligible tier sum from the normalized profile
+Bestiary when `member.bestiary.kills` is available. The current eligible set is
+15 Pest families: 13 use Bestiary bracket 6, while Field Mouse and Lunar Moth
+use bracket 7; every family caps at tier 15, for a maximum eligible tier sum of
+225 and therefore +45 BPC. Timestalk Clone and Zombuddy are deliberately
+excluded. Missing or explicitly unmigrated Bestiary data remains unknown rather
+than becoming zero.
+
+Sources:
+- https://hypixelskyblock.minecraft.wiki/w/Pest
+- https://hypixelskyblock.minecraft.wiki/w/Brown_Bandana
+- current individual Pest pages for bracket/tier thresholds
+Last verified: 2026-09-23.
 
 The common computed-stat path now ignores the legacy Green/Poignant planner
 toggles as direct stats. Their values are derived only from the pet item attached
