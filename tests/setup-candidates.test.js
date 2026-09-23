@@ -175,6 +175,18 @@ test('Rose Dragon explicit level 100-200 is preserved and unknown XP is not forc
   assert.equal(standard.pet.petLevel, 100);
 });
 
+test('non-farming pets are not promoted into farming setup candidates', () => {
+  const snapshot = freshSnapshot();
+  snapshot.pets = [
+    { uuid: 'rose', type: 'ROSE_DRAGON', rarity: 'LEGENDARY', level: 150, active: false },
+    { uuid: 'tiger', type: 'TIGER', rarity: 'LEGENDARY', experience: 1_000_000, active: true },
+  ];
+
+  const inventory = buildSetupCandidateInventory(snapshot);
+  assert.deepEqual(inventory.pets.map(pet => pet.type), ['ROSE_DRAGON']);
+  assert.equal(buildSetupCandidates(snapshot).length, 1);
+});
+
 test('non-farming gear is not promoted into farming setup candidates', () => {
   const snapshot = freshSnapshot();
   snapshot.items = [{
