@@ -13,8 +13,15 @@ import {
   PEST_BESTIARY_VERIFIED,
   eligiblePestBestiaryFromKills,
 } from './pest-bestiary.js';
+import {
+  CROP_MILESTONE_API_SOURCE,
+  CROP_MILESTONE_MAX_TOTAL,
+  CROP_MILESTONE_THRESHOLD_SOURCE,
+  CROP_MILESTONE_VERIFIED,
+  cropMilestonesFromResources,
+} from './crop-milestones.js';
 
-export const PROFILE_MODEL_VERSION = 2;
+export const PROFILE_MODEL_VERSION = 3;
 export const PROFILE_DATA_STATUS = Object.freeze({
   AUTO: 'AUTO',
   DERIVED: 'DERIVED',
@@ -57,6 +64,12 @@ export const PROFILE_SOURCE_META = Object.freeze({
     id: 'pest-bestiary',
     url: PEST_BESTIARY_SOURCE,
     lastVerified: PEST_BESTIARY_VERIFIED,
+  }),
+  cropMilestones: Object.freeze({
+    id: 'crop-milestones',
+    url: CROP_MILESTONE_THRESHOLD_SOURCE,
+    apiUrl: CROP_MILESTONE_API_SOURCE,
+    lastVerified: CROP_MILESTONE_VERIFIED,
   }),
 });
 
@@ -212,6 +225,9 @@ export function createEmptyProfileSnapshot() {
       unlockedPlotCount: null,
       cropUpgrades: {},
       resourcesCollected: null,
+      cropMilestones: {},
+      cropMilestoneTotal: null,
+      cropMilestoneMaxTotal: CROP_MILESTONE_MAX_TOTAL,
       visitors: {
         visits: null,
         completed: null,
@@ -334,6 +350,7 @@ export function normalizeGardenPayload(payload, options = {}) {
     : [];
 
   const gardenLevel = gardenLevelFromExperience(parsed.gardenExperience);
+  const cropMilestones = cropMilestonesFromResources(parsed.resourcesCollected);
 
   snapshot.garden = {
     ...snapshot.garden,
@@ -343,6 +360,9 @@ export function normalizeGardenPayload(payload, options = {}) {
     unlockedPlotCount: parsed.unlockedPlots,
     cropUpgrades: structuredClone(parsed.cropUpgrades),
     resourcesCollected: parsed.resourcesCollected ? structuredClone(parsed.resourcesCollected) : null,
+    cropMilestones: { ...cropMilestones.byCrop },
+    cropMilestoneTotal: cropMilestones.total,
+    cropMilestoneMaxTotal: cropMilestones.maxTotal,
     visitors: {
       visits: finiteNumberOrNull(rawGarden.commission_data?.visits),
       completed: rawGarden.commission_data?.completed ?? null,
@@ -358,6 +378,16 @@ export function normalizeGardenPayload(payload, options = {}) {
     importType: 'raw-json',
   };
   snapshot.provenance.garden = provenance(PROFILE_DATA_STATUS.AUTO, ['garden']);
+  snapshot.provenance['garden.resourcesCollected'] = provenance(
+    parsed.resourcesCollected === null ? PROFILE_DATA_STATUS.HIDDEN : PROFILE_DATA_STATUS.AUTO,
+    ['garden'],
+    parsed.resourcesCollected === null ? 'Garden resources_collected is unavailable.' : null,
+  );
+  snapshot.provenance['garden.cropMilestoneTotal'] = provenance(
+    cropMilestones.complete ? PROFILE_DATA_STATUS.DERIVED : PROFILE_DATA_STATUS.UNKNOWN,
+    ['garden', 'cropMilestones'],
+    cropMilestones.complete ? null : cropMilestones.reasons.join('; '),
+  );
   snapshot.provenance['garden.level'] = provenance(
     gardenLevel === null ? PROFILE_DATA_STATUS.UNKNOWN : PROFILE_DATA_STATUS.DERIVED,
     ['garden', 'gardenLevel'],
@@ -410,7 +440,16 @@ export function mergeProfileSnapshots(base, patch) {
     merged.skills = mergeValue(merged.skills, source.skills);
   }
   if (hasProvenanceFor(patchProvenance, 'garden')) {
+    const previousGarden = structuredClone(merged.garden || {});
     merged.garden = mergeValue(merged.garden, source.garden);
+    if (!mayReplaceCollection(patchProvenance['garden.resourcesCollected'])) {
+      merged.garden.resourcesCollected = structuredClone(previousGarden.resourcesCollected ?? null);
+    }
+    if (!mayReplaceCollection(patchProvenance['garden.cropMilestoneTotal'])) {
+      merged.garden.cropMilestones = structuredClone(previousGarden.cropMilestones || {});
+      merged.garden.cropMilestoneTotal = previousGarden.cropMilestoneTotal ?? null;
+      merged.garden.cropMilestoneMaxTotal = previousGarden.cropMilestoneMaxTotal ?? CROP_MILESTONE_MAX_TOTAL;
+    }
   }
   if (hasProvenanceFor(patchProvenance, 'bestiary') && mayReplaceCollection(patchProvenance.bestiary)) {
     merged.bestiary = mergeValue(merged.bestiary, source.bestiary);
