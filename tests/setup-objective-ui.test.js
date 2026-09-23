@@ -11,7 +11,10 @@ test('Setups page exposes objective-aware owned setup analysis', () => {
   assert.match(app, /Jacob Contest/);
 });
 
-test('objective UI does not auto-apply or overwrite a recommended candidate', () => {
-  assert.doesNotMatch(app, /data-setup-objective-apply/);
+test('objective UI only applies a recommendation through an explicit user action', () => {
+  assert.match(app, /data-setup-objective-apply/);
+  assert.match(app, /Use this setup/);
+  assert.match(app, /applyCandidateSetupSafely/);
+  assert.match(app, /Previous setup preserved/);
   assert.match(app, /does not invent a weighted winner/);
 });

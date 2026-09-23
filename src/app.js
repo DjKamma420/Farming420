@@ -3,7 +3,7 @@ import { FARMING_ACCESSORY_GROUPS, farmingAccessoryByItemId } from './farming-ac
 import { accessoryCapabilityState } from './accessory-capabilities.js';
 import { DATA_SCHEMA_VERSION, STORAGE_KEY } from './config.js';
 import { applyComputedStatsToState, computeStatTotals } from './computed-stats.js';
-import { ACTIVITY_MODE, activityLabel, activityModeForState } from './activity-mode.js';
+import { ACTIVITY_MODE, activityLabel, activityModeForState, setupIdForActivity } from './activity-mode.js';
 import {
   FARMING_CONTEXT_OPTIONS,
   farmingContextForState,
@@ -53,6 +53,7 @@ import {
   ITEM_SOURCE,
   SETUP_SLOTS,
   activeSetup,
+  applyCandidateSetupSafely,
   createEmptyItem,
   createSetup,
   nextSetupId,
@@ -1323,7 +1324,9 @@ function setupObjectivePanel() {
         const metrics = Object.entries(row.metrics)
           .map(([key, value]) => setupObjectiveMetricText(key, value))
           .join(' · ');
-        return `<div class="hint"><strong>${esc(setupCandidateLabel(candidate))}</strong><br>${esc(metrics)}</div>`;
+        return `<div class="hint"><strong>${esc(setupCandidateLabel(candidate))}</strong><br>${esc(metrics)}
+          <button class="ghost small" type="button" data-setup-objective-apply="${esc(row.candidateId)}">Use this setup</button>
+        </div>`;
       }).join('')}</div>`
     : '';
 
@@ -1332,6 +1335,7 @@ function setupObjectivePanel() {
       <div class="eyebrow">Owned setup objective · ${esc(result.label)}</div>
       <strong>${esc(headline)}</strong>
       <div class="hint">${esc(detail)}</div>
+      ${state.setupRecommendationNotice ? `<div class="hint"><strong>${esc(state.setupRecommendationNotice)}</strong></div>` : ''}
       ${frontier}
     </div>
     ${selector}
@@ -1387,7 +1391,41 @@ function bindSetups() {
     all.list = all.list.filter(setup => setup.id !== all.activeId);
     all.activeId = all.list[0].id; state.setupSlot = null; rerender();
   });
+  document.querySelectorAll('[data-setup-objective-apply]').forEach(button => {
+    button.addEventListener('click', () => {
+      const synced = snapshot();
+      if (!synced) return;
+      const objective = activeSetupObjective();
+      const mode = activityModeForState(state);
+      const candidates = buildSetupCandidates(synced, { phase: mode });
+      const analysis = evaluateSetupObjective(state, candidates, { objective });
+      const candidateId = button.dataset.setupObjectiveApply;
+      const row = analysis.rows.find(entry =>
+        entry.candidateId === candidateId && entry.eligible && entry.frontier);
+      const candidate = candidates.find(entry => entry.id === candidateId);
+
+      if (!row || !candidate) {
+        state.setupRecommendationNotice = 'That recommendation is no longer current; the owned setup list was recalculated.';
+        rerender();
+        return;
+      }
+
+      const targetSetupId = setupIdForActivity(analysis.phase);
+      const applied = applyCandidateSetupSafely(all, targetSetupId, candidate.setup);
+      if (applied.applied) {
+        state.setupRecommendationNotice = applied.backupId
+          ? `Applied to ${targetSetupId}. Previous setup preserved as ${applied.backupId}.`
+          : `Applied to ${targetSetupId}.`;
+      } else {
+        state.setupRecommendationNotice = applied.reason || 'No setup change was needed.';
+      }
+      state.setupSlot = null;
+      rerender();
+    });
+  });
+
   document.querySelector('[data-setup-farm-objective]')?.addEventListener('change', event => {
+    state.setupRecommendationNotice = null;
     state.setupFarmObjective = event.target.value === SETUP_OBJECTIVE.JACOB_CONTEST
       ? SETUP_OBJECTIVE.JACOB_CONTEST
       : SETUP_OBJECTIVE.NORMAL_CROP;

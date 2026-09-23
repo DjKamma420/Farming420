@@ -335,6 +335,61 @@ export function prefillSetupFromSnapshot(setup, snapshot, { overwrite = false } 
   return { setup: next, filled, armorSeen: armor.length, equipmentSeen: equipment.length };
 }
 
+function setupSlotsEqual(a, b) {
+  return SLOT_IDS.every(slotId =>
+    JSON.stringify(a?.slots?.[slotId] ?? null) === JSON.stringify(b?.slots?.[slotId] ?? null));
+}
+
+function setupHasAnyItem(setup) {
+  return SLOT_IDS.some(slotId => Boolean(setup?.slots?.[slotId]));
+}
+
+/**
+ * Applies one already-evaluated candidate to a phase setup without destroying
+ * the previous loadout choice. A non-empty, different target is copied first.
+ *
+ * The target id/name stay stable because activity routing depends on the three
+ * phase ids. The preserved copy gets a new ordinary setup id instead.
+ */
+export function applyCandidateSetupSafely(setups, targetSetupId, candidateSetup) {
+  if (!setups || !Array.isArray(setups.list) || !candidateSetup?.slots) {
+    return Object.freeze({ applied: false, targetSetupId: null, backupId: null, reason: 'invalid setup data' });
+  }
+
+  const target = setups.list.find(setup => setup?.id === targetSetupId);
+  if (!target) {
+    return Object.freeze({ applied: false, targetSetupId: null, backupId: null, reason: 'target setup is missing' });
+  }
+
+  if (setupSlotsEqual(target, candidateSetup)) {
+    setups.activeId = target.id;
+    return Object.freeze({ applied: false, targetSetupId: target.id, backupId: null, reason: 'candidate already matches target' });
+  }
+
+  let backupId = null;
+  if (setupHasAnyItem(target)) {
+    backupId = nextSetupId(setups, `${target.id}-before-recommendation`);
+    setups.list.push({
+      id: backupId,
+      name: `${target.name} · before recommendation`,
+      slots: structuredClone(target.slots),
+    });
+  }
+
+  target.slots = Object.fromEntries(SLOT_IDS.map(slotId => [
+    slotId,
+    candidateSetup.slots?.[slotId] ? structuredClone(candidateSetup.slots[slotId]) : null,
+  ]));
+  setups.activeId = target.id;
+
+  return Object.freeze({
+    applied: true,
+    targetSetupId: target.id,
+    backupId,
+    reason: null,
+  });
+}
+
 /** Counts for the setup header. */
 export function setupSummary(setup) {
   const slots = SLOT_IDS.map(id => setup?.slots?.[id]).filter(Boolean);

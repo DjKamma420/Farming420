@@ -5,6 +5,7 @@ import {
   ITEM_SOURCE,
   SLOT_IDS,
   activeSetup,
+  applyCandidateSetupSafely,
   createDefaultSetups,
   createEmptyItem,
   createSetup,
@@ -192,6 +193,89 @@ test('an unhatched Rose Dragon profile remains below level 100 instead of being 
   };
   const { setup } = prefillSetupFromSnapshot(createSetup('a', 'A'), snapshot);
   assert.equal(setup.slots.pet.petLevel, 1);
+});
+
+test('applying a recommended setup preserves a non-empty phase setup as a separate backup', () => {
+  const setups = createDefaultSetups();
+  const target = setups.list.find(setup => setup.id === 'normal');
+  target.slots.helmet = {
+    ...createEmptyItem(),
+    skyblockId: 'OLD_HELMET',
+    displayName: 'Old Helmet',
+    source: ITEM_SOURCE.MANUAL,
+    physicalItemId: 'uuid:old-helmet',
+  };
+
+  const candidate = createSetup('candidate', 'Candidate');
+  candidate.slots.helmet = {
+    ...createEmptyItem(),
+    skyblockId: 'HELIANTHUS_HELMET',
+    displayName: 'Helianthus Helmet',
+    source: ITEM_SOURCE.SYNC,
+    physicalItemId: 'uuid:new-helmet',
+  };
+
+  const result = applyCandidateSetupSafely(setups, 'normal', candidate);
+  assert.equal(result.applied, true);
+  assert.equal(result.targetSetupId, 'normal');
+  assert.ok(result.backupId);
+
+  const backup = setups.list.find(setup => setup.id === result.backupId);
+  assert.equal(backup.slots.helmet.skyblockId, 'OLD_HELMET');
+  assert.equal(backup.slots.helmet.source, ITEM_SOURCE.MANUAL);
+  assert.equal(target.slots.helmet.skyblockId, 'HELIANTHUS_HELMET');
+  assert.equal(target.slots.helmet.physicalItemId, 'uuid:new-helmet');
+  assert.equal(setups.activeId, 'normal');
+});
+
+test('applying to an empty phase setup needs no backup', () => {
+  const setups = createDefaultSetups();
+  const candidate = createSetup('candidate', 'Candidate');
+  candidate.slots.pet = {
+    ...createEmptyItem(),
+    skyblockId: 'MOSQUITO',
+    displayName: 'Mosquito Pet',
+    petLevel: 100,
+    source: ITEM_SOURCE.SYNC,
+    physicalItemId: 'pet:mosquito',
+  };
+
+  const result = applyCandidateSetupSafely(setups, 'pest', candidate);
+  assert.equal(result.applied, true);
+  assert.equal(result.backupId, null);
+  assert.equal(setups.list.find(setup => setup.id === 'pest').slots.pet.skyblockId, 'MOSQUITO');
+  assert.equal(setups.activeId, 'pest');
+});
+
+test('re-applying an identical candidate does not create backup noise', () => {
+  const setups = createDefaultSetups();
+  const target = setups.list.find(setup => setup.id === 'pest-kill');
+  target.slots.pet = {
+    ...createEmptyItem(),
+    skyblockId: 'ROSE_DRAGON',
+    displayName: 'Rose Dragon Pet',
+    physicalItemId: 'pet:rose',
+  };
+  const candidate = createSetup('candidate', 'Candidate');
+  candidate.slots.pet = structuredClone(target.slots.pet);
+
+  const beforeCount = setups.list.length;
+  const result = applyCandidateSetupSafely(setups, 'pest-kill', candidate);
+  assert.equal(result.applied, false);
+  assert.equal(result.backupId, null);
+  assert.equal(result.reason, 'candidate already matches target');
+  assert.equal(setups.list.length, beforeCount);
+  assert.equal(setups.activeId, 'pest-kill');
+});
+
+test('safe candidate application rejects missing targets without mutating setups', () => {
+  const setups = createDefaultSetups();
+  const before = structuredClone(setups);
+  const candidate = createSetup('candidate', 'Candidate');
+  const result = applyCandidateSetupSafely(setups, 'missing-phase', candidate);
+  assert.equal(result.applied, false);
+  assert.equal(result.reason, 'target setup is missing');
+  assert.deepEqual(setups, before);
 });
 
 test('an inactive pet is never assumed to be the equipped one', () => {
