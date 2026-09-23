@@ -71,6 +71,8 @@ function snapshot({
   return {
     skills: { farming: { level: null } },
     garden: {
+      experience: 60120,
+      level: 15,
       cropUpgrades: {},
       unlockedPlotCount: null,
       visitors: { uniqueNpcsServed: 0 },
@@ -241,15 +243,78 @@ test('an unmodeled farming pet makes a candidate incomplete instead of contribut
   assert.ok(result.after.supportGaps.some(reason => reason.includes('Elephant Pet contribution is not modeled')));
 });
 
-test('a pet item is not treated as account-global when comparing pet states', () => {
+test('Green Bandana is setup-local and derives +60 FF at Garden 15', () => {
   const profileSnapshot = snapshot({ petHeldItem: 'GREEN_BANDANA' });
   const state = stateForSnapshot(profileSnapshot);
-  const candidate = savedCowCandidate(profileSnapshot);
+  // A stale historical account-level toggle must not double count the item.
+  state.profile.levels['pet-item-green-bandana'] = 1;
+  state.profile.owned['pet-item-green-bandana'] = true;
+
+  const result = evaluateSetupCandidate(state, savedCowCandidate(profileSnapshot));
+  assert.equal(result.complete, true);
+  assert.equal(result.before.petItem.globalFortune, 60);
+  assert.equal(result.after.petItem.globalFortune, 60);
+  assert.equal(result.before.totals.globalFortune, 620);
+  assert.equal(result.after.totals.globalFortune, 488);
+  assert.equal(result.delta.globalFortune, -132);
+});
+
+test('Poignant Clover swaps setup-local Fortune for +13 Overbloom without stacking Green Bandana', () => {
+  const profileSnapshot = snapshot({
+    petHeldItem: 'GREEN_BANDANA',
+    extraPets: [{
+      index: 1,
+      uuid: 'cow-poignant',
+      type: 'MOOSHROOM_COW',
+      rarity: 'LEGENDARY',
+      level: 100,
+      experience: 1_000_000_000,
+      active: false,
+      heldItem: 'POIGNANT_LUCKY_CLOVER',
+    }],
+  });
+  const state = stateForSnapshot(profileSnapshot);
+  const candidate = buildSetupCandidates(profileSnapshot).find(row =>
+    row.components.armorSetId === 'saved:saved'
+    && row.components.equipmentSetId === 'saved:saved'
+    && row.components.petId === 'pet:cow-poignant');
 
   const result = evaluateSetupCandidate(state, candidate);
-  assert.equal(result.complete, false);
-  assert.ok(result.after.supportGaps.some(reason => reason.includes('Green Bandana is not yet setup-local')));
-  assert.ok(result.before.supportGaps.some(reason => reason.includes('Green Bandana is not yet setup-local')));
+  assert.equal(result.complete, true);
+  assert.equal(result.before.petItem.globalFortune, 60);
+  assert.equal(result.after.petItem.overbloom, 13);
+  assert.equal(result.delta.globalFortune, -192);
+  assert.equal(result.delta.overbloom, 18);
+});
+
+test('Brown Bandana remains incomplete until eligible Pest Bestiary tiers are known', () => {
+  const profileSnapshot = snapshot({
+    petHeldItem: 'BROWN_BANDANA',
+  });
+  const state = stateForSnapshot(profileSnapshot);
+  const candidate = savedCowCandidate(profileSnapshot, ACTIVITY_MODE.PEST_SPAWN);
+
+  const unknown = evaluateSetupCandidate(state, candidate, { phase: ACTIVITY_MODE.PEST_SPAWN });
+  assert.equal(unknown.complete, false);
+  assert.ok(unknown.before.supportGaps.some(reason => reason.includes('Eligible Pest Bestiary tier total')));
+
+  const known = evaluateSetupCandidate(state, candidate, {
+    phase: ACTIVITY_MODE.PEST_SPAWN,
+    eligiblePestBestiaryTiers: 100,
+  });
+  assert.equal(known.complete, true);
+  assert.equal(known.before.petItem.bonusPestChance, 20);
+  assert.equal(known.before.totals.bonusPestChance, 20);
+});
+
+test('Brown Bandana bestiary state is irrelevant outside the Pest Spawning phase', () => {
+  const profileSnapshot = snapshot({ petHeldItem: 'BROWN_BANDANA' });
+  const state = stateForSnapshot(profileSnapshot);
+  const result = evaluateSetupCandidate(state, savedCowCandidate(profileSnapshot), { phase: ACTIVITY_MODE.FARM });
+
+  assert.equal(result.before.petItem.active, false);
+  assert.equal(result.complete, true);
+  assert.equal(result.before.totals.bonusPestChance, 0);
 });
 
 test('unmodeled Mantid armor reforge is explicit instead of silently valued at zero', () => {
