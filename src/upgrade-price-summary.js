@@ -95,11 +95,11 @@ export function upgradePriceSummary(store, item, {
     // Non-step-aware entries describe one complete acquisition route rather
     // than a per-level ingredient. It is safe as a remaining-to-max cost only
     // from zero; at a partial level subtracting a fraction would be invented.
-    if (!explicitStepSeen && currentLevel === 0) {
+    if (!explicitStepSeen && currentLevel === 0 && maxLevel === 1) {
       const full = resolveMarket(id, null);
       if (full?.complete && positiveCoins(full.coins) != null) {
         costToMaxCoins = Number(full.coins);
-        firstStepCoins = maxLevel === 1 ? Number(full.coins) : null;
+        firstStepCoins = Number(full.coins);
       } else {
         const next = resolveCost(store, id);
         if (next?.acquisitionMode === 'EARNED') remainingEarnedSteps += 1;
