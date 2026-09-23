@@ -45,6 +45,10 @@ test('autodetect separates farming tools, pest vacuums, armor and equipment', ()
   assert.equal(detected.physical.armor[0].model.skullTexture, 'texture-hash');
   assert.deepEqual(detected.setupHints.farming.autoTools, ['THEORETICAL_HOE_WHEAT_3']);
   assert.deepEqual(detected.setupHints.pest.autoVacuums, ['INFINI_VACUUM_HOOVERIUS']);
+  assert.equal(detected.candidateInventory.armorSets.length, 1);
+  assert.equal(detected.candidateInventory.armorSets[0].currentObserved, true);
+  assert.equal(detected.candidateInventory.equipmentSets.length, 1);
+  assert.equal(detected.candidateInventory.equipmentSets[0].currentObserved, true);
 });
 
 test('armor equipment and pets are never auto-assigned to farming versus pest context', () => {

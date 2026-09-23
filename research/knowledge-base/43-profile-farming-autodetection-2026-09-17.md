@@ -69,6 +69,34 @@ The same conservative rule applies to active Farming Shards and short-lived effe
 
 The existing normalized snapshot deliberately preserves last-known items when the inventory API later becomes hidden. The Farming detector therefore carries the source status (`AUTO`, `HIDDEN`, `UNKNOWN`, etc.) alongside derived physical candidates. A stale item may remain visible to the user, but it must not be described as freshly verified ownership.
 
+## Candidate inventory extension — 2026-09-23
+
+`src/setup-candidates.js` now builds the next pure layer above autodetection.
+
+It does **not** decide the best Farming/Pest setup. It reconstructs what the
+profile proves is physically available:
+
+- currently equipped armor/equipment;
+- saved Hypixel armor and equipment loadout sets from item `locations`;
+- owned pets, with held pet items bound to the exact pet UUID;
+- legal cross-products of one armor set, one equipment set and one pet.
+
+The same physical UUID can appear in multiple phase candidates without becoming
+multiple owned items. Identical active/saved sets are deduplicated while the
+active origin is preserved.
+
+Farming and Pest Spawning candidates are tagged as using the crop farming tool;
+Pest Killing candidates are tagged as using the Vacuum. The tool/Vacuum is not
+duplicated into wearable setup slots.
+
+Rose Dragon is the important unknown-handling case: an explicit level in the
+normalized source is preserved through level 200. If only XP is available, the
+candidate layer leaves its level unknown instead of applying the standard
+level-100 pet XP curve.
+
+Candidate enumeration is not recommendation. Context-specific stat/profit
+evaluation is the next layer and must use complete before/after states.
+
 ## Calculator integration
 
-Future calculator/UI consumers should call `detectFarmingProfile(snapshot)` instead of independently scanning profile arrays. The result contains `account`, `physical`, `active`, `setupHints`, `sourceStatus`, and explicit invariant `rules`.
+Future calculator/UI consumers should call `detectFarmingProfile(snapshot)` instead of independently scanning profile arrays. The result contains `account`, `physical`, `active`, `candidateInventory`, `setupHints`, `sourceStatus`, and explicit invariant `rules`.
