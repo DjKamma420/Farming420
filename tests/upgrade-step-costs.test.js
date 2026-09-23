@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { UPGRADES } from '../src/data.js';
 import { UPGRADE_STEP_COSTS, stepCostForUpgrade } from '../src/upgrade-step-costs.js';
 import { resolveUpgradeCost } from '../src/upgrade-cost-resolution.js';
+import { marketRoutesForUpgrade } from '../src/upgrade-market-routes.js';
 import {
   MARKET_AVERAGE_MODEL_VERSION,
   MARKET_KIND,
@@ -159,6 +160,27 @@ test('Attribute Shard next cost uses the shard quantity required for the target 
     assert.equal(level9.targetLevel, 10);
     assert.equal(level9.coins, 1_600_000, 'Uncommon level 10 needs sixteen additional shards');
   });
+});
+
+test('tradeable farming accessories use exact Auction House ids while Relic of Power stays non-market', () => {
+  const cases = [
+    ['jacob-accessory-anita-accessory-crop-bonus', 'ANITA_ARTIFACT'],
+    ['temporary-atmospheric-filter-spring', 'ATMOSPHERIC_FILTER'],
+    ['temporary-magic-8-ball-ff-roll', 'MAGIC_8_BALL'],
+  ];
+  for (const [id, itemTag] of cases) {
+    const routes = marketRoutesForUpgrade(id);
+    assert.equal(routes.length, 1, id);
+    assert.equal(routes[0].length, 1, id);
+    assert.equal(routes[0][0].market, MARKET_KIND.AUCTION_HOUSE, id);
+    assert.equal(routes[0][0].itemTag, itemTag, id);
+  }
+
+  assert.deepEqual(
+    marketRoutesForUpgrade('accessory-relic-of-power-perfect-peridot-effect'),
+    [],
+    'Relic of Power is not directly tradeable and must not receive an AH/Bazaar item-price route',
+  );
 });
 
 test('already researched tool modifiers have reachable 90-day next-step prices', async () => {
