@@ -119,6 +119,7 @@ function normalizePets(rawPets) {
       type: stringOrNull(pet.type),
       rarity: stringOrNull(pet.tier ?? pet.rarity),
       experience: finiteNumberOrNull(pet.exp ?? pet.experience),
+      level: finiteNumberOrNull(pet.level),
       active: typeof pet.active === 'boolean' ? pet.active : null,
       heldItem: stringOrNull(pet.heldItem ?? pet.held_item),
       candyUsed: finiteNumberOrNull(pet.candyUsed ?? pet.candy_used),
