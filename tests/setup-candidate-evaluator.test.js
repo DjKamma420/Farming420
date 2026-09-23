@@ -320,6 +320,27 @@ test('Brown Bandana remains incomplete until eligible Pest Bestiary tiers are kn
   assert.ok(known.reasons.includes('current phase setup does not contain a complete armor/equipment loadout'));
 });
 
+test('Brown Bandana reads eligible Pest Bestiary tiers directly from the normalized snapshot', () => {
+  const profileSnapshot = snapshot({ petHeldItem: 'BROWN_BANDANA' });
+  profileSnapshot.bestiary = {
+    eligiblePestTierTotal: 100,
+    eligiblePestMaxTierTotal: 225,
+    eligiblePestFamilyTiers: {},
+  };
+  profileSnapshot.provenance['bestiary.eligiblePestTierTotal'] = { status: 'DERIVED', sources: [] };
+
+  const state = stateForSnapshot(profileSnapshot);
+  const candidate = savedCowCandidate(profileSnapshot, ACTIVITY_MODE.PEST_SPAWN);
+  const result = evaluateSetupCandidate(state, candidate, { phase: ACTIVITY_MODE.PEST_SPAWN });
+
+  assert.equal(result.after.petItem.complete, true);
+  assert.equal(result.after.petItem.bonusPestChance, 20);
+  assert.equal(result.after.totals.bonusPestChance, 20);
+  assert.ok(!result.after.supportGaps.some(reason => reason.includes('Eligible Pest Bestiary tier total')));
+  assert.equal(result.complete, false, 'the empty current Pest setup remains the only comparison blocker here');
+  assert.ok(result.reasons.includes('current phase setup does not contain a complete armor/equipment loadout'));
+});
+
 test('Brown Bandana bestiary state is irrelevant outside the Pest Spawning phase', () => {
   const profileSnapshot = snapshot({ petHeldItem: 'BROWN_BANDANA' });
   const state = stateForSnapshot(profileSnapshot);
