@@ -24,6 +24,14 @@ test('renamed shards keep explicit current-market aliases instead of guessing by
   assert.deepEqual([...farmingShardMarket('attribute-shard-field-mouse-shard-pest-overbloom').itemTags], ['SHARD_PEST']);
 });
 
+test('Ladybug is a Rare shard with 48 total shards through attribute level 10', () => {
+  assert.equal(shardsForAttributeLevel('attribute-shard-ladybug-pretty-clothes', 10), 48);
+  assert.deepEqual(
+    [...farmingShardMarket('attribute-shard-ladybug-pretty-clothes').itemTags],
+    ['SHARD_LADYBUG'],
+  );
+});
+
 test('the day/night shard row exposes two explicit alternative market items', () => {
   assert.deepEqual(
     [...farmingShardMarket('attribute-shard-firefly-or-lunar-moth-shard').itemTags],
