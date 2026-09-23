@@ -5,8 +5,15 @@ import { isHelianthusArmorPiece } from './armor-fortune.js';
 import { isBlossomPiece } from './equipment-fortune.js';
 import { activeSetup, normalizeSetups } from './setups.js';
 import { GARDEN_VACUUM_ITEMS } from './exact-farming-items.js';
+import { gardenLevelFromExperience } from './garden-level.js';
+import { setupPetItemContribution } from './setup-pet-items.js';
 
-export const SETUP_CANDIDATE_EVALUATOR_VERSION = 1;
+export const SETUP_CANDIDATE_EVALUATOR_VERSION = 2;
+
+const SETUP_LOCAL_PET_ITEM_ENTRY_IDS = Object.freeze([
+  'pet-item-green-bandana',
+  'pet-item-lucky-clover-poignant-lucky-clover',
+]);
 
 const STAT_FIELDS = Object.freeze([
   'globalFortune',
@@ -31,6 +38,15 @@ function normalizedState(state) {
   next.profile.toolProgress ||= {};
   next.profile.vacuumProgress ||= {};
   next.profile.autoApplied ||= {};
+
+  // Pet items are mutually exclusive setup-local state. Historical/manual
+  // account-level toggles must not leak into a complete candidate comparison.
+  for (const id of SETUP_LOCAL_PET_ITEM_ENTRY_IDS) {
+    delete next.profile.levels[id];
+    delete next.profile.owned[id];
+    delete next.profile.manualGain[id];
+    delete next.profile.autoApplied?.account?.[id];
+  }
   return next;
 }
 
@@ -158,11 +174,55 @@ function setupSupportGaps(setup) {
       gaps.push(`${pet.displayName || petId || 'selected pet'} contribution is not modeled in computed setup stats`);
     }
   }
-  if (slots.petItem) {
-    gaps.push(`${slots.petItem.displayName || slots.petItem.skyblockId || 'selected pet item'} is not yet setup-local in computed stats`);
+  return uniqueReasons(gaps);
+}
+
+function petItemContext(snapshot, options) {
+  return {
+    gardenLevel: snapshot?.garden?.level
+      ?? gardenLevelFromExperience(snapshot?.garden?.experience),
+    eligiblePestBestiaryTiers: options?.eligiblePestBestiaryTiers ?? null,
+  };
+}
+
+function petItemForPhase(setup, snapshot, phase, options) {
+  const contribution = setupPetItemContribution(
+    setup?.slots?.petItem || null,
+    petItemContext(snapshot, options),
+  );
+  const active = contribution.activityScope === 'any'
+    || (contribution.activityScope === 'pest-spawn' && phase === ACTIVITY_MODE.PEST_SPAWN);
+  return Object.freeze({
+    ...contribution,
+    active,
+    reasons: Object.freeze(active ? [...contribution.reasons] : []),
+  });
+}
+
+function applyPetItemToTotals(totals, contribution) {
+  if (!contribution?.active) return totals;
+
+  const globalFortune = Number(contribution.globalFortune || 0);
+  const overbloom = Number(contribution.overbloom || 0);
+  const bonusPestChance = Number(contribution.bonusPestChance || 0);
+
+  if (globalFortune) {
+    totals.globalFortune += globalFortune;
+    totals.effectiveFortune += globalFortune;
+    totals.sourceCount.globalFortune += 1;
+  }
+  if (overbloom) {
+    totals.overbloom += overbloom;
+    totals.sourceCount.overbloom += 1;
+  }
+  if (bonusPestChance) {
+    totals.bonusPestChance += bonusPestChance;
+    totals.sourceCount.bonusPestChance += 1;
   }
 
-  return uniqueReasons(gaps);
+  totals.derived ||= {};
+  totals.derived.setupPetItem = contribution;
+  return totals;
 }
 
 /**
@@ -181,17 +241,31 @@ export function evaluateSetupCandidate(state, candidate, options = {}) {
   const beforeState = normalizedState(state);
   const beforeSetupId = setupForPhase(beforeState, phase);
   const beforeSetup = activeSetup(beforeState.profile.setups);
-  const beforeSupportGaps = setupSupportGaps(beforeSetup);
+  const beforePetItem = petItemForPhase(beforeSetup, snapshot, phase, options);
+  const beforeSupportGaps = uniqueReasons([
+    ...setupSupportGaps(beforeSetup),
+    ...beforePetItem.reasons,
+  ]);
   const beforeApply = applySnapshotToProgress(beforeState, snapshot || {});
-  const beforeTotals = computeStatTotals(beforeState, cropId, phase, activeContextScope);
+  const beforeTotals = applyPetItemToTotals(
+    computeStatTotals(beforeState, cropId, phase, activeContextScope),
+    beforePetItem,
+  );
 
   const afterState = normalizedState(state);
   setupForPhase(afterState, phase);
   const afterSetupId = activateCandidate(afterState, candidate);
   const afterSetup = activeSetup(afterState.profile.setups);
-  const afterSupportGaps = setupSupportGaps(afterSetup);
+  const afterPetItem = petItemForPhase(afterSetup, snapshot, phase, options);
+  const afterSupportGaps = uniqueReasons([
+    ...setupSupportGaps(afterSetup),
+    ...afterPetItem.reasons,
+  ]);
   const afterApply = applySnapshotToProgress(afterState, snapshot || {});
-  const afterTotals = computeStatTotals(afterState, cropId, phase, activeContextScope);
+  const afterTotals = applyPetItemToTotals(
+    computeStatTotals(afterState, cropId, phase, activeContextScope),
+    afterPetItem,
+  );
 
   const freshness = candidateFreshness(candidate);
   const handItem = handItemObservation(snapshot || {}, phase, cropId);
@@ -229,6 +303,7 @@ export function evaluateSetupCandidate(state, candidate, options = {}) {
       totals: beforeTotals,
       incomplete: Object.freeze(beforeIncomplete),
       supportGaps: Object.freeze(beforeSupportGaps),
+      petItem: beforePetItem,
       applied: Object.freeze(beforeApply.applied),
       skipped: Object.freeze(beforeApply.skipped),
     }),
@@ -236,6 +311,7 @@ export function evaluateSetupCandidate(state, candidate, options = {}) {
       totals: afterTotals,
       incomplete: Object.freeze(afterIncomplete),
       supportGaps: Object.freeze(afterSupportGaps),
+      petItem: afterPetItem,
       applied: Object.freeze(afterApply.applied),
       skipped: Object.freeze(afterApply.skipped),
     }),
