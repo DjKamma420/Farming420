@@ -61,9 +61,11 @@ const SHARD_STEP_ROUTES = Object.freeze(Object.fromEntries(
 
 const ENTRY_ROUTES = Object.freeze({
   ...SHARD_ENTRY_ROUTES,
-  'accessory-relic-of-power-perfect-peridot-effect': traded('RELIC_OF_POWER'),
   'accessory-fermento-artifact': traded('FERMENTO_ARTIFACT'),
   'accessory-helianthus-relic': traded('HELIANTHUS_RELIC'),
+  'jacob-accessory-anita-accessory-crop-bonus': route(ah('ANITA_ARTIFACT')),
+  'temporary-atmospheric-filter-spring': route(ah('ATMOSPHERIC_FILTER')),
+  'temporary-magic-8-ball-ff-roll': route(ah('MAGIC_8_BALL')),
   'tool-overclocker-3000': traded('OVERCLOCKER_3000', 10),
   'tool-farming-for-dummies': traded('FARMING_FOR_DUMMIES', 5),
   'tool-recombobulator-effect-on-tool-stats': traded('RECOMBOBULATOR_3000'),
