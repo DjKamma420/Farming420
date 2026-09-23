@@ -112,10 +112,10 @@ test('Rose Dragon perks scale continuously with pet level from 100 to 200', () =
     farmingLevel: 1,
     cropMilestoneTotal: 1,
   }));
-  assert.equal(result.baseFortune, 20.2);
-  assert.equal(result.gardenPower, 1.515);
+  assert.ok(Math.abs(result.baseFortune - 20.2) < 1e-12);
+  assert.ok(Math.abs(result.gardenPower - 1.515) < 1e-12);
   assert.ok(Math.abs(result.rosyScales - 0.07575) < 1e-12);
-  assert.equal(result.overbloom, 20.2);
+  assert.ok(Math.abs(result.overbloom - 20.2) < 1e-12);
   assert.equal(result.symbiosis, 0);
 });
 
