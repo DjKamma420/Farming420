@@ -41,6 +41,9 @@ graph TD
     measured_baseline_js["Measured baseline<br/>measured-baseline.js"]
     planner_profit_adapter_js["Profit adapter<br/>planner-profit-adapter.js"]
     profit_engine_js["Profit engine<br/>profit-engine.js"]
+    average_crop_price_js["90-day crop price<br/>average-crop-price.js"]
+    market_average_prices_js["90-day market model<br/>market-average-prices.js"]
+    market_average_refresh_js["Market average refresher<br/>market-average-refresh.js"]
     live_crop_price_js["Crop price<br/>live-crop-price.js"]
     live_prices_js["Bazaar model<br/>live-prices.js"]
     live_price_refresh_js["Price refresher<br/>live-price-refresh.js"]
@@ -67,6 +70,7 @@ graph TD
   end
 
   ext_hypixel[["api.hypixel.net"]]
+  ext_skycofl[["sky.coflnet.com"]]
   ext_textures[["textures.minecraft.net"]]
   ext_pack[["assets/hypixel-pack"]]
 
@@ -89,8 +93,12 @@ graph TD
 
   revenue_planner_js --> upgrade_cost_resolution_js
   revenue_planner_js --> measured_baseline_js
-  revenue_planner_js --> live_crop_price_js
+  revenue_planner_js --> average_crop_price_js
   revenue_planner_js --> planner_activity_context_js
+  average_crop_price_js --> market_average_prices_js
+  average_crop_price_js --> farming_mechanics_data_js
+  market_average_refresh_js --> average_crop_price_js
+  market_average_refresh_js --> market_average_prices_js
   upgrade_cost_resolution_js --> upgrade_costs_js
   measured_baseline_js --> planner_profit_adapter_js
   measured_baseline_js --> farming_mechanics_data_js
@@ -117,6 +125,7 @@ graph TD
   item_normalizer_js --> nbt_js
 
   hypixel_client_js ==> ext_hypixel
+  market_average_prices_js ==> ext_skycofl
   live_price_refresh_js ==> ext_hypixel
   item_catalog_js ==> ext_hypixel
   item_art_coverage_js ==> ext_textures
@@ -146,9 +155,10 @@ build if it names an upgrade id that `data.js` does not have.
 
 ## What is deliberately absent
 
-- **No "Bazaar service".** The Bazaar is `api.hypixel.net/v2/skyblock/bazaar` —
-  the same host as everything else, reached by `live-price-refresh.js` with a
-  plain `fetch`, not through the API client.
+- **No separate live "Bazaar service".** Live Bazaar data is still read from
+  `api.hypixel.net/v2/skyblock/bazaar` by `live-price-refresh.js`. Rolling
+  90-day valuation is separate: `market-average-prices.js` reads historical
+  Bazaar/Auction House data from `sky.coflnet.com` and caches the reduced average.
 - **`hypixel-client.js` is only reached through `live-sync.js`**, which
   `foundation.js` owns. `profile-sync.js` never calls the network; it is handed
   payloads.
