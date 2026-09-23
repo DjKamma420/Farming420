@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { UPGRADES } from '../src/data.js';
 import { UPGRADE_STEP_COSTS, stepCostForUpgrade } from '../src/upgrade-step-costs.js';
 import { resolveUpgradeCost } from '../src/upgrade-cost-resolution.js';
+import { marketRoutesForUpgrade } from '../src/upgrade-market-routes.js';
 import {
   MARKET_AVERAGE_MODEL_VERSION,
   MARKET_KIND,
@@ -44,6 +45,25 @@ function cacheBazaar(itemTag, coinsPerUnit) {
     itemTag,
     coinsPerUnit,
     sampleCount: 90,
+    windowDays: 90,
+    windowStartMs: now - 90 * 24 * 60 * 60 * 1000,
+    windowEndMs: now,
+    computedAtMs: now,
+    attributionUrl: 'https://sky.coflnet.com/data',
+  });
+}
+
+function cacheAuction(itemTag, coinsPerUnit) {
+  const now = Date.now();
+  writeCachedMarketAverage({
+    version: MARKET_AVERAGE_MODEL_VERSION,
+    source: 'skycofl-90d',
+    market: MARKET_KIND.AUCTION_HOUSE,
+    side: MARKET_SIDE.ACQUIRE,
+    itemTag,
+    coinsPerUnit,
+    sampleCount: 20,
+    volume: 20,
     windowDays: 90,
     windowStartMs: now - 90 * 24 * 60 * 60 * 1000,
     windowEndMs: now,
@@ -158,6 +178,45 @@ test('Attribute Shard next cost uses the shard quantity required for the target 
     const level9 = resolveUpgradeCost(storeFor(id, 9), id);
     assert.equal(level9.targetLevel, 10);
     assert.equal(level9.coins, 1_600_000, 'Uncommon level 10 needs sixteen additional shards');
+  });
+});
+
+test('tradeable farming accessories use exact Auction House ids while Relic of Power stays non-market', () => {
+  const cases = [
+    ['jacob-accessory-anita-accessory-crop-bonus', 'ANITA_ARTIFACT'],
+    ['temporary-atmospheric-filter-spring', 'ATMOSPHERIC_FILTER'],
+    ['temporary-magic-8-ball-ff-roll', 'MAGIC_8_BALL'],
+  ];
+  for (const [id, itemTag] of cases) {
+    const routes = marketRoutesForUpgrade(id);
+    assert.equal(routes.length, 1, id);
+    assert.equal(routes[0].length, 1, id);
+    assert.equal(routes[0][0].market, MARKET_KIND.AUCTION_HOUSE, id);
+    assert.equal(routes[0][0].itemTag, itemTag, id);
+  }
+
+  assert.equal(
+    marketRoutesForUpgrade('accessory-relic-of-power-perfect-peridot-effect'),
+    null,
+    'Relic of Power is not directly tradeable and must not receive an AH/Bazaar item-price route',
+  );
+});
+
+test('directly tradeable farming accessories resolve cached 90-day AH acquisition prices', async () => {
+  await withStorage(async () => {
+    const cases = [
+      ['jacob-accessory-anita-accessory-crop-bonus', 'ANITA_ARTIFACT', 12_500_000],
+      ['temporary-atmospheric-filter-spring', 'ATMOSPHERIC_FILTER', 400_000],
+      ['temporary-magic-8-ball-ff-roll', 'MAGIC_8_BALL', 140_000_000],
+    ];
+    for (const [id, itemTag, coins] of cases) {
+      cacheAuction(itemTag, coins);
+      const resolved = resolveUpgradeCost(storeFor(id, 0), id);
+      assert.equal(resolved.acquisitionMode, 'BUYABLE', id);
+      assert.equal(resolved.origin, 'market-average', id);
+      assert.equal(resolved.marketLabel, '90-day Auction House average', id);
+      assert.equal(resolved.coins, coins, id);
+    }
   });
 });
 

@@ -161,6 +161,7 @@ Implemented in the current pricing pass:
 - Ladybug / Pretty Clothes is included as the Visitor-Copper Attribute Shard
 - automatic 90-day market values now retain and display the oldest source timestamp used by each combined acquisition/replacement estimate
 - rebuild figures are explicitly labeled replacement value; consumed upgrade components are not mislabeled as recoverable resale value
+- direct 90-day AH routes cover Anita's Artifact, Atmospheric Filter, and Magic 8 Ball; Relic of Power is explicitly excluded from fake direct-market pricing because the physical item is not AH/Bazaar tradeable
 
 Still required:
 
