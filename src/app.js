@@ -19,6 +19,8 @@ import {
   averageHarvestFeastMaterialPrice,
 } from './average-crop-price.js';
 import { costOriginNote, resolveUpgradeCost } from './upgrade-cost-resolution.js';
+import { formatApproxCoins } from './compact-coins.js';
+import { upgradePriceSummary } from './upgrade-price-summary.js';
 import { MEASURED_FEAST_KEY, measuredBaseline } from './measured-baseline.js';
 import { ensureProgressBucket, migrateState, toolKeyForCropId } from './migrations.js';
 import { applySnapshotToProgress, isAutoApplied } from './snapshot-apply.js';
@@ -461,6 +463,13 @@ function card(item, compact=false) {
   const gain = gainFor(item);
   const cropLimited = item.cropScope !== 'Any';
   const isShard = item.section === 'shards' || item.category === 'Attribute Shard';
+  const pricing = upgradePriceSummary(itemStore(item), item);
+  const priceTagCoins = isShard
+    ? pricing.unitShardCoins
+    : level >= max ? pricing.entryMarketCoins : pricing.costToMaxCoins;
+  const priceTagLabel = isShard
+    ? '1 shard'
+    : level >= max ? 'value' : 'to max';
   return `
     <button class="item-card ${status} ${isShard ? 'shard-card' : ''} ${compact ? 'compact' : ''}" data-open="${esc(item.id)}">
       <div class="card-layer"></div>
@@ -470,6 +479,7 @@ function card(item, compact=false) {
           <div class="eyebrow">${esc(item.category)}</div>
           <div class="item-title">${esc(item.name)}</div>
         </div>
+        ${priceTagCoins != null ? badge(`${formatApproxCoins(priceTagCoins)} · ${priceTagLabel}`, 'price-tag') : ''}
         ${badge(item.status === 'VERIFY' ? 'verify' : (isMaxed(item) ? 'max' : isOwned(item) ? 'owned' : 'missing'), status)}
         ${isSynced(item) ? badge('derived', 'synced') : ''}
       </div>
@@ -1022,11 +1032,22 @@ function drawer() {
   const max = Number(item.max||1);
   const store = itemStore(item);
   const costSource = resolveUpgradeCost(store, item.id);
-  const costText = costSource.acquisitionMode === 'BUYABLE' && costSource.coins > 0
-    ? `${formatNumber(Math.round(costSource.coins))} Coins`
+  const pricing = upgradePriceSummary(store, item);
+  const costText = pricing.nextCostCoins != null
+    ? formatApproxCoins(pricing.nextCostCoins)
     : costSource.acquisitionMode === 'EARNED'
       ? 'Earned progression'
       : '—';
+  const toMaxText = level >= max
+    ? 'Maxed'
+    : pricing.costToMaxCoins != null
+      ? `${pricing.costToMaxComplete ? '' : '≥ '}${formatApproxCoins(pricing.costToMaxCoins)}`
+      : '—';
+  const toMaxNote = [
+    pricing.remainingEarnedSteps ? `${pricing.remainingEarnedSteps} earned step${pricing.remainingEarnedSteps === 1 ? '' : 's'}` : '',
+    pricing.remainingUnknownSteps ? `${pricing.remainingUnknownSteps} unpriced step${pricing.remainingUnknownSteps === 1 ? '' : 's'}` : '',
+  ].filter(Boolean).join(' · ');
+  const isShard = item.section === 'shards' || item.category === 'Attribute Shard';
   const manual = store.manualGain[item.id] ?? '';
   return `<div class="drawer-backdrop" data-close-drawer><aside class="drawer">
     <div class="drawer-top"><div><div class="eyebrow">${esc(item.category)}</div><h2>${esc(item.name)}</h2></div><button class="close" data-close-drawer>×</button></div>
@@ -1036,7 +1057,15 @@ function drawer() {
       ${max>1 ? `<div class="stepper"><button data-step="-1" data-id="${item.id}">−</button><strong>${level}/${max}</strong><button data-step="1" data-id="${item.id}">+</button><button class="ghost small" data-max="${item.id}">Max</button></div>` : `<label class="switch-row"><span>Owned</span><input type="checkbox" data-owned="${item.id}" ${isOwned(item)?'checked':''}></label>`}
     </div>
     <div class="drawer-section"><h3>Evaluation</h3><div class="detail-grid"><div><span>Next step</span><strong>+${formatNumber(gainFor(item))}</strong></div><div><span>Relative effect</span><strong>${relativeGainPct(item).toFixed(2)}%</strong></div></div>
-      <div class="detail-grid"><div><span>Next cost</span><strong>${esc(costText)}</strong><small>${esc(costOriginNote(costSource))}</small></div></div>
+      <div class="detail-grid">
+        <div><span>Next cost</span><strong>${esc(costText)}</strong><small>${esc(costOriginNote(costSource))}</small></div>
+        <div><span>Cost to max</span><strong>${esc(toMaxText)}</strong><small>${esc(toMaxNote || (pricing.costToMaxComplete ? 'all remaining priced steps included' : 'remaining market route incomplete'))}</small></div>
+      </div>
+      ${isShard ? `<div class="detail-grid shard-price-details">
+        <div><span>1 shard</span><strong>${esc(pricing.unitShardCoins != null ? formatApproxCoins(pricing.unitShardCoins) : '—')}</strong></div>
+        <div><span>Current level value</span><strong>${esc(pricing.currentShardValueCoins != null ? formatApproxCoins(pricing.currentShardValueCoins) : '—')}</strong><small>${pricing.shardCountOwned ?? '—'} shard${pricing.shardCountOwned === 1 ? '' : 's'} equivalent</small></div>
+        <div><span>Shards to max</span><strong>${pricing.shardCountToMax ?? '—'}</strong><small>${esc(pricing.costToMaxCoins != null ? formatApproxCoins(pricing.costToMaxCoins) : 'price unavailable')}</small></div>
+      </div>` : ''}
       <label>Manual marginal value<input type="number" step="0.01" data-manual="${item.id}" value="${esc(manual)}" placeholder="only for dynamic values"></label>
     </div>
     ${whereToFindSection(item)}
