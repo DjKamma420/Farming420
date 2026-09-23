@@ -98,7 +98,9 @@ const STEP_ROUTES = Object.freeze({
 
 export function marketRoutesForUpgrade(itemId, targetLevel = null) {
   const id = String(itemId || '');
-  if (targetLevel != null && STEP_ROUTES[id]?.[Number(targetLevel)]) return STEP_ROUTES[id][Number(targetLevel)];
+  if (targetLevel != null && STEP_ROUTES[id]) {
+    return STEP_ROUTES[id][Number(targetLevel)] || null;
+  }
   return ENTRY_ROUTES[id] || null;
 }
 
