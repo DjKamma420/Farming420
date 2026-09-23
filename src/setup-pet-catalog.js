@@ -98,7 +98,7 @@ export const FARMING_PETS = Object.freeze([
     levelMin: 100,
     levelMax: 200,
     source: 'https://hypixelskyblock.minecraft.wiki/w/Rose_Dragon_Pet',
-    lastVerified: '2026-09-17',
+    lastVerified: '2026-09-23',
   },
   {
     id: 'SLUG',
