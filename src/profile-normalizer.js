@@ -159,8 +159,12 @@ function normalizedBestiaryKills(rawBestiary) {
     ? rawBestiary.kills
     : {};
   return Object.fromEntries(Object.entries(rawKills)
-    .map(([key, value]) => [String(key).trim().toLowerCase(), finiteNumberOrNull(value)])
-    .filter(([, value]) => value !== null && value >= 0));
+    .map(([key, value]) => {
+      if (value === null || value === undefined || value === '') return [String(key).trim().toLowerCase(), null];
+      const number = Number(value);
+      return [String(key).trim().toLowerCase(), Number.isFinite(number) && number >= 0 ? number : null];
+    })
+    .filter(([, value]) => value !== null));
 }
 
 function gardenObject(payload) {
@@ -408,7 +412,7 @@ export function mergeProfileSnapshots(base, patch) {
   if (hasProvenanceFor(patchProvenance, 'garden')) {
     merged.garden = mergeValue(merged.garden, source.garden);
   }
-  if (hasProvenanceFor(patchProvenance, 'bestiary')) {
+  if (hasProvenanceFor(patchProvenance, 'bestiary') && mayReplaceCollection(patchProvenance.bestiary)) {
     merged.bestiary = mergeValue(merged.bestiary, source.bestiary);
   }
   if (hasProvenanceFor(patchProvenance, 'accountUpgrades')) {
