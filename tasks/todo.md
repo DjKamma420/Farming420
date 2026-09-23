@@ -2598,7 +2598,30 @@ each call builds a fresh `Intl.NumberFormat`.
       scroll position of zero. Guarding the restore and warming the derived
       cache in the core took boot render cost to **82.6 ms (-76%)** without
       touching the innerHTML rebuild the observers depend on.
-- [ ] **P4. `pack-item-art.js` still forces one extra boot render.** When the
+- [x] **P4. `pack-item-art.js` extra boot render.** Done: it dispatches its own
+      `farming420:item-art-manifest-ready` now instead of the global
+      `farming420:state-changed`.
+- [x] **P5. Interaction latency, page by page.** Measured at 412px with 4x CPU
+      throttling. Every page settles in 34-85 ms except **Tools** (164 ms script,
+      28 ms style, ~90 ms layout) and **Accessories** (~300 ms settle).
+      `assetByCandidates` was 27 ms of the Tools script time and is now 4.1 ms.
+- [ ] **P6. The rest of the Tools page cost is diffuse -- do not chase it blind.**
+      Three hypotheses were measured and all three died:
+      *browser layout dominates* (no: script 164 ms vs layout 90 ms),
+      *the page renders more than once* (no: exactly one render),
+      *the 25 observers are the cost* (no: 27.5 ms total across 23 owners, the
+      largest being `workspace-ui.js` at 16.8 ms). There is no single hotspot
+      left; the remaining ~135 ms is spread across markup building, binding, GC
+      and compile. Anything further here is a restructure, not a fix.
+- [x] **Accessories' double render is a sandbox artifact, not a bug.** It renders
+      twice only when no item catalog is cached, because the first paint has no
+      items. `app.js` already seeds `itemCatalog` synchronously from
+      `readCachedCatalog()` and sets `catalogRequested` from it, so with a cache
+      present -- the normal case -- every page renders exactly once. Verified by
+      seeding one. The API being blocked in the dev container produced the false
+      signal; it did the same for item art, where coverage returns early on an
+      empty catalog and no art is placed at all.
+- [ ] **P7. `pack-item-art.js` old entry, superseded by P4.** When the
       art manifest arrives it dispatches `farming420:state-changed`, which
       rebuilds the whole app so the coverage layer repaints. The dispatch is
       load-bearing -- that observer watches `childList` only, so clearing the
