@@ -1849,5 +1849,10 @@ window.addEventListener('farming420:state-changed', () => {
   render();
 });
 
-// Market refresh changes only the price cache, not profile state.
-window.addEventListener('farming420:market-average-updated', () => render());
+// Market refresh changes only the price cache, not profile state. Do not
+// globally repaint editors/setups when background market requests finish:
+// that would replace interactive DOM under the user. The Dashboard is the one
+// core-rendered surface that needs an immediate repaint for its price cards.
+window.addEventListener('farming420:market-average-updated', () => {
+  if (state.page === 'dashboard') render();
+});
