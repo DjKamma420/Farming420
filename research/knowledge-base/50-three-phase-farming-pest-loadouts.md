@@ -172,3 +172,34 @@ Migration rule:
 - preserve old/custom setups in stored data instead of deleting them.
 
 The visible activity switch exposes the three calculation phases with full labels: **Farming / Spawning / Killing**.
+
+
+## Setup-local pet item implementation — 2026-09-23
+
+The calculator now treats pet items as part of one physical active pet setup, not
+as account-global toggles.
+
+Verified setup-local rules implemented:
+
+- Green Bandana: +4 Farming Fortune per Garden Level, capped at +60 at Garden 15.
+  Garden Level is derived from `garden_experience` through the current
+  cumulative level thresholds.
+- Poignant Lucky Clover: +13 Overbloom.
+- Brown Bandana: +0.2 Bonus Pest Chance per eligible Pest Bestiary tier, capped
+  at +45. It is applied only in the Pest Spawning phase.
+
+Brown Bandana intentionally remains incomplete when the eligible tier sum is
+unknown. The calculator must not substitute total Pest Bestiary because
+Timestalk Clone and Zombuddy do not count for Brown Bandana.
+
+The common computed-stat path now ignores the legacy Green/Poignant planner
+toggles as direct stats. Their values are derived only from the pet item attached
+to the active setup, so two different Rose Dragons with Green Bandana and
+Poignant Lucky Clover can be represented without impossible simultaneous
+stacking.
+
+Sources:
+- https://hypixelskyblock.minecraft.wiki/w/Garden_Level
+- https://hypixelskyblock.minecraft.wiki/w/Green_Bandana
+- https://hypixelskyblock.minecraft.wiki/w/Poignant_Lucky_Clover
+- https://hypixelskyblock.minecraft.wiki/w/Brown_Bandana
