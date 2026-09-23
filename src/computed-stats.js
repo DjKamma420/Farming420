@@ -303,9 +303,24 @@ function pestSetupGearContribution(state, mode, derivedContext = {}) {
   const mantidRecentKillBpc = spawning
     ? mantidRecentKillBonusPestChance(armor, recentPestKills)
     : 0;
-  const reasons = [];
+  const fortuneReasons = [];
+  const bpcReasons = [];
+  const missingMantidRarity = armor.some(piece =>
+    String(piece?.reforge || '').toLowerCase() === 'mantid'
+    && !String(piece?.rarity || '').trim());
+  const missingSqueakyRarity = equipment.some(piece =>
+    String(piece?.reforge || '').toLowerCase() === 'squeaky'
+    && !String(piece?.rarity || '').trim());
+  if (missingMantidRarity) {
+    fortuneReasons.push('At least one Mantid armor piece has unknown rarity');
+    if (spawning) bpcReasons.push('At least one Mantid armor piece has unknown rarity');
+  }
+  if (missingSqueakyRarity) {
+    fortuneReasons.push('At least one Squeaky equipment piece has unknown rarity');
+    if (spawning) bpcReasons.push('At least one Squeaky equipment piece has unknown rarity');
+  }
   if (spawning && mantidPieces > 0 && mantidRecentKillBpc === null) {
-    reasons.push('Recent Pest kills from the last 10 minutes are unavailable for Mantid Bonus');
+    bpcReasons.push('Recent Pest kills from the last 10 minutes are unavailable for Mantid Bonus');
   }
 
   const helianthusBpc = spawning ? helianthusBaseBonusPestChance(armor) : 0;
@@ -339,8 +354,10 @@ function pestSetupGearContribution(state, mode, derivedContext = {}) {
     baseCooldownReductionPct,
     squeakyCooldownPct,
     pestCooldownReductionPct: baseCooldownReductionPct + squeakyCooldownPct,
-    complete: reasons.length === 0,
-    reasons: Object.freeze(reasons),
+    complete: fortuneReasons.length === 0 && bpcReasons.length === 0,
+    fortuneReasons: Object.freeze(fortuneReasons),
+    bpcReasons: Object.freeze(bpcReasons),
+    reasons: Object.freeze([...new Set([...fortuneReasons, ...bpcReasons])]),
   });
 }
 
@@ -415,13 +432,17 @@ function applyDerivedMechanics(state, totals, mode, cropId, derivedContext = {})
     totals.pestCooldownReductionPct += pestSetupGear.pestCooldownReductionPct;
     totals.sourceCount.pestCooldownReductionPct += 1;
   }
-  if (!pestSetupGear.complete) {
-    for (const reason of pestSetupGear.reasons) {
-      totals.incomplete.bonusPestChance.push({
-        id: 'derived-mantid-bonus',
-        reason,
-      });
-    }
+  for (const reason of pestSetupGear.fortuneReasons) {
+    totals.incomplete.globalFortune.push({
+      id: 'derived-pest-setup-gear',
+      reason,
+    });
+  }
+  for (const reason of pestSetupGear.bpcReasons) {
+    totals.incomplete.bonusPestChance.push({
+      id: 'derived-pest-setup-gear',
+      reason,
+    });
   }
 
   if (vacuumPeridot > 0) {
