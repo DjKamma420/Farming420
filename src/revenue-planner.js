@@ -420,7 +420,25 @@ function plannerStateForActivity(raw, mode) {
   const next = JSON.parse(JSON.stringify(raw || {}));
   next.profile ||= {};
   setActivityModeOnState(next, mode);
-  applySnapshotToProgress(next, next.profile.normalizedSnapshot || {});
+
+  // A currently worn item proves the active live loadout, not an empty saved
+  // phase. When a target setup has no armor/equipment entered, remove only that
+  // live-container fallback before deriving its stats. Tools and other snapshot
+  // data remain available.
+  const snapshot = JSON.parse(JSON.stringify(next.profile.normalizedSnapshot || {}));
+  const setup = next.profile.setups?.list?.find(entry => entry?.id === next.profile.setups?.activeId) || null;
+  const hasArmor = ['helmet', 'chestplate', 'leggings', 'boots'].some(slot => setup?.slots?.[slot]);
+  const hasEquipment = ['equipment1', 'equipment2', 'equipment3', 'equipment4'].some(slot => setup?.slots?.[slot]);
+  if (Array.isArray(snapshot.items) && (!hasArmor || !hasEquipment)) {
+    snapshot.items = snapshot.items.filter(item => {
+      const container = String(item?.container || '');
+      if (!hasArmor && container === 'armor') return false;
+      if (!hasEquipment && container === 'equipment') return false;
+      return true;
+    });
+  }
+
+  applySnapshotToProgress(next, snapshot);
   return next;
 }
 
