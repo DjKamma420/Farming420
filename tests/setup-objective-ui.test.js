@@ -18,3 +18,12 @@ test('objective UI only applies a recommendation through an explicit user action
   assert.match(app, /Previous setup preserved/);
   assert.match(app, /does not invent a weighted winner/);
 });
+
+
+test('Pest spawning objective exposes only the runtime facts the profile cannot supply', () => {
+  assert.match(app, /data-setup-recent-pest-kills/);
+  assert.match(app, /data-setup-sprayonator-active/);
+  assert.match(app, /placeholder="unknown"/);
+  assert.match(app, /Empty\/Unknown stays unknown, never zero/);
+  assert.match(app, /setupRuntimeContextForState/);
+});
