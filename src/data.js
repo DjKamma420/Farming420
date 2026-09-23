@@ -675,7 +675,8 @@ export const UPGRADES = [
     "rawMarginal": 5,
     "hypercharge": false,
     "notes": "At Legendary: +5 FF per chip level, max +100. Adjust manual delta if current rarity uses +3/+4 per level.",
-    "source": "https://hypixel.net/threads/aug-3-0-27-alpha-changes-2.6134812/",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Garden_Chips",
+    "lastVerified": "2026-09-23",
     "workbookRank": 27
   },
   {
@@ -694,7 +695,8 @@ export const UPGRADES = [
     "rawMarginal": 0.25,
     "hypercharge": false,
     "notes": "Special formula: marginal value equals active eligible temporary base FF × next chip percentage step.",
-    "source": "https://hypixel.net/threads/april-21-fossil-essence-shop-farming-toolkit-harvest-feast-changes.6083245/",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Garden_Chips",
+    "lastVerified": "2026-09-23",
     "workbookRank": 38
   },
   {
@@ -712,7 +714,8 @@ export const UPGRADES = [
     "rawMarginal": 150,
     "hypercharge": false,
     "notes": "Full set base stats total +150 FF.",
-    "source": "https://hypixel-skyblock.fandom.com/wiki/Helianthus_Armor",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Helianthus_Armor",
+    "lastVerified": "2026-09-23",
     "workbookRank": 3
   },
   {
@@ -730,7 +733,8 @@ export const UPGRADES = [
     "rawMarginal": 75,
     "hypercharge": false,
     "notes": "Four pieces grant +75 FF in addition to base piece stats.",
-    "source": "https://hypixel-skyblock.fandom.com/wiki/Helianthus_Armor",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Helianthus_Armor",
+    "lastVerified": "2026-09-23",
     "workbookRank": 7
   },
   {
@@ -801,8 +805,9 @@ export const UPGRADES = [
     "manualDefault": null,
     "rawMarginal": 90,
     "hypercharge": false,
-    "notes": "At 2,500 visitors, four Blossom pieces total +90 FF.",
-    "source": "https://hypixel-skyblock.fandom.com/wiki/Blossom_Set",
+    "notes": "At 2,500 visitors, Florist grants +22.5 FF independently on each worn Blossom piece, so four pieces total +90 FF. The set also has +28 base FF; do not fold that base stat into this visitor-bonus entry.",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Blossom_Set",
+    "lastVerified": "2026-09-23",
     "workbookRank": 5
   },
   {
@@ -1117,7 +1122,8 @@ export const UPGRADES = [
     "rawMarginal": 2.5,
     "hypercharge": false,
     "notes": "0.26.1 max is +50 Overbloom. Adjust marginal step for current rarity.",
-    "source": "https://hypixel.net/threads/hypixel-skyblock-0-26-1-new-player-improvements-harvest-feast-changes-healing-revamp-and-more.6127383/",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Garden_Chips",
+    "lastVerified": "2026-09-23",
     "workbookRank": null
   },
   {
@@ -1243,7 +1249,8 @@ export const UPGRADES = [
     "rawMarginal": 80,
     "hypercharge": false,
     "notes": "Full Helianthus set shows +80 Bonus Pest Chance base.",
-    "source": "https://hypixel-skyblock.fandom.com/wiki/Helianthus_Armor",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Helianthus_Armor",
+    "lastVerified": "2026-09-23",
     "workbookRank": null
   },
   {
@@ -1334,7 +1341,8 @@ export const UPGRADES = [
     "rawMarginal": 7,
     "hypercharge": false,
     "notes": "Legendary in-menu scaling: +7 Farming Fortune per level for crops active in the current Jacob's Contest; max level 20. Use manual override for Rare/Epic scaling.",
-    "source": "https://hypixel.net/threads/list-of-item-in-skyblock-major-update.6123513/",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Garden_Chips",
+    "lastVerified": "2026-09-23",
     "workbookRank": null
   },
   {
@@ -1353,7 +1361,8 @@ export const UPGRADES = [
     "rawMarginal": 2.5,
     "hypercharge": false,
     "notes": "Legendary in-menu scaling: -2.5% Visitor cooldown per level. Visitor-rate gain is non-linear and is calculated from current cooldown reduction.",
-    "source": "https://hypixel.net/threads/list-of-item-in-skyblock-major-update.6123513/",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Garden_Chips",
+    "lastVerified": "2026-09-23",
     "workbookRank": null
   },
   {
@@ -1372,7 +1381,8 @@ export const UPGRADES = [
     "rawMarginal": 2,
     "hypercharge": false,
     "notes": "Legendary in-menu scaling: +2% base Copper rewards from the Crop Analyzer per level.",
-    "source": "https://hypixel.net/threads/list-of-item-in-skyblock-major-update.6123513/",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Garden_Chips",
+    "lastVerified": "2026-09-23",
     "workbookRank": null
   },
   {
@@ -1391,7 +1401,8 @@ export const UPGRADES = [
     "rawMarginal": 3,
     "hypercharge": false,
     "notes": "Legendary in-menu scaling: +3% base crop harvests from crops and mutations in the Greenhouse per level.",
-    "source": "https://hypixel.net/threads/list-of-item-in-skyblock-major-update.6123513/",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Garden_Chips",
+    "lastVerified": "2026-09-23",
     "workbookRank": null
   },
   {
@@ -1410,7 +1421,8 @@ export const UPGRADES = [
     "rawMarginal": 5,
     "hypercharge": false,
     "notes": "Legendary in-menu scaling: +5 Bonus Pest Chance per level; max +100 BPC.",
-    "source": "https://hypixel.net/threads/list-of-item-in-skyblock-major-update.6123513/",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Garden_Chips",
+    "lastVerified": "2026-09-23",
     "workbookRank": null
   },
   {
@@ -1429,7 +1441,8 @@ export const UPGRADES = [
     "rawMarginal": 2.5,
     "hypercharge": false,
     "notes": "Legendary in-menu scaling: +2.5% Farming Tool experience per level.",
-    "source": "https://hypixel.net/threads/list-of-item-in-skyblock-major-update.6123513/",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Garden_Chips",
+    "lastVerified": "2026-09-23",
     "workbookRank": null
   },
   {
@@ -1448,7 +1461,8 @@ export const UPGRADES = [
     "rawMarginal": 1.5,
     "hypercharge": false,
     "notes": "Legendary in-menu scaling: +1.5 Farming Wisdom per level; max +30.",
-    "source": "https://hypixel.net/threads/list-of-item-in-skyblock-major-update.6123513/",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Garden_Chips",
+    "lastVerified": "2026-09-23",
     "workbookRank": null
   },
   {
@@ -1538,8 +1552,8 @@ export const UPGRADES = [
     "stepGain": 30,
     "manualDefault": null,
     "rawMarginal": 30,
-    "hypercharge": true,
-    "notes": "Temporary cocoa-only Fortune stack. 0.27 changed Dark Cacao from Global Fortune to Cocoa Fortune. Hypercharge-eligible.",
+    "hypercharge": false,
+    "notes": "Temporary cocoa-only Fortune stack. 0.27 changed Dark Cacao from Global Fortune to Cocoa Fortune. Current Garden Chips documentation explicitly excludes Refined Dark Cacao Truffle from Hypercharge.",
     "source": "https://hypixel.net/threads/hypixel-skyblock-0-27-torrhus-canyon-critter-safari.6132090/",
     "workbookRank": null
   },
@@ -1791,11 +1805,12 @@ export const HIDDEN_INTERACTIONS = [
   {
     "id": "hypercharge-chip",
     "name": "Hypercharge Chip",
-    "effect": "Boosts only explicitly eligible temporary Farming-Fortune buffs; not every temporary-looking effect.",
+    "effect": "Boosts only the explicitly eligible temporary Farming-Fortune buffs; Refined Dark Cacao Truffle, Harvest Harbinger Potion, Melon Juice Mixin, Anita accessories and Overdrive are excluded.",
     "why": "Its marginal value depends on which eligible buffs are active at that moment.",
     "handling": "Buffs sheet totals eligible base FF; Upgrades row for Hypercharge uses Active eligible FF \u00d7 next chip increment.",
     "status": "ACTIVE",
-    "source": "https://hypixel.net/threads/april-21-fossil-essence-shop-farming-toolkit-harvest-feast-changes.6083245/"
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Garden_Chips"
+    "lastVerified": "2026-09-23"
   },
   {
     "id": "god-potion-celestial-mason-jar-melon-juice-cookie",
