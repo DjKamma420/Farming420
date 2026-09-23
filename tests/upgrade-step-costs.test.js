@@ -195,9 +195,9 @@ test('tradeable farming accessories use exact Auction House ids while Relic of P
     assert.equal(routes[0][0].itemTag, itemTag, id);
   }
 
-  assert.deepEqual(
+  assert.equal(
     marketRoutesForUpgrade('accessory-relic-of-power-perfect-peridot-effect'),
-    [],
+    null,
     'Relic of Power is not directly tradeable and must not receive an AH/Bazaar item-price route',
   );
 });
