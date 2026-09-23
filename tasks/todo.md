@@ -133,9 +133,14 @@ Objective evaluation is now implemented above raw stat deltas:
 - incomplete/unknown candidate states never win, and ties/trade-offs are surfaced instead of hidden behind an invented weighted score
 - the Setups page shows the clear owned recommendation or the non-dominated frontier; it never auto-overwrites a manual setup
 
+The recommendation frontier is now user-selectable. "Use this setup" always
+re-evaluates the candidate first; a stale/non-frontier option is rejected. If
+the target phase setup is non-empty and different, it is copied to a separate
+"before recommendation" setup before the candidate is written, so manual choices
+are never silently destroyed.
+
 Still required before this area is closed:
 - budget/progression versus endgame/max-profit candidate classes
-- convert an evaluated candidate into a user-selectable setup without overwriting manual setup choices
 
 The evaluator must keep mutually exclusive complete states separate and must not invent values for missing data.
 
