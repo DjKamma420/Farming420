@@ -12,6 +12,10 @@ import {
   marketAverageLabel,
   readCachedMarketAverage,
 } from './market-average-prices.js';
+import {
+  FARMING_SHARD_MARKET,
+  shardsForAttributeStep,
+} from './shard-price-model.js';
 
 const bz = (itemTag, quantity = 1) => Object.freeze({
   market: MARKET_KIND.BAZAAR,
@@ -28,7 +32,31 @@ const ah = (itemTag, quantity = 1) => Object.freeze({
 const route = (...components) => Object.freeze([Object.freeze(components)]);
 const alternatives = (...paths) => Object.freeze(paths.map(path => Object.freeze(path)));
 
+const SHARD_ENTRY_ROUTES = Object.freeze(Object.fromEntries(
+  Object.entries(FARMING_SHARD_MARKET).map(([itemId, record]) => [
+    itemId,
+    alternatives(...record.itemTags.map(itemTag => [bz(itemTag)])),
+  ]),
+));
+
+const SHARD_STEP_ROUTES = Object.freeze(Object.fromEntries(
+  Object.entries(FARMING_SHARD_MARKET).map(([itemId, record]) => [
+    itemId,
+    Object.freeze(Object.fromEntries(
+      Array.from({ length: 10 }, (_, index) => {
+        const targetLevel = index + 1;
+        const quantity = shardsForAttributeStep(itemId, targetLevel);
+        return [
+          targetLevel,
+          alternatives(...record.itemTags.map(itemTag => [bz(itemTag, quantity)])),
+        ];
+      }),
+    )),
+  ]),
+));
+
 const ENTRY_ROUTES = Object.freeze({
+  ...SHARD_ENTRY_ROUTES,
   'armor-enchant-pesterminator-vi-on-full-armor': route(bz('PESTHUNTING_GUIDE', 4)),
   'armor-enchant-sunset-v-day-overbloom': route(bz('ENCHANTMENT_SUNSET_5', 4)),
   'armor-helianthus-armor-base-stats': route(
@@ -48,6 +76,7 @@ const ENTRY_ROUTES = Object.freeze({
 });
 
 const STEP_ROUTES = Object.freeze({
+  ...SHARD_STEP_ROUTES,
   'tool-enchant-cultivating-x': Object.freeze({
     1: route(bz('ENCHANTMENT_CULTIVATING_1')),
   }),
@@ -96,10 +125,16 @@ const STEP_ROUTES = Object.freeze({
   }),
 });
 
+export function stepMarketRoutesForUpgrade(itemId, targetLevel) {
+  const id = String(itemId || '');
+  if (targetLevel == null) return null;
+  return STEP_ROUTES[id]?.[Number(targetLevel)] || null;
+}
+
 export function marketRoutesForUpgrade(itemId, targetLevel = null) {
   const id = String(itemId || '');
   if (targetLevel != null && STEP_ROUTES[id]) {
-    return STEP_ROUTES[id][Number(targetLevel)] || null;
+    return stepMarketRoutesForUpgrade(id, targetLevel);
   }
   return ENTRY_ROUTES[id] || null;
 }
