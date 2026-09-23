@@ -34,7 +34,9 @@ export function upgradePriceSummary(store, item, {
   const currentLevel = configuredLevel(store, item);
   const shard = farmingShardMarket(id);
 
-  const unitMarket = shard ? resolveMarket(id, null) : null;
+  const entryMarket = resolveMarket(id, null);
+  const entryMarketCoins = entryMarket?.complete ? positiveCoins(entryMarket.coins) : null;
+  const unitMarket = shard ? entryMarket : null;
   const unitShardCoins = unitMarket?.complete ? positiveCoins(unitMarket.coins) : null;
   const shardCountOwned = shard ? shardsForAttributeLevel(id, currentLevel) : null;
   const shardCountToMax = shard ? shardsRemainingToMax(id, currentLevel) : null;
@@ -46,6 +48,7 @@ export function upgradePriceSummary(store, item, {
     return Object.freeze({
       currentLevel,
       maxLevel,
+      entryMarketCoins,
       nextCostCoins: 0,
       costToMaxCoins: 0,
       costToMaxComplete: true,
@@ -118,6 +121,7 @@ export function upgradePriceSummary(store, item, {
   return Object.freeze({
     currentLevel,
     maxLevel,
+    entryMarketCoins,
     nextCostCoins: firstStepCoins,
     costToMaxCoins: costToMaxCoins > 0 || remainingUnknownSteps === 0 ? costToMaxCoins : null,
     costToMaxComplete: remainingUnknownSteps === 0,
