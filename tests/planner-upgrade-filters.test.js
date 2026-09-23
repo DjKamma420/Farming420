@@ -8,6 +8,7 @@ import {
   aggregateUpgradeRows,
   matchesUpgradeFilter,
   upgradeUsageScope,
+  visitorSystemUpgrade,
 } from '../src/planner-upgrade-filters.js';
 import { createDefaultSetups } from '../src/setups.js';
 
@@ -64,6 +65,78 @@ test('filter classification separates global FF from crop-specific CF and keeps 
   assert.equal(matchesUpgradeFilter(visitor, UPGRADE_FILTER.VISITOR), true);
   assert.equal(matchesUpgradeFilter(bpc, UPGRADE_FILTER.BPC), true);
   assert.equal(matchesUpgradeFilter(overbloom, UPGRADE_FILTER.OVERBLOOM), true);
+});
+
+test('Visitor filter contains Visitor-system upgrades, not gear that merely scales from Visitor progress', () => {
+  const quickdraw = {
+    id: 'garden-chip-quickdraw-chip',
+    section: 'chips',
+    metric: 'Visitor Speed',
+    name: 'Quickdraw Chip',
+    notes: '-2.5% Visitor cooldown per level',
+  };
+  const mudworm = {
+    id: 'attribute-shard-mudworm-visitor-bait',
+    section: 'shards',
+    metric: 'Visitor Speed',
+    attribute: 'Visitor Bait',
+    name: 'Mudworm Shard',
+    notes: 'Garden Visitors arrive faster',
+  };
+  const invisibug = {
+    id: 'attribute-shard-invisibug-fancy-visit',
+    section: 'shards',
+    metric: 'Visitor Rarity',
+    attribute: 'Fancy Visit',
+    name: 'Invisibug Shard',
+  };
+  const visitorCopper = {
+    id: 'attribute-shard-ladybug-pretty-clothes',
+    section: 'shards',
+    metric: 'Copper Rewards',
+    attribute: 'Pretty Clothes',
+    name: 'Ladybug Shard',
+    notes: '+1% Copper from Garden Visitors',
+  };
+  const cheaperOffers = {
+    id: 'visitor-offer-discount',
+    metric: 'Visitor Economy',
+    name: 'Visitor offer discount',
+    notes: 'Makes Visitor offers cheaper',
+  };
+  const sunset = {
+    id: 'armor-enchant-sunset-v-day-overbloom',
+    metric: 'Rare Crops',
+    name: 'Sunset V',
+    notes: 'Its separate night effect reduces Garden Visitor cooldown while breaking crops.',
+  };
+  const blossom = {
+    id: 'equipment-blossom-set-visitor-bonus',
+    metric: 'Crop Yield',
+    name: 'Blossom set visitor bonus',
+    notes: 'At 2,500 visitors, Florist grants Farming Fortune.',
+  };
+  const greenThumb = {
+    id: 'equipment-enchant-green-thumb-v-on-equipment',
+    metric: 'Crop Yield',
+    name: 'Green Thumb V',
+    notes: 'Scales with unique visitors served.',
+  };
+  const synthesis = {
+    id: 'garden-chip-synthesis-chip',
+    metric: 'Copper Rewards',
+    name: 'Synthesis Chip',
+    notes: 'Base Copper rewards from the Crop Analyzer.',
+  };
+
+  for (const item of [quickdraw, mudworm, invisibug, visitorCopper, cheaperOffers, sunset]) {
+    assert.equal(visitorSystemUpgrade(item), true, item.id);
+    assert.equal(matchesUpgradeFilter(item, UPGRADE_FILTER.VISITOR), true, item.id);
+  }
+  for (const item of [blossom, greenThumb, synthesis]) {
+    assert.equal(visitorSystemUpgrade(item), false, item.id);
+    assert.equal(matchesUpgradeFilter(item, UPGRADE_FILTER.VISITOR), false, item.id);
+  }
 });
 
 test('shared physical armor is one recommendation while a separate spawning set stays separate', () => {
