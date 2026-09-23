@@ -61,6 +61,12 @@ import {
   setupSummary,
   writeLinkedSetupSlot,
 } from './setups.js';
+import { buildSetupCandidates } from './setup-candidates.js';
+import {
+  SETUP_OBJECTIVE,
+  evaluateSetupObjective,
+  setupObjectiveForActivity,
+} from './setup-objective-evaluation.js';
 import {
   intrinsicEnchantmentsForCatalogItem,
   itemsForSlot,
@@ -1243,6 +1249,95 @@ function slotEditor(slotId) {
   </div>`;
 }
 
+function activeSetupObjective() {
+  const mode = activityModeForState(state);
+  if (mode === ACTIVITY_MODE.FARM) {
+    return state.setupFarmObjective === SETUP_OBJECTIVE.JACOB_CONTEST
+      ? SETUP_OBJECTIVE.JACOB_CONTEST
+      : SETUP_OBJECTIVE.NORMAL_CROP;
+  }
+  return setupObjectiveForActivity(mode);
+}
+
+function setupCandidateLabel(candidate) {
+  if (!candidate) return 'Unknown setup';
+  const pet = candidate.setup?.slots?.pet?.displayName || 'No pet';
+  const armor = candidate.components?.armorSetId || 'no armor set';
+  const equipment = candidate.components?.equipmentSetId || 'no equipment set';
+  return `${armor} · ${equipment} · ${pet}`;
+}
+
+function setupObjectiveMetricText(key, value) {
+  const number = Number(value);
+  const formatted = Number.isFinite(number) ? formatNumber(number, FRACTION_2) : '—';
+  if (key === 'effectiveFortune') return `${formatted} effective FF`;
+  if (key === 'bonusPestChance') return `${formatted} BPC`;
+  if (key === 'pestCooldownReductionPct') return `${formatted}% Pest CDR`;
+  if (key === 'pestFortune') return `${formatted} Pest FF`;
+  if (key === 'overbloom') return `${formatted} Overbloom`;
+  return `${formatted} ${key}`;
+}
+
+function setupObjectivePanel() {
+  const synced = snapshot();
+  if (!synced) {
+    return `<div class="setup-bar setup-objective-panel">
+      <div><div class="eyebrow">Owned setup objective</div><strong>Sync a profile to evaluate owned combinations</strong>
+      <div class="hint">No setup is guessed from missing ownership data.</div></div>
+    </div>`;
+  }
+
+  const objective = activeSetupObjective();
+  const mode = activityModeForState(state);
+  const candidates = buildSetupCandidates(synced, { phase: mode });
+  const result = evaluateSetupObjective(state, candidates, { objective });
+  const candidateById = new Map(candidates.map(candidate => [candidate.id, candidate]));
+  const frontierRows = result.rows.filter(row => row.frontier).slice(0, 4);
+
+  const selector = mode === ACTIVITY_MODE.FARM
+    ? `<label class="inline-input">Farming objective
+        <select data-setup-farm-objective>
+          <option value="${SETUP_OBJECTIVE.NORMAL_CROP}" ${objective === SETUP_OBJECTIVE.NORMAL_CROP ? 'selected' : ''}>Normal crop</option>
+          <option value="${SETUP_OBJECTIVE.JACOB_CONTEST}" ${objective === SETUP_OBJECTIVE.JACOB_CONTEST ? 'selected' : ''}>Jacob Contest</option>
+        </select>
+      </label>`
+    : '';
+
+  let headline = 'No complete owned candidate can be scored yet';
+  let detail = 'Unknown mechanics and missing runtime context stay unknown instead of becoming zero.';
+  if (result.recommendation.status === 'clear') {
+    const chosen = candidateById.get(result.recommendation.candidateId);
+    headline = setupCandidateLabel(chosen);
+    detail = `Clear match for ${result.label} across ${result.eligibleCount} complete owned combination${result.eligibleCount === 1 ? '' : 's'}.`;
+  } else if (result.recommendation.status === 'tradeoff') {
+    headline = `${result.frontierCount} non-dominated setup options`;
+    detail = 'No single setup is better on every primary objective, so Farming420 does not invent a weighted winner.';
+  } else if (result.recommendation.status === 'tie') {
+    headline = `${result.frontierCount} tied setup options`;
+    detail = 'The modeled objective values are identical; no arbitrary winner is selected.';
+  }
+
+  const frontier = frontierRows.length
+    ? `<div class="setup-objective-frontier">${frontierRows.map(row => {
+        const candidate = candidateById.get(row.candidateId);
+        const metrics = Object.entries(row.metrics)
+          .map(([key, value]) => setupObjectiveMetricText(key, value))
+          .join(' · ');
+        return `<div class="hint"><strong>${esc(setupCandidateLabel(candidate))}</strong><br>${esc(metrics)}</div>`;
+      }).join('')}</div>`
+    : '';
+
+  return `<div class="setup-bar setup-objective-panel" data-setup-objective-panel>
+    <div>
+      <div class="eyebrow">Owned setup objective · ${esc(result.label)}</div>
+      <strong>${esc(headline)}</strong>
+      <div class="hint">${esc(detail)}</div>
+      ${frontier}
+    </div>
+    ${selector}
+  </div>`;
+}
+
 function setupsPage() {
   const all = setups();
   const current = activeSetup(all);
@@ -1251,6 +1346,7 @@ function setupsPage() {
   const hasSnapshot = Boolean(synced?.items?.length || synced?.pets?.some(pet => pet?.active === true));
 
   return `${pageHeader('Setups', 'Your gear, item by item', 'A setup is one complete configuration you can actually wear. Setups sit beside each other because they are alternatives, never added together.')}
+    ${setupObjectivePanel()}
     <div class="setup-tabs">
       ${all.list.map(setup => `<button class="setup-tab ${setup.id === all.activeId ? 'active' : ''}" data-setup="${esc(setup.id)}">${esc(setup.name)}</button>`).join('')}
       <button class="setup-tab add" data-setup-add="1">+ New setup</button>
@@ -1291,7 +1387,13 @@ function bindSetups() {
     all.list = all.list.filter(setup => setup.id !== all.activeId);
     all.activeId = all.list[0].id; state.setupSlot = null; rerender();
   });
-  const nameInput = document.getElementById('setupName');
+  document.querySelector('[data-setup-farm-objective]')?.addEventListener('change', event => {
+    state.setupFarmObjective = event.target.value === SETUP_OBJECTIVE.JACOB_CONTEST
+      ? SETUP_OBJECTIVE.JACOB_CONTEST
+      : SETUP_OBJECTIVE.NORMAL_CROP;
+    rerender();
+  });
+    const nameInput = document.getElementById('setupName');
   if (nameInput) nameInput.addEventListener('change', event => {
     const current = all.list.find(setup => setup.id === all.activeId);
     current.name = String(event.target.value || '').trim() || current.id;

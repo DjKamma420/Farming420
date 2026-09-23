@@ -126,8 +126,14 @@ Implemented above enumeration:
 - Mosquito and Slug are now setup-local modeled spawning pets: level-scaled BPC, Mosquito visitor-based Sugar Cane Fortune, and conditional Legendary Slug Sprayonator Fortune
 - Legendary Slug never guesses plot spray state; callers must supply Sprayonator-active context before Repugnant Aroma can be treated as complete
 
+Objective evaluation is now implemented above raw stat deltas:
+- Normal Crop and Jacob Contest maximize complete modeled crop-output Fortune
+- Pest Spawn uses BPC + Pest cooldown reduction as co-primary Pareto objectives; Farming Fortune only breaks an exact primary tie
+- Pest Kill keeps Pest Fortune + Overbloom as a Pareto pair until a verified loot-EV conversion exists
+- incomplete/unknown candidate states never win, and ties/trade-offs are surfaced instead of hidden behind an invented weighted score
+- the Setups page shows the clear owned recommendation or the non-dominated frontier; it never auto-overwrites a manual setup
+
 Still required before this area is closed:
-- normal crop / Jacob Contest / Pest Spawn / Pest Kill objective evaluation beyond raw stat deltas
 - budget/progression versus endgame/max-profit candidate classes
 - convert an evaluated candidate into a user-selectable setup without overwriting manual setup choices
 
