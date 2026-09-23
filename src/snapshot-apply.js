@@ -20,6 +20,7 @@ import {
   helianthusPieceCount,
   mossyFortuneForPieces,
   mossyPieceCount,
+  pesterminatorFortune,
   pesterminatorTotalLevel,
   perfectPeridotCountOnArmor,
   perfectPeridotFortuneOnArmor,
@@ -260,7 +261,9 @@ function applyArmorDerived(pieces, state, autoApplied, applied, skipped) {
   }
 
   const pesterminatorLevels = pesterminatorTotalLevel(pieces);
-  if (pesterminatorLevels > 0) applyValue(store, scope, PESTERMINATOR_ID, pesterminatorLevels, applied);
+  if (pesterminatorLevels > 0) {
+    applyDynamicValue(store, scope, PESTERMINATOR_ID, 1, pesterminatorFortune(pieces), applied);
+  }
 
   const sunsetLevels = sunsetTotalLevel(pieces);
   if (sunsetLevels > 0) applyValue(store, scope, SUNSET_ID, sunsetLevels, applied);
