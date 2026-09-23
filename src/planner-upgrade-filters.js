@@ -46,6 +46,20 @@ export function cropFortuneUpgrade(item) {
   return /crop fortune|crop-specific|selected crop/.test(text);
 }
 
+export function visitorSystemUpgrade(item) {
+  const text = searchable(item);
+  const metric = String(item?.metric || '').trim().toLowerCase();
+  const attribute = String(item?.attribute || '').trim().toLowerCase();
+
+  // Visitor means changing the Visitor system itself, not merely gaining a stat
+  // after serving Visitors. Blossom/Green Thumb therefore stay out even though
+  // their Farming Fortune scales with Visitor progression.
+  if (metric.startsWith('visitor ')) return true;
+  if (['visitor bait', 'fancy visit', 'pretty clothes'].includes(attribute)) return true;
+
+  return /visitor cooldown|visitors? arrive|visitor arrival|visitor rarity|rare or better garden visitor|copper from (garden )?visitors?|visitor copper|visitor rewards?|visitor offer.*(cost|cheaper|discount)|(?:cost|price).*visitor offer/.test(text);
+}
+
 export function upgradeFilterTags(item) {
   const tags = new Set();
   const text = searchable(item);
@@ -60,7 +74,7 @@ export function upgradeFilterTags(item) {
   }
 
   if (/greenhouse|sowdust|mutation analysis/.test(text)) tags.add(UPGRADE_FILTER.GREENHOUSE);
-  if (/visitor|fancy visit/.test(text)) tags.add(UPGRADE_FILTER.VISITOR);
+  if (visitorSystemUpgrade(item)) tags.add(UPGRADE_FILTER.VISITOR);
 
   return tags;
 }
