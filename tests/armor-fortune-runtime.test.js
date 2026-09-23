@@ -2,11 +2,17 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  helianthusBaseBonusPestChance,
   helianthusBaseFortune,
   helianthusFeastFortune,
   helianthusPieceCount,
+  mantidBaseBonusPestChanceForPieces,
+  mantidFortuneForPieces,
+  mantidPieceCount,
+  mantidRecentKillBonusPestChance,
   mossyFortuneForPieces,
   mossyPieceCount,
+  pesterminatorBonusPestChance,
   pesterminatorFortune,
   pesterminatorTotalLevel,
   perfectPeridotCountOnArmor,
@@ -73,6 +79,42 @@ test('Pesterminator levels are summed per piece rather than requiring a full mat
   ];
   assert.equal(pesterminatorTotalLevel(pieces), 9);
   assert.equal(pesterminatorFortune(pieces), 18);
+  assert.equal(pesterminatorBonusPestChance(pieces), 9);
+});
+
+test('Helianthus contributes +20 BPC per distinct equipped armor slot', () => {
+  const pieces = [
+    piece('Helianthus Helmet'),
+    piece('Helianthus Chestplate'),
+    piece('Helianthus Leggings'),
+    piece('Helianthus Boots'),
+  ];
+  assert.equal(helianthusBaseBonusPestChance(pieces), 80);
+  assert.equal(helianthusBaseBonusPestChance([pieces[0], pieces[0]]), 20);
+});
+
+test('Mantid scales FF and base BPC by effective rarity', () => {
+  const pieces = [
+    piece('Helianthus Helmet', { rarity: 'LEGENDARY', reforge: 'mantid', recombobulated: true }),
+    piece('Helianthus Chestplate', { rarity: 'MYTHIC', reforge: 'mantid' }),
+    piece('Helianthus Leggings', { rarity: 'EPIC', reforge: 'mantid' }),
+  ];
+  assert.equal(mantidPieceCount(pieces), 3);
+  assert.equal(mantidFortuneForPieces(pieces), 32);
+  assert.equal(mantidBaseBonusPestChanceForPieces(pieces), 6.5);
+});
+
+test('Mantid recent-kill BPC stacks per reforged piece and caps at +5 each', () => {
+  const pieces = Array.from({ length: 4 }, (_, index) =>
+    piece(`Helianthus ${['Helmet', 'Chestplate', 'Leggings', 'Boots'][index]}`, {
+      rarity: 'MYTHIC',
+      reforge: 'mantid',
+    }));
+  assert.equal(mantidRecentKillBonusPestChance(pieces, 0), 0);
+  assert.equal(mantidRecentKillBonusPestChance(pieces, 10), 10);
+  assert.equal(mantidRecentKillBonusPestChance(pieces, 20), 20);
+  assert.equal(mantidRecentKillBonusPestChance(pieces, 999), 20);
+  assert.equal(mantidRecentKillBonusPestChance(pieces, null), null);
 });
 
 test('Sunset is tracked as per-piece levels without turning it into Farming Fortune', () => {
