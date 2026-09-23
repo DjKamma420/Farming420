@@ -127,7 +127,8 @@ export function petRarities(id) {
 
 export function clampPetLevel(id, value) {
   const bounds = petLevelBounds(id);
+  if (!bounds || value === null || value === undefined || value === '') return null;
   const numeric = Number(value);
-  if (!bounds || !Number.isFinite(numeric)) return null;
+  if (!Number.isFinite(numeric)) return null;
   return Math.max(bounds.min, Math.min(bounds.max, Math.floor(numeric)));
 }
