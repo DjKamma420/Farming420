@@ -43,11 +43,11 @@ test('conditional physical accessories stay in the accessories section', () => {
 });
 
 
-test('accessory cards expose only item-local Recombobulator controls', () => {
+test('accessory cards expose Recombobulator and farming-relevant Strength Enrichment controls', () => {
   const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   assert.match(source, /data-accessory-recomb=/);
-  assert.doesNotMatch(source, /data-accessory-enrichment=/);
-  assert.doesNotMatch(source, /ACCESSORY_ENRICHMENTS/);
+  assert.match(source, /data-accessory-strength-enrichment=/);
+  assert.match(source, /Strength Enrichment/);
   assert.match(source, /baseRarity.*effectiveRarity/);
   assert.match(source, /farmingAccessoryByItemId/);
   assert.equal(ACCESSORY_CAPABILITIES_VERIFIED, '2026-09-18');
@@ -71,13 +71,24 @@ test('accessory cards are articles so nested controls remain valid interactive H
 
 
 
-test('Accessories page contains no Enrichment controls or bonus summary', () => {
+test('Accessories page explains Strength Enrichment and Cow interaction without inventing Accessory Power value', () => {
   const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const start = source.indexOf('function accessoryCatalogCard');
   const end = source.indexOf('function cropFocusCard', start);
   const block = source.slice(start, end);
-  assert.doesNotMatch(block, /Enrichment/);
-  assert.doesNotMatch(block, /enrichment/i);
-  assert.doesNotMatch(block, /data-enrichment/);
+  assert.match(block, /Strength Enrichment/);
+  assert.match(block, /Mooshroom Cow/);
+  assert.match(block, /Accessory Power/);
+  assert.match(block, /data-accessory-strength-enrichment/);
   assert.match(block, /Recombobulator 3000/);
+});
+
+
+test('Shards page exposes verified indirect shard-to-shard and Cow synergy controls', () => {
+  const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  assert.match(source, /function shardSynergyPanel/);
+  assert.match(source, /Echo of Elemental/);
+  assert.match(source, /Unlimited Power/);
+  assert.match(source, /data-synergy-shard-level/);
+  assert.match(source, /case 'shards': content = shardsPage\(\);/);
 });
