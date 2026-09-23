@@ -162,11 +162,16 @@ function snapshotPetLevel(pet) {
   if (explicit !== null) return explicit;
 
   const bounds = petLevelBounds(pet?.type);
-  // Standard pets use the verified level-1..100 XP curve already used by the
-  // Mooshroom calculator. Rose Dragon has a distinct 100..200 range; until a
-  // verified XP curve is modeled, unknown Rose Dragon XP must stay unknown.
-  if (bounds?.max > 100) return null;
-  return petLevelFromExperience(pet?.experience, pet?.rarity ?? pet?.tier ?? 'COMMON');
+  const rarity = pet?.rarity ?? pet?.tier ?? 'COMMON';
+  if (String(pet?.type || '').trim().toUpperCase() === 'ROSE_DRAGON') {
+    // Current NEU pet constants use the normal rarity-offset curve through
+    // level 100, then 1,886,700 XP for each Rose Dragon level through 200.
+    return petLevelFromExperience(pet?.experience, rarity, {
+      maxLevel: 200,
+      extraLevelXp: 1_886_700,
+    });
+  }
+  return bounds ? petLevelFromExperience(pet?.experience, rarity) : null;
 }
 
 export function itemRecordsFromSnapshotPet(pet) {
