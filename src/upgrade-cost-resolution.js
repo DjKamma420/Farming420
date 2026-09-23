@@ -2,6 +2,7 @@ import { UPGRADE_COSTS, missingCostReason } from './upgrade-costs.js';
 import { marketAverageTimestampLabel } from './market-average-prices.js';
 import { stepCostForUpgrade, stepCostModelForUpgrade } from './upgrade-step-costs.js';
 import {
+  marketCostContextForUpgrade,
   marketRoutesForUpgrade,
   resolveUpgradeMarketAverage,
   stepMarketRoutesForUpgrade,
@@ -76,6 +77,7 @@ export function resolveUpgradeCost(store, itemId) {
   const id = String(itemId || '');
   const selected = researchedRecordFor(store, id);
   const record = selected.record;
+  const marketCostContext = marketCostContextForUpgrade(id);
   const acquisitionMode = acquisitionModeFor(record);
   const stepMeta = selected.stepAware
     ? { currentLevel: selected.currentLevel, targetLevel: selected.targetLevel, stepAware: true }
@@ -118,6 +120,8 @@ export function resolveUpgradeCost(store, itemId) {
         origin: 'market-average',
         unit: 'coins',
         acquisitionMode: 'BUYABLE',
+        costKind: marketCostContext.costKind,
+        costDisplayLabel: marketCostContext.displayLabel,
         marketLabel: market.marketLabel,
         source: market.source,
         windowDays: market.windowDays,
@@ -133,6 +137,8 @@ export function resolveUpgradeCost(store, itemId) {
       origin: 'unknown',
       unit: 'coins',
       acquisitionMode: 'UNKNOWN',
+      costKind: marketCostContext.costKind,
+      costDisplayLabel: marketCostContext.displayLabel,
       reason: market?.reason || '90-day market average is unavailable for this acquisition route',
       ...stepMeta,
     };
@@ -190,10 +196,14 @@ export function resolveUpgradeCost(store, itemId) {
 export function costOriginNote(cost) {
   if (cost?.acquisitionMode === 'EARNED') return 'EARNED — enter active grind time';
   if (cost?.origin === 'market-average') {
-    const label = cost.marketLabel || '90-day market average';
-    return cost.computedAtMs != null
-      ? `${label} · ${marketAverageTimestampLabel({ computedAtMs: cost.computedAtMs })}`
-      : label;
+    const label = [
+      cost.marketLabel || '90-day market average',
+      cost.costDisplayLabel || '',
+      cost.computedAtMs != null
+        ? marketAverageTimestampLabel({ computedAtMs: cost.computedAtMs })
+        : '',
+    ].filter(Boolean);
+    return label.join(' · ');
   }
   if (cost?.origin === 'included') return cost.reason || 'included in another purchase';
   return cost?.reason || '90-day market average unavailable';
