@@ -61,6 +61,7 @@ test('totals are derived from configured source levels, never from an entered en
     pestFortune: 0,
     overbloom: 1,
     bonusPestChance: 1,
+    pestCooldownReductionPct: 0,
   });
 });
 
@@ -72,6 +73,7 @@ test('an empty profile has zero configured sources instead of looking fully calc
     pestFortune: 0,
     overbloom: 0,
     bonusPestChance: 0,
+    pestCooldownReductionPct: 0,
   });
   assert.deepEqual(totals.incomplete.globalFortune, []);
 });
@@ -150,6 +152,108 @@ test('Rose Dragon contributes profile-scaled Fortune and Overbloom as the select
   assert.equal(totals.derived.roseDragon.active, true);
   assert.deepEqual(totals.incomplete.globalFortune, []);
   assert.deepEqual(totals.incomplete.overbloom, []);
+});
+
+test('maxed Mantid plus 3/4 Pesthunter, Pest Vest and Squeaky produce exact spawning stats', () => {
+  const state = baseState();
+  const setups = createDefaultSetups();
+  const pest = setups.list.find(setup => setup.id === 'pest');
+  setups.activeId = 'pest';
+
+  const armorNames = [
+    ['helmet', 'HELIANTHUS_HELMET', 'Helianthus Helmet'],
+    ['chestplate', 'HELIANTHUS_CHESTPLATE', 'Helianthus Chestplate'],
+    ['leggings', 'HELIANTHUS_LEGGINGS', 'Helianthus Leggings'],
+    ['boots', 'HELIANTHUS_BOOTS', 'Helianthus Boots'],
+  ];
+  for (const [slot, skyblockId, displayName] of armorNames) {
+    pest.slots[slot] = {
+      skyblockId,
+      displayName,
+      rarity: 'LEGENDARY',
+      recombobulated: true,
+      reforge: 'mantid',
+      enchantments: { pesterminator: 6 },
+      gems: [],
+    };
+  }
+
+  const equipment = [
+    ['equipment1', 'PESTHUNTERS_NECKLACE', "Pesthunter's Necklace", 'RARE'],
+    ['equipment2', 'PEST_VEST', 'Pest Vest', 'EPIC'],
+    ['equipment3', 'PESTHUNTERS_BELT', "Pesthunter's Belt", 'RARE'],
+    ['equipment4', 'PESTHUNTERS_GLOVES', "Pesthunter's Gloves", 'RARE'],
+  ];
+  for (const [slot, skyblockId, displayName, rarity] of equipment) {
+    pest.slots[slot] = {
+      skyblockId,
+      displayName,
+      rarity,
+      recombobulated: true,
+      reforge: 'squeaky',
+      enchantments: {},
+      gems: [],
+    };
+  }
+
+  state.profile.setups = setups;
+  const totals = computeStatTotals(
+    state,
+    'melon',
+    'pest-spawn',
+    null,
+    { recentPestKills: 20 },
+  );
+
+  assert.equal(totals.derived.pestSetupGear.mantidFortune, 48);
+  assert.equal(totals.derived.pestSetupGear.squeakyFortune, 34);
+  assert.equal(totals.globalFortune, 82);
+  assert.equal(totals.bonusPestChance, 165.5);
+  assert.equal(totals.pestCooldownReductionPct, 55);
+  assert.deepEqual(totals.incomplete.bonusPestChance, []);
+});
+
+test('Mantid spawning remains explicitly incomplete when the last-10-minute kill count is unknown', () => {
+  const state = baseState();
+  const setups = createDefaultSetups();
+  const pest = setups.list.find(setup => setup.id === 'pest');
+  setups.activeId = 'pest';
+  pest.slots.helmet = {
+    skyblockId: 'HELIANTHUS_HELMET',
+    displayName: 'Helianthus Helmet',
+    rarity: 'LEGENDARY',
+    reforge: 'mantid',
+    enchantments: {},
+    gems: [],
+  };
+  state.profile.setups = setups;
+
+  const totals = computeStatTotals(state, 'melon', 'pest-spawn');
+  assert.equal(totals.derived.pestSetupGear.mantidRecentKillBpc, null);
+  assert.ok(totals.incomplete.bonusPestChance.some(row => row.reason.includes('last 10 minutes')));
+});
+
+test('Pesthunter Eradicator becomes Pest Fortune only in the kill phase', () => {
+  const state = baseState();
+  const setups = createDefaultSetups();
+  const kill = setups.list.find(setup => setup.id === 'pest-kill');
+  setups.activeId = 'pest-kill';
+  for (const [index, id] of ['PESTHUNTERS_NECKLACE', 'PESTHUNTERS_CLOAK', 'PESTHUNTERS_BELT'].entries()) {
+    kill.slots[`equipment${index + 1}`] = {
+      skyblockId: id,
+      displayName: id,
+      rarity: 'RARE',
+      reforge: null,
+      enchantments: {},
+      gems: [],
+    };
+  }
+  state.profile.setups = setups;
+
+  const totals = computeStatTotals(state, 'melon', 'pest-kill');
+  assert.equal(totals.pestFortune, 75);
+  assert.equal(totals.bonusPestChance, 0);
+  assert.equal(totals.pestCooldownReductionPct, 0);
 });
 
 test('pet item planner toggles do not count globally without an active setup pet item', () => {
