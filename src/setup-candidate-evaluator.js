@@ -1,7 +1,9 @@
 import { ACTIVITY_MODE, normalizeActivityMode, setupIdForActivity } from './activity-mode.js';
 import { computeStatTotals } from './computed-stats.js';
 import { applySnapshotToProgress } from './snapshot-apply.js';
-import { normalizeSetups } from './setups.js';
+import { isHelianthusArmorPiece } from './armor-fortune.js';
+import { isBlossomPiece } from './equipment-fortune.js';
+import { activeSetup, normalizeSetups } from './setups.js';
 
 export const SETUP_CANDIDATE_EVALUATOR_VERSION = 1;
 
@@ -90,6 +92,57 @@ function uniqueReasons(values) {
   return [...new Set(values.filter(Boolean))];
 }
 
+function peridotQualityGaps(item, slotId) {
+  const gems = Array.isArray(item?.gems) ? item.gems : [];
+  return gems
+    .map(value => String(value || '').toUpperCase())
+    .filter(value => value.includes('PERIDOT') && !value.includes('PERFECT'))
+    .map(value => `${slotId} uses ${value}; non-Perfect Peridot setup contribution is not modeled yet`);
+}
+
+function setupSupportGaps(setup) {
+  const gaps = [];
+  const slots = setup?.slots || {};
+
+  for (const slotId of ['helmet', 'chestplate', 'leggings', 'boots']) {
+    const item = slots[slotId];
+    if (!item) continue;
+    if (!isHelianthusArmorPiece(item)) {
+      gaps.push(`${slotId} base Farming stats are not modeled for ${item.displayName || item.skyblockId || 'this armor item'}`);
+    }
+    const reforge = String(item.reforge || '').trim().toLowerCase();
+    if (reforge && reforge !== 'mossy') {
+      gaps.push(`${slotId} armor reforge ${reforge} is not modeled in setup evaluation`);
+    }
+    gaps.push(...peridotQualityGaps(item, slotId));
+  }
+
+  for (const slotId of ['equipment1', 'equipment2', 'equipment3', 'equipment4']) {
+    const item = slots[slotId];
+    if (!item) continue;
+    if (!isBlossomPiece(item)) {
+      gaps.push(`${slotId} base Farming stats are not modeled for ${item.displayName || item.skyblockId || 'this equipment item'}`);
+    }
+    const reforge = String(item.reforge || '').trim().toLowerCase();
+    if (reforge && !['rooted', 'thorny'].includes(reforge)) {
+      gaps.push(`${slotId} equipment reforge ${reforge} is not modeled in setup evaluation`);
+    }
+  }
+
+  const pet = slots.pet;
+  if (pet) {
+    const petId = String(pet.skyblockId || '').trim().toUpperCase();
+    if (petId !== 'MOOSHROOM_COW') {
+      gaps.push(`${pet.displayName || petId || 'selected pet'} contribution is not modeled in computed setup stats`);
+    }
+  }
+  if (slots.petItem) {
+    gaps.push(`${slots.petItem.displayName || slots.petItem.skyblockId || 'selected pet item'} is not yet setup-local in computed stats`);
+  }
+
+  return uniqueReasons(gaps);
+}
+
 /**
  * Evaluates one already-enumerated owned setup candidate as a complete state.
  *
@@ -105,12 +158,16 @@ export function evaluateSetupCandidate(state, candidate, options = {}) {
   const snapshot = options.snapshot ?? state?.profile?.normalizedSnapshot ?? null;
   const beforeState = normalizedState(state);
   const beforeSetupId = setupForPhase(beforeState, phase);
+  const beforeSetup = activeSetup(beforeState.profile.setups);
+  const beforeSupportGaps = setupSupportGaps(beforeSetup);
   const beforeApply = applySnapshotToProgress(beforeState, snapshot || {});
   const beforeTotals = computeStatTotals(beforeState, cropId, phase, activeContextScope);
 
   const afterState = normalizedState(state);
   setupForPhase(afterState, phase);
   const afterSetupId = activateCandidate(afterState, candidate);
+  const afterSetup = activeSetup(afterState.profile.setups);
+  const afterSupportGaps = setupSupportGaps(afterSetup);
   const afterApply = applySnapshotToProgress(afterState, snapshot || {});
   const afterTotals = computeStatTotals(afterState, cropId, phase, activeContextScope);
 
@@ -127,6 +184,8 @@ export function evaluateSetupCandidate(state, candidate, options = {}) {
   if (!afterSetupId) reasons.push('candidate setup is unavailable');
   if (beforeIncomplete.length) reasons.push('current phase setup has incomplete stat mechanics');
   if (afterIncomplete.length) reasons.push('candidate setup has incomplete stat mechanics');
+  if (beforeSupportGaps.length) reasons.push(...beforeSupportGaps);
+  if (afterSupportGaps.length) reasons.push(...afterSupportGaps);
   if (beforeApply.skipped.length) reasons.push(...beforeApply.skipped);
   if (afterApply.skipped.length) reasons.push(...afterApply.skipped);
 
@@ -146,12 +205,14 @@ export function evaluateSetupCandidate(state, candidate, options = {}) {
     before: Object.freeze({
       totals: beforeTotals,
       incomplete: Object.freeze(beforeIncomplete),
+      supportGaps: Object.freeze(beforeSupportGaps),
       applied: Object.freeze(beforeApply.applied),
       skipped: Object.freeze(beforeApply.skipped),
     }),
     after: Object.freeze({
       totals: afterTotals,
       incomplete: Object.freeze(afterIncomplete),
+      supportGaps: Object.freeze(afterSupportGaps),
       applied: Object.freeze(afterApply.applied),
       skipped: Object.freeze(afterApply.skipped),
     }),
