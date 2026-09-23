@@ -8,7 +8,7 @@ import { GARDEN_VACUUM_ITEMS } from './exact-farming-items.js';
 import { gardenLevelFromExperience } from './garden-level.js';
 import { setupPetItemContribution } from './setup-pet-items.js';
 
-export const SETUP_CANDIDATE_EVALUATOR_VERSION = 2;
+export const SETUP_CANDIDATE_EVALUATOR_VERSION = 3;
 
 const SETUP_LOCAL_PET_ITEM_ENTRY_IDS = Object.freeze([
   'pet-item-green-bandana',
@@ -189,7 +189,9 @@ function petItemContext(snapshot, options) {
   return {
     gardenLevel: snapshot?.garden?.level
       ?? gardenLevelFromExperience(snapshot?.garden?.experience),
-    eligiblePestBestiaryTiers: options?.eligiblePestBestiaryTiers ?? null,
+    eligiblePestBestiaryTiers: options?.eligiblePestBestiaryTiers
+      ?? snapshot?.bestiary?.eligiblePestTierTotal
+      ?? null,
   };
 }
 
@@ -236,7 +238,7 @@ export function evaluateSetupCandidate(state, candidate, options = {}) {
     cropId,
     phase,
     activeContextScope,
-    { eligiblePestBestiaryTiers: options.eligiblePestBestiaryTiers ?? null },
+    { eligiblePestBestiaryTiers: options.eligiblePestBestiaryTiers ?? snapshot?.bestiary?.eligiblePestTierTotal ?? null },
   );
 
   const afterState = normalizedState(state);
@@ -256,7 +258,7 @@ export function evaluateSetupCandidate(state, candidate, options = {}) {
     cropId,
     phase,
     activeContextScope,
-    { eligiblePestBestiaryTiers: options.eligiblePestBestiaryTiers ?? null },
+    { eligiblePestBestiaryTiers: options.eligiblePestBestiaryTiers ?? snapshot?.bestiary?.eligiblePestTierTotal ?? null },
   );
 
   const freshness = candidateFreshness(candidate);
