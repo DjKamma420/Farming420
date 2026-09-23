@@ -53,6 +53,25 @@ function cacheBazaar(itemTag, coinsPerUnit) {
   });
 }
 
+function cacheAuction(itemTag, coinsPerUnit) {
+  const now = Date.now();
+  writeCachedMarketAverage({
+    version: MARKET_AVERAGE_MODEL_VERSION,
+    source: 'skycofl-90d',
+    market: MARKET_KIND.AUCTION_HOUSE,
+    side: MARKET_SIDE.ACQUIRE,
+    itemTag,
+    coinsPerUnit,
+    sampleCount: 20,
+    volume: 20,
+    windowDays: 90,
+    windowStartMs: now - 90 * 24 * 60 * 60 * 1000,
+    windowEndMs: now,
+    computedAtMs: now,
+    attributionUrl: 'https://sky.coflnet.com/data',
+  });
+}
+
 test('every step-aware entry is a real upgrade and its targets are contiguous', () => {
   const known = new Set(UPGRADES.map(item => item.id));
   for (const [id, model] of Object.entries(UPGRADE_STEP_COSTS)) {
@@ -181,6 +200,24 @@ test('tradeable farming accessories use exact Auction House ids while Relic of P
     [],
     'Relic of Power is not directly tradeable and must not receive an AH/Bazaar item-price route',
   );
+});
+
+test('directly tradeable farming accessories resolve cached 90-day AH acquisition prices', async () => {
+  await withStorage(async () => {
+    const cases = [
+      ['jacob-accessory-anita-accessory-crop-bonus', 'ANITA_ARTIFACT', 12_500_000],
+      ['temporary-atmospheric-filter-spring', 'ATMOSPHERIC_FILTER', 400_000],
+      ['temporary-magic-8-ball-ff-roll', 'MAGIC_8_BALL', 140_000_000],
+    ];
+    for (const [id, itemTag, coins] of cases) {
+      cacheAuction(itemTag, coins);
+      const resolved = resolveUpgradeCost(storeFor(id, 0), id);
+      assert.equal(resolved.acquisitionMode, 'BUYABLE', id);
+      assert.equal(resolved.origin, 'market-average', id);
+      assert.equal(resolved.marketLabel, '90-day Auction House average', id);
+      assert.equal(resolved.coins, coins, id);
+    }
+  });
 });
 
 test('already researched tool modifiers have reachable 90-day next-step prices', async () => {
