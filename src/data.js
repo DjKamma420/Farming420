@@ -1855,7 +1855,7 @@ export const HIDDEN_INTERACTIONS = [
     "why": "Its marginal value depends on which eligible buffs are active at that moment.",
     "handling": "Buffs sheet totals eligible base FF; Upgrades row for Hypercharge uses Active eligible FF \u00d7 next chip increment.",
     "status": "ACTIVE",
-    "source": "https://hypixelskyblock.minecraft.wiki/w/Garden_Chips"
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Garden_Chips",
     "lastVerified": "2026-09-23"
   },
   {
