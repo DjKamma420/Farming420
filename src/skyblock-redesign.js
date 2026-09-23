@@ -192,20 +192,53 @@ export function cropArtUrl(cropId) {
   return CROP_SPRITES[id] || assetByCandidates(CROP_ART[id] || []);
 }
 
+/**
+ * Memo for `assetByCandidates`, invalidated by manifest identity.
+ *
+ * The manifest holds 1,100 keys and the lookup falls back to a substring scan
+ * across all of them, per candidate. Measured on a Tools navigation at 412px
+ * with 4x CPU throttling: 73 calls, 103,400 string comparisons and 73 freshly
+ * allocated 1,100-element key arrays, for 27 ms and the garbage that follows.
+ *
+ * Every one of those calls asks the same handful of questions on every render,
+ * so the answers are kept. Keying on the manifest object itself means a
+ * manifest that arrives or changes later drops the whole memo rather than
+ * serving answers derived from the old one.
+ */
+let assetMemoManifest = null;
+let assetMemoKeys = null;
+const assetMemo = new Map();
+
 function assetByCandidates(candidates = []) {
   const items = manifest?.items;
   if (!items) return null;
-  const keys = Object.keys(items);
+
+  if (assetMemoManifest !== items) {
+    assetMemoManifest = items;
+    assetMemoKeys = Object.keys(items);
+    assetMemo.clear();
+  }
+
+  // NUL cannot appear in an item id, so joining on it cannot collide two
+  // different candidate lists into one cache entry.
+  const memoKey = candidates.join('\u0000');
+  if (assetMemo.has(memoKey)) return assetMemo.get(memoKey);
+
+  let found = null;
   for (const candidate of candidates) {
     const exact = items[String(candidate).toLowerCase()];
-    if (exact?.texture) return `${ITEM_ASSET_BASE_URL}${exact.texture}`;
+    if (exact?.texture) { found = `${ITEM_ASSET_BASE_URL}${exact.texture}`; break; }
   }
-  for (const candidate of candidates) {
-    const needle = String(candidate).toLowerCase();
-    const key = keys.find(value => value.includes(needle));
-    if (key && items[key]?.texture) return `${ITEM_ASSET_BASE_URL}${items[key].texture}`;
+  if (found === null) {
+    for (const candidate of candidates) {
+      const needle = String(candidate).toLowerCase();
+      const key = assetMemoKeys.find(value => value.includes(needle));
+      if (key && items[key]?.texture) { found = `${ITEM_ASSET_BASE_URL}${items[key].texture}`; break; }
+    }
   }
-  return null;
+
+  assetMemo.set(memoKey, found);
+  return found;
 }
 
 function img(url, alt = '') {

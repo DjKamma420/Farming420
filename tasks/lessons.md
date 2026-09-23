@@ -772,3 +772,27 @@ adapters.
 Rule, now with a concrete trigger: **when I am about to write a mapping from one
 of the app's own enums to one of the app's own ids, that mapping already
 exists.** Grep for a function that returns the id before writing the ternary.
+
+## A test must not forbid what its own fix requires
+
+Fourth occurrence in this repository, so it is written down rather than
+re-learned.
+
+Writing `assert.equal(matches.length, 0, 'Object.keys must not be in the
+per-call path')` and then, two lines later, `assert.match(source,
+/assetMemoKeys = Object.keys\(items\)/)` is a test that cannot pass against any
+implementation. The intent was "not on every call", and the assertion said "not
+at all".
+
+The earlier three were the same shape in prose: a test forbidding a phrase that
+the module's own comment uses to *reject* the claim.
+
+**Rule.** When an assertion forbids something, name the condition it is actually
+forbidden *under*, and assert position or count rather than absence:
+
+- absence: `assert.equal(count, 0)` -- only when the thing must never appear
+- placement: assert the index falls inside the branch that makes it cheap
+- count: `assert.equal(count, 1)` when one occurrence is the fix
+
+Before committing a "must not contain" assertion, read the fix once more and ask
+whether the fix itself contains it.
