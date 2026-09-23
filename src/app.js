@@ -473,10 +473,14 @@ function card(item, compact=false) {
   const pricing = upgradePriceSummary(itemStore(item), item);
   const priceTagCoins = isShard
     ? pricing.unitShardCoins
-    : level >= max ? pricing.entryMarketCoins : pricing.costToMaxCoins;
+    : level >= max
+      ? pricing.entryMarketCoins
+      : pricing.costToMaxCoins ?? pricing.entryMarketCoins;
   const priceTagLabel = isShard
     ? '1 shard'
-    : level >= max ? 'value' : 'to max';
+    : level >= max
+      ? 'value'
+      : pricing.costToMaxCoins != null ? 'to max' : 'item';
   return `
     <button class="item-card ${status} ${isShard ? 'shard-card' : ''} ${compact ? 'compact' : ''}" data-open="${esc(item.id)}">
       <div class="card-layer"></div>
