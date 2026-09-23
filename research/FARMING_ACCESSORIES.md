@@ -116,6 +116,28 @@ Sources:
 - https://wiki.eliteskyblock.com/Farming_Fortune
 - https://wiki.eliteskyblock.com/Farming_XP
 
+## Market-routing verification
+
+Verified: 2026-09-23
+
+For automatic coin acquisition prices, only direct market routes with current trade evidence are used:
+
+| Item | SkyBlock ID | Automatic market route |
+|---|---|---|
+| Anita's Artifact | `ANITA_ARTIFACT` | Auction House |
+| Atmospheric Filter | `ATMOSPHERIC_FILTER` | Auction House |
+| Magic 8 Ball | `MAGIC_8_BALL` | Auction House |
+| Relic of Power | `POWER_RELIC` | none — not directly Auction House/Bazaar tradeable |
+
+Relic of Power must not be priced as though the physical `POWER_RELIC` item can be bought from AH/Bazaar. Its acquisition is a forge/progression path from Artifact of Power. The Perfect Peridot used for the farming effect is Bazaar-tradeable, but pricing only that gemstone without also knowing that the player already owns the Relic would understate the acquisition cost.
+
+Market evidence:
+- https://sky.coflnet.com/item/ANITA_ARTIFACT
+- https://sky.coflnet.com/item/ATMOSPHERIC_FILTER
+- https://sky.coflnet.com/item/MAGIC_8_BALL
+- https://skyblock.finance/items/POWER_RELIC
+- https://hypixel-skyblock.fandom.com/wiki/Relic_of_Power
+
 ## Model rule
 
 The public Hypixel item resource carries `material`, `skin`, category and rarity. For skull-based accessories, `skin` is the exact Minecraft texture hash. The app converts that hash to `https://textures.minecraft.net/texture/<hash>`.
