@@ -123,8 +123,9 @@ function itemsInContainers(items, predicate) {
   return items.filter(item => predicate(String(item?.container || '')));
 }
 
-const isArmorContainer = container => container === 'armor' || container.startsWith('loadout.armor.');
-const isEquipmentContainer = container => container === 'equipment' || container.startsWith('loadout.equipment.');
+// Saved Hypixel loadout containers prove ownership, not simultaneous wear.
+const isArmorContainer = container => container === 'armor';
+const isEquipmentContainer = container => container === 'equipment';
 const SETUP_ARMOR_SLOTS = Object.freeze(['helmet', 'chestplate', 'leggings', 'boots']);
 const SETUP_EQUIPMENT_SLOTS = Object.freeze(['equipment1', 'equipment2', 'equipment3', 'equipment4']);
 

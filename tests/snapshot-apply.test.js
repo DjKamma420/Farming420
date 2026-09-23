@@ -202,17 +202,16 @@ test('Sunset levels are summed per armor piece instead of taking a set minimum',
   assert.equal(state.profile.levels['armor-enchant-sunset-v-day-overbloom'], 17);
 });
 
-test('loadout containers count as armor and equipment', () => {
+test('saved loadout containers prove ownership but are never summed as currently equipped gear', () => {
   const state = emptyState();
   applySnapshotToProgress(state, snapshotWith({
     items: Array.from({ length: 4 }, (_, index) => ({
       container: `loadout.equipment.set_a.equipment_slot_${index + 1}`,
-      displayName: 'Lotus Bracelet', rarity: 'LEGENDARY', gems: {}, enchantments: { green_thumb: 5 }, reforge: 'rooted',
+      displayName: 'Blossom Bracelet', rarity: 'LEGENDARY', gems: {}, enchantments: { green_thumb: 5 }, reforge: 'rooted',
     })),
   }));
-  assert.equal(state.profile.levels['equipment-reforge-rooted-on-full-equipment'], 4);
-  assert.equal(state.profile.manualGain['equipment-reforge-rooted-on-full-equipment'], 72);
-  assert.equal(state.profile.levels['equipment-enchant-green-thumb-v-on-equipment'], 20);
+  assert.equal(state.profile.levels['equipment-reforge-rooted-on-full-equipment'], undefined);
+  assert.equal(state.profile.levels['equipment-enchant-green-thumb-v-on-equipment'], undefined);
 });
 
 test('applied values are stamped as auto so the UI can mark them', () => {
@@ -423,6 +422,33 @@ test('hasPerfectGem accepts both recorded shapes and rejects near-misses', () =>
   assert.equal(hasPerfectGem(['PERFECT JASPER']), false);
   assert.equal(hasPerfectGem({ PERIDOT_0: 'PERFECT' }), true);
   assert.equal(hasPerfectGem([]), false);
+});
+
+test('saved armor sets are not added to worn armor when no setup is selected', () => {
+  const worn = name => ({
+    container: 'armor',
+    displayName: name,
+    rarity: 'LEGENDARY',
+    reforge: 'mossy',
+    enchantments: {},
+    gems: {},
+  });
+  const saved = name => ({
+    container: `loadout.armor.saved.${name.toLowerCase().split(' ').at(-1)}`,
+    displayName: name,
+    rarity: 'LEGENDARY',
+    reforge: 'mossy',
+    enchantments: {},
+    gems: {},
+  });
+  const names = ['Helianthus Helmet', 'Helianthus Chestplate', 'Helianthus Leggings', 'Helianthus Boots'];
+  const state = emptyState();
+  applySnapshotToProgress(state, snapshotWith({ items: [
+    ...names.map(worn),
+    ...names.map(saved),
+  ] }));
+  assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], 4);
+  assert.equal(state.profile.manualGain['armor-reforge-mossy-on-full-armor'], 100);
 });
 
 test('a state without setups still evaluates detected armor piece-by-piece', () => {
