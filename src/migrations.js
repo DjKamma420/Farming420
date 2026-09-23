@@ -5,6 +5,47 @@ import { DATA_SCHEMA_VERSION } from './config.js';
 const PROGRESS_FIELDS = ['levels', 'owned', 'costs', 'manualGain'];
 const DEFAULT_CROP_ID = 'melon';
 
+/** Where a stored value too broken to migrate is parked instead of deleted. */
+export const MIGRATION_QUARANTINE_KEY = 'unmigratableValues';
+
+function isContainer(value) {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Make `container[key]` a usable object, without throwing and without deleting.
+ *
+ * `container[key] ||= {}` was the previous idiom, and it is wrong in a way that
+ * only shows up on damaged data: `||=` keeps **any** truthy value, so a stored
+ * `profile` that is the string `"x"` survives the guard and the next property
+ * assignment throws `Cannot create property 'levels' on string` -- in strict
+ * mode, which every ES module is. The app then fails to boot at all, so the
+ * player cannot even reach Export backup to rescue the rest of their profile.
+ *
+ * A non-object cannot be migrated into one: a string holds no crop levels. But
+ * `AGENTS.md` rule 9 says user data is not destroyed, so the unusable value is
+ * moved to `state[MIGRATION_QUARANTINE_KEY]` -- where a backup still carries it
+ * and a human can look at it -- rather than overwritten.
+ */
+function ensureContainer(state, container, key, path, warnings) {
+  const current = container[key];
+  if (isContainer(current)) return current;
+  if (current !== undefined && current !== null) {
+    const quarantine = isContainer(state[MIGRATION_QUARANTINE_KEY])
+      ? state[MIGRATION_QUARANTINE_KEY]
+      : (state[MIGRATION_QUARANTINE_KEY] = {});
+    // Keep the first value seen for a path. Re-running a migration over already
+    // repaired state must not replace the original with the `{}` that replaced
+    // it, which would quietly complete the deletion this exists to prevent.
+    if (!(path in quarantine)) {
+      quarantine[path] = current;
+      warnings?.push(`${path} was ${Array.isArray(current) ? 'an array' : typeof current}, not an object; it was set aside in ${MIGRATION_QUARANTINE_KEY} and replaced with an empty one.`);
+    }
+  }
+  container[key] = {};
+  return container[key];
+}
+
 /**
  * Physical farming tools are shared by more than one crop. Sunflower and
  * Moonflower both use the Eclipse Hoe, so tool progress is keyed by the tool
@@ -17,16 +58,16 @@ export function toolKeyForCropId(cropId) {
   return info.tool.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
-export function ensureProgressBucket(container, key) {
-  const bucket = container[key] ||= {};
-  for (const field of PROGRESS_FIELDS) bucket[field] ||= {};
+export function ensureProgressBucket(container, key, state = null, warnings = null) {
+  const bucket = ensureContainer(state, container, key, `progress.${key}`, warnings);
+  for (const field of PROGRESS_FIELDS) ensureContainer(state, bucket, field, `progress.${key}.${field}`, warnings);
   return bucket;
 }
 
 function moveField(source, destination, itemId) {
   let changed = false;
   for (const field of PROGRESS_FIELDS) {
-    source[field] ||= {};
+    ensureContainer(null, source, field, `progress.${field}`, null);
     if (source[field][itemId] === undefined) continue;
     if (destination[field][itemId] === undefined) destination[field][itemId] = source[field][itemId];
     delete source[field][itemId];
@@ -44,13 +85,13 @@ function moveField(source, destination, itemId) {
  * an existing value in the destination always wins.
  */
 function migrateScopedProgress(state, warnings) {
-  const profile = state.profile ||= {};
-  profile.levels ||= {};
-  profile.owned ||= {};
-  profile.costs ||= {};
-  profile.manualGain ||= {};
-  profile.cropProgress ||= {};
-  profile.toolProgress ||= {};
+  const profile = ensureContainer(state, state, 'profile', 'profile', warnings);
+  ensureContainer(state, profile, 'levels', 'profile.levels', warnings);
+  ensureContainer(state, profile, 'owned', 'profile.owned', warnings);
+  ensureContainer(state, profile, 'costs', 'profile.costs', warnings);
+  ensureContainer(state, profile, 'manualGain', 'profile.manualGain', warnings);
+  ensureContainer(state, profile, 'cropProgress', 'profile.cropProgress', warnings);
+  ensureContainer(state, profile, 'toolProgress', 'profile.toolProgress', warnings);
 
   const selectedCrop = CROPS.some(entry => entry.id === state.selectedCrop)
     ? state.selectedCrop
@@ -84,7 +125,7 @@ function migrateScopedProgress(state, warnings) {
  * that distinction instead of manufacturing empty automatic data.
  */
 function migrateNormalizedSnapshot(state) {
-  const profile = state.profile ||= {};
+  const profile = ensureContainer(state, state, 'profile', 'profile', null);
   if (!Object.hasOwn(profile, 'normalizedSnapshot')) profile.normalizedSnapshot = null;
 }
 
@@ -101,7 +142,7 @@ function migrateNormalizedSnapshot(state) {
  * replacement, so nothing the player already entered is moved or dropped.
  */
 function migrateSetups(state) {
-  const profile = state.profile ||= {};
+  const profile = ensureContainer(state, state, 'profile', 'profile', null);
   profile.setups = profile.setups ? normalizeSetups(profile.setups) : createDefaultSetups();
 }
 
@@ -152,7 +193,7 @@ function migrateRenamedToolKeys(state, warnings) {
  * item upgrades during migration.
  */
 function migrateAccessoryItemState(state) {
-  const profile = state.profile ||= {};
+  const profile = ensureContainer(state, state, 'profile', 'profile', null);
   if (!profile.accessoryItems || typeof profile.accessoryItems !== 'object' || Array.isArray(profile.accessoryItems)) {
     profile.accessoryItems = {};
   }
@@ -166,7 +207,7 @@ function migrateAccessoryItemState(state) {
  * Recombobulator state and its sync/manual provenance.
  */
 function removeAccessoryEnrichmentState(state) {
-  const profile = state.profile ||= {};
+  const profile = ensureContainer(state, state, 'profile', 'profile', null);
   delete profile.enrichmentSpeedOverride;
   if (!profile.accessoryItems || typeof profile.accessoryItems !== 'object' || Array.isArray(profile.accessoryItems)) {
     profile.accessoryItems = {};
@@ -188,7 +229,7 @@ function removeAccessoryEnrichmentState(state) {
  * exposes only the three calculation loadouts.
  */
 function migrateThreeActivitySetups(state) {
-  const profile = state.profile ||= {};
+  const profile = ensureContainer(state, state, 'profile', 'profile', null);
   const setups = normalizeSetups(profile.setups);
 
   const farm = setups.list.find(setup => setup.id === 'normal');
