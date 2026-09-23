@@ -618,3 +618,61 @@
     gap: 3px;
   }
 }
+
+
+/* Upgrade Planner filters. The ranking spans all three phase loadouts, so this
+   row filters the combined recommendation inventory rather than the active tab. */
+.skyblock-redesign .upgrade-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 2px 0 4px;
+}
+
+.skyblock-redesign .upgrade-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  border: 1px solid rgba(125, 160, 134, .28);
+  border-radius: 999px;
+  background: rgba(9, 16, 11, .82);
+  color: #b8c9bc;
+  padding: 7px 11px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.skyblock-redesign .upgrade-filter-chip span {
+  min-width: 18px;
+  border-radius: 999px;
+  background: rgba(125, 160, 134, .12);
+  color: #8fa294;
+  padding: 1px 5px;
+  font-size: 10px;
+  text-align: center;
+}
+
+.skyblock-redesign .upgrade-filter-chip.active {
+  border-color: rgba(127, 191, 150, .62);
+  background: rgba(45, 92, 58, .34);
+  color: #edf7ef;
+}
+
+.skyblock-redesign .upgrade-filter-chip.active span {
+  color: #bfe2c8;
+  background: rgba(127, 191, 150, .18);
+}
+
+@media (max-width: 650px) {
+  .skyblock-redesign .upgrade-filter-bar {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .skyblock-redesign .upgrade-filter-chip {
+    justify-content: space-between;
+  }
+}
