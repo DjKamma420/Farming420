@@ -123,6 +123,24 @@ test('derived cache overwrites legacy manual global and crop end values', () => 
 });
 
 
+test('pet item planner toggles do not count globally without an active setup pet item', () => {
+  const state = baseState();
+  state.profile.levels['pet-item-green-bandana'] = 1;
+  state.profile.owned['pet-item-green-bandana'] = true;
+  const totals = computeTotalsFromEntries(state, [
+    {
+      id: 'pet-item-green-bandana',
+      metric: 'Crop Yield',
+      section: 'pets',
+      cropScope: 'Any',
+      status: 'ACTIVE',
+      max: 1,
+      stepGain: 60,
+    },
+  ], 'melon', 'farm');
+  assert.equal(totals.globalFortune, 0);
+});
+
 test('event-scoped sources only enter totals when their context is active', () => {
   const state = baseState();
   state.profile.levels.normal = 1;
