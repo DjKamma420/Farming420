@@ -1,8 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
+import { createDefaultSetups } from '../src/setups.js';
+
 import {
   applyComputedStatsToState,
+  computeStatTotals,
   computeTotalsFromEntries,
   statAxisFor,
 } from '../src/computed-stats.js';
@@ -122,6 +125,32 @@ test('derived cache overwrites legacy manual global and crop end values', () => 
   assert.equal(state.profile.plannerEconomics.melon.overbloom, snapshot.overbloomByCrop.melon);
 });
 
+
+test('Rose Dragon contributes profile-scaled Fortune and Overbloom as the selected setup pet', () => {
+  const state = baseState();
+  const setups = createDefaultSetups();
+  setups.list[0].slots.pet = {
+    skyblockId: 'ROSE_DRAGON',
+    displayName: 'Rose Dragon Pet',
+    rarity: 'LEGENDARY',
+    petLevel: 200,
+    physicalItemId: 'pet:dragon',
+  };
+  state.profile.setups = setups;
+  state.profile.normalizedSnapshot = {
+    skills: { farming: { level: 60 } },
+    garden: { cropMilestoneTotal: 598 },
+    pets: [{ uuid: 'dragon', type: 'ROSE_DRAGON', rarity: 'LEGENDARY', level: 200, active: true }],
+    provenance: { pets: { status: 'AUTO', sources: [] } },
+  };
+
+  const totals = computeStatTotals(state, 'melon', 'farm');
+  assert.ok(Math.abs(totals.globalFortune - 309.7) < 1e-9);
+  assert.equal(totals.overbloom, 40);
+  assert.equal(totals.derived.roseDragon.active, true);
+  assert.deepEqual(totals.incomplete.globalFortune, []);
+  assert.deepEqual(totals.incomplete.overbloom, []);
+});
 
 test('pet item planner toggles do not count globally without an active setup pet item', () => {
   const state = baseState();
