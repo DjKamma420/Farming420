@@ -123,6 +123,8 @@ Implemented above enumeration:
 - historical account-global Green/Poignant toggles are ignored by computed stats so pet items cannot stack across pets
 - Mantid and Squeaky are now rarity-scaled from the actual setup pieces; Helianthus/Pesterminator/Pesthunter/Pest Vest BPC and additive Pest cooldown reduction are setup-local too
 - Mantid's 10-minute kill stack is explicit runtime context: missing recent-kill state stays incomplete instead of assuming zero or max
+- Mosquito and Slug are now setup-local modeled spawning pets: level-scaled BPC, Mosquito visitor-based Sugar Cane Fortune, and conditional Legendary Slug Sprayonator Fortune
+- Legendary Slug never guesses plot spray state; callers must supply Sprayonator-active context before Repugnant Aroma can be treated as complete
 
 Still required before this area is closed:
 - normal crop / Jacob Contest / Pest Spawn / Pest Kill objective evaluation beyond raw stat deltas
