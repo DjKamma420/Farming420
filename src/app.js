@@ -441,9 +441,12 @@ function plannerCandidates() {
         ? Number(costSource.coins)
         : 0;
       const rel = relativeGainPct(item);
-      const efficiency = cost > 0 ? rel / (cost / 1_000_000) : null;
+      const efficiency = cost > 0 && costSource.costKind !== 'recurring-consumable'
+        ? rel / (cost / 1_000_000)
+        : null;
       return { item, gain, rel, cost, efficiency, costSource };
     })
+    .filter(x => x.costSource.costKind !== 'recurring-consumable')
     .filter(x => x.gain > 0)
     .sort((a,b) => {
       const ae = a.efficiency ?? -1;
@@ -472,16 +475,21 @@ function card(item, compact=false) {
   const cropLimited = item.cropScope !== 'Any';
   const isShard = item.section === 'shards' || item.category === 'Attribute Shard';
   const pricing = upgradePriceSummary(itemStore(item), item);
+  const recurringCost = pricing.costKind === 'recurring-consumable';
   const priceTagCoins = isShard
     ? pricing.unitShardCoins
-    : level >= max
-      ? pricing.entryMarketCoins
-      : pricing.costToMaxCoins ?? pricing.entryMarketCoins;
+    : recurringCost
+      ? pricing.entryMarketCoins ?? pricing.nextCostCoins
+      : level >= max
+        ? pricing.entryMarketCoins
+        : pricing.costToMaxCoins ?? pricing.entryMarketCoins;
   const priceTagLabel = isShard
     ? '1 shard'
-    : level >= max
-      ? 'replacement'
-      : pricing.costToMaxCoins != null ? 'to max' : 'item';
+    : recurringCost
+      ? (pricing.costDisplayLabel || 'per use')
+      : level >= max
+        ? 'replacement'
+        : pricing.costToMaxCoins != null ? 'to max' : 'item';
   return `
     <button class="item-card ${status} ${isShard ? 'shard-card' : ''} ${compact ? 'compact' : ''}" data-open="${esc(item.id)}">
       <div class="card-layer"></div>
@@ -783,7 +791,7 @@ function gardenAccountProgression() {
 function effectsPage() {
   const permanent = visibleUpgrades('account').filter(x => ['Consumable','Chocolate Factory'].includes(x.category));
   const temporary = visibleUpgrades('buffs');
-  return `${pageHeader('Effects', 'Farming Effects', 'Permanent farming effects and temporary buffs, mixins, cakes and event effects in one place.')}
+  return `${pageHeader('Effects', 'Farming Effects', 'Permanent farming effects and temporary buffs, mixins, cakes and event effects in one place. Temporary consumable price tags are per activation, not one-time upgrade costs.')}
     <div class="group">
       <div class="section-row"><div><h2>Permanent effects</h2><p>Account-wide consumables and permanent effect sources.</p></div></div>
       <div class="card-grid">${permanent.map(x=>card(x)).join('') || '<div class="empty">No matches.</div>'}</div>
@@ -1150,16 +1158,20 @@ function drawer() {
   const store = itemStore(item);
   const costSource = resolveUpgradeCost(store, item.id);
   const pricing = upgradePriceSummary(store, item);
-  const costText = pricing.nextCostCoins != null
-    ? formatApproxCoins(pricing.nextCostCoins)
+  const recurringCost = pricing.costKind === 'recurring-consumable';
+  const displayedNextCost = recurringCost ? pricing.entryMarketCoins : pricing.nextCostCoins;
+  const costText = displayedNextCost != null
+    ? formatApproxCoins(displayedNextCost)
     : costSource.acquisitionMode === 'EARNED'
       ? 'Earned progression'
       : '—';
-  const toMaxText = level >= max
-    ? 'Maxed'
-    : pricing.costToMaxCoins != null
-      ? `${pricing.costToMaxComplete ? '' : '≥ '}${formatApproxCoins(pricing.costToMaxCoins)}`
-      : '—';
+  const toMaxText = recurringCost
+    ? 'Recurring'
+    : level >= max
+      ? 'Maxed'
+      : pricing.costToMaxCoins != null
+        ? `${pricing.costToMaxComplete ? '' : '≥ '}${formatApproxCoins(pricing.costToMaxCoins)}`
+        : '—';
   const toMaxNote = [
     pricing.remainingEarnedSteps ? `${pricing.remainingEarnedSteps} earned step${pricing.remainingEarnedSteps === 1 ? '' : 's'}` : '',
     pricing.remainingUnknownSteps ? `${pricing.remainingUnknownSteps} unpriced step${pricing.remainingUnknownSteps === 1 ? '' : 's'}` : '',
@@ -1178,8 +1190,8 @@ function drawer() {
     </div>
     <div class="drawer-section"><h3>Evaluation</h3><div class="detail-grid"><div><span>Next step</span><strong>+${formatNumber(gainFor(item))}</strong></div><div><span>Relative effect</span><strong>${relativeGainPct(item).toFixed(2)}%</strong></div></div>
       <div class="detail-grid">
-        <div><span>Next cost</span><strong>${esc(costText)}</strong><small>${esc(costOriginNote(costSource))}</small></div>
-        <div><span>Cost to max</span><strong>${esc(toMaxText)}</strong><small>${esc(toMaxNote || (pricing.costToMaxComplete ? 'all remaining priced steps included' : 'remaining market route incomplete'))}</small></div>
+        <div><span>${recurringCost ? 'Per-use cost' : 'Next cost'}</span><strong>${esc(costText)}</strong><small>${esc(costOriginNote(costSource))}</small></div>
+        <div><span>${recurringCost ? 'Cost model' : 'Cost to max'}</span><strong>${esc(toMaxText)}</strong><small>${esc(recurringCost ? 'repaid on every activation; excluded from one-time upgrade payback ranking' : (toMaxNote || (pricing.costToMaxComplete ? 'all remaining priced steps included' : 'remaining market route incomplete')))}</small></div>
       </div>
       ${isShard ? `<div class="detail-grid shard-price-details">
         <div><span>1 shard</span><strong>${esc(pricing.unitShardCoins != null ? formatApproxCoins(pricing.unitShardCoins) : '—')}</strong></div>
