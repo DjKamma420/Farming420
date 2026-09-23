@@ -942,7 +942,7 @@ function enhancePlanner() {
   const activeFilter = selectedUpgradeFilter();
   const rows = allRows.filter(row => matchesUpgradeFilter(row.item, activeFilter));
   const rankingTitle = 'Recommended upgrades · all sets';
-  const rankingHelp = 'Farming, Pest Spawning and Pest Killing are evaluated together. Global upgrades appear once. Crop-tool upgrades are shared between Farming and Spawning. Gear is merged only when the setup slots reference the same physical items; separate physical sets stay separate.';
+  const rankingHelp = `Farming, Pest Spawning and Pest Killing are evaluated together. Global upgrades appear once. Crop-tool upgrades are shared between Farming and Spawning. Gear is merged only when the setup slots reference the same physical items; separate physical sets stay separate. Marginal value and payback use the common ${compactCoins(PLANNER_BENCHMARK_COINS_PER_HOUR)}/h affected-income benchmark.`;
 
   original.classList.add('planner-v1-source');
   const panel = document.createElement('div');
