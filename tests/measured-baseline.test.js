@@ -149,10 +149,10 @@ test('the player is never asked for what the data already knows', () => {
   assert.equal(MEASURED_FIELDS.some(field => /per break/i.test(field.label)), false);
 });
 
-test('the field list stays the one the panel renders', () => {
-  assert.equal(MEASURED_FIELDS.length, 4);
-  const optional = MEASURED_FIELDS.filter(field => field.optional).map(field => field.key);
-  assert.deepEqual(optional, ['feastMaterialCoins']);
+test('the editable field list contains throughput only, never coin prices', () => {
+  assert.equal(MEASURED_FIELDS.length, 2);
+  assert.deepEqual(MEASURED_FIELDS.map(field => field.key), ['breaksPerSecond', 'uptimePercent']);
+  assert.equal(MEASURED_FIELDS.some(field => /coin|price/i.test(`${field.key} ${field.label}`)), false);
   for (const field of MEASURED_FIELDS) {
     assert.ok(field.label && field.hint && field.step, field.key);
   }
