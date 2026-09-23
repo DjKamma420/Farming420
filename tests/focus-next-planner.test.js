@@ -14,8 +14,10 @@ test('Focus on next is a first-class navigation page', () => {
   assert.match(activity, /MODE_SWITCH_PAGES = new Set\(\[[^\]]*'focus'/);
 });
 
-test('Upgrade Planner no longer mixes earned progression into upgrade rows', () => {
-  assert.match(planner, /benchmarkEvaluatedRows\(raw\)\.filter\(row => row\.acquisitionMode !== 'EARNED'\)/);
+test('Upgrade Planner combines all setup rows without mixing earned progression into upgrades', () => {
+  assert.match(planner, /allSetBenchmarkRows\(raw\)\.filter\(row => row\.acquisitionMode !== 'EARNED'\)/);
+  assert.match(planner, /PLANNER_ACTIVITY_MODES/);
+  assert.match(planner, /aggregateUpgradeRows/);
   const rendered = planner.match(/panel\.innerHTML = `\$\{benchmarkPanel\(raw\)\}[\s\S]*?<div class="planner-list revenue-list">/);
   assert.ok(rendered, 'planner benchmark markup not found');
   assert.doesNotMatch(rendered[0], /earnedAssumptionsPanel|economicsPanel/);
