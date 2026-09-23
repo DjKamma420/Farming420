@@ -17,6 +17,34 @@ repository came to carry them.
 
 Pass date: **2026-09-16**.
 
+## Follow-up verification — 2026-09-23
+
+A targeted live-source pass rechecked the Garden Chip table and the two gear
+entries that were still backed by stale Fandom links.
+
+- All ten Garden Chips now use the maintained community wiki's current
+  `Garden_Chips` page and carry `lastVerified: 2026-09-23`. The stored
+  Legendary per-level values match the current table: Cropshot +5 FF,
+  Evergreen +3% base Greenhouse crops, Hypercharge +5% eligible temporary FF,
+  Mechamind +2.5% tool XP, Overdrive +7 Crop Fortune for active contest crops,
+  Quickdraw -2.5% visitor time, Rarefinder +2.5 Overbloom, Sowledge +1.5
+  Farming Wisdom, Synthesis +2% base Crop Analyzer Copper, and Vermin Vaporizer
+  +5 Bonus Pest Chance.
+- The same current page explicitly excludes Refined Dark Cacao Truffle,
+  Harvest Harbinger Potion, Melon Juice Mixin, Anita accessories and Overdrive
+  from Hypercharge. The stale Cacao `hypercharge: true` flag was corrected.
+- Blossom Florist is +22.5 FF per worn piece at 2,500 visitors, so four pieces
+  contribute +90 FF from the visitor bonus. The equipment also has +28 base FF;
+  that base stat is distinct and must not be folded into the Florist entry.
+- Helianthus Armor currently totals +150 base Farming Fortune and +80 Bonus Pest
+  Chance, with Feast granting +75 additional Farming Fortune at four pieces.
+
+Sources:
+<https://hypixelskyblock.minecraft.wiki/w/Garden_Chips>,
+<https://hypixelskyblock.minecraft.wiki/w/Blossom_Set>,
+<https://hypixelskyblock.minecraft.wiki/w/Helianthus_Armor>.
+
+
 ## The tool rename
 
 Hypixel renamed the specialised farming tools. `src/data.js` had the old names,
