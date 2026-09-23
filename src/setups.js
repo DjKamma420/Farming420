@@ -16,6 +16,7 @@
 
 import { baseRarityFromDisplayed } from './setup-rarity.js';
 import { petLevelFromExperience } from './mooshroom-cow.js';
+import { clampPetLevel, petLevelBounds } from './setup-pet-catalog.js';
 
 export const SETUPS_MODEL_VERSION = 3;
 
@@ -156,6 +157,44 @@ function readableItemName(value) {
   return readableWords(value);
 }
 
+function snapshotPetLevel(pet) {
+  const explicit = clampPetLevel(pet?.type, pet?.level);
+  if (explicit !== null) return explicit;
+
+  const bounds = petLevelBounds(pet?.type);
+  // Standard pets use the verified level-1..100 XP curve already used by the
+  // Mooshroom calculator. Rose Dragon has a distinct 100..200 range; until a
+  // verified XP curve is modeled, unknown Rose Dragon XP must stay unknown.
+  if (bounds?.max > 100) return null;
+  return petLevelFromExperience(pet?.experience, pet?.rarity ?? pet?.tier ?? 'COMMON');
+}
+
+export function itemRecordsFromSnapshotPet(pet) {
+  if (!pet || typeof pet !== 'object') return { pet: null, petItem: null };
+  const rarity = pet.rarity ?? pet.tier ?? null;
+  const petPhysicalId = pet.uuid ? `pet:${pet.uuid}` : null;
+  const petRecord = {
+    ...createEmptyItem(),
+    skyblockId: pet.type ?? null,
+    displayName: readablePetName(pet.type) || String(pet.type || ''),
+    rarity,
+    petLevel: snapshotPetLevel(pet),
+    source: ITEM_SOURCE.SYNC,
+    physicalItemId: petPhysicalId,
+  };
+  const petItem = pet.heldItem ? {
+    ...createEmptyItem(),
+    skyblockId: pet.heldItem,
+    displayName: readableItemName(pet.heldItem) || pet.heldItem,
+    source: ITEM_SOURCE.SYNC,
+    // A held item belongs to this concrete pet in the profile payload.
+    // This links repeated phase references without pretending the API gave
+    // the held item its own UUID.
+    physicalItemId: pet.uuid ? `pet-held:${pet.uuid}` : null,
+  } : null;
+  return { pet: petRecord, petItem };
+}
+
 function gemListFrom(gems) {
   if (!gems || typeof gems !== 'object') return [];
   return Object.entries(gems)
@@ -283,33 +322,9 @@ export function prefillSetupFromSnapshot(setup, snapshot, { overwrite = false } 
 
   const activePet = pets.find(pet => pet.active === true);
   if (activePet) {
-    const rarity = activePet.rarity ?? activePet.tier ?? null;
-    const explicitLevel = Number(activePet.level);
-    const derivedLevel = Number.isFinite(explicitLevel)
-      ? Math.max(1, Math.min(100, Math.floor(explicitLevel)))
-      : petLevelFromExperience(activePet.experience, rarity || 'COMMON');
-    const petPhysicalId = activePet.uuid ? `pet:${activePet.uuid}` : null;
-    assign('pet', {
-      ...createEmptyItem(),
-      skyblockId: activePet.type ?? null,
-      displayName: readablePetName(activePet.type) || String(activePet.type || ''),
-      rarity,
-      petLevel: derivedLevel,
-      source: ITEM_SOURCE.SYNC,
-      physicalItemId: petPhysicalId,
-    });
-    if (activePet.heldItem) {
-      assign('petItem', {
-        ...createEmptyItem(),
-        skyblockId: activePet.heldItem,
-        displayName: readableItemName(activePet.heldItem) || activePet.heldItem,
-        source: ITEM_SOURCE.SYNC,
-        // A held item belongs to this concrete pet in the profile payload.
-        // This links repeated phase references without pretending the API gave
-        // the held item its own UUID.
-        physicalItemId: activePet.uuid ? `pet-held:${activePet.uuid}` : null,
-      });
-    }
+    const records = itemRecordsFromSnapshotPet(activePet);
+    assign('pet', records.pet);
+    assign('petItem', records.petItem);
   }
 
   return { setup: next, filled, armorSeen: armor.length, equipmentSeen: equipment.length };
