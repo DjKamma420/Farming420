@@ -15,7 +15,7 @@ test('upgrade drawer shows next cost, cost to max and shard-specific value field
   assert.match(app, /<span>Next cost<\/span>/);
   assert.match(app, /<span>Cost to max<\/span>/);
   assert.match(app, /<span>1 shard<\/span>/);
-  assert.match(app, /<span>Current level value<\/span>/);
+  assert.match(app, /<span>Current level replacement value<\/span>/);
   assert.match(app, /<span>Shards to max<\/span>/);
 });
 
