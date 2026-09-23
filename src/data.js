@@ -147,7 +147,8 @@ export const UPGRADES = [
     "rawMarginal": 4,
     "hypercharge": false,
     "notes": "+4 Farming Fortune per level, up to +240.",
-    "source": "https://wiki.eliteskyblock.com/Farming_Fortune",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune",
+    "lastVerified": "2026-09-23",
     "workbookRank": 29
   },
   {
@@ -165,7 +166,8 @@ export const UPGRADES = [
     "rawMarginal": 4,
     "hypercharge": false,
     "notes": "+4 FF per tier, up to +60.",
-    "source": "https://wiki.eliteskyblock.com/Farming_Fortune",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune",
+    "lastVerified": "2026-09-23",
     "workbookRank": 30
   },
   {
@@ -183,7 +185,8 @@ export const UPGRADES = [
     "rawMarginal": 3,
     "hypercharge": false,
     "notes": "+3 FF per owned plot; all 24 = +72.",
-    "source": "https://wiki.eliteskyblock.com/Farming_Fortune",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune",
+    "lastVerified": "2026-09-23",
     "workbookRank": 32
   },
   {
@@ -200,8 +203,9 @@ export const UPGRADES = [
     "manualDefault": null,
     "rawMarginal": 4,
     "hypercharge": false,
-    "notes": "+4 FF per level, max +40; time-gated.",
-    "source": "https://wiki.eliteskyblock.com/Farming_Fortune",
+    "notes": "+4 FF per level, max +40; time-gated and only applied while on The Garden.",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune",
+    "lastVerified": "2026-09-23",
     "workbookRank": 31
   },
   {
@@ -269,12 +273,13 @@ export const UPGRADES = [
     "cropScope": "Any",
     "status": "ACTIVE",
     "max": 1,
-    "stepGain": 5,
+    "stepGain": 4,
     "manualDefault": null,
-    "rawMarginal": 5,
+    "rawMarginal": 4,
     "hypercharge": false,
-    "notes": "Perfect Peridot contributes half value in Relic of Power; commonly +5 FF.",
-    "source": "https://wiki.eliteskyblock.com/Farming_Fortune",
+    "notes": "A Relic of Power with only a Perfect Peridot grants +4 FF. The +5 FF reference requires a recombobulated Relic with all Perfect Gemstones, so do not award +5 for Peridot alone.",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune",
+    "lastVerified": "2026-09-23",
     "workbookRank": 24
   },
   {
@@ -293,7 +298,8 @@ export const UPGRADES = [
     "rawMarginal": 30,
     "hypercharge": false,
     "notes": "Cropie → Squash → Fermento → Helianthus progression. Helianthus replaces this bonus when upgraded; do not stack tiers.",
-    "source": "https://wiki.eliteskyblock.com/Farming_Fortune",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune",
+    "lastVerified": "2026-09-23",
     "workbookRank": 14
   },
   {
@@ -312,7 +318,8 @@ export const UPGRADES = [
     "rawMarginal": 40,
     "hypercharge": false,
     "notes": "Final tier of the Cropie → Squash → Fermento → Helianthus accessory progression; +40 FF while breaking crops.",
-    "source": "https://hypixel-skyblock.fandom.com/wiki/Farming_Fortune",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune",
+    "lastVerified": "2026-09-23",
     "workbookRank": 13
   },
   {
@@ -330,7 +337,8 @@ export const UPGRADES = [
     "rawMarginal": 5,
     "hypercharge": false,
     "notes": "+5 Crop Fortune per level, max +45 for the selected crop.",
-    "source": "https://wiki.eliteskyblock.com/Farming_Fortune",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune",
+    "lastVerified": "2026-09-23",
     "workbookRank": 25
   },
   {
@@ -348,7 +356,8 @@ export const UPGRADES = [
     "rawMarginal": 0,
     "hypercharge": false,
     "notes": "Nonlinear/current-PB dependent; enter marginal Crop Fortune manually. Max reference +100.",
-    "source": "https://wiki.eliteskyblock.com/Farming_Fortune",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune",
+    "lastVerified": "2026-09-23",
     "workbookRank": null
   },
   {
@@ -438,7 +447,8 @@ export const UPGRADES = [
     "rawMarginal": 0,
     "hypercharge": false,
     "notes": "Scales with Garden milestone/selected crop. Max reference +92 Crop Fortune; enter the next marginal delta manually.",
-    "source": "https://wiki.eliteskyblock.com/Farming_Fortune",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune",
+    "lastVerified": "2026-09-23",
     "workbookRank": null
   },
   {
@@ -476,7 +486,8 @@ export const UPGRADES = [
     "rawMarginal": 25,
     "hypercharge": false,
     "notes": "Up to +25 crop-specific fortune when its boosted contest condition is met.",
-    "source": "https://wiki.eliteskyblock.com/Farming_Fortune",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune",
+    "lastVerified": "2026-09-23",
     "workbookRank": null
   },
   {
@@ -512,7 +523,8 @@ export const UPGRADES = [
     "rawMarginal": 25,
     "hypercharge": false,
     "notes": "+25 Cocoa Beans Fortune.",
-    "source": "https://wiki.eliteskyblock.com/Farming_Fortune",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune",
+    "lastVerified": "2026-09-23",
     "workbookRank": null
   },
   {
@@ -530,7 +542,8 @@ export const UPGRADES = [
     "rawMarginal": 1,
     "hypercharge": false,
     "notes": "0.27 changed this line from Global Fortune to Cocoa Fortune.",
-    "source": "https://hypixel.net/threads/hypixel-skyblock-0-27-torrhus-canyon-critter-safari.6132090/",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune",
+    "lastVerified": "2026-09-23",
     "workbookRank": null
   },
   {
@@ -548,7 +561,8 @@ export const UPGRADES = [
     "rawMarginal": 2,
     "hypercharge": false,
     "notes": "+2 FF per Cultivating tier; max +20 at Cultivating X.",
-    "source": "https://hypixelskyblock.minecraft.wiki/w/Cultivating",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune",
+    "lastVerified": "2026-09-23",
     "workbookRank": 34
   },
   {
@@ -566,7 +580,8 @@ export const UPGRADES = [
     "rawMarginal": 12.5,
     "hypercharge": false,
     "notes": "0.27 restored Harvesting VI to +75 total. Axes now use Harvesting too; Sunder was removed.",
-    "source": "https://hypixel.net/threads/aug-3-0-27-alpha-changes-2.6134812/",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune",
+    "lastVerified": "2026-09-23",
     "workbookRank": 21
   },
   {
@@ -584,7 +599,8 @@ export const UPGRADES = [
     "rawMarginal": 1,
     "hypercharge": false,
     "notes": "+1 FF per book, up to 5.",
-    "source": "https://wiki.eliteskyblock.com/Farming_Fortune",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune",
+    "lastVerified": "2026-09-23",
     "workbookRank": 36
   },
   {
@@ -602,7 +618,8 @@ export const UPGRADES = [
     "rawMarginal": 20,
     "hypercharge": false,
     "notes": "Max-rarity reference +20 FF; compare to Bountiful if optimizing coins rather than collection.",
-    "source": "https://wiki.eliteskyblock.com/Farming_Fortune",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune",
+    "lastVerified": "2026-09-23",
     "workbookRank": 18
   },
   {
@@ -620,7 +637,8 @@ export const UPGRADES = [
     "rawMarginal": 10,
     "hypercharge": false,
     "notes": "Max-rarity reference +10 FF; can win for coins despite lower Fortune.",
-    "source": "https://wiki.eliteskyblock.com/Farming_Fortune",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune",
+    "lastVerified": "2026-09-23",
     "workbookRank": 23
   },
   {
@@ -633,12 +651,13 @@ export const UPGRADES = [
     "cropScope": "Any",
     "status": "ACTIVE",
     "max": 1,
-    "stepGain": 30,
+    "stepGain": 32,
     "manualDefault": null,
-    "rawMarginal": 30,
+    "rawMarginal": 32,
     "hypercharge": false,
-    "notes": "Tool slot total depends on tool/rarity; reference +20/+30. Override manually if your tool has a different total.",
-    "source": "https://wiki.eliteskyblock.com/Farming_Fortune",
+    "notes": "Current max reference: a Level 50 Mk. III specialized Farming Tool with all four Perfect Peridot slots totals +32 FF. Lower tiers/tools can differ, so use actual item state for marginal comparisons.",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune",
+    "lastVerified": "2026-09-23",
     "workbookRank": 15
   },
   {
@@ -752,7 +771,8 @@ export const UPGRADES = [
     "rawMarginal": 120,
     "hypercharge": false,
     "notes": "Full max-rarity set reference +120 FF.",
-    "source": "https://wiki.eliteskyblock.com/Farming_Fortune",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune",
+    "lastVerified": "2026-09-23",
     "workbookRank": 4
   },
   {
@@ -769,8 +789,9 @@ export const UPGRADES = [
     "manualDefault": null,
     "rawMarginal": 80,
     "hypercharge": false,
-    "notes": "Four armor slots reference +80 FF total.",
-    "source": "https://wiki.eliteskyblock.com/Farming_Fortune",
+    "notes": "Eight Perfect Peridot slots across a full maxed Helianthus set total +80 FF.",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune",
+    "lastVerified": "2026-09-23",
     "workbookRank": 6
   },
   {
@@ -788,7 +809,8 @@ export const UPGRADES = [
     "rawMarginal": 48,
     "hypercharge": false,
     "notes": "Reference +48 FF across four pieces; Bonus Pest Chance can be separately disabled with Pesthunter accessory line.",
-    "source": "https://wiki.eliteskyblock.com/Farming_Fortune",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune",
+    "lastVerified": "2026-09-23",
     "workbookRank": 11
   },
   {
@@ -879,7 +901,8 @@ export const UPGRADES = [
     "rawMarginal": 60,
     "hypercharge": false,
     "notes": "+4 FF per Garden level, up to +60 at Garden 15. Pet-item replacement, not stackable with another pet item.",
-    "source": "https://wiki.eliteskyblock.com/Farming_Fortune",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune",
+    "lastVerified": "2026-09-23",
     "workbookRank": 9
   },
   {
@@ -975,7 +998,8 @@ export const UPGRADES = [
     "rawMarginal": 200,
     "hypercharge": true,
     "notes": "+5 FF/pest, cap +200; Hypercharge can amplify it.",
-    "source": "https://hypixel.net/threads/aug-3-0-27-alpha-changes-2.6134812/",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune",
+    "lastVerified": "2026-09-23",
     "workbookRank": 2
   },
   {
@@ -1010,8 +1034,9 @@ export const UPGRADES = [
     "manualDefault": null,
     "rawMarginal": 15,
     "hypercharge": false,
-    "notes": "+15 FF on God Potion. Kept non-Hypercharge in this model pending behavior confirmation.",
-    "source": "https://hypixel-skyblock.fandom.com/wiki/Melon_Juice_Mixin",
+    "notes": "+15 FF for the God Potion duration (or direct Mixin duration with Cookie Buff). Current Garden Chips documentation explicitly excludes Melon Juice from Hypercharge.",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Melon_Juice_Mixin",
+    "lastVerified": "2026-09-23",
     "workbookRank": 20
   },
   {
@@ -1030,7 +1055,8 @@ export const UPGRADES = [
     "rawMarginal": 25,
     "hypercharge": true,
     "notes": "+25 FF during Spring; Hypercharge-sensitive.",
-    "source": "https://wiki.eliteskyblock.com/Farming_Fortune",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune",
+    "lastVerified": "2026-09-23",
     "workbookRank": 16
   },
   {
@@ -1049,7 +1075,8 @@ export const UPGRADES = [
     "rawMarginal": 25,
     "hypercharge": true,
     "notes": "+25 FF when the Farming Fortune roll is active.",
-    "source": "https://wiki.eliteskyblock.com/Farming_Fortune",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune",
+    "lastVerified": "2026-09-23",
     "workbookRank": 17
   },
   {
@@ -1067,7 +1094,8 @@ export const UPGRADES = [
     "rawMarginal": 0,
     "hypercharge": true,
     "notes": "+5 FF while active; can be kept up nearly permanently.",
-    "source": "https://wiki.eliteskyblock.com/Farming_Fortune",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune",
+    "lastVerified": "2026-09-23",
     "workbookRank": null
   },
   {
@@ -1085,7 +1113,8 @@ export const UPGRADES = [
     "rawMarginal": 50,
     "hypercharge": false,
     "notes": "+50 FF potion effect; model excludes Hypercharge interaction.",
-    "source": "https://wiki.eliteskyblock.com/Farming_Fortune",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune",
+    "lastVerified": "2026-09-23",
     "workbookRank": 10
   },
   {
@@ -1103,7 +1132,8 @@ export const UPGRADES = [
     "rawMarginal": 5,
     "hypercharge": false,
     "notes": "+5 FF per Carnival perk tier, max +25 during Harvest Feast.",
-    "source": "https://hypixel.net/threads/march-31-harvest-feast-event.6080784/",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune",
+    "lastVerified": "2026-09-23",
     "workbookRank": null
   },
   {
@@ -1554,7 +1584,8 @@ export const UPGRADES = [
     "rawMarginal": 30,
     "hypercharge": false,
     "notes": "Temporary cocoa-only Fortune stack. 0.27 changed Dark Cacao from Global Fortune to Cocoa Fortune. Current Garden Chips documentation explicitly excludes Refined Dark Cacao Truffle from Hypercharge.",
-    "source": "https://hypixel.net/threads/hypixel-skyblock-0-27-torrhus-canyon-critter-safari.6132090/",
+    "source": "https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune",
+    "lastVerified": "2026-09-23",
     "workbookRank": null
   },
   {
