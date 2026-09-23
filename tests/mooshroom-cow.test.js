@@ -27,6 +27,15 @@ test('pet XP resolves the Mooshroom Cow level used by the perk', () => {
   assert.equal(petLevelFromExperience(1_000_000_000, 'LEGENDARY'), 100);
 });
 
+test('the shared pet XP helper supports a verified level-200 extension without changing level-100 pets', () => {
+  const options = { maxLevel: 200, extraLevelXp: 1_886_700 };
+  assert.equal(petLevelFromExperience(25_353_229, 'LEGENDARY', options), 99);
+  assert.equal(petLevelFromExperience(25_353_230, 'LEGENDARY', options), 100);
+  assert.equal(petLevelFromExperience(27_239_930, 'LEGENDARY', options), 101);
+  assert.equal(petLevelFromExperience(214_023_230, 'LEGENDARY', options), 200);
+  assert.equal(petLevelFromExperience(214_023_230, 'LEGENDARY'), 100);
+});
+
 test('Farming Strength threshold scales from 39.8 at level 1 to 20 at level 100', () => {
   assert.equal(mooshroomStrengthRequirement(1), 39.8);
   assert.equal(mooshroomStrengthRequirement(100), 20);
