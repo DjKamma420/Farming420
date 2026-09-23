@@ -106,6 +106,9 @@ export function packArtNodeFor(item, label = '') {
   return image;
 }
 
+/** Announces that the art manifest is available. `item-art-coverage.js` listens. */
+export const ITEM_ART_MANIFEST_READY_EVENT = 'farming420:item-art-manifest-ready';
+
 /**
  * Loads the manifest once, then lets the coverage pass run again.
  *
@@ -115,6 +118,13 @@ export function packArtNodeFor(item, label = '') {
  * once, here, and only once -- repeating it on every mutation would be two
  * modules taking turns rebuilding the same node, which is a hang, not a
  * refresh.
+ *
+ * The wake-up is its own event rather than `farming420:state-changed`. Nothing
+ * about the player's state changed -- a file finished downloading -- and that
+ * event makes the core reload storage and rebuild the entire app, which was
+ * measured as a whole extra boot render just to repaint some icons. The
+ * coverage layer cannot be woken by the DOM edit above either: its observer
+ * watches `childList` only, so clearing a `data-` attribute is invisible to it.
  */
 async function adoptOnce() {
   manifest = await loadItemAssetManifest().catch(() => null);
@@ -122,7 +132,7 @@ async function adoptOnce() {
   for (const container of document.querySelectorAll('[data-coverage-art]')) {
     delete container.dataset.coverageArt;
   }
-  window.dispatchEvent(new Event('farming420:state-changed'));
+  window.dispatchEvent(new Event(ITEM_ART_MANIFEST_READY_EVENT));
 }
 
 if (typeof document !== 'undefined') adoptOnce();

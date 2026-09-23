@@ -2,7 +2,7 @@ import { STORAGE_KEY } from './config.js';
 import { UPGRADES } from './data.js';
 import { loadItemCatalog } from './item-catalog.js';
 import { armorItemSvgMarkup, isArmorItem } from './armor-item-art.js';
-import { packArtNodeFor } from './pack-item-art.js';
+import { ITEM_ART_MANIFEST_READY_EVENT, packArtNodeFor } from './pack-item-art.js';
 import { knownSkyblockHeadTexture } from './skull-art.js';
 
 export const REFORGE_ITEM_IDS = Object.freeze({
@@ -164,6 +164,57 @@ function genericMaterialSvg(item, label) {
   return span;
 }
 
+/**
+ * Two initials for an item whose art could not be produced.
+ *
+ * Written here rather than imported from `item-art-ui.js`: that is a DOM
+ * enhancer, and pulling its boot into this module's graph is rule 10 of
+ * docs/RENDER_FREEZE_SAFETY.md. The two art systems keep separate namespaces on
+ * purpose, so they cannot remove each other's nodes.
+ */
+function coverageInitials(value) {
+  const words = String(value || '').replace(/[_-]+/g, ' ').trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return '?';
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return `${words[0][0] || ''}${words[1][0] || ''}`.toUpperCase();
+}
+
+/**
+ * The last resort in docs/ITEM_ART_COVERAGE.md, step 7.
+ *
+ * Only reached when a head texture failed to load *and* nothing further down
+ * the chain applies. It is deliberately not used on the normal path, where a
+ * chain that yields nothing still means "place no art": giving every such card
+ * a letter badge would be a design change across the app, not a repair.
+ */
+function letterArtNode(item, label) {
+  const span = document.createElement('span');
+  span.className = 'coverage-item-art coverage-letter-art';
+  span.textContent = coverageInitials(label || item?.name || item?.id);
+  span.setAttribute('role', 'img');
+  span.setAttribute('aria-label', `${label || item?.name || 'SkyBlock item'} texture unavailable`);
+  return span;
+}
+
+/**
+ * Everything in the art precedence below the player-head texture.
+ *
+ * Shared so the failure path cannot drift from the normal one: when a head
+ * texture does not load, the card must fall to exactly the model it would have
+ * had if the texture had never been offered.
+ */
+function nonSkullArtNode(item, label) {
+  // Hypixel does not currently ship Resource Pack models for armour. The
+  // official item resource does publish the actual item material and leather
+  // dye, so armour must use that model instead of a Cropie/Fermento/etc. crop
+  // icon that merely shares the set name.
+  if (isArmorItem(item)) return armorMaterialNode(item, label);
+
+  const packNode = packArtNodeFor(item, label);
+  if (packNode) return packNode;
+  return genericMaterialSvg(item, label);
+}
+
 export function itemArtNode(item, label = '') {
   if (typeof document === 'undefined' || !item) return null;
   const url = skinTextureUrl(item);
@@ -176,7 +227,23 @@ export function itemArtNode(item, label = '') {
     const fail = () => {
       if (failed) return;
       failed = true;
-      span.remove();
+      // Continue down the precedence chain in docs/ITEM_ART_COVERAGE.md instead
+      // of abandoning it. Deleting the node left the card with no icon at all
+      // and the container still stamped `data-coverage-art`, so the next
+      // coverage pass -- which only runs on a DOM change that may never come --
+      // was the only thing that could ever put anything back.
+      //
+      // This is not an exotic path in an offline-capable PWA: offline, every
+      // head texture fails, and all twenty-two Accessories icons were measured
+      // draining away over ~1.3 s until none were left.
+      //
+      // Swapping keeps the node a `.coverage-item-art`, which the observer in
+      // `boot()` explicitly ignores, so this cannot wake the pass that placed it.
+      // A letter badge rather than nothing when the chain runs out. Removing
+      // the node left a stamped container still carrying `has-coverage-item-art`
+      // -- an empty 42x42 hole styled as though it were filled. Measured on
+      // Accessories: 18 of 22 cards ended that way.
+      span.replaceWith(nonSkullArtNode(item, label) || letterArtNode(item, label));
     };
     for (const layerName of ['face', 'hat']) {
       const layer = document.createElement('img');
@@ -192,15 +259,7 @@ export function itemArtNode(item, label = '') {
     return span;
   }
 
-  // Hypixel does not currently ship Resource Pack models for armour. The
-  // official item resource does publish the actual item material and leather
-  // dye, so armour must use that model instead of a Cropie/Fermento/etc. crop
-  // icon that merely shares the set name.
-  if (isArmorItem(item)) return armorMaterialNode(item, label);
-
-  const packNode = packArtNodeFor(item, label);
-  if (packNode) return packNode;
-  return genericMaterialSvg(item, label);
+  return nonSkullArtNode(item, label);
 }
 
 function readState(storage = globalThis.localStorage) {
@@ -409,6 +468,7 @@ function boot() {
     }).observe(root, { childList: true, subtree: true });
   }
   window.addEventListener('farming420:state-changed', queueApply);
+  window.addEventListener(ITEM_ART_MANIFEST_READY_EVENT, queueApply);
 }
 
 if (typeof document !== 'undefined' && typeof window !== 'undefined') {

@@ -160,3 +160,29 @@ if [[ "$IDEMPOTENCE_VERDICT" != IDEMPOTENCE_OK* ]]; then
 fi
 
 echo "Idempotence smoke test passed: re-applying the same state on $IDEMPOTENCE_PAGES pages changed nothing."
+
+ITEM_ART_DOM="${RUNNER_TEMP:-/tmp}/farming420-item-art-dom.html"
+run_chrome_dump "${BASE_URL}scripts/browser-item-art-smoke.html" "$ITEM_ART_DOM" 20000
+
+ITEM_ART_VERDICT="$(grep -o 'ITEM_ART_[A-Z]* portraits=[0-9]*' "$ITEM_ART_DOM" | head -n 1 || true)"
+if [[ -z "$ITEM_ART_VERDICT" ]]; then
+  echo "The item art harness produced no verdict; it did not finish" >&2
+  sed -n '1,80p' "$ITEM_ART_DOM" >&2 || true
+  exit 1
+fi
+
+ITEM_ART_PORTRAITS="${ITEM_ART_VERDICT##*portraits=}"
+if (( ITEM_ART_PORTRAITS < 5 )); then
+  echo "The item art harness only saw $ITEM_ART_PORTRAITS portrait(s); it is not testing coverage" >&2
+  sed -n '1,80p' "$ITEM_ART_DOM" >&2 || true
+  exit 1
+fi
+
+if [[ "$ITEM_ART_VERDICT" != ITEM_ART_OK* ]]; then
+  echo "An item portrait is empty -- the precedence chain in docs/ITEM_ART_COVERAGE.md was abandoned" >&2
+  sed -n '1,80p' "$ITEM_ART_DOM" >&2 || true
+  exit 1
+fi
+
+echo "Item art smoke test passed: all $ITEM_ART_PORTRAITS item portraits still hold art."
+

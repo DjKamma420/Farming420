@@ -49,6 +49,22 @@
   image-rendering: pixelated;
 }
 
+.coverage-letter-art {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .04em;
+  color: var(--muted, #9bb0a3);
+  background: var(--panel2, #12241a);
+  border: 1px solid var(--line, #24402f);
+  border-radius: 8px;
+  /* The badge is text, not a sprite; pixelating it would only blur the glyphs. */
+  image-rendering: auto;
+}
+
 .coverage-skull-art {
   position: relative;
   width: 78%;
