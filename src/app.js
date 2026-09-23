@@ -20,6 +20,7 @@ import {
 } from './average-crop-price.js';
 import { costOriginNote, resolveUpgradeCost } from './upgrade-cost-resolution.js';
 import { formatApproxCoins } from './compact-coins.js';
+import { marketAverageTimestampLabel } from './market-average-prices.js';
 import { upgradePriceSummary } from './upgrade-price-summary.js';
 import { MEASURED_FEAST_KEY, measuredBaseline } from './measured-baseline.js';
 import { ensureProgressBucket, migrateState, toolKeyForCropId } from './migrations.js';
@@ -479,7 +480,7 @@ function card(item, compact=false) {
   const priceTagLabel = isShard
     ? '1 shard'
     : level >= max
-      ? 'value'
+      ? 'replacement'
       : pricing.costToMaxCoins != null ? 'to max' : 'item';
   return `
     <button class="item-card ${status} ${isShard ? 'shard-card' : ''} ${compact ? 'compact' : ''}" data-open="${esc(item.id)}">
@@ -1033,9 +1034,12 @@ function toolBuildValuePanel() {
   const missing = value.missing.length
     ? `${value.missing.length} component${value.missing.length === 1 ? '' : 's'} still unpriced`
     : 'base item + installed priced upgrades';
+  const freshness = value.computedAtMs != null
+    ? marketAverageTimestampLabel({ computedAtMs: value.computedAtMs })
+    : '';
   return `<div class="setup-bar tool-build-value" data-tool-build-value>
-    <div><div class="eyebrow">Estimated build value</div><strong>${esc(buildValueText(value))}</strong>
-    <div class="hint">${esc(missing)} · rolling 90-day market averages</div></div>
+    <div><div class="eyebrow">Estimated replacement value</div><strong>${esc(buildValueText(value))}</strong>
+    <div class="hint">${esc([missing, 'rolling 90-day market averages', freshness].filter(Boolean).join(' · '))}</div></div>
   </div>`;
 }
 
@@ -1159,6 +1163,9 @@ function drawer() {
   const toMaxNote = [
     pricing.remainingEarnedSteps ? `${pricing.remainingEarnedSteps} earned step${pricing.remainingEarnedSteps === 1 ? '' : 's'}` : '',
     pricing.remainingUnknownSteps ? `${pricing.remainingUnknownSteps} unpriced step${pricing.remainingUnknownSteps === 1 ? '' : 's'}` : '',
+    pricing.costToMaxComputedAtMs != null
+      ? marketAverageTimestampLabel({ computedAtMs: pricing.costToMaxComputedAtMs })
+      : '',
   ].filter(Boolean).join(' · ');
   const isShard = item.section === 'shards' || item.category === 'Attribute Shard';
   const manual = store.manualGain[item.id] ?? '';
@@ -1176,7 +1183,7 @@ function drawer() {
       </div>
       ${isShard ? `<div class="detail-grid shard-price-details">
         <div><span>1 shard</span><strong>${esc(pricing.unitShardCoins != null ? formatApproxCoins(pricing.unitShardCoins) : '—')}</strong></div>
-        <div><span>Current level value</span><strong>${esc(pricing.currentShardValueCoins != null ? formatApproxCoins(pricing.currentShardValueCoins) : '—')}</strong><small>${pricing.shardCountOwned ?? '—'} shard${pricing.shardCountOwned === 1 ? '' : 's'} equivalent</small></div>
+        <div><span>Current level replacement value</span><strong>${esc(pricing.currentShardValueCoins != null ? formatApproxCoins(pricing.currentShardValueCoins) : '—')}</strong><small>${esc([`${pricing.shardCountOwned ?? '—'} shard${pricing.shardCountOwned === 1 ? '' : 's'} equivalent`, pricing.entryMarketComputedAtMs != null ? marketAverageTimestampLabel({ computedAtMs: pricing.entryMarketComputedAtMs }) : ''].filter(Boolean).join(' · '))}</small></div>
         <div><span>Shards to max</span><strong>${pricing.shardCountToMax ?? '—'}</strong><small>${esc(pricing.costToMaxCoins != null ? formatApproxCoins(pricing.costToMaxCoins) : 'price unavailable')}</small></div>
       </div>` : ''}
       <label>Manual marginal value<input type="number" step="0.01" data-manual="${item.id}" value="${esc(manual)}" placeholder="only for dynamic values"></label>
@@ -1344,10 +1351,20 @@ function slotEditor(slotId) {
   const gems = item.gems || [];
   const filled = Boolean(item.displayName);
   const buildValue = filled ? physicalItemBuildValue(slotId, item) : null;
+  const buildValueNote = buildValue
+    ? [
+      buildValue.complete
+        ? 'base + installed priced upgrades'
+        : `${buildValue.missing.length} component${buildValue.missing.length === 1 ? '' : 's'} still unpriced`,
+      buildValue.computedAtMs != null
+        ? marketAverageTimestampLabel({ computedAtMs: buildValue.computedAtMs })
+        : '',
+    ].filter(Boolean).join(' · ')
+    : '';
 
   return `<div class="item-editor ${esc(rarityClass(item.rarity))}" data-item-editor="${esc(slotId)}">
     <header class="item-editor-head item-editor-actions">
-      ${filled ? `<div class="item-build-value"><span>Estimated build value</span><strong>${esc(buildValueText(buildValue))}</strong><small>${buildValue.complete ? 'base + installed priced upgrades' : `${buildValue.missing.length} component${buildValue.missing.length === 1 ? '' : 's'} still unpriced`}</small></div>` : ''}
+      ${filled ? `<div class="item-build-value"><span>Estimated replacement value</span><strong>${esc(buildValueText(buildValue))}</strong><small>${esc(buildValueNote)}</small></div>` : ''}
       <button class="ghost small" data-slot-clear="${esc(slotId)}" ${filled ? '' : 'disabled'}>Clear slot</button>
     </header>
 

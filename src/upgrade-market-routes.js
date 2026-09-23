@@ -223,10 +223,14 @@ export function resolveUpgradeMarketAverage(itemId, targetLevel = null) {
   complete.sort((a, b) => a.coins - b.coins);
   const selected = complete[0];
   const markets = [...new Set(selected.quotes.map(row => row.quote.market))];
+  const timestamps = selected.quotes
+    .map(row => Number(row.quote?.computedAtMs))
+    .filter(value => Number.isFinite(value) && value > 0);
   return {
     complete: true,
     coins: selected.coins,
     quotes: selected.quotes,
+    computedAtMs: timestamps.length ? Math.min(...timestamps) : null,
     source: 'skycofl-90d',
     marketLabel: markets.length === 1
       ? marketAverageLabel(selected.quotes[0].quote)
