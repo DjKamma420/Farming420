@@ -4,6 +4,8 @@ import { activeSetup } from './setups.js';
 
 export const ROSE_DRAGON_SOURCE = 'https://hypixelskyblock.minecraft.wiki/w/Rose_Dragon_Pet';
 export const ROSE_DRAGON_VERIFIED = '2026-09-23';
+export const ROSE_DRAGON_EXTRA_LEVEL_XP = 1_886_700;
+export const ROSE_DRAGON_XP_SOURCE = 'https://github.com/NotEnoughUpdates/NotEnoughUpdates-REPO/blob/master/constants/pets.json';
 
 function finiteNumber(value) {
   if (value === null || value === undefined || value === '') return null;
@@ -56,13 +58,26 @@ export function activeRoseDragon(state) {
       ...(synced || {}),
       type: 'ROSE_DRAGON',
       source: synced ? 'setup+profile' : 'setup',
-      level: explicitRoseLevel(selected.petLevel) ?? explicitRoseLevel(synced?.level),
+      level: explicitRoseLevel(selected.petLevel)
+        ?? explicitRoseLevel(synced?.level)
+        ?? petLevelFromExperience(synced?.experience, synced?.rarity ?? synced?.tier ?? 'LEGENDARY', {
+          maxLevel: 200,
+          extraLevelXp: ROSE_DRAGON_EXTRA_LEVEL_XP,
+        }),
       uuid: synced?.uuid ?? null,
     };
   }
 
   const active = pets.find(pet => isRoseDragon(pet?.type) && pet?.active === true);
-  return active ? { ...active, source: 'profile', level: explicitRoseLevel(active.level) } : null;
+  return active ? {
+    ...active,
+    source: 'profile',
+    level: explicitRoseLevel(active.level)
+      ?? petLevelFromExperience(active.experience, active.rarity ?? active.tier ?? 'LEGENDARY', {
+        maxLevel: 200,
+        extraLevelXp: ROSE_DRAGON_EXTRA_LEVEL_XP,
+      }),
+  } : null;
 }
 
 function resolvedPetLevel(pet) {
@@ -160,10 +175,10 @@ export function roseDragonContribution(state) {
     fortuneReasons.push('Rose Dragon level is unavailable');
     overbloomReasons.push('Rose Dragon level is unavailable');
   }
-  if (farmingLevel === null) fortuneReasons.push('Farming level is unavailable for Garden Power');
-  if (cropMilestoneTotal === null) fortuneReasons.push('Total Crop Milestones are unavailable for Rosy Scales');
 
   const hatched = level !== null && level >= 100;
+  if (hatched && farmingLevel === null) fortuneReasons.push('Farming level is unavailable for Garden Power');
+  if (hatched && cropMilestoneTotal === null) fortuneReasons.push('Total Crop Milestones are unavailable for Rosy Scales');
   const baseFortune = hatched ? level * 0.2 : 0;
   const gardenPower = hatched && farmingLevel !== null ? level * 0.015 * farmingLevel : 0;
   const rosyScales = hatched && cropMilestoneTotal !== null ? level * 0.00075 * cropMilestoneTotal : 0;
