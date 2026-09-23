@@ -98,6 +98,7 @@ test('profile normalization resolves identity, farming skill, upgrades and curre
     type: 'ELEPHANT',
     rarity: 'LEGENDARY',
     experience: 1234,
+    level: null,
     active: true,
     heldItem: 'GREEN_BANDANA',
     candyUsed: 2,
@@ -127,7 +128,25 @@ test('profile normalization does not invent pet fields that are absent', () => {
   assert.equal(snapshot.pets[0].type, 'MOOSHROOM_COW');
   assert.equal(snapshot.pets[0].active, null);
   assert.equal(snapshot.pets[0].experience, null);
+  assert.equal(snapshot.pets[0].level, null);
   assert.equal(snapshot.pets[0].heldItem, null);
+});
+
+test('explicit API pet levels are preserved instead of re-derived', () => {
+  const snapshot = normalizeProfilePayload({
+    profiles: [{
+      profile_id: 'profile-1',
+      members: {
+        '1111aaaa': {
+          pets_data: {
+            pets: [{ type: 'ROSE_DRAGON', tier: 'LEGENDARY', level: 180, exp: 999999 }],
+          },
+        },
+      },
+    }],
+  });
+  assert.equal(snapshot.pets[0].level, 180);
+  assert.equal(snapshot.pets[0].experience, 999999);
 });
 
 test('missing pet API data is hidden instead of meaning the player owns no pets', () => {
