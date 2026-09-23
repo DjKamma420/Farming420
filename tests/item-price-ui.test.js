@@ -20,10 +20,12 @@ test('upgrade drawer shows next cost, cost to max and shard-specific value field
 });
 
 test('physical item editors and Farming Tool expose installed-upgrade build value', () => {
-  assert.match(app, /Estimated build value/);
+  assert.match(app, /Estimated replacement value/);
   assert.match(app, /physicalItemBuildValue/);
   assert.match(app, /Recombobulator/);
   assert.match(app, /rolling 90-day market averages/);
+  assert.match(app, /marketAverageTimestampLabel/);
+  assert.match(app, /Current level replacement value/);
 });
 
 test('physical market refresh starts from bind paths, not during render helpers', () => {
