@@ -8,8 +8,13 @@ import {
   GARDEN_LEVEL_VERIFIED,
   gardenLevelFromExperience,
 } from './garden-level.js';
+import {
+  PEST_BESTIARY_SOURCE,
+  PEST_BESTIARY_VERIFIED,
+  eligiblePestBestiaryFromKills,
+} from './pest-bestiary.js';
 
-export const PROFILE_MODEL_VERSION = 1;
+export const PROFILE_MODEL_VERSION = 2;
 export const PROFILE_DATA_STATUS = Object.freeze({
   AUTO: 'AUTO',
   DERIVED: 'DERIVED',
@@ -47,6 +52,11 @@ export const PROFILE_SOURCE_META = Object.freeze({
     id: 'hypixel-skill-resources',
     url: 'https://api.hypixel.net/v2/resources/skyblock/skills',
     lastVerified: VERIFIED_ON,
+  }),
+  pestBestiary: Object.freeze({
+    id: 'pest-bestiary',
+    url: PEST_BESTIARY_SOURCE,
+    lastVerified: PEST_BESTIARY_VERIFIED,
   }),
 });
 
@@ -137,6 +147,22 @@ function normalizePets(rawPets) {
     }));
 }
 
+function rawBestiaryFromMember(member) {
+  if (member?.bestiary && typeof member.bestiary === 'object') return member.bestiary;
+  if (member?.player_data?.bestiary && typeof member.player_data.bestiary === 'object') return member.player_data.bestiary;
+  return null;
+}
+
+function normalizedBestiaryKills(rawBestiary) {
+  if (!rawBestiary || rawBestiary.migration === false) return null;
+  const rawKills = rawBestiary.kills && typeof rawBestiary.kills === 'object' && !Array.isArray(rawBestiary.kills)
+    ? rawBestiary.kills
+    : {};
+  return Object.fromEntries(Object.entries(rawKills)
+    .map(([key, value]) => [String(key).trim().toLowerCase(), finiteNumberOrNull(value)])
+    .filter(([, value]) => value !== null && value >= 0));
+}
+
 function gardenObject(payload) {
   if (!payload || typeof payload !== 'object') return null;
   if (payload.garden && typeof payload.garden === 'object') return payload.garden;
@@ -167,6 +193,13 @@ export function createEmptyProfileSnapshot() {
         cap: null,
         status: PROFILE_DATA_STATUS.UNKNOWN,
       },
+    },
+    bestiary: {
+      kills: null,
+      eligiblePestTierTotal: null,
+      eligiblePestMaxTierTotal: 225,
+      eligiblePestFamilyTiers: {},
+      migration: null,
     },
     garden: {
       experience: null,
@@ -227,8 +260,20 @@ export function normalizeProfilePayload(payload, options = {}) {
   };
 
   const rawPets = rawPetsFromMember(member);
+  const rawBestiary = rawBestiaryFromMember(member);
+  const rawBestiaryKills = rawBestiary && rawBestiary.migration !== false
+    ? (rawBestiary.kills && typeof rawBestiary.kills === 'object' && !Array.isArray(rawBestiary.kills) ? rawBestiary.kills : {})
+    : null;
+  const pestBestiary = eligiblePestBestiaryFromKills(rawBestiaryKills);
   snapshot.accountUpgrades = normalizeCommunityUpgrades(parsed.communityUpgrades);
   snapshot.pets = normalizePets(rawPets);
+  snapshot.bestiary = {
+    kills: normalizedBestiaryKills(rawBestiary),
+    eligiblePestTierTotal: pestBestiary.tierTotal,
+    eligiblePestMaxTierTotal: pestBestiary.maxTierTotal,
+    eligiblePestFamilyTiers: { ...pestBestiary.familyTiers },
+    migration: typeof rawBestiary?.migration === 'boolean' ? rawBestiary.migration : null,
+  };
   snapshot.sync.sources.profile = {
     fetchedAt: options.fetchedAt || null,
     importType: 'raw-json',
@@ -247,6 +292,18 @@ export function normalizeProfilePayload(payload, options = {}) {
     ['profile', 'skills'],
   );
   snapshot.provenance.accountUpgrades = provenance(PROFILE_DATA_STATUS.AUTO, ['profile']);
+  snapshot.provenance.bestiary = provenance(
+    rawBestiaryKills === null ? (rawBestiary?.migration === false ? PROFILE_DATA_STATUS.UNKNOWN : PROFILE_DATA_STATUS.HIDDEN) : PROFILE_DATA_STATUS.AUTO,
+    ['profile'],
+    rawBestiary?.migration === false
+      ? 'The selected member Bestiary is not migrated, so current Pest tiers cannot be derived.'
+      : rawBestiary === null ? 'The selected member payload contains no Bestiary data.' : null,
+  );
+  snapshot.provenance['bestiary.eligiblePestTierTotal'] = provenance(
+    pestBestiary.complete ? PROFILE_DATA_STATUS.DERIVED : PROFILE_DATA_STATUS.UNKNOWN,
+    ['profile', 'pestBestiary'],
+    pestBestiary.complete ? null : pestBestiary.reasons.join('; '),
+  );
   snapshot.provenance.pets = provenance(
     rawPets === null ? PROFILE_DATA_STATUS.HIDDEN : PROFILE_DATA_STATUS.AUTO,
     ['profile'],
@@ -254,9 +311,11 @@ export function normalizeProfilePayload(payload, options = {}) {
   );
 
   if (!member) {
-    snapshot.sync.warnings.push('The selected member could not be re-located after profile resolution; pet data remains unknown.');
-  } else if (rawPets === null) {
-    snapshot.sync.warnings.push('No pet list was present for the selected member; pet ownership remains unknown.');
+    snapshot.sync.warnings.push('The selected member could not be re-located after profile resolution; pet and Bestiary data remain unknown.');
+  } else {
+    if (rawPets === null) snapshot.sync.warnings.push('No pet list was present for the selected member; pet ownership remains unknown.');
+    if (rawBestiary === null) snapshot.sync.warnings.push('No Bestiary data was present for the selected member; Pest Bestiary tiers remain unknown.');
+    else if (rawBestiary.migration === false) snapshot.sync.warnings.push('The selected member Bestiary is not migrated; Pest Bestiary tiers remain unknown.');
   }
 
   return snapshot;
@@ -348,6 +407,9 @@ export function mergeProfileSnapshots(base, patch) {
   }
   if (hasProvenanceFor(patchProvenance, 'garden')) {
     merged.garden = mergeValue(merged.garden, source.garden);
+  }
+  if (hasProvenanceFor(patchProvenance, 'bestiary')) {
+    merged.bestiary = mergeValue(merged.bestiary, source.bestiary);
   }
   if (hasProvenanceFor(patchProvenance, 'accountUpgrades')) {
     merged.accountUpgrades = structuredClone(source.accountUpgrades || []);
