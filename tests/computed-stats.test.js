@@ -256,6 +256,52 @@ test('Pesthunter Eradicator becomes Pest Fortune only in the kill phase', () => 
   assert.equal(totals.pestCooldownReductionPct, 0);
 });
 
+test('Mosquito BPC is active only in Pest Spawning totals', () => {
+  const state = baseState();
+  const setups = createDefaultSetups();
+  const pest = setups.list.find(setup => setup.id === 'pest');
+  pest.slots.pet = {
+    skyblockId: 'MOSQUITO',
+    displayName: 'Mosquito Pet',
+    rarity: 'COMMON',
+    petLevel: 100,
+    physicalItemId: 'pet:mosquito',
+  };
+  state.profile.setups = setups;
+  state.profile.normalizedSnapshot = {
+    garden: { visitors: { uniqueNpcsServed: 0 } },
+    pets: [{ uuid: 'mosquito', type: 'MOSQUITO', rarity: 'COMMON', level: 100, active: false }],
+  };
+
+  setups.activeId = 'pest';
+  assert.equal(computeStatTotals(state, 'melon', 'pest-spawn').bonusPestChance, 50);
+  assert.equal(computeStatTotals(state, 'melon', 'farm').bonusPestChance, 0);
+  assert.equal(computeStatTotals(state, 'melon', 'pest-kill').bonusPestChance, 0);
+});
+
+test('Mosquito Sugar Cane visitor Fortune is crop-local', () => {
+  const state = baseState();
+  const setups = createDefaultSetups();
+  const farming = setups.list.find(setup => setup.id === 'normal');
+  farming.slots.pet = {
+    skyblockId: 'MOSQUITO',
+    displayName: 'Mosquito Pet',
+    rarity: 'LEGENDARY',
+    petLevel: 100,
+    physicalItemId: 'pet:mosquito',
+  };
+  state.profile.setups = setups;
+  state.profile.normalizedSnapshot = {
+    garden: { visitors: { uniqueNpcsServed: 100 } },
+    pets: [{ uuid: 'mosquito', type: 'MOSQUITO', rarity: 'LEGENDARY', level: 100, active: true }],
+  };
+
+  const sugar = computeStatTotals(state, 'sugar-cane', 'farm');
+  const melon = computeStatTotals(state, 'melon', 'farm');
+  assert.equal(sugar.cropFortune, 175);
+  assert.equal(melon.cropFortune, 0);
+});
+
 test('pet item planner toggles do not count globally without an active setup pet item', () => {
   const state = baseState();
   state.profile.levels['pet-item-green-bandana'] = 1;

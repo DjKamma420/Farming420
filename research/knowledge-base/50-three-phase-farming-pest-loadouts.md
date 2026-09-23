@@ -277,6 +277,30 @@ XP source:
 - https://github.com/NotEnoughUpdates/NotEnoughUpdates-REPO/blob/master/constants/pets.json
 Last verified: 2026-09-23.
 
+### Verified Mosquito / Slug spawning pet math
+
+**Mosquito** provides +0.5 Bonus Pest Chance per pet level at every rarity,
+therefore +50 BPC at level 100. Smooth Jazz scales by rarity: Common/Uncommon
++0.25% Pest Vinyl effectiveness per level, Rare +0.35%/level, and
+Epic/Legendary +0.5%/level. Rare+ also has Buzzin' Barterer for Sugar Cane:
+Rare gains +0.01 Sugar Cane Fortune per unique Garden visitor per pet level,
+while Epic/Legendary gain +0.02 per visitor per level, capped at +175 Sugar
+Cane Fortune. The visitor count comes from normalized Garden profile data; it
+is never manually guessed.
+
+**Slug** provides +0.4 Bonus Pest Chance per level at both Epic and Legendary,
+therefore +40 BPC at level 100. Legendary additionally has Repugnant Aroma:
++1 Farming Fortune per pet level while farming in a plot affected by a
+Sprayonator, for +100 at level 100 before any separate Hypercharge
+amplification. Because the profile API does not expose whether the current
+plot is presently sprayed, that conditional Fortune remains unknown unless the
+runtime context explicitly says the Sprayonator effect is active or inactive.
+
+Sources:
+- https://hypixelskyblock.minecraft.wiki/w/Mosquito_Pet
+- https://hypixelskyblock.minecraft.wiki/w/Slug_Pet
+Last verified: 2026-09-23.
+
 The common computed-stat path now ignores the legacy Green/Poignant planner
 toggles as direct stats. Their values are derived only from the pet item attached
 to the active setup, so two different Rose Dragons with Green Bandana and

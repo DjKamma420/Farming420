@@ -264,6 +264,97 @@ test('Rose Dragon candidate uses Farming level, total Crop Milestones and Symbio
   assert.deepEqual([...result.after.totals.derived.roseDragon.symbiosisPets], ['MOOSHROOM_COW']);
 });
 
+test('Mosquito candidate contributes its level-scaled BPC in the spawning phase', () => {
+  const profileSnapshot = snapshot({
+    extraPets: [{
+      index: 1,
+      uuid: 'mosquito',
+      type: 'MOSQUITO',
+      rarity: 'LEGENDARY',
+      level: 100,
+      experience: null,
+      active: false,
+      heldItem: null,
+    }],
+  });
+  const state = stateForSnapshot(profileSnapshot);
+  const candidate = buildSetupCandidates(profileSnapshot, { phase: ACTIVITY_MODE.PEST_SPAWN }).find(row =>
+    row.components.armorSetId === 'saved:saved'
+    && row.components.equipmentSetId === 'saved:saved'
+    && row.components.petId === 'pet:mosquito');
+
+  const result = evaluateSetupCandidate(state, candidate, { phase: ACTIVITY_MODE.PEST_SPAWN });
+
+  assert.ok(!result.after.supportGaps.some(reason => reason.includes('Mosquito')));
+  assert.equal(result.after.totals.derived.pestSpawnPet.id, 'MOSQUITO');
+  assert.equal(result.after.totals.derived.pestSpawnPet.bonusPestChance, 50);
+  assert.equal(result.after.totals.bonusPestChance, 130, '80 Helianthus + 50 Mosquito');
+});
+
+test('Epic Slug candidate contributes +40 BPC without a spray-state dependency', () => {
+  const profileSnapshot = snapshot({
+    extraPets: [{
+      index: 1,
+      uuid: 'slug-epic',
+      type: 'SLUG',
+      rarity: 'EPIC',
+      level: 100,
+      experience: null,
+      active: false,
+      heldItem: null,
+    }],
+  });
+  const state = stateForSnapshot(profileSnapshot);
+  const candidate = buildSetupCandidates(profileSnapshot, { phase: ACTIVITY_MODE.PEST_SPAWN }).find(row =>
+    row.components.armorSetId === 'saved:saved'
+    && row.components.equipmentSetId === 'saved:saved'
+    && row.components.petId === 'pet:slug-epic');
+
+  const result = evaluateSetupCandidate(state, candidate, { phase: ACTIVITY_MODE.PEST_SPAWN });
+
+  assert.ok(!result.after.supportGaps.some(reason => reason.includes('Slug')));
+  assert.equal(result.after.totals.derived.pestSpawnPet.id, 'SLUG');
+  assert.equal(result.after.totals.bonusPestChance, 120, '80 Helianthus + 40 Slug');
+  assert.ok(!result.after.incomplete.some(row => row.id === 'derived-slug'));
+});
+
+test('Legendary Slug uses explicit Sprayonator context for Repugnant Aroma', () => {
+  const profileSnapshot = snapshot({
+    extraPets: [{
+      index: 1,
+      uuid: 'slug-legendary',
+      type: 'SLUG',
+      rarity: 'LEGENDARY',
+      level: 100,
+      experience: null,
+      active: false,
+      heldItem: null,
+    }],
+  });
+  const state = stateForSnapshot(profileSnapshot);
+  const candidate = buildSetupCandidates(profileSnapshot, { phase: ACTIVITY_MODE.PEST_SPAWN }).find(row =>
+    row.components.armorSetId === 'saved:saved'
+    && row.components.equipmentSetId === 'saved:saved'
+    && row.components.petId === 'pet:slug-legendary');
+
+  const unknown = evaluateSetupCandidate(state, candidate, { phase: ACTIVITY_MODE.PEST_SPAWN });
+  assert.ok(unknown.after.incomplete.some(row => row.reason.includes('Sprayonator')));
+
+  const unsprayed = evaluateSetupCandidate(state, candidate, {
+    phase: ACTIVITY_MODE.PEST_SPAWN,
+    sprayonatorActive: false,
+  });
+  assert.ok(!unsprayed.after.incomplete.some(row => row.id === 'derived-slug'));
+  assert.equal(unsprayed.after.totals.bonusPestChance, 120);
+
+  const sprayed = evaluateSetupCandidate(state, candidate, {
+    phase: ACTIVITY_MODE.PEST_SPAWN,
+    sprayonatorActive: true,
+  });
+  assert.equal(sprayed.after.totals.derived.pestSpawnPet.globalFortune, 100);
+  assert.equal(sprayed.after.totals.bonusPestChance, 120);
+});
+
 test('an unmodeled farming pet makes a candidate incomplete instead of contributing a fake zero', () => {
   const profileSnapshot = snapshot({
     extraPets: [{

@@ -8,7 +8,7 @@ import { GARDEN_VACUUM_ITEMS } from './exact-farming-items.js';
 import { gardenLevelFromExperience } from './garden-level.js';
 import { setupPetItemContribution } from './setup-pet-items.js';
 
-export const SETUP_CANDIDATE_EVALUATOR_VERSION = 5;
+export const SETUP_CANDIDATE_EVALUATOR_VERSION = 6;
 
 const SETUP_LOCAL_PET_ITEM_ENTRY_IDS = Object.freeze([
   'pet-item-green-bandana',
@@ -179,7 +179,7 @@ function setupSupportGaps(setup) {
   const pet = slots.pet;
   if (pet) {
     const petId = String(pet.skyblockId || '').trim().toUpperCase();
-    if (!['MOOSHROOM_COW', 'ROSE_DRAGON'].includes(petId)) {
+    if (!['MOOSHROOM_COW', 'ROSE_DRAGON', 'MOSQUITO', 'SLUG'].includes(petId)) {
       gaps.push(`${pet.displayName || petId || 'selected pet'} contribution is not modeled in computed setup stats`);
     }
   }
@@ -242,6 +242,7 @@ export function evaluateSetupCandidate(state, candidate, options = {}) {
     {
       eligiblePestBestiaryTiers: options.eligiblePestBestiaryTiers ?? snapshot?.bestiary?.eligiblePestTierTotal ?? null,
       recentPestKills: options.recentPestKills ?? null,
+      sprayonatorActive: options.sprayonatorActive ?? null,
     },
   );
 
@@ -265,6 +266,7 @@ export function evaluateSetupCandidate(state, candidate, options = {}) {
     {
       eligiblePestBestiaryTiers: options.eligiblePestBestiaryTiers ?? snapshot?.bestiary?.eligiblePestTierTotal ?? null,
       recentPestKills: options.recentPestKills ?? null,
+      sprayonatorActive: options.sprayonatorActive ?? null,
     },
   );
 
