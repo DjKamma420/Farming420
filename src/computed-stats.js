@@ -17,12 +17,33 @@ import {
 import { activeSetup } from './setups.js';
 import { gardenLevelFromExperience } from './garden-level.js';
 import { setupPetItemContribution } from './setup-pet-items.js';
+import {
+  helianthusBaseBonusPestChance,
+  mantidBaseBonusPestChanceForPieces,
+  mantidFortuneForPieces,
+  mantidPieceCount,
+  mantidRecentKillBonusPestChance,
+  pesterminatorBonusPestChance,
+} from './armor-fortune.js';
+import {
+  pestEquipmentBaseBonusPestChance,
+  pestEquipmentBaseCooldownReductionPct,
+  pesthunterEradicatorFortune,
+  squeakyBaseBonusPestChanceForPieces,
+  squeakyCooldownReductionPct,
+  squeakyFortuneForPieces,
+} from './equipment-fortune.js';
 
-export const COMPUTED_STATS_VERSION = 12;
+export const COMPUTED_STATS_VERSION = 13;
 
 const SETUP_LOCAL_PET_ITEM_ENTRY_IDS = new Set([
   'pet-item-green-bandana',
   'pet-item-lucky-clover-poignant-lucky-clover',
+]);
+
+const SETUP_LOCAL_GEAR_ENTRY_IDS = new Set([
+  'armor-helianthus-armor-bpc',
+  'pest-pesthunter-accessory-bpc-setup',
 ]);
 
 export const STAT_AXIS = Object.freeze({
@@ -31,12 +52,14 @@ export const STAT_AXIS = Object.freeze({
   PEST_FORTUNE: 'pestFortune',
   OVERBLOOM: 'overbloom',
   BONUS_PEST_CHANCE: 'bonusPestChance',
+  PEST_COOLDOWN_REDUCTION: 'pestCooldownReductionPct',
 });
 
 const AUTO_DYNAMIC_TOTAL = Object.freeze({
   'armor-helianthus-armor-base-stats': 'total',
   'armor-helianthus-feast-set-bonus': 'total',
   'armor-reforge-mossy-on-full-armor': 'total',
+  'armor-enchant-pesterminator-vi-on-full-armor': 'total',
   'armor-gem-perfect-peridot-on-full-armor': 'total',
   'equipment-reforge-rooted-on-full-equipment': 'total',
   'equipment-reforge-thorny-on-full-mythic-equipment-ff': 'total',
@@ -114,6 +137,7 @@ function contributionFor(state, item, cropId, mode = null, activeContextScope = 
   // useful as upgrade records, but their stats must never be applied as
   // account-global toggles.
   if (SETUP_LOCAL_PET_ITEM_ENTRY_IDS.has(item.id)) return null;
+  if (SETUP_LOCAL_GEAR_ENTRY_IDS.has(item.id)) return null;
 
   const level = configuredLevel(profile, item, cropId);
   if (level <= 0) return null;
@@ -158,12 +182,14 @@ export function computeTotalsFromEntries(state, entries, cropId = state?.selecte
     effectiveFortune: 0,
     overbloom: 0,
     bonusPestChance: 0,
+    pestCooldownReductionPct: 0,
     incomplete: {
       globalFortune: [],
       cropFortune: [],
       pestFortune: [],
       overbloom: [],
       bonusPestChance: [],
+      pestCooldownReductionPct: [],
     },
     sourceCount: {
       globalFortune: 0,
@@ -171,6 +197,7 @@ export function computeTotalsFromEntries(state, entries, cropId = state?.selecte
       pestFortune: 0,
       overbloom: 0,
       bonusPestChance: 0,
+      pestCooldownReductionPct: 0,
     },
   };
 
@@ -242,10 +269,103 @@ function applySetupPetItem(totals, contribution) {
   return totals;
 }
 
+function setupGearPieces(state, slotIds, container) {
+  const setup = state?.profile?.setups ? activeSetup(state.profile.setups) : null;
+  const fromSetup = slotIds.map(slotId => setup?.slots?.[slotId]).filter(Boolean);
+  if (fromSetup.length) return fromSetup;
+  const items = Array.isArray(state?.profile?.normalizedSnapshot?.items)
+    ? state.profile.normalizedSnapshot.items
+    : [];
+  return items.filter(item => String(item?.container || '') === container);
+}
+
+function pestSetupGearContribution(state, mode, derivedContext = {}) {
+  const armor = setupGearPieces(
+    state,
+    ['helmet', 'chestplate', 'leggings', 'boots'],
+    'armor',
+  );
+  const equipment = setupGearPieces(
+    state,
+    ['equipment1', 'equipment2', 'equipment3', 'equipment4'],
+    'equipment',
+  );
+
+  const mantidFortune = mantidFortuneForPieces(armor);
+  const squeakyFortune = squeakyFortuneForPieces(equipment);
+  const eradicatorFortune = mode === ACTIVITY_MODE.PEST_KILL
+    ? pesthunterEradicatorFortune(equipment)
+    : 0;
+
+  const spawning = mode === ACTIVITY_MODE.PEST_SPAWN;
+  const mantidPieces = mantidPieceCount(armor);
+  const recentPestKills = derivedContext?.recentPestKills ?? null;
+  const mantidRecentKillBpc = spawning
+    ? mantidRecentKillBonusPestChance(armor, recentPestKills)
+    : 0;
+  const fortuneReasons = [];
+  const bpcReasons = [];
+  const missingMantidRarity = armor.some(piece =>
+    String(piece?.reforge || '').toLowerCase() === 'mantid'
+    && !String(piece?.rarity || '').trim());
+  const missingSqueakyRarity = equipment.some(piece =>
+    String(piece?.reforge || '').toLowerCase() === 'squeaky'
+    && !String(piece?.rarity || '').trim());
+  if (missingMantidRarity) {
+    fortuneReasons.push('At least one Mantid armor piece has unknown rarity');
+    if (spawning) bpcReasons.push('At least one Mantid armor piece has unknown rarity');
+  }
+  if (missingSqueakyRarity) {
+    fortuneReasons.push('At least one Squeaky equipment piece has unknown rarity');
+    if (spawning) bpcReasons.push('At least one Squeaky equipment piece has unknown rarity');
+  }
+  if (spawning && mantidPieces > 0 && mantidRecentKillBpc === null) {
+    bpcReasons.push('Recent Pest kills from the last 10 minutes are unavailable for Mantid Bonus');
+  }
+
+  const helianthusBpc = spawning ? helianthusBaseBonusPestChance(armor) : 0;
+  const pesterminatorBpc = spawning ? pesterminatorBonusPestChance(armor) : 0;
+  const mantidBaseBpc = spawning ? mantidBaseBonusPestChanceForPieces(armor) : 0;
+  const pestEquipmentBpc = spawning ? pestEquipmentBaseBonusPestChance(equipment) : 0;
+  const squeakyBpc = spawning ? squeakyBaseBonusPestChanceForPieces(equipment) : 0;
+  const baseCooldownReductionPct = spawning ? pestEquipmentBaseCooldownReductionPct(equipment) : 0;
+  const squeakyCooldownPct = spawning ? squeakyCooldownReductionPct(equipment) : 0;
+
+  return Object.freeze({
+    armor: Object.freeze([...armor]),
+    equipment: Object.freeze([...equipment]),
+    mantidPieces,
+    recentPestKills,
+    mantidFortune,
+    squeakyFortune,
+    eradicatorFortune,
+    helianthusBpc,
+    pesterminatorBpc,
+    mantidBaseBpc,
+    mantidRecentKillBpc,
+    pestEquipmentBpc,
+    squeakyBpc,
+    bonusPestChance: helianthusBpc
+      + pesterminatorBpc
+      + mantidBaseBpc
+      + Number(mantidRecentKillBpc || 0)
+      + pestEquipmentBpc
+      + squeakyBpc,
+    baseCooldownReductionPct,
+    squeakyCooldownPct,
+    pestCooldownReductionPct: baseCooldownReductionPct + squeakyCooldownPct,
+    complete: fortuneReasons.length === 0 && bpcReasons.length === 0,
+    fortuneReasons: Object.freeze(fortuneReasons),
+    bpcReasons: Object.freeze(bpcReasons),
+    reasons: Object.freeze([...new Set([...fortuneReasons, ...bpcReasons])]),
+  });
+}
+
 function applyDerivedMechanics(state, totals, mode, cropId, derivedContext = {}) {
   const cow = mooshroomCowContribution(state);
   const roseDragon = roseDragonContribution(state);
   const setupPetItem = setupPetItemForState(state, mode, derivedContext);
+  const pestSetupGear = pestSetupGearContribution(state, mode, derivedContext);
   const vacuumPeridot = mode === ACTIVITY_MODE.PEST_KILL
     ? vacuumPeridotFortune(state?.profile?.vacuumProgress || {})
     : 0;
@@ -257,6 +377,7 @@ function applyDerivedMechanics(state, totals, mode, cropId, derivedContext = {})
     mooshroomCow: cow,
     roseDragon,
     setupPetItem,
+    pestSetupGear,
     vacuumPeridotFortune: vacuumPeridot,
     toolPeridotFortune: toolPeridot,
   };
@@ -289,6 +410,39 @@ function applyDerivedMechanics(state, totals, mode, cropId, derivedContext = {})
         reason,
       });
     }
+  }
+
+  if (pestSetupGear.mantidFortune) {
+    totals.globalFortune += pestSetupGear.mantidFortune;
+    totals.sourceCount.globalFortune += 1;
+  }
+  if (pestSetupGear.squeakyFortune) {
+    totals.globalFortune += pestSetupGear.squeakyFortune;
+    totals.sourceCount.globalFortune += 1;
+  }
+  if (pestSetupGear.eradicatorFortune) {
+    totals.pestFortune += pestSetupGear.eradicatorFortune;
+    totals.sourceCount.pestFortune += 1;
+  }
+  if (pestSetupGear.bonusPestChance) {
+    totals.bonusPestChance += pestSetupGear.bonusPestChance;
+    totals.sourceCount.bonusPestChance += 1;
+  }
+  if (pestSetupGear.pestCooldownReductionPct) {
+    totals.pestCooldownReductionPct += pestSetupGear.pestCooldownReductionPct;
+    totals.sourceCount.pestCooldownReductionPct += 1;
+  }
+  for (const reason of pestSetupGear.fortuneReasons) {
+    totals.incomplete.globalFortune.push({
+      id: 'derived-pest-setup-gear',
+      reason,
+    });
+  }
+  for (const reason of pestSetupGear.bpcReasons) {
+    totals.incomplete.bonusPestChance.push({
+      id: 'derived-pest-setup-gear',
+      reason,
+    });
   }
 
   if (vacuumPeridot > 0) {
@@ -348,6 +502,7 @@ export function computedStatsSnapshot(state, mode = activityModeForState(state))
     effectiveFortuneByCrop: Object.fromEntries(CROPS.map(crop => [crop.id, byCrop[crop.id].effectiveFortune])),
     overbloomByCrop: Object.fromEntries(CROPS.map(crop => [crop.id, byCrop[crop.id].overbloom])),
     bonusPestChanceByCrop: Object.fromEntries(CROPS.map(crop => [crop.id, byCrop[crop.id].bonusPestChance])),
+    pestCooldownReductionPctByCrop: Object.fromEntries(CROPS.map(crop => [crop.id, byCrop[crop.id].pestCooldownReductionPct])),
     incompleteByCrop: Object.fromEntries(CROPS.map(crop => [crop.id, byCrop[crop.id].incomplete])),
     sourceCountByCrop: Object.fromEntries(CROPS.map(crop => [crop.id, byCrop[crop.id].sourceCount])),
   };
@@ -365,6 +520,7 @@ export function applyComputedStatsToState(state) {
     state.profile.plannerEconomics[crop.id] ||= {};
     state.profile.plannerEconomics[crop.id].overbloom = snapshot.overbloomByCrop[crop.id];
     state.profile.plannerEconomics[crop.id].pestFortune = snapshot.pestFortuneByCrop[crop.id];
+    state.profile.plannerEconomics[crop.id].pestCooldownReductionPct = snapshot.pestCooldownReductionPctByCrop[crop.id];
     state.profile.plannerEconomics[crop.id].activityMode = snapshot.activityMode;
   }
   state.profile.computedStats = snapshot;

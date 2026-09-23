@@ -9,6 +9,28 @@ export const MOSSY_FORTUNE_BY_RARITY = Object.freeze({
   MYTHIC: 30,
 });
 
+export const MANTID_FORTUNE_BY_RARITY = Object.freeze({
+  COMMON: 2,
+  UNCOMMON: 4,
+  RARE: 6,
+  EPIC: 8,
+  LEGENDARY: 10,
+  MYTHIC: 12,
+});
+
+export const MANTID_BPC_BY_RARITY = Object.freeze({
+  COMMON: 0.5,
+  UNCOMMON: 0.5,
+  RARE: 1,
+  EPIC: 1.5,
+  LEGENDARY: 2,
+  MYTHIC: 2.5,
+});
+
+export const MANTID_BPC_PER_RECENT_PEST_KILL = 0.25;
+export const MANTID_BPC_DYNAMIC_CAP_PER_PIECE = 5;
+export const HELIANTHUS_BPC_PER_PIECE = 20;
+
 export const PERFECT_PERIDOT_FORTUNE_BY_RARITY = Object.freeze({
   COMMON: 3,
   UNCOMMON: 4,
@@ -86,6 +108,52 @@ export function mossyPieceCount(pieces) {
   return (pieces || []).filter(piece => String(piece?.reforge || '').toLowerCase() === 'mossy').length;
 }
 
+export function mantidPieceCount(pieces) {
+  return (pieces || []).filter(piece => String(piece?.reforge || '').toLowerCase() === 'mantid').length;
+}
+
+export function mantidFortuneForPiece(piece) {
+  if (String(piece?.reforge || '').toLowerCase() !== 'mantid') return 0;
+  const rarity = effectiveSetupItemRarity(piece);
+  return Number(MANTID_FORTUNE_BY_RARITY[rarity] || 0);
+}
+
+export function mantidFortuneForPieces(pieces) {
+  return (pieces || []).reduce((sum, piece) => sum + mantidFortuneForPiece(piece), 0);
+}
+
+export function mantidBaseBonusPestChanceForPiece(piece) {
+  if (String(piece?.reforge || '').toLowerCase() !== 'mantid') return 0;
+  const rarity = effectiveSetupItemRarity(piece);
+  return Number(MANTID_BPC_BY_RARITY[rarity] || 0);
+}
+
+export function mantidBaseBonusPestChanceForPieces(pieces) {
+  return (pieces || []).reduce((sum, piece) => sum + mantidBaseBonusPestChanceForPiece(piece), 0);
+}
+
+function nonNegativeNumberOrNull(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const number = Number(value);
+  return Number.isFinite(number) && number >= 0 ? number : null;
+}
+
+export function mantidRecentKillBonusPestChance(pieces, recentPestKills) {
+  const count = mantidPieceCount(pieces);
+  if (!count) return 0;
+  const kills = nonNegativeNumberOrNull(recentPestKills);
+  if (kills === null) return null;
+  const perPiece = Math.min(
+    MANTID_BPC_DYNAMIC_CAP_PER_PIECE,
+    kills * MANTID_BPC_PER_RECENT_PEST_KILL,
+  );
+  return count * perPiece;
+}
+
+export function helianthusBaseBonusPestChance(pieces) {
+  return helianthusPieceCount(pieces) * HELIANTHUS_BPC_PER_PIECE;
+}
+
 export function pesterminatorTotalLevel(pieces) {
   return (pieces || []).reduce((sum, piece) => {
     const level = Number(piece?.enchantments?.pesterminator || 0);
@@ -96,6 +164,10 @@ export function pesterminatorTotalLevel(pieces) {
 
 export function pesterminatorFortune(pieces) {
   return pesterminatorTotalLevel(pieces) * 2;
+}
+
+export function pesterminatorBonusPestChance(pieces) {
+  return pesterminatorTotalLevel(pieces);
 }
 
 export function sunsetTotalLevel(pieces) {

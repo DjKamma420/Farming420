@@ -349,7 +349,7 @@ test('Brown Bandana remains incomplete until eligible Pest Bestiary tiers are kn
   });
   assert.equal(known.complete, false, 'the empty current Pest setup still prevents a complete before/after comparison');
   assert.equal(known.after.petItem.bonusPestChance, 20);
-  assert.equal(known.after.totals.bonusPestChance, 20);
+  assert.equal(known.after.totals.bonusPestChance, 100, '80 Helianthus base BPC + 20 Brown Bandana');
   assert.ok(known.reasons.includes('current phase setup does not contain a complete armor/equipment loadout'));
 });
 
@@ -368,7 +368,7 @@ test('Brown Bandana reads eligible Pest Bestiary tiers directly from the normali
 
   assert.equal(result.after.petItem.complete, true);
   assert.equal(result.after.petItem.bonusPestChance, 20);
-  assert.equal(result.after.totals.bonusPestChance, 20);
+  assert.equal(result.after.totals.bonusPestChance, 100, '80 Helianthus base BPC + 20 Brown Bandana');
   assert.ok(!result.after.supportGaps.some(reason => reason.includes('Eligible Pest Bestiary tier total')));
   assert.equal(result.complete, false, 'the empty current Pest setup remains the only comparison blocker here');
   assert.ok(result.reasons.includes('current phase setup does not contain a complete armor/equipment loadout'));
@@ -384,13 +384,26 @@ test('Brown Bandana bestiary state is irrelevant outside the Pest Spawning phase
   assert.equal(result.before.totals.bonusPestChance, 0);
 });
 
-test('unmodeled Mantid armor reforge is explicit instead of silently valued at zero', () => {
+test('Mantid armor reforge is scored by rarity instead of creating a support gap', () => {
   const profileSnapshot = snapshot({ savedArmorReforge: 'mantid' });
   const state = stateForSnapshot(profileSnapshot);
   const result = evaluateSetupCandidate(state, savedCowCandidate(profileSnapshot));
 
-  assert.equal(result.complete, false);
-  assert.ok(result.after.supportGaps.some(reason => reason.includes('armor reforge mantid is not modeled')));
+  assert.equal(result.complete, true);
+  assert.ok(!result.after.supportGaps.some(reason => reason.includes('mantid')));
+  assert.equal(result.after.totals.derived.pestSetupGear.mantidFortune, 40);
+  assert.equal(result.after.totals.globalFortune, 468);
+  assert.equal(result.delta.globalFortune, -92);
+});
+
+test('Squeaky equipment reforge is a modeled setup reforge', () => {
+  const profileSnapshot = snapshot({ savedEquipmentReforge: 'squeaky' });
+  const state = stateForSnapshot(profileSnapshot);
+  const result = evaluateSetupCandidate(state, savedCowCandidate(profileSnapshot));
+
+  assert.equal(result.complete, true);
+  assert.ok(!result.after.supportGaps.some(reason => reason.includes('squeaky')));
+  assert.equal(result.after.totals.derived.pestSetupGear.squeakyFortune, 40);
 });
 
 test('non-Perfect Peridot values stay incomplete until their rarity table is modeled', () => {

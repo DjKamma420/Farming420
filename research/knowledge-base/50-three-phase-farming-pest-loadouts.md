@@ -121,6 +121,53 @@ The BPC/cooldown loadout should not be assumed active for the full cooldown.
 
 Current guides switch into the spawn loadout only when the effective Pest spawn cooldown is about to expire, then continue farming until the Pest spawn occurs. The app therefore needs to model the spawn set as a **short timed phase**, not as the gear worn throughout the whole waiting period.
 
+### Verified Mantid / Squeaky spawning math
+
+The setup evaluator now scores these item-local mechanics directly from the
+physical armor/equipment pieces instead of using one global manual value.
+
+**Mantid** and **Squeaky** share the same rarity-scaled base table:
+
+| Effective rarity | Farming Fortune | Bonus Pest Chance |
+| --- | ---: | ---: |
+| Common | 2 | 0.5 |
+| Uncommon | 4 | 0.5 |
+| Rare | 6 | 1 |
+| Epic | 8 | 1.5 |
+| Legendary | 10 | 2 |
+| Mythic | 12 | 2.5 |
+
+Recombobulation therefore matters because the reforge value follows effective
+rarity. Mantid additionally grants +0.25 BPC per Pest killed in the previous
+10 minutes, capped at +5 BPC **per Mantid piece**. The profile API does not
+expose this rolling kill window, so that one term stays unknown unless runtime
+context supplies the recent kill count.
+
+Squeaky additionally reduces Pest spawn cooldown by 2.5% per reforged equipment
+piece. Pesthunter equipment cooldown reductions are additive: +10% for each
+Pesthunter Necklace/Cloak/Belt/Gloves, while Pest Vest is +15%. Their base BPC
+is +5 per Pesthunter piece and +10 from Pest Vest. A typical 3/4 Pesthunter +
+Pest Vest layout therefore gives +25 base BPC and 45% cooldown reduction before
+Squeaky; four Squeaky reforges add another 10 percentage points.
+
+Helianthus contributes +20 BPC per armor piece (+80 full set). Current
+Pesterminator VI contributes +12 Farming Fortune and +6 BPC per piece, so the
+existing Fortune calculation and the spawning BPC calculation both derive from
+the actual per-piece enchant levels.
+
+Pesthunter's Eradicator tiered bonus is kill-phase Pest Fortune only:
+0/50/75/100 FF while vacuuming Pests at 1/2/3/4 Pesthunter pieces. Pest Vest
+does not count as a fourth Pesthunter piece for that tier.
+
+Sources:
+- https://hypixelskyblock.minecraft.wiki/w/Mantid_Claw
+- https://hypixelskyblock.minecraft.wiki/w/Squeaky_Toy
+- https://hypixelskyblock.minecraft.wiki/w/Pesthunter%27s_Set
+- https://hypixelskyblock.minecraft.wiki/w/Pest_Vest
+- https://hypixelskyblock.minecraft.wiki/w/Helianthus_Armor
+- https://eliteskyblock.com/articles/news-pesthunters-wares-update
+Last verified: 2026-09-23.
+
 This matters for profit calculations: applying the lower-Fortune spawn gear for the entire cooldown would materially understate crop output.
 
 ## Calculator rules

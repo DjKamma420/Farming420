@@ -175,7 +175,8 @@ test('armor reforges, enchants and gems apply per equipped piece', () => {
   }));
   assert.equal(state.profile.levels['armor-reforge-mossy-on-full-armor'], 2);
   assert.equal(state.profile.manualGain['armor-reforge-mossy-on-full-armor'], 50);
-  assert.equal(state.profile.levels['armor-enchant-pesterminator-vi-on-full-armor'], 9);
+  assert.equal(state.profile.levels['armor-enchant-pesterminator-vi-on-full-armor'], 1);
+  assert.equal(state.profile.manualGain['armor-enchant-pesterminator-vi-on-full-armor'], 18);
   assert.equal(state.profile.levels['armor-gem-perfect-peridot-on-full-armor'], 1);
   assert.equal(state.profile.manualGain['armor-gem-perfect-peridot-on-full-armor'], 8);
 });

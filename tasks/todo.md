@@ -121,10 +121,10 @@ Implemented above enumeration:
 - Poignant Lucky Clover is setup-local at +13 Overbloom
 - Brown Bandana is Pest-Spawning-only and now derives +0.2 BPC per eligible normalized Pest Bestiary tier, capped at +45; missing/unmigrated Bestiary data stays unknown
 - historical account-global Green/Poignant toggles are ignored by computed stats so pet items cannot stack across pets
+- Mantid and Squeaky are now rarity-scaled from the actual setup pieces; Helianthus/Pesterminator/Pesthunter/Pest Vest BPC and additive Pest cooldown reduction are setup-local too
+- Mantid's 10-minute kill stack is explicit runtime context: missing recent-kill state stays incomplete instead of assuming zero or max
 
 Still required before this area is closed:
-
-- verify/model Mantid and Squeaky numerically before they can score
 - normal crop / Jacob Contest / Pest Spawn / Pest Kill objective evaluation beyond raw stat deltas
 - budget/progression versus endgame/max-profit candidate classes
 - convert an evaluated candidate into a user-selectable setup without overwriting manual setup choices
