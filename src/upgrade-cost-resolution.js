@@ -122,6 +122,7 @@ export function resolveUpgradeCost(store, itemId) {
         acquisitionMode: 'BUYABLE',
         costKind: marketCostContext.costKind,
         costDisplayLabel: marketCostContext.displayLabel,
+        costGroupLabel: marketCostContext.costGroupLabel || null,
         marketLabel: market.marketLabel,
         source: market.source,
         windowDays: market.windowDays,
@@ -139,6 +140,7 @@ export function resolveUpgradeCost(store, itemId) {
       acquisitionMode: 'UNKNOWN',
       costKind: marketCostContext.costKind,
       costDisplayLabel: marketCostContext.displayLabel,
+      costGroupLabel: marketCostContext.costGroupLabel || null,
       reason: market?.reason || '90-day market average is unavailable for this acquisition route',
       ...stepMeta,
     };
@@ -199,6 +201,7 @@ export function costOriginNote(cost) {
     const label = [
       cost.marketLabel || '90-day market average',
       cost.costDisplayLabel || '',
+      cost.costGroupLabel || '',
       cost.computedAtMs != null
         ? marketAverageTimestampLabel({ computedAtMs: cost.computedAtMs })
         : '',
