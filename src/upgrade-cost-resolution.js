@@ -1,4 +1,5 @@
 import { UPGRADE_COSTS, missingCostReason } from './upgrade-costs.js';
+import { marketAverageTimestampLabel } from './market-average-prices.js';
 import { stepCostForUpgrade, stepCostModelForUpgrade } from './upgrade-step-costs.js';
 import {
   marketRoutesForUpgrade,
@@ -120,6 +121,7 @@ export function resolveUpgradeCost(store, itemId) {
         marketLabel: market.marketLabel,
         source: market.source,
         windowDays: market.windowDays,
+        computedAtMs: market.computedAtMs ?? null,
         quotes: market.quotes,
         reason: null,
         ...stepMeta,
@@ -187,7 +189,12 @@ export function resolveUpgradeCost(store, itemId) {
 /** One stable line saying where a cost came from, or why there is none. */
 export function costOriginNote(cost) {
   if (cost?.acquisitionMode === 'EARNED') return 'EARNED — enter active grind time';
-  if (cost?.origin === 'market-average') return cost.marketLabel || '90-day market average';
+  if (cost?.origin === 'market-average') {
+    const label = cost.marketLabel || '90-day market average';
+    return cost.computedAtMs != null
+      ? `${label} · ${marketAverageTimestampLabel({ computedAtMs: cost.computedAtMs })}`
+      : label;
+  }
   if (cost?.origin === 'included') return cost.reason || 'included in another purchase';
   return cost?.reason || '90-day market average unavailable';
 }
