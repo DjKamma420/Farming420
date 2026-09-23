@@ -29,6 +29,7 @@ test('empty profile snapshots have stable top-level sections', () => {
   assert.equal(snapshot.modelVersion, PROFILE_MODEL_VERSION);
   assert.deepEqual(Object.keys(snapshot).sort(), [
     'accountUpgrades',
+    'bestiary',
     'buffs',
     'garden',
     'identity',
@@ -156,6 +157,79 @@ test('missing pet API data is hidden instead of meaning the player owns no pets'
   assert.deepEqual(snapshot.pets, []);
   assert.equal(snapshot.provenance.pets.status, PROFILE_DATA_STATUS.HIDDEN);
   assert.ok(snapshot.sync.warnings.some(message => message.includes('pet list')));
+});
+
+
+test('profile normalization derives eligible Pest Bestiary tiers from current kill counters', () => {
+  const snapshot = normalizeProfilePayload({
+    profiles: [{
+      profile_id: 'profile-1',
+      members: {
+        '1111aaaa': {
+          bestiary: {
+            migration: true,
+            kills: {
+              pest_fly_1: 250,
+              pest_mouse_1: 100,
+              pest_lunar_moth_1: 11,
+              zombuddy_1: 999999,
+              timestalk_clone_100: 999999,
+            },
+          },
+        },
+      },
+    }],
+  });
+
+  assert.equal(snapshot.bestiary.eligiblePestTierTotal, 37);
+  assert.equal(snapshot.bestiary.eligiblePestMaxTierTotal, 225);
+  assert.equal(snapshot.bestiary.eligiblePestFamilyTiers.pest_fly_1, 15);
+  assert.equal(snapshot.bestiary.eligiblePestFamilyTiers.pest_mouse_1, 15);
+  assert.equal(snapshot.bestiary.eligiblePestFamilyTiers.pest_lunar_moth_1, 7);
+  assert.equal(snapshot.provenance.bestiary.status, PROFILE_DATA_STATUS.AUTO);
+  assert.equal(snapshot.provenance['bestiary.eligiblePestTierTotal'].status, PROFILE_DATA_STATUS.DERIVED);
+});
+
+test('missing or unmigrated Bestiary data stays unknown instead of becoming zero', () => {
+  const missing = normalizeProfilePayload({
+    profiles: [{ profile_id: 'profile-1', members: { '1111aaaa': {} } }],
+  });
+  assert.equal(missing.bestiary.kills, null);
+  assert.equal(missing.bestiary.eligiblePestTierTotal, null);
+  assert.equal(missing.provenance.bestiary.status, PROFILE_DATA_STATUS.HIDDEN);
+
+  const unmigrated = normalizeProfilePayload({
+    profiles: [{
+      profile_id: 'profile-1',
+      members: { '1111aaaa': { bestiary: { migration: false, kills: { pest_fly_1: 250 } } } },
+    }],
+  });
+  assert.equal(unmigrated.bestiary.eligiblePestTierTotal, null);
+  assert.equal(unmigrated.provenance.bestiary.status, PROFILE_DATA_STATUS.UNKNOWN);
+  assert.equal(unmigrated.provenance['bestiary.eligiblePestTierTotal'].status, PROFILE_DATA_STATUS.UNKNOWN);
+});
+
+test('a hidden Bestiary response preserves the last known counters while updating provenance', () => {
+  const base = createEmptyProfileSnapshot();
+  base.bestiary = {
+    kills: { pest_fly_1: 250 },
+    eligiblePestTierTotal: 15,
+    eligiblePestMaxTierTotal: 225,
+    eligiblePestFamilyTiers: { pest_fly_1: 15 },
+    migration: true,
+  };
+  base.provenance.bestiary = { status: PROFILE_DATA_STATUS.AUTO, sources: [] };
+  base.provenance['bestiary.eligiblePestTierTotal'] = { status: PROFILE_DATA_STATUS.DERIVED, sources: [] };
+
+  const patch = createEmptyProfileSnapshot();
+  patch.provenance.bestiary = { status: PROFILE_DATA_STATUS.HIDDEN, sources: [] };
+  patch.provenance['bestiary.eligiblePestTierTotal'] = { status: PROFILE_DATA_STATUS.UNKNOWN, sources: [] };
+
+  const merged = mergeProfileSnapshots(base, patch);
+  assert.equal(merged.bestiary.eligiblePestTierTotal, 15);
+  assert.equal(merged.bestiary.kills.pest_fly_1, 250);
+  assert.equal(merged.provenance.bestiary.status, PROFILE_DATA_STATUS.HIDDEN);
+  assert.equal(merged.provenance['bestiary.eligiblePestTierTotal'].status, PROFILE_DATA_STATUS.UNKNOWN);
 });
 
 test('garden normalization preserves plot ids, upgrades, visitors and unknown keys', () => {
