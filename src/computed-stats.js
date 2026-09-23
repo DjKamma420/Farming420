@@ -17,7 +17,7 @@ import { activeSetup } from './setups.js';
 import { gardenLevelFromExperience } from './garden-level.js';
 import { setupPetItemContribution } from './setup-pet-items.js';
 
-export const COMPUTED_STATS_VERSION = 10;
+export const COMPUTED_STATS_VERSION = 11;
 
 const SETUP_LOCAL_PET_ITEM_ENTRY_IDS = new Set([
   'pet-item-green-bandana',
@@ -191,7 +191,9 @@ function setupPetItemForState(state, mode, derivedContext = {}) {
   const contribution = setupPetItemContribution(setup?.slots?.petItem || null, {
     gardenLevel: snapshot?.garden?.level
       ?? gardenLevelFromExperience(snapshot?.garden?.experience),
-    eligiblePestBestiaryTiers: derivedContext?.eligiblePestBestiaryTiers ?? null,
+    eligiblePestBestiaryTiers: derivedContext?.eligiblePestBestiaryTiers
+      ?? snapshot?.bestiary?.eligiblePestTierTotal
+      ?? null,
   });
   const active = contribution.activityScope === 'any'
     || (contribution.activityScope === 'pest-spawn' && mode === ACTIVITY_MODE.PEST_SPAWN);

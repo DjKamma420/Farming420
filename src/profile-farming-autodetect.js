@@ -4,7 +4,7 @@ import { GARDEN_CHIPS, TEMPORARY_FARMING_MODIFIERS } from './farming-modifiers-d
 import { PROFILE_DATA_STATUS } from './profile-normalizer.js';
 import { buildSetupCandidateInventory } from './setup-candidates.js';
 
-export const FARMING_AUTODETECT_VERSION = 1;
+export const FARMING_AUTODETECT_VERSION = 2;
 
 const TOOL_BY_ID = new Map(
   Object.entries(FARMING_TOOL_ITEM_IDS)
@@ -158,6 +158,12 @@ function accountDetection(snapshot, physical) {
       unlockedPlotCount: snapshot?.garden?.unlockedPlotCount ?? null,
       visitorsCompleted: snapshot?.garden?.visitors?.totalCompleted ?? null,
     }),
+    pestBestiary: Object.freeze({
+      status: statusOf(snapshot, 'bestiary.eligiblePestTierTotal'),
+      eligibleTierTotal: snapshot?.bestiary?.eligiblePestTierTotal ?? null,
+      maxEligibleTierTotal: snapshot?.bestiary?.eligiblePestMaxTierTotal ?? null,
+      familyTiers: Object.freeze({ ...(snapshot?.bestiary?.eligiblePestFamilyTiers || {}) }),
+    }),
     gardenChips: Object.freeze({
       status: PROFILE_DATA_STATUS.UNKNOWN,
       redeemedLevels: null,
@@ -197,7 +203,12 @@ export function detectFarmingProfile(snapshot) {
 
   return Object.freeze({
     version: FARMING_AUTODETECT_VERSION,
-    sourceStatus: Object.freeze({ items: itemStatus, pets: statusOf(snapshot, 'pets'), garden: statusOf(snapshot, 'garden') }),
+    sourceStatus: Object.freeze({
+      items: itemStatus,
+      pets: statusOf(snapshot, 'pets'),
+      garden: statusOf(snapshot, 'garden'),
+      bestiary: statusOf(snapshot, 'bestiary.eligiblePestTierTotal'),
+    }),
     account: accountDetection(snapshot, physical),
     physical: Object.freeze({
       status: itemStatus,

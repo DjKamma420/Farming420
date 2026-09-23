@@ -61,7 +61,7 @@ above forbids.
 
 1. `/v2/resources/skyblock/skills` (keyless) for the Farming level table
 2. `/v2/skyblock/profiles?uuid=...` -> profile selection, Farming XP, pets,
-   community upgrades, item NBT
+   community upgrades, Pest Bestiary kill counters, item NBT
 3. `/v2/skyblock/garden?profile=...` -> crop upgrades, plots, visitors,
    composter, resources collected
 
@@ -163,6 +163,7 @@ The official docs state that profile data contains SkyBlock stats/objectives and
 | Community upgrades | claimed/current upgrade state | Profile exposes `community_upgrades`; map exact farming-related upgrade IDs before enabling automatic recommendations. |
 | Booster Cookie active state | profile field exists according to Hypixel PublicAPI feature history | Verify current v2 path in a real/current payload before parser activation. |
 | Pets | owned pets, level/XP, held items where exposed | Profile data; validate active/equipped state. |
+| Pest Bestiary | `member.bestiary.kills` -> eligible Pest family tiers for Brown Bandana | Normalized automatically for the 15 current eligible Pest families. Missing or unmigrated Bestiary data stays unknown; Zombuddy and Timestalk Clone are excluded from Brown Bandana. |
 | Armor/equipment | item NBT | Requires inventory API visibility and NBT parsing. |
 | Farming tools | item NBT across accessible inventories/storage | Parse item ID, rarity, upgrades, enchantments, gemstones, counters and custom data. Storage coverage must be verified. |
 | Enchantments | item NBT | Can generally be parsed from item data when the item itself is visible. This means many tool/armor enchantments should not require manual entry. |
@@ -179,7 +180,7 @@ The official docs state that profile data contains SkyBlock stats/objectives and
 Do not implement these from memory. Each needs a real payload/schema research task first.
 
 - Anita Extra Farming Fortune tier
-- Pest/Garden bestiary Fortune
+- Garden Bestiary Farming Fortune beyond the Brown Bandana-specific eligible Pest tier sum
 - Greenhouse Mutation Analysis rewards
 - permanent consumables such as Rosewater Flask stacks
 - exportable crop items / permanent crop bonuses
