@@ -45,6 +45,12 @@ const MARKET_COST_CONTEXT = Object.freeze({
   'mixin-celestial-mason-jar': Object.freeze({
     costKind: MARKET_COST_KIND.RECURRING_CONSUMABLE,
     displayLabel: 'per use',
+    costGroupLabel: 'one Celestial Mason Jar activation',
+  }),
+  'mixin-celestial-mason-jar-wisdom': Object.freeze({
+    costKind: MARKET_COST_KIND.RECURRING_CONSUMABLE,
+    displayLabel: 'per use',
+    costGroupLabel: 'one Celestial Mason Jar activation',
   }),
   'mixin-melon-juice-mixin': Object.freeze({
     costKind: MARKET_COST_KIND.RECURRING_CONSUMABLE,
@@ -98,6 +104,7 @@ const ENTRY_ROUTES = Object.freeze({
   'temporary-atmospheric-filter-spring': route(ah('ATMOSPHERIC_FILTER')),
   'temporary-magic-8-ball-ff-roll': route(ah('MAGIC_8_BALL')),
   'mixin-celestial-mason-jar': route(bz('CELESTIAL_MASON_JAR')),
+  'mixin-celestial-mason-jar-wisdom': route(bz('CELESTIAL_MASON_JAR')),
   'mixin-melon-juice-mixin': route(ah('MELON_JUICE_MIXIN')),
   'temporary-harvest-harbinger-v': route(ah('POTION_harvest_harbinger')),
   'temporary-buff-refined-dark-cacao-truffle-temporary-stack': route(bz('REFINED_DARK_CACOA_TRUFFLE')),
