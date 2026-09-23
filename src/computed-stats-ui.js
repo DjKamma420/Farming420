@@ -87,23 +87,6 @@ function replaceCropInput(raw) {
       : '<small>No configured crop sources yet</small>'}`;
 }
 
-function replacePlannerOverbloom(raw) {
-  const input = document.querySelector('[data-revenue-input="overbloom"]');
-  if (!input) return;
-  const cropId = raw.selectedCrop || 'melon';
-  const stats = computeStatTotals(raw, cropId);
-  const label = input.closest('label');
-  if (!label) return;
-  const missing = stats.incomplete.overbloom.length;
-  const sourceCount = Number(stats.sourceCount?.overbloom || 0);
-  label.className = 'revenue-derived-stat';
-  label.innerHTML = `<span>Current Overbloom${sourceCount ? ' · calculated' : ''}</span><strong>${shortValue(stats.overbloom)}</strong>${missing
-    ? `<small>~ ${missing} unresolved source${missing === 1 ? '' : 's'}</small>`
-    : sourceCount
-      ? `<small>${sourceCount} configured source${sourceCount === 1 ? '' : 's'}</small>`
-      : '<small>No configured Overbloom sources yet</small>'}`;
-}
-
 function addAccountAudit(raw) {
   const content = document.querySelector('.content');
   if (!content || content.querySelector('.computed-stat-audit')) return;
@@ -156,7 +139,6 @@ function apply() {
     removeTopbarStats();
     replaceGlobalInput(raw);
     replaceCropInput(raw);
-    replacePlannerOverbloom(raw);
     addAccountAudit(raw);
     if (changed) window.dispatchEvent(new Event('farming420:state-changed'));
   } finally {
