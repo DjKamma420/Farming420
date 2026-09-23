@@ -29,18 +29,15 @@ test('typing recomputes without dispatching a render', () => {
   assert.doesNotMatch(refresh, /\.textContent\s*=/);
 });
 
-test('applying is a click, and that is where the render belongs', () => {
-  const apply = planner.match(/\[data-measured-apply\]'\)\?\.addEventListener\('click'[\s\S]*?\n  \}\);/)[0];
-  assert.match(apply, /setPlannerEconomicsValue\(next, cropId, nextMode, 'normalCropCoinsPerHour'/);
-  // Coins are whole. Unrounded, a float artifact lands in storage and is shown
-  // back in the baseline input as 3060000.0000000005.
-  assert.match(apply, /Math\.round\(result\.normalCropCoinsPerHour\)/);
-  assert.match(apply, /Math\.round\(result\.rareCropCoinsPerHour\)/);
-  assert.match(apply, /farming420:state-changed/);
-  // A Feast stream that was never switched on must not be written as a zero.
-  assert.match(apply, /if \(result\.rareCropCoinsPerHour != null\) \{/);
-  // And an incomplete measurement cannot be applied at all.
-  assert.match(apply, /if \(result\.normalCropCoinsPerHour == null\) return;/);
+test('coin values are automatic and are never applied from a manual baseline', () => {
+  assert.doesNotMatch(planner, /data-measured-apply/);
+  assert.doesNotMatch(planner, /setPlannerEconomicsValue/);
+  assert.doesNotMatch(planner, /data-revenue-input/);
+  assert.match(planner, /function measuredWithMarketAverage\(values, cropId\)/);
+  assert.match(planner, /delete priced\.coinsPerUnit/);
+  assert.match(planner, /delete priced\.feastMaterialCoins/);
+  assert.match(planner, /averageCropUnitPrice\(cropId\)/);
+  assert.match(planner, /averageCropPriceNote/);
 });
 
 test('an empty measurement clears its stored value instead of storing zero', () => {
@@ -73,10 +70,10 @@ test('the summary is not given display: flex', () => {
   assert.match(planner, /<summary>\s*<div class="revenue-measured-head">/);
 });
 
-test('the optional Feast inputs are marked optional on screen too', () => {
-  assert.match(planner, /field\.optional \? 'revenue-measured-optional' : ''/);
+test('the Feast market value is read-only and the Feast toggle remains interactive', () => {
+  assert.match(planner, /revenue-measured-market revenue-measured-optional/);
   assert.match(css, /\.revenue-measured-optional/);
-  // The toggle refreshes with the rest rather than needing its own render.
+  assert.doesNotMatch(planner, /data-measured="feastMaterialCoins"/);
   assert.match(planner, /feastToggle\?\.addEventListener\('change', refreshMeasured\)/);
   assert.match(planner, /if \(feastToggle\?\.checked\) values\[MEASURED_FEAST_KEY\] = true;/);
   assert.match(planner, /else delete values\[MEASURED_FEAST_KEY\];/);

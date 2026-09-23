@@ -4,60 +4,95 @@ import { readFileSync } from 'node:fs';
 import { UPGRADES } from '../src/data.js';
 import { UPGRADE_COSTS } from '../src/upgrade-costs.js';
 import { costOriginNote, resolveUpgradeCost } from '../src/upgrade-cost-resolution.js';
+import { marketRoutesForUpgrade } from '../src/upgrade-market-routes.js';
+import {
+  MARKET_AVERAGE_MODEL_VERSION,
+  MARKET_KIND,
+  MARKET_SIDE,
+  writeCachedMarketAverage,
+} from '../src/market-average-prices.js';
 import { rankEvaluatedUpgrades } from '../src/revenue-ranking.js';
 
 const read = name => readFileSync(new URL(`../src/${name}`, import.meta.url), 'utf8');
 
-const pricedId = Object.keys(UPGRADE_COSTS)
-  .find(id => UPGRADE_COSTS[id]?.unit === 'coins' && Number(UPGRADE_COSTS[id]?.coins) > 0);
 const earnedId = Object.keys(UPGRADE_COSTS)
   .find(id => UPGRADE_COSTS[id]?.unit === 'time');
 const unknownId = Object.keys(UPGRADE_COSTS)
   .find(id => UPGRADE_COSTS[id]?.unit === null && !(Number(UPGRADE_COSTS[id]?.coins) > 0));
+const marketPricedId = 'tool-enchant-harvesting-vi';
 
-test('the research table has BUYABLE, EARNED and unknown routes to resolve', () => {
-  assert.ok(pricedId, 'no priced BUYABLE entry in the generated cost table');
+async function withStorage(run) {
+  const map = new Map();
+  const previous = globalThis.localStorage;
+  globalThis.localStorage = {
+    getItem: key => map.has(key) ? map.get(key) : null,
+    setItem: (key, value) => map.set(key, String(value)),
+    removeItem: key => map.delete(key),
+  };
+  try { return await run(map); } finally { globalThis.localStorage = previous; }
+}
+
+function cacheBazaarAverage(itemTag, coinsPerUnit) {
+  const now = Date.now();
+  writeCachedMarketAverage({
+    version: MARKET_AVERAGE_MODEL_VERSION,
+    source: 'skycofl-90d',
+    market: MARKET_KIND.BAZAAR,
+    side: MARKET_SIDE.ACQUIRE,
+    itemTag,
+    coinsPerUnit,
+    sampleCount: 90,
+    windowDays: 90,
+    windowStartMs: now - 90 * 24 * 60 * 60 * 1000,
+    windowEndMs: now,
+    computedAtMs: now,
+    attributionUrl: 'https://sky.coflnet.com/data',
+  });
+}
+
+test('the research table still distinguishes bought, earned and unknown routes', () => {
+  assert.ok(
+    Object.keys(UPGRADE_COSTS).some(id => UPGRADE_COSTS[id]?.unit === 'coins' && Number(UPGRADE_COSTS[id]?.coins) > 0),
+    'no researched BUYABLE entry exists',
+  );
   assert.ok(earnedId, 'no EARNED entry in the generated cost table');
   assert.ok(unknownId, 'no unknown entry in the generated cost table');
 });
 
-test('a price the player recorded wins over the research snapshot', () => {
-  const store = { costs: { [pricedId]: 1234 } };
-  const resolved = resolveUpgradeCost(store, pricedId);
-  assert.equal(resolved.coins, 1234);
-  assert.equal(resolved.origin, 'recorded');
-  assert.equal(resolved.acquisitionMode, 'BUYABLE');
-  assert.equal(costOriginNote(resolved), 'your recorded price');
+test('a buyable upgrade stays unknown until its 90-day market average is cached', async () => {
+  await withStorage(async () => {
+    const resolved = resolveUpgradeCost({ costs: { [marketPricedId]: 1234 } }, marketPricedId);
+    assert.equal(resolved.coins, 0);
+    assert.equal(resolved.origin, 'unknown');
+    assert.equal(resolved.acquisitionMode, 'UNKNOWN');
+    assert.match(resolved.reason, /90-day market average/);
+  });
 });
 
-test('the research snapshot is read when nothing is recorded', () => {
-  const resolved = resolveUpgradeCost({ costs: {} }, pricedId);
-  assert.equal(resolved.coins, UPGRADE_COSTS[pricedId].coins);
-  assert.equal(resolved.origin, 'research');
-  assert.equal(resolved.acquisitionMode, 'BUYABLE');
-  assert.match(costOriginNote(resolved), /research/);
+test('a cached 90-day market average wins even when a legacy player cost exists', async () => {
+  await withStorage(async () => {
+    cacheBazaarAverage('ENCHANTMENT_HARVESTING_6', 2_250_000);
+    const resolved = resolveUpgradeCost({ costs: { [marketPricedId]: 1234 } }, marketPricedId);
+    assert.equal(resolved.coins, 2_250_000);
+    assert.equal(resolved.origin, 'market-average');
+    assert.equal(resolved.acquisitionMode, 'BUYABLE');
+    assert.match(costOriginNote(resolved), /90-day Bazaar/);
+  });
 });
 
-test('EARNED route is preserved instead of becoming zero-as-free', () => {
-  const resolved = resolveUpgradeCost({ costs: {} }, earnedId);
+test('EARNED route ignores legacy recorded coin components', () => {
+  const resolved = resolveUpgradeCost({ costs: { [earnedId]: 2_000_000 } }, earnedId);
   assert.equal(resolved.acquisitionMode, 'EARNED');
   assert.equal(resolved.unit, 'time');
+  assert.equal(resolved.directCoinCost, 0);
   assert.equal(resolved.coins, 0);
   assert.equal(resolved.origin, 'earned');
   assert.equal(costOriginNote(resolved), 'EARNED — enter active grind time');
 });
 
-test('a recorded coin component on EARNED progression does not turn it BUYABLE', () => {
-  const resolved = resolveUpgradeCost({ costs: { [earnedId]: 2_000_000 } }, earnedId);
-  assert.equal(resolved.acquisitionMode, 'EARNED');
-  assert.equal(resolved.directCoinCost, 2_000_000);
-  assert.equal(resolved.coins, 2_000_000);
-  assert.match(costOriginNote(resolved), /^EARNED/);
-});
-
 test('an unclassified cost stays unknown instead of becoming zero-as-free', () => {
   for (const id of [unknownId, 'not-an-upgrade-id-at-all']) {
-    const resolved = resolveUpgradeCost({ costs: {} }, id);
+    const resolved = resolveUpgradeCost({ costs: { [id]: 99_999_999 } }, id);
     assert.equal(resolved.origin, 'unknown');
     assert.equal(resolved.acquisitionMode, 'UNKNOWN');
     assert.equal(resolved.coins, 0);
@@ -66,20 +101,16 @@ test('an unclassified cost stays unknown instead of becoming zero-as-free', () =
   }
 });
 
-test('a recorded zero is not a recorded price', () => {
-  const resolved = resolveUpgradeCost({ costs: { [unknownId]: 0 } }, unknownId);
-  assert.equal(resolved.origin, 'unknown');
+test('every currently static-priced active BUYABLE entry has an explicit 90-day market route', () => {
+  const active = UPGRADES.filter(item => item.status === 'ACTIVE');
+  const priced = active.filter(item => UPGRADE_COSTS[item.id]?.unit === 'coins' && Number(UPGRADE_COSTS[item.id]?.coins) > 0);
+  assert.ok(priced.length > 0, 'the table prices nothing the planner shows');
+  for (const item of priced) {
+    assert.ok(marketRoutesForUpgrade(item.id, null), `${item.id} has no rolling-market route`);
+  }
 });
 
-test('a stale snapshot says so rather than passing as current', () => {
-  const stale = Object.keys(UPGRADE_COSTS)
-    .filter(id => Number(UPGRADE_COSTS[id]?.coins) > 0)
-    .find(id => UPGRADE_COSTS[id].priceStatus === 'STALE_FALLBACK_SNAPSHOT');
-  if (!stale) return;
-  assert.equal(costOriginNote(resolveUpgradeCost({}, stale)), 'research snapshot, stale');
-});
-
-test('the planner resolves routes and passes earned-time inputs into evaluation', () => {
+test('the planner resolves market routes and passes earned-time inputs into evaluation', () => {
   const planner = read('revenue-planner.js');
   assert.match(planner, /from '\.\/upgrade-cost-resolution\.js'/);
   assert.match(planner, /resolveUpgradeCost\(store, item\.id\)/);
@@ -95,18 +126,7 @@ test('the planner resolves routes and passes earned-time inputs into evaluation'
   assert.ok(planner.indexOf('costSource,', spread) > spread);
 });
 
-test('every priced BUYABLE row the planner can show resolves to a positive cost', () => {
-  const active = UPGRADES.filter(item => item.status === 'ACTIVE');
-  const priced = active.filter(item => UPGRADE_COSTS[item.id]?.unit === 'coins' && Number(UPGRADE_COSTS[item.id]?.coins) > 0);
-  assert.ok(priced.length > 0, 'the table prices nothing the planner shows');
-  for (const item of priced) {
-    const resolved = resolveUpgradeCost({ costs: {} }, item.id);
-    assert.equal(resolved.acquisitionMode, 'BUYABLE', item.id);
-    assert.ok(resolved.coins > 0, item.id);
-  }
-});
-
-test('with no profit baseline the table still decides the order', () => {
+test('with no profit baseline the ranking helper still orders known cheaper cost before dearer cost', () => {
   const cheap = { item: { id: 'cheap', name: 'Cheap' }, gain: 1, cost: 1_000_000,
     payback: null, marginalCoinsHour: null, fortuneEquivalent: 1, coinsPerEffectiveFortune: 1_000_000 };
   const dear = { item: { id: 'dear', name: 'Dear' }, gain: 1, cost: 50_000_000,

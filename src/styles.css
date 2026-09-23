@@ -101,3 +101,30 @@
 @media (max-width:480px){
   .dashboard-estimate-grid{grid-template-columns:1fr}
 }
+
+
+/* Automatic 90-day market values sit beside the measurable throughput inputs,
+   but are deliberately not editable. */
+.dashboard-estimate-readonly {
+  display: grid;
+  gap: 5px;
+  align-content: start;
+  padding: 10px 11px;
+  border: 1px solid rgba(125, 160, 134, .22);
+  border-radius: 4px;
+  background: rgba(9, 16, 11, .72);
+}
+.dashboard-estimate-readonly > span {
+  color: #9fb0a3;
+  font-size: 12px;
+  font-weight: 800;
+}
+.dashboard-estimate-readonly > strong {
+  color: #edf7ef;
+  font-size: 14px;
+}
+.dashboard-estimate-readonly > small {
+  color: #7d8f82;
+  font-size: 11px;
+  line-height: 1.35;
+}

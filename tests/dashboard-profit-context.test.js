@@ -19,11 +19,11 @@ test('Dashboard owns the farming event context selector', () => {
 test('Dashboard Coins per hour is source-driven instead of a fixed 20m claim', () => {
   assert.match(app, /Estimated Coins\/h/);
   assert.match(app, /measuredBaseline\(/);
-  assert.match(app, /liveCropUnitPrice\(/);
-  assert.match(app, /liveHarvestFeastMaterialPrice\(/);
+  assert.match(app, /averageCropUnitPrice\(/);
+  assert.match(app, /averageHarvestFeastMaterialPrice\(/);
   assert.match(app, /data-dashboard-estimate="breaksPerSecond"/);
   assert.match(app, /data-dashboard-estimate="uptimePercent"/);
-  assert.match(app, /unknown crop mechanics stay unknown instead of being guessed/);
+  assert.match(app, /Coin values are fixed rolling 90-day market averages/);
 });
 
 test('the old Fortune to Coins information card is gone from Upgrade Planner', () => {

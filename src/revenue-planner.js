@@ -2,7 +2,12 @@ import { CROPS, UPGRADES } from './data.js';
 import { STORAGE_KEY } from './config.js';
 import { ACTIVITY_MODE, activityLabel, activityModeForState, setActivityModeOnState } from './activity-mode.js';
 import { evaluateUpgrade, rankEvaluatedUpgrades, statDeltas } from './revenue-ranking.js';
-import { CROP_PRICE_STATUS, liveCropPriceNote, liveCropUnitPrice } from './live-crop-price.js';
+import {
+  AVERAGE_CROP_PRICE_STATUS,
+  averageCropPriceNote,
+  averageCropUnitPrice,
+  averageHarvestFeastMaterialPrice,
+} from './average-crop-price.js';
 import { MEASURED_FEAST_KEY, MEASURED_FIELDS, describeMissing, measuredBaseline } from './measured-baseline.js';
 import { setTextIfChanged } from './set-text.js';
 import { costOriginNote, resolveUpgradeCost } from './upgrade-cost-resolution.js';
@@ -16,10 +21,8 @@ import {
 } from './planner-upgrade-objective.js';
 import {
   plannerActivityContext,
-  plannerEconomicsBucket,
   plannerItemApplies,
   plannerProgressBucket,
-  setPlannerEconomicsValue,
 } from './planner-activity-context.js';
 import { formatNumber } from './format-number.js';
 import { applySnapshotToProgress } from './snapshot-apply.js';
@@ -221,16 +224,21 @@ function gain(raw, item) {
   return Number(item.stepGain || item.rawMarginal || 0);
 }
 
-function economics(raw) {
+function automaticProfitStreams(raw, context = plannerActivityContext(raw, selectedCropId(raw))) {
   const cropId = selectedCropId(raw);
-  return plannerEconomicsBucket(raw, cropId, activityModeForState(raw));
+  const priced = measuredWithMarketAverage(measured(raw), cropId);
+  const result = measuredBaseline(priced.values, measuredStats(context), cropId);
+  return {
+    normalCropCoinsPerHour: result.normalCropCoinsPerHour,
+    rareCropCoinsPerHour: result.rareCropCoinsPerHour,
+  };
 }
 
 function timeValueFor(raw) {
-  const econ = economics(raw);
-  const measured = Math.max(0, Number(econ.normalCropCoinsPerHour || 0))
-    + Math.max(0, Number(econ.rareCropCoinsPerHour || 0));
-  if (measured > 0) return { coinsPerHour: measured, source: 'player_baseline' };
+  const streams = automaticProfitStreams(raw);
+  const measuredCoins = Math.max(0, Number(streams.normalCropCoinsPerHour || 0))
+    + Math.max(0, Number(streams.rareCropCoinsPerHour || 0));
+  if (measuredCoins > 0) return { coinsPerHour: measuredCoins, source: 'automatic_90d_market_baseline' };
   return {
     coinsPerHour: INTERNET_FARMING_TIME_VALUE_COINS_PER_HOUR,
     source: 'internet_benchmark',
@@ -253,9 +261,9 @@ function earnedRouteRows(raw) {
 
 function evaluatedRows(raw) {
   const cropId = selectedCropId(raw);
-  const econ = economics(raw);
   const timeValue = timeValueFor(raw);
   const context = plannerActivityContext(raw, cropId);
+  const streams = automaticProfitStreams(raw, context);
 
   return rankEvaluatedUpgrades(UPGRADES
     .filter(item => item.status === 'ACTIVE')
@@ -281,8 +289,8 @@ function evaluatedRows(raw) {
           currentFortune: context.currentFortune,
           currentOverbloom: context.currentOverbloom,
           fortuneBase: context.fortuneBase,
-          normalCropCoinsPerHour: Number(econ.normalCropCoinsPerHour || 0),
-          rareCropCoinsPerHour: Number(econ.rareCropCoinsPerHour || 0),
+          normalCropCoinsPerHour: Number(streams.normalCropCoinsPerHour || 0),
+          rareCropCoinsPerHour: Number(streams.rareCropCoinsPerHour || 0),
         }),
         activityMode: context.mode,
         costSource,
@@ -568,23 +576,26 @@ function fortuneUsedText(context) {
 }
 
 /**
- * The crop price the player does not have to look up.
+ * Add non-editable rolling market values to measured throughput.
  *
- * The research's own runtime rule is that fresh Bazaar data overrides a
- * snapshot wherever a Bazaar product exists, and `live-prices.js` could do that
- * all along with nothing calling it. A live quote fills the field's placeholder
- * and is used when the player has typed nothing; anything they type wins,
- * because they may be selling somewhere else or at a different order depth.
+ * Legacy manual coin fields may still exist in stored backups. They are
+ * intentionally deleted from the calculation copy before automatic prices are
+ * injected, so old user-entered prices cannot override the 90-day model.
  */
-function livePriceFor(raw) {
-  return liveCropUnitPrice(selectedCropId(raw));
-}
+function measuredWithMarketAverage(values, cropId) {
+  const priced = { ...(values || {}) };
+  delete priced.coinsPerUnit;
+  delete priced.feastMaterialCoins;
 
-/** The measurements, with a live crop price standing in for an empty field. */
-function measuredWithLivePrice(values, live) {
-  if (values.coinsPerUnit !== undefined && values.coinsPerUnit !== '') return values;
-  if (live?.status !== CROP_PRICE_STATUS.LIVE) return values;
-  return { ...values, coinsPerUnit: live.coinsPerUnit };
+  const normalPrice = averageCropUnitPrice(cropId);
+  const feastPrice = averageHarvestFeastMaterialPrice(cropId);
+  if (normalPrice.status === AVERAGE_CROP_PRICE_STATUS.AVERAGE) {
+    priced.coinsPerUnit = normalPrice.coinsPerUnit;
+  }
+  if (priced[MEASURED_FEAST_KEY] && feastPrice.status === AVERAGE_CROP_PRICE_STATUS.AVERAGE) {
+    priced.feastMaterialCoins = feastPrice.coinsPerUnit;
+  }
+  return { values: priced, normalPrice, feastPrice };
 }
 
 function measuredResultText(result) {
@@ -643,31 +654,41 @@ function measuredMissingText(result, caveats = { unmodelled: [], zeroFortune: fa
  */
 function measuredPanel(raw, context) {
   const values = measured(raw);
-  const live = livePriceFor(raw);
-  const result = measuredBaseline(measuredWithLivePrice(values, live), measuredStats(context), selectedCropId(raw));
+  const cropId = selectedCropId(raw);
+  const priced = measuredWithMarketAverage(values, cropId);
+  const result = measuredBaseline(priced.values, measuredStats(context), cropId);
   const caveats = fortuneCaveats(context);
+  const priceText = price => price?.coinsPerUnit
+    ? `${compactCoins(price.coinsPerUnit)} Coins`
+    : '—';
   return `<details class="revenue-measured">
     <summary>
       <div class="revenue-measured-head">
-        <strong>Don\u2019t know your Coins/h? Measure it.</strong>
+        <strong>Don’t know your Coins/h? Measure throughput.</strong>
         <span>${esc(fortuneUsedText(context))}</span>
       </div>
     </summary>
     <div class="revenue-measured-grid">
-      ${MEASURED_FIELDS.map(field => {
-        const isPrice = field.key === 'coinsPerUnit';
-        const priced = isPrice && live.status === CROP_PRICE_STATUS.LIVE;
-        return `<label class="${field.optional ? 'revenue-measured-optional' : ''}">
+      ${MEASURED_FIELDS.map(field => `<label>
         <span>${esc(field.label)}</span>
         <input data-measured="${esc(field.key)}" type="number" min="0" step="${field.step}"${field.max ? ` max="${field.max}"` : ''}
-          value="${values[field.key] === undefined ? '' : esc(values[field.key])}"${priced ? ` placeholder="${esc(live.coinsPerUnit)}"` : ''}>
-        <small>${isPrice ? esc(liveCropPriceNote(live)) : esc(field.hint)}</small>
-      </label>`;
-      }).join('')}
+          value="${values[field.key] === undefined ? '' : esc(values[field.key])}">
+        <small>${esc(field.hint)}</small>
+      </label>`).join('')}
+      <div class="revenue-measured-market">
+        <span>Crop sell value</span>
+        <strong>${esc(priceText(priced.normalPrice))}</strong>
+        <small>${esc(averageCropPriceNote(priced.normalPrice))}</small>
+      </div>
+      <div class="revenue-measured-market revenue-measured-optional">
+        <span>Feast crop value</span>
+        <strong>${esc(priceText(priced.feastPrice))}</strong>
+        <small>${esc(averageCropPriceNote(priced.feastPrice))}</small>
+      </div>
       <label class="revenue-measured-optional revenue-measured-toggle">
         <span>Harvest Feast running</span>
         <input data-measured-feast type="checkbox"${values[MEASURED_FEAST_KEY] ? ' checked' : ''}>
-        <small>The Feast rare-crop model comes from the research, not from you.</small>
+        <small>The Feast rare-crop model comes from research; the coin value is the rolling 90-day Bazaar average.</small>
       </label>
     </div>
     <div class="revenue-measured-out">
@@ -675,41 +696,34 @@ function measuredPanel(raw, context) {
         <strong data-measured-out>${esc(measuredResultText(result))}</strong>
         <span data-measured-note>${esc(measuredMissingText(result, caveats))}</span>
       </div>
-      <button class="ghost small" data-measured-apply${result.normalCropCoinsPerHour == null ? ' disabled' : ''}>Use as baseline</button>
     </div>
+    <p class="revenue-help">Market history: <a href="https://sky.coflnet.com/data" target="_blank" rel="noreferrer">SkyCofl</a>. Coin values are automatic and cannot be entered manually.</p>
   </details>`;
 }
-
 function economicsPanel(raw) {
   const crop = cropFor(raw);
   const cropId = selectedCropId(raw);
   const mode = activityModeForState(raw);
   const context = plannerActivityContext(raw, cropId);
-  const econ = economics(raw);
-  const fortuneStreamLabel = mode === ACTIVITY_MODE.PEST_KILL ? 'Pest/Vacuum Coins/h' : 'Crop-farming Coins/h';
   return `<details class="revenue-panel revenue-economics">
     <summary class="revenue-summary">
       <div class="revenue-panel-head">
-        <div><div class="eyebrow">${esc(crop?.name || 'Crop')} · ${esc(activityLabel(mode))}</div><h2>Profit baseline</h2></div>
-        <span class="revenue-note">Optional. Sharpens profit, payback and earned-time value.</span>
+        <div><div class="eyebrow">${esc(crop?.name || 'Crop')} · ${esc(activityLabel(mode))}</div><h2>Profit estimate</h2></div>
+        <span class="revenue-note">Throughput measured by you · coin values from rolling 90-day market averages.</span>
       </div>
     </summary>
     <div class="revenue-inputs">
-      <label><span>${fortuneStreamLabel}</span><input data-revenue-input="normalCropCoinsPerHour" type="number" min="0" step="1000" value="${Number(econ.normalCropCoinsPerHour || 0)}"></label>
-      <label><span>RARE CROP Coins/h</span><input data-revenue-input="rareCropCoinsPerHour" type="number" min="0" step="1000" value="${Number(econ.rareCropCoinsPerHour || 0)}"></label>
       <label><span>Computed Overbloom</span><input type="number" readonly value="${Number(context.currentOverbloom || 0)}"></label>
     </div>
-    <p class="revenue-help">Farming, Spawning and Killing keep separate Coins/h baselines. Fortune and Overbloom are read from the active ${esc(activityLabel(mode))}; switching sets no longer reuses the other set's economics.</p>
     ${measuredPanel(raw, context)}
   </details>`;
 }
-
 function earnedAssumptionsPanel(raw) {
   const rows = earnedRouteRows(raw);
   if (!rows.length) return '';
   const timeValue = timeValueFor(raw);
   const mode = activityModeForState(raw);
-  const sourceLabel = timeValue.source === 'player_baseline' ? 'your measured activity baseline' : 'Internet fallback';
+  const sourceLabel = timeValue.source === 'automatic_90d_market_baseline' ? 'measured throughput + 90-day market average' : 'Internet fallback';
   return `<details class="revenue-panel revenue-economics earned-routes">
     <summary class="revenue-summary">
       <div class="revenue-panel-head">
@@ -976,15 +990,6 @@ function enhancePlanner() {
     window.dispatchEvent(new Event('farming420:state-changed'));
   }));
 
-  panel.querySelectorAll('[data-revenue-input]').forEach(input => input.addEventListener('change', event => {
-    const next = load();
-    const cropId = selectedCropId(next);
-    const nextMode = activityModeForState(next);
-    setPlannerEconomicsValue(next, cropId, nextMode, event.target.dataset.revenueInput, event.target.value);
-    save(next);
-    window.dispatchEvent(new Event('farming420:state-changed'));
-  }));
-
   panel.querySelectorAll('[data-earned-hours]').forEach(input => input.addEventListener('change', event => {
     const next = load();
     const item = UPGRADES.find(entry => entry.id === event.target.dataset.earnedHours);
@@ -1016,8 +1021,9 @@ function enhancePlanner() {
     save(next);
 
     const liveContext = plannerActivityContext(next, selectedCropId(next));
+    const priced = measuredWithMarketAverage(values, selectedCropId(next));
     const result = measuredBaseline(
-      measuredWithLivePrice(values, livePriceFor(next)),
+      priced.values,
       measuredStats(liveContext),
       selectedCropId(next),
     );
@@ -1026,33 +1032,10 @@ function enhancePlanner() {
       panel.querySelector('[data-measured-note]'),
       measuredMissingText(result, fortuneCaveats(liveContext)),
     );
-    const apply = panel.querySelector('[data-measured-apply]');
-    if (apply) apply.disabled = result.normalCropCoinsPerHour == null;
     return result;
   };
   measuredInputs.forEach(input => input.addEventListener('input', refreshMeasured));
   feastToggle?.addEventListener('change', refreshMeasured);
-
-  // Applying is the user action, so this is where storage and a render belong.
-  // A rare-crop stream that was never measured leaves that baseline alone
-  // rather than overwriting it with a zero.
-  panel.querySelector('[data-measured-apply]')?.addEventListener('click', () => {
-    // The same `refreshMeasured` the panel displays, so a live-filled price is
-    // applied exactly as it was shown rather than recomputed differently here.
-    const result = refreshMeasured();
-    if (result.normalCropCoinsPerHour == null) return;
-    const next = load();
-    const cropId = selectedCropId(next);
-    const nextMode = activityModeForState(next);
-    // Rounded: coins are whole, and a float artifact like 3060000.0000000005
-    // would be stored and then shown back in the baseline input.
-    setPlannerEconomicsValue(next, cropId, nextMode, 'normalCropCoinsPerHour', Math.round(result.normalCropCoinsPerHour));
-    if (result.rareCropCoinsPerHour != null) {
-      setPlannerEconomicsValue(next, cropId, nextMode, 'rareCropCoinsPerHour', Math.round(result.rareCropCoinsPerHour));
-    }
-    save(next);
-    window.dispatchEvent(new Event('farming420:state-changed'));
-  });
 
   panel.querySelectorAll('[data-revenue-open]').forEach(button => button.addEventListener('click', () => openItem(button.dataset.revenueOpen)));
 }

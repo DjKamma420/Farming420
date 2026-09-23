@@ -103,11 +103,14 @@ test('the refresher owns no DOM and polls slowly', () => {
   assert.match(source, /\.catch\(\(\) => \{\}\)/);
 });
 
-test('the planner uses the live price without overriding the player', () => {
+test('the old live quote path is not the production planner price source', () => {
   const planner = read('revenue-planner.js');
-  // A typed price wins: the player may sell elsewhere or at a different depth.
-  assert.match(planner, /if \(values\.coinsPerUnit !== undefined && values\.coinsPerUnit !== ''\) return values;/);
-  assert.match(planner, /if \(live\?\.status !== CROP_PRICE_STATUS\.LIVE\) return values;/);
-  // And the applied baseline is the same figure the panel displayed.
-  assert.match(planner, /const result = refreshMeasured\(\);/);
+  const index = read('../index.html');
+  assert.doesNotMatch(planner, /liveCropUnitPrice/);
+  assert.doesNotMatch(planner, /CROP_PRICE_STATUS\.LIVE/);
+  assert.match(planner, /measuredWithMarketAverage/);
+  assert.match(planner, /delete priced\.coinsPerUnit/);
+  assert.match(planner, /averageCropUnitPrice/);
+  assert.doesNotMatch(index, /src\/live-price-refresh\.js/);
+  assert.match(index, /src\/market-average-refresh\.js/);
 });

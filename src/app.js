@@ -12,7 +12,13 @@ import {
   isGrandFeastContext,
   isHarvestFeastContext,
 } from './farming-context.js';
-import { CROP_PRICE_STATUS, liveCropUnitPrice, liveHarvestFeastMaterialPrice } from './live-crop-price.js';
+import {
+  AVERAGE_CROP_PRICE_STATUS,
+  averageCropPriceNote,
+  averageCropUnitPrice,
+  averageHarvestFeastMaterialPrice,
+} from './average-crop-price.js';
+import { costOriginNote, resolveUpgradeCost } from './upgrade-cost-resolution.js';
 import { MEASURED_FEAST_KEY, measuredBaseline } from './measured-baseline.js';
 import { ensureProgressBucket, migrateState, toolKeyForCropId } from './migrations.js';
 import { applySnapshotToProgress, isAutoApplied } from './snapshot-apply.js';
@@ -408,10 +414,13 @@ function plannerCandidates() {
     .filter(item => !isMaxed(item))
     .map(item => {
       const gain = gainFor(item);
-      const cost = Number(itemStore(item).costs[item.id] || 0);
+      const costSource = resolveUpgradeCost(itemStore(item), item.id);
+      const cost = costSource.acquisitionMode === 'BUYABLE' && costSource.coins > 0
+        ? Number(costSource.coins)
+        : 0;
       const rel = relativeGainPct(item);
       const efficiency = cost > 0 ? rel / (cost / 1_000_000) : null;
-      return { item, gain, rel, cost, efficiency };
+      return { item, gain, rel, cost, efficiency, costSource };
     })
     .filter(x => x.gain > 0)
     .sort((a,b) => {
@@ -535,17 +544,22 @@ function dashboardProfitEstimate(cropId, mode, context, stats) {
   }
 
   const stored = dashboardMeasuredValues(cropId, mode);
+  // Old backups can contain manually entered coin fields. Preserve them in the
+  // backup, but never read them into a calculation again.
   const values = { ...stored };
-  const normalPrice = liveCropUnitPrice(cropId);
-  if ((values.coinsPerUnit === undefined || values.coinsPerUnit === '') && normalPrice.status === CROP_PRICE_STATUS.LIVE) {
+  delete values.coinsPerUnit;
+  delete values.feastMaterialCoins;
+
+  const normalPrice = averageCropUnitPrice(cropId);
+  if (normalPrice.status === AVERAGE_CROP_PRICE_STATUS.AVERAGE) {
     values.coinsPerUnit = normalPrice.coinsPerUnit;
   }
 
   const feastActive = isHarvestFeastContext(context);
-  const feastPrice = feastActive ? liveHarvestFeastMaterialPrice(cropId) : null;
+  const feastPrice = feastActive ? averageHarvestFeastMaterialPrice(cropId) : null;
   if (feastActive) {
     values[MEASURED_FEAST_KEY] = true;
-    if ((values.feastMaterialCoins === undefined || values.feastMaterialCoins === '') && feastPrice?.status === CROP_PRICE_STATUS.LIVE) {
+    if (feastPrice?.status === AVERAGE_CROP_PRICE_STATUS.AVERAGE) {
       values.feastMaterialCoins = feastPrice.coinsPerUnit;
     }
   } else {
@@ -561,7 +575,7 @@ function dashboardProfitEstimate(cropId, mode, context, stats) {
   if (result.normalCropCoinsPerHour == null) {
     const modelNote = result.cropDataStatus !== 'VERIFIED'
       ? 'This crop still lacks a verified base-drop model.'
-      : 'Enter breaks/s and farming uptime; a blank sell price uses the live Bazaar quote when available.';
+      : 'Enter breaks/s and farming uptime; crop value comes from the rolling 90-day Bazaar average.';
     return { result, values: stored, normalPrice, feastPrice, display: '—', note: modelNote };
   }
 
@@ -601,11 +615,9 @@ function dashboard() {
     if (unresolved) return `${sources} configured source${sources === 1 ? '' : 's'} · ${unresolved} unresolved`;
     return `${sources} configured source${sources === 1 ? '' : 's'} · fully modeled`;
   };
-  const priceNote = measuredValues.coinsPerUnit !== undefined && measuredValues.coinsPerUnit !== ''
-    ? 'manual crop sell price'
-    : estimate.normalPrice?.status === CROP_PRICE_STATUS.LIVE
-      ? 'live Bazaar crop price'
-      : 'crop price unavailable';
+  const priceNote = estimate.normalPrice
+    ? averageCropPriceNote(estimate.normalPrice)
+    : 'crop price unavailable';
   const contextHelp = context === 'normal'
     ? 'Only always-active configured sources are included.'
     : `${farmingContextLabel(context)}-only configured effects are included in the totals below.`;
@@ -695,10 +707,11 @@ function dashboard() {
       <div class="dashboard-estimate-grid">
         <label><span>Crop breaks/s</span><input type="number" min="0" step="0.1" data-dashboard-estimate="breaksPerSecond" value="${esc(measuredValues.breaksPerSecond ?? '')}" placeholder="required"></label>
         <label><span>Farming uptime %</span><input type="number" min="0" max="100" step="1" data-dashboard-estimate="uptimePercent" value="${esc(measuredValues.uptimePercent ?? '')}" placeholder="required"></label>
-        <label><span>Crop sell price</span><input type="number" min="0" step="0.1" data-dashboard-estimate="coinsPerUnit" value="${esc(measuredValues.coinsPerUnit ?? '')}" placeholder="live Bazaar"></label>
-        ${isHarvestFeastContext(context) ? `<label><span>Feast crop sell price</span><input type="number" min="0" step="1" data-dashboard-estimate="feastMaterialCoins" value="${esc(measuredValues.feastMaterialCoins ?? '')}" placeholder="live Bazaar"></label>` : ''}
+        <div class="dashboard-estimate-readonly"><span>Crop sell value</span><strong>${estimate.normalPrice?.coinsPerUnit ? `${formatNumber(Math.round(estimate.normalPrice.coinsPerUnit))} Coins` : '—'}</strong><small>${esc(estimate.normalPrice ? averageCropPriceNote(estimate.normalPrice) : '90-day Bazaar average unavailable')}</small></div>
+        ${isHarvestFeastContext(context) ? `<div class="dashboard-estimate-readonly"><span>Feast crop value</span><strong>${estimate.feastPrice?.coinsPerUnit ? `${formatNumber(Math.round(estimate.feastPrice.coinsPerUnit))} Coins` : '—'}</strong><small>${esc(estimate.feastPrice ? averageCropPriceNote(estimate.feastPrice) : '90-day Bazaar average unavailable')}</small></div>` : ''}
       </div>
-      <small>These are estimate inputs, not a manual Coins/h baseline. Blank prices use fresh Bazaar data when available; unknown crop mechanics stay unknown instead of being guessed.</small>
+      <small>Coin values are fixed rolling 90-day market averages and cannot be entered manually. Throughput remains measurable; unknown market history stays unknown.</small>
+      <small>Market history: <a href="https://sky.coflnet.com/data" target="_blank" rel="noreferrer">SkyCofl</a>.</small>
     </details>
 
     <aside class="dashboard-farm-tip">
@@ -996,7 +1009,12 @@ function drawer() {
   const level = currentLevel(item);
   const max = Number(item.max||1);
   const store = itemStore(item);
-  const cost = store.costs[item.id] ?? '';
+  const costSource = resolveUpgradeCost(store, item.id);
+  const costText = costSource.acquisitionMode === 'BUYABLE' && costSource.coins > 0
+    ? `${formatNumber(Math.round(costSource.coins))} Coins`
+    : costSource.acquisitionMode === 'EARNED'
+      ? 'Earned progression'
+      : '—';
   const manual = store.manualGain[item.id] ?? '';
   return `<div class="drawer-backdrop" data-close-drawer><aside class="drawer">
     <div class="drawer-top"><div><div class="eyebrow">${esc(item.category)}</div><h2>${esc(item.name)}</h2></div><button class="close" data-close-drawer>×</button></div>
@@ -1006,7 +1024,7 @@ function drawer() {
       ${max>1 ? `<div class="stepper"><button data-step="-1" data-id="${item.id}">−</button><strong>${level}/${max}</strong><button data-step="1" data-id="${item.id}">+</button><button class="ghost small" data-max="${item.id}">Max</button></div>` : `<label class="switch-row"><span>Owned</span><input type="checkbox" data-owned="${item.id}" ${isOwned(item)?'checked':''}></label>`}
     </div>
     <div class="drawer-section"><h3>Evaluation</h3><div class="detail-grid"><div><span>Next step</span><strong>+${formatNumber(gainFor(item))}</strong></div><div><span>Relative effect</span><strong>${relativeGainPct(item).toFixed(2)}%</strong></div></div>
-      <label>Next cost (Coins)<input type="number" data-cost="${item.id}" value="${esc(cost)}" placeholder="optional"></label>
+      <div class="detail-grid"><div><span>Next cost</span><strong>${esc(costText)}</strong><small>${esc(costOriginNote(costSource))}</small></div></div>
       <label>Manual marginal value<input type="number" step="0.01" data-manual="${item.id}" value="${esc(manual)}" placeholder="only for dynamic values"></label>
     </div>
     ${whereToFindSection(item)}
@@ -1783,10 +1801,6 @@ function bind() {
     store.owned[item.id]=e.target.checked;
     store.levels[item.id]=e.target.checked?1:0; saveState(); render();
   }));
-  document.querySelectorAll('[data-cost]').forEach(el => el.addEventListener('change', e => {
-    const item = UPGRADES.find(x=>x.id===e.target.dataset.cost); if (!item) return;
-    itemStore(item).costs[item.id]=Number(e.target.value||0); saveState(); render();
-  }));
   document.querySelectorAll('[data-manual]').forEach(el => el.addEventListener('change', e => {
     const item = UPGRADES.find(x=>x.id===e.target.dataset.manual); if (!item) return;
     const store = itemStore(item);
@@ -1833,4 +1847,12 @@ render();
 window.addEventListener('farming420:state-changed', () => {
   state = loadState();
   render();
+});
+
+// Market refresh changes only the price cache, not profile state. Do not
+// globally repaint editors/setups when background market requests finish:
+// that would replace interactive DOM under the user. The Dashboard is the one
+// core-rendered surface that needs an immediate repaint for its price cards.
+window.addEventListener('farming420:market-average-updated', () => {
+  if (state.page === 'dashboard') render();
 });

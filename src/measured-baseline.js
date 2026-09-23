@@ -47,19 +47,6 @@ export const MEASURED_FIELDS = Object.freeze([
     step: 1,
     max: 100,
   }),
-  Object.freeze({
-    key: 'coinsPerUnit',
-    label: 'Coins per crop',
-    hint: 'Your sell price per unit. The drops per break come from the crop.',
-    step: 0.1,
-  }),
-  Object.freeze({
-    key: 'feastMaterialCoins',
-    label: 'Coins per Feast crop',
-    hint: 'Optional. Only used while a Harvest Feast is running.',
-    step: 1,
-    optional: true,
-  }),
 ]);
 
 /** The Harvest Feast toggle, kept beside the fields it unlocks. */
@@ -115,7 +102,7 @@ export function describeMissing(entry) {
  * would punish the player for leaving an optional field empty.
  */
 export function measuredProfitInput(measured = {}, stats = {}, cropId = null) {
-  const feastValue = positive(measured[MEASURED_FIELDS[3].key]);
+  const feastValue = positive(measured.feastMaterialCoins);
   const feastActive = Boolean(measured[MEASURED_FEAST_KEY]) && feastValue != null;
   return {
     cropId,
@@ -126,6 +113,8 @@ export function measuredProfitInput(measured = {}, stats = {}, cropId = null) {
     },
     breaksPerSecond: positive(measured.breaksPerSecond),
     baseFarmingUptimeRatio: ratioFromPercent(measured.uptimePercent),
+    // Coin values are injected by the rolling market-price adapter. Legacy
+    // manually entered values are never supplied by UI code.
     cropUnitValueCoins: positive(measured.coinsPerUnit),
     harvestFeastActive: feastActive,
     harvestFeastCropMaterialValueCoins: feastActive ? feastValue : null,
