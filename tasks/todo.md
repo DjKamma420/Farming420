@@ -105,7 +105,7 @@ Implemented:
 - keep each pet's held item attached to that exact physical pet
 - preserve source freshness (`AUTO` / `HIDDEN` / `UNKNOWN`) on candidate data
 - Farming and Spawning candidates require a crop tool; Killing candidates require a Vacuum
-- preserve explicit Rose Dragon levels through 200; do not force Rose Dragon XP through the ordinary level-100 pet curve
+- preserve explicit Rose Dragon levels through 200 and derive XP-only Rose Dragons with the verified level-200 extension (normal rarity curve through 100, then 1,886,700 XP per level)
 - expose the candidate inventory through `detectFarmingProfile(snapshot)`
 
 Implemented above enumeration:
