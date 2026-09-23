@@ -76,6 +76,22 @@ function snapshot({
       visitors: { uniqueNpcsServed: 0 },
     },
     items: [
+      {
+        skyblockId: 'MELON_DICER_3',
+        itemUuid: 'melon-tool',
+        displayName: 'Melon Dicer',
+        container: 'inventory',
+        slot: 0,
+        locations: [{ container: 'inventory', slot: 0 }],
+      },
+      {
+        skyblockId: 'INFINI_VACUUM_HOOVERIUS',
+        itemUuid: 'vacuum',
+        displayName: 'InfiniVacuum™ Hooverius',
+        container: 'inventory',
+        slot: 1,
+        locations: [{ container: 'inventory', slot: 1 }],
+      },
       ...armorSet('equipped', { equipped: true, reforge: 'mossy' }),
       ...armorSet('saved', { reforge: savedArmorReforge, gems: savedArmorGems }),
       ...equipmentSet('equipped', { equipped: true, reforge: 'rooted' }),
@@ -162,6 +178,34 @@ test('the comparison baseline is the stored setup for the evaluated phase, not w
 
   assert.equal(result.currentSetupId, 'normal');
   assert.equal(result.before.totals.globalFortune, 560);
+});
+
+test('phase evaluation reports the observed hand-item path', () => {
+  const profileSnapshot = snapshot();
+  const state = stateForSnapshot(profileSnapshot);
+
+  const farmCandidate = savedCowCandidate(profileSnapshot, ACTIVITY_MODE.FARM);
+  const farm = evaluateSetupCandidate(state, farmCandidate);
+  assert.equal(farm.handItem.kind, 'farming-tool');
+  assert.equal(farm.handItem.observed, true);
+  assert.deepEqual([...farm.handItem.itemIds], ['MELON_DICER_3']);
+
+  const killCandidate = savedCowCandidate(profileSnapshot, ACTIVITY_MODE.PEST_KILL);
+  const kill = evaluateSetupCandidate(state, killCandidate);
+  assert.equal(kill.handItem.kind, 'vacuum');
+  assert.equal(kill.handItem.observed, true);
+  assert.deepEqual([...kill.handItem.itemIds], ['INFINI_VACUUM_HOOVERIUS']);
+});
+
+test('missing required hand item keeps a setup comparison incomplete', () => {
+  const profileSnapshot = snapshot();
+  profileSnapshot.items = profileSnapshot.items.filter(item => item.skyblockId !== 'MELON_DICER_3');
+  const state = stateForSnapshot(profileSnapshot);
+  const result = evaluateSetupCandidate(state, savedCowCandidate(profileSnapshot));
+
+  assert.equal(result.handItem.observed, false);
+  assert.equal(result.complete, false);
+  assert.ok(result.reasons.includes('no observed farming-tool is available for this phase and crop'));
 });
 
 test('batch evaluation preserves enumeration order and does not rank by raw Fortune', () => {
