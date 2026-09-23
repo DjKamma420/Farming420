@@ -173,7 +173,9 @@ export function aggregateUpgradeRows(rows, state, cropId = state?.selectedCrop |
 
   return [...groups.values()].map(group => ({
     ...group,
-    setupLabel: combinedSetupLabel(group.activityModes, group.scope.physical),
+    setupLabel: group.scope.component === 'global'
+      ? 'Global / set-independent'
+      : combinedSetupLabel(group.activityModes, group.scope.physical),
     filterTags: upgradeFilterTags(group.item),
   })).sort((a, b) => a.sourceIndex - b.sourceIndex || String(a.item?.name || '').localeCompare(String(b.item?.name || '')));
 }
