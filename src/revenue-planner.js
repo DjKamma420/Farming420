@@ -1,6 +1,6 @@
 import { CROPS, UPGRADES } from './data.js';
 import { STORAGE_KEY } from './config.js';
-import { ACTIVITY_MODE, activityLabel, activityModeForState } from './activity-mode.js';
+import { ACTIVITY_MODE, activityLabel, activityModeForState, setActivityModeOnState } from './activity-mode.js';
 import { evaluateUpgrade, rankEvaluatedUpgrades, statDeltas } from './revenue-ranking.js';
 import { CROP_PRICE_STATUS, liveCropPriceNote, liveCropUnitPrice } from './live-crop-price.js';
 import { MEASURED_FEAST_KEY, MEASURED_FIELDS, describeMissing, measuredBaseline } from './measured-baseline.js';
@@ -22,10 +22,24 @@ import {
   setPlannerEconomicsValue,
 } from './planner-activity-context.js';
 import { formatNumber } from './format-number.js';
+import { applySnapshotToProgress } from './snapshot-apply.js';
+import {
+  UPGRADE_FILTER,
+  UPGRADE_FILTERS,
+  aggregateUpgradeRows,
+  matchesUpgradeFilter,
+  upgradeFilterTags,
+} from './planner-upgrade-filters.js';
 
 const PLANNER_BENCHMARK_COINS_PER_HOUR = INTERNET_FARMING_TIME_VALUE_COINS_PER_HOUR;
 const FOCUS_AVERAGE_STEP_HOURS = 1;
 const FOCUS_SCOPE_KEY = 'farming420-focus-scope-v1';
+const UPGRADE_FILTER_KEY = 'farming420-upgrade-filter-v1';
+const PLANNER_ACTIVITY_MODES = Object.freeze([
+  ACTIVITY_MODE.FARM,
+  ACTIVITY_MODE.PEST_SPAWN,
+  ACTIVITY_MODE.PEST_KILL,
+]);
 
 // Focus on next is progression, not a catch-all for anything whose price table
 // happens to use a time acquisition mode. Purchases and equipment choices stay
@@ -333,19 +347,32 @@ function rankPlannerRows(rows, mode) {
   });
 }
 
-function benchmarkEvaluatedRows(raw) {
+function recommendationGoalItem(item) {
+  const tags = upgradeFilterTags(item);
+  return tags.has(UPGRADE_FILTER.GREENHOUSE) || tags.has(UPGRADE_FILTER.VISITOR);
+}
+
+function recommendationCropApplies(item, cropId) {
+  const selected = CROPS.find(entry => entry.id === cropId);
+  return item?.cropScope === 'Any' || item?.cropScope === selected?.name;
+}
+
+function benchmarkEvaluatedRows(raw, { includeGoalFilters = false } = {}) {
   const cropId = selectedCropId(raw);
   const context = plannerActivityContext(raw, cropId);
 
   const rows = UPGRADES
-    .filter(item => plannerItemApplies(raw, item, cropId))
-    .filter(item => plannerUpgradeTargetEligible(item, context.mode))
+    .filter(item => plannerItemApplies(raw, item, cropId)
+      || (includeGoalFilters && recommendationGoalItem(item) && recommendationCropApplies(item, cropId)))
+    .filter(item => plannerUpgradeTargetEligible(item, context.mode)
+      || (includeGoalFilters && recommendationGoalItem(item)))
     .filter(item => {
       if (item.status === 'ACTIVE') return true;
       const role = plannerUpgradeTargetRole(item, context.mode);
-      return context.mode === ACTIVITY_MODE.PEST_SPAWN
-        && item.status === 'VERIFY'
-        && role.tier === 'primary';
+      return item.status === 'VERIFY' && (
+        (context.mode === ACTIVITY_MODE.PEST_SPAWN && role.tier === 'primary')
+        || (includeGoalFilters && recommendationGoalItem(item))
+      );
     })
     .filter(item => !maxed(raw, item))
     .map(item => {
@@ -380,10 +407,44 @@ function benchmarkEvaluatedRows(raw) {
     })
     .filter(row => {
       if (row.modeled && row.gain > 0) return true;
-      return isSpawningPrimary(row) && (row.gain > 0 || row.item.status === 'VERIFY');
+      if (isSpawningPrimary(row) && (row.gain > 0 || row.item.status === 'VERIFY')) return true;
+      return includeGoalFilters
+        && recommendationGoalItem(row.item)
+        && (row.gain > 0 || row.item.status === 'VERIFY');
     });
 
   return rankPlannerRows(rows, context.mode);
+}
+
+function plannerStateForActivity(raw, mode) {
+  const next = JSON.parse(JSON.stringify(raw || {}));
+  next.profile ||= {};
+  setActivityModeOnState(next, mode);
+  applySnapshotToProgress(next, next.profile.normalizedSnapshot || {});
+  return next;
+}
+
+function allSetBenchmarkRows(raw) {
+  const cropId = selectedCropId(raw);
+  const rows = PLANNER_ACTIVITY_MODES.flatMap(mode => {
+    const scoped = plannerStateForActivity(raw, mode);
+    return benchmarkEvaluatedRows(scoped, { includeGoalFilters: true });
+  });
+  return rankEvaluatedUpgrades(aggregateUpgradeRows(rows, raw, cropId));
+}
+
+function selectedUpgradeFilter() {
+  const stored = localStorage.getItem(UPGRADE_FILTER_KEY) || UPGRADE_FILTER.ALL;
+  return UPGRADE_FILTERS.some(entry => entry.id === stored) ? stored : UPGRADE_FILTER.ALL;
+}
+
+function upgradeFilterMarkup(rows, activeFilter) {
+  return `<div class="upgrade-filter-bar" role="group" aria-label="Recommended upgrade filter">
+    ${UPGRADE_FILTERS.map(filter => {
+      const count = rows.filter(row => matchesUpgradeFilter(row.item, filter.id)).length;
+      return `<button type="button" class="upgrade-filter-chip ${filter.id === activeFilter ? 'active' : ''}" data-upgrade-filter="${esc(filter.id)}">${esc(filter.label)}<span>${count}</span></button>`;
+    }).join('')}
+  </div>`;
 }
 
 function compactCoins(value) {
@@ -686,10 +747,11 @@ function rankingMarkup(rows, ready) {
       : costKnown && row.payback !== null ? formatPayback(row.payback) : '—';
     const paybackNote = spawnPrimary ? 'no FF conversion' : 'benchmark payback';
     const statusNote = row.item.status === 'VERIFY' ? ' · manual/verify' : '';
+    const setupNote = row.setupLabel ? ` · ${row.setupLabel}` : '';
 
     return `<button class="planner-row revenue-row" data-revenue-open="${esc(row.item.id)}">
       <div class="rank">${index + 1}</div>
-      <div class="planner-main"><strong>${esc(row.item.name)}</strong><span>${esc(row.item.category)} · ${esc(row.targetRole?.label || row.modeled || 'upgrade')}${esc(statusNote)}</span></div>
+      <div class="planner-main"><strong>${esc(row.item.name)}</strong><span>${esc(row.item.category)} · ${esc(row.targetRole?.label || row.modeled || 'upgrade')}${esc(statusNote)}${esc(setupNote)}</span></div>
       <div class="planner-number"><strong>${esc(valueLabel)}</strong><span>${esc(equivalent)}</span></div>
       <div class="planner-number"><strong>${esc(valueDisplay)}</strong><span>${esc(valueNote)}</span></div>
       <div class="planner-number"><strong>${esc(costLabel)}</strong><span>${esc(costNote)}</span></div>
@@ -877,21 +939,25 @@ function enhancePlanner() {
   const raw = load();
   const mode = activityModeForState(raw);
   const ready = true;
-  const rows = benchmarkEvaluatedRows(raw).filter(row => row.acquisitionMode !== 'EARNED');
-  const rankingTitle = mode === ACTIVITY_MODE.PEST_SPAWN
-    ? `Spawning upgrade priorities · ${activityLabel(mode)}`
-    : `Best upgrade value · ${activityLabel(mode)}`;
-  const rankingHelp = mode === ACTIVITY_MODE.PEST_SPAWN
-    ? 'Bonus Pest Chance and Pest cooldown reduction are primary Spawning targets. Farming Fortune is shown after them as a secondary crop-output stat for the short spawning window. Activity-specific stats are not forced into fake FF equivalents.'
-    : `Coin-cost and unpriced upgrades stay here. Earned progression is excluded and appears under Focus on next. Marginal value and payback use the common ${compactCoins(PLANNER_BENCHMARK_COINS_PER_HOUR)}/h affected-income benchmark.`;
+  const allRows = allSetBenchmarkRows(raw).filter(row => row.acquisitionMode !== 'EARNED');
+  const activeFilter = selectedUpgradeFilter();
+  const rows = allRows.filter(row => matchesUpgradeFilter(row.item, activeFilter));
+  const rankingTitle = 'Recommended upgrades · all sets';
+  const rankingHelp = 'Farming, Pest Spawning and Pest Killing are evaluated together. Global upgrades appear once. Crop-tool upgrades are shared between Farming and Spawning. Gear is merged only when the setup slots reference the same physical items; separate physical sets stay separate.';
 
   original.classList.add('planner-v1-source');
   const panel = document.createElement('div');
   panel.className = 'revenue-planner-v2';
   panel.innerHTML = `${benchmarkPanel(raw)}
-    <div class="section-row revenue-ranking-head"><div><h2>${esc(rankingTitle)}</h2><p>${esc(rankingHelp)}</p></div></div>
+    <div class="section-row revenue-ranking-head"><div><h2>${esc(rankingTitle)}</h2><p>${esc(rankingHelp)}</p></div><span class="revenue-note">${rows.length}/${allRows.length} shown</span></div>
+    ${upgradeFilterMarkup(allRows, activeFilter)}
     <div class="planner-list revenue-list">${rankingMarkup(rows, ready)}</div>`;
   original.before(panel);
+
+  panel.querySelectorAll('[data-upgrade-filter]').forEach(button => button.addEventListener('click', () => {
+    localStorage.setItem(UPGRADE_FILTER_KEY, button.dataset.upgradeFilter || UPGRADE_FILTER.ALL);
+    window.dispatchEvent(new Event('farming420:state-changed'));
+  }));
 
   panel.querySelectorAll('[data-revenue-input]').forEach(input => input.addEventListener('change', event => {
     const next = load();
