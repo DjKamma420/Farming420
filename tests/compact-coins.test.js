@@ -13,7 +13,7 @@ test('coin values use compact k/m/b suffixes', () => {
 });
 
 test('invalid values remain unavailable instead of becoming zero coins', () => {
-  assert.equal(compactCoinNumber(null), '0');
+  assert.equal(compactCoinNumber(null), null);
   assert.equal(compactCoinNumber(undefined), null);
   assert.equal(compactCoinNumber(Number.NaN), null);
 });
