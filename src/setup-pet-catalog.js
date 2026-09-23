@@ -62,7 +62,7 @@ export const FARMING_PETS = Object.freeze([
     levelMin: 1,
     levelMax: 100,
     source: 'https://hypixelskyblock.minecraft.wiki/w/Mosquito_Pet',
-    lastVerified: '2026-09-17',
+    lastVerified: '2026-09-23',
   },
   {
     id: 'ORCHID_MANTIS',
@@ -107,7 +107,7 @@ export const FARMING_PETS = Object.freeze([
     levelMin: 1,
     levelMax: 100,
     source: 'https://hypixelskyblock.minecraft.wiki/w/Slug_Pet',
-    lastVerified: '2026-09-17',
+    lastVerified: '2026-09-23',
   },
 ].map(row => Object.freeze(row)));
 
