@@ -13,8 +13,16 @@ import {
   isVacuumItemEntry,
   itemAppliesToActivity,
 } from './activity-mode.js';
+import { activeSetup } from './setups.js';
+import { gardenLevelFromExperience } from './garden-level.js';
+import { setupPetItemContribution } from './setup-pet-items.js';
 
-export const COMPUTED_STATS_VERSION = 9;
+export const COMPUTED_STATS_VERSION = 10;
+
+const SETUP_LOCAL_PET_ITEM_ENTRY_IDS = new Set([
+  'pet-item-green-bandana',
+  'pet-item-lucky-clover-poignant-lucky-clover',
+]);
 
 export const STAT_AXIS = Object.freeze({
   GLOBAL_FORTUNE: 'globalFortune',
@@ -101,6 +109,11 @@ function contributionFor(state, item, cropId, mode = null, activeContextScope = 
   // would keep the obsolete fixed +30 assumption alive.
   if (item.id === TOOL_GEM_ENTRY_ID) return null;
 
+  // Pet items belong to exactly one active pet/setup. The planner rows remain
+  // useful as upgrade records, but their stats must never be applied as
+  // account-global toggles.
+  if (SETUP_LOCAL_PET_ITEM_ENTRY_IDS.has(item.id)) return null;
+
   const level = configuredLevel(profile, item, cropId);
   if (level <= 0) return null;
 
@@ -172,8 +185,63 @@ export function computeTotalsFromEntries(state, entries, cropId = state?.selecte
   return totals;
 }
 
-function applyDerivedMechanics(state, totals, mode, cropId) {
+function setupPetItemForState(state, mode, derivedContext = {}) {
+  const setup = state?.profile?.setups ? activeSetup(state.profile.setups) : null;
+  const snapshot = state?.profile?.normalizedSnapshot || {};
+  const contribution = setupPetItemContribution(setup?.slots?.petItem || null, {
+    gardenLevel: snapshot?.garden?.level
+      ?? gardenLevelFromExperience(snapshot?.garden?.experience),
+    eligiblePestBestiaryTiers: derivedContext?.eligiblePestBestiaryTiers ?? null,
+  });
+  const active = contribution.activityScope === 'any'
+    || (contribution.activityScope === 'pest-spawn' && mode === ACTIVITY_MODE.PEST_SPAWN);
+  return Object.freeze({
+    ...contribution,
+    active,
+    reasons: Object.freeze(active ? [...contribution.reasons] : []),
+  });
+}
+
+function petItemIncompleteAxis(contribution) {
+  if (contribution?.id === 'BROWN_BANDANA') return STAT_AXIS.BONUS_PEST_CHANCE;
+  if (contribution?.id === 'POIGNANT_LUCKY_CLOVER') return STAT_AXIS.OVERBLOOM;
+  return STAT_AXIS.GLOBAL_FORTUNE;
+}
+
+function applySetupPetItem(totals, contribution) {
+  if (!contribution?.active) return totals;
+
+  const globalFortune = Number(contribution.globalFortune || 0);
+  const overbloom = Number(contribution.overbloom || 0);
+  const bonusPestChance = Number(contribution.bonusPestChance || 0);
+
+  if (globalFortune) {
+    totals.globalFortune += globalFortune;
+    totals.sourceCount.globalFortune += 1;
+  }
+  if (overbloom) {
+    totals.overbloom += overbloom;
+    totals.sourceCount.overbloom += 1;
+  }
+  if (bonusPestChance) {
+    totals.bonusPestChance += bonusPestChance;
+    totals.sourceCount.bonusPestChance += 1;
+  }
+  if (!contribution.complete) {
+    const axis = petItemIncompleteAxis(contribution);
+    for (const reason of contribution.reasons) {
+      totals.incomplete[axis].push({
+        id: `setup-pet-item:${contribution.id || 'unknown'}`,
+        reason,
+      });
+    }
+  }
+  return totals;
+}
+
+function applyDerivedMechanics(state, totals, mode, cropId, derivedContext = {}) {
   const cow = mooshroomCowContribution(state);
+  const setupPetItem = setupPetItemForState(state, mode, derivedContext);
   const vacuumPeridot = mode === ACTIVITY_MODE.PEST_KILL
     ? vacuumPeridotFortune(state?.profile?.vacuumProgress || {})
     : 0;
@@ -183,6 +251,7 @@ function applyDerivedMechanics(state, totals, mode, cropId) {
   totals.derived = {
     strength: state?.profile?.inputs?.strength ?? null,
     mooshroomCow: cow,
+    setupPetItem,
     vacuumPeridotFortune: vacuumPeridot,
     toolPeridotFortune: toolPeridot,
   };
@@ -217,6 +286,7 @@ function applyDerivedMechanics(state, totals, mode, cropId) {
     }
   }
 
+  applySetupPetItem(totals, setupPetItem);
   totals.effectiveFortune = totals.globalFortune + totals.cropFortune + totals.pestFortune;
   return totals;
 }
@@ -226,12 +296,14 @@ export function computeStatTotals(
   cropId = state?.selectedCrop || 'melon',
   mode = activityModeForState(state),
   activeContextScope = null,
+  derivedContext = {},
 ) {
   return applyDerivedMechanics(
     state,
     computeTotalsFromEntries(state, UPGRADES, cropId, mode, activeContextScope),
     mode,
     cropId,
+    derivedContext,
   );
 }
 

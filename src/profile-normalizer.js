@@ -3,6 +3,11 @@ import {
   extractProfileData,
   farmingLevelFromResources,
 } from './hypixel-import.js';
+import {
+  GARDEN_LEVEL_SOURCE,
+  GARDEN_LEVEL_VERIFIED,
+  gardenLevelFromExperience,
+} from './garden-level.js';
 
 export const PROFILE_MODEL_VERSION = 1;
 export const PROFILE_DATA_STATUS = Object.freeze({
@@ -32,6 +37,11 @@ export const PROFILE_SOURCE_META = Object.freeze({
     id: 'hypixel-garden',
     url: 'https://api.hypixel.net/v2/skyblock/garden',
     lastVerified: VERIFIED_ON,
+  }),
+  gardenLevel: Object.freeze({
+    id: 'garden-level',
+    url: GARDEN_LEVEL_SOURCE,
+    lastVerified: GARDEN_LEVEL_VERIFIED,
   }),
   skills: Object.freeze({
     id: 'hypixel-skill-resources',
@@ -260,9 +270,12 @@ export function normalizeGardenPayload(payload, options = {}) {
     ? [...new Set(rawGarden.unlocked_plots_ids.map(String))]
     : [];
 
+  const gardenLevel = gardenLevelFromExperience(parsed.gardenExperience);
+
   snapshot.garden = {
     ...snapshot.garden,
     experience: parsed.gardenExperience,
+    level: gardenLevel,
     unlockedPlotIds: plotIds,
     unlockedPlotCount: parsed.unlockedPlots,
     cropUpgrades: structuredClone(parsed.cropUpgrades),
@@ -282,6 +295,11 @@ export function normalizeGardenPayload(payload, options = {}) {
     importType: 'raw-json',
   };
   snapshot.provenance.garden = provenance(PROFILE_DATA_STATUS.AUTO, ['garden']);
+  snapshot.provenance['garden.level'] = provenance(
+    gardenLevel === null ? PROFILE_DATA_STATUS.UNKNOWN : PROFILE_DATA_STATUS.DERIVED,
+    ['garden', 'gardenLevel'],
+    gardenLevel === null ? 'Garden XP is unavailable, so Garden level cannot be derived.' : null,
+  );
 
   for (const apiKey of parsed.unknownCropKeys) {
     snapshot.unknown.push({

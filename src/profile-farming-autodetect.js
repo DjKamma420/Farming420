@@ -133,6 +133,7 @@ function petViews(snapshot) {
     uuid: pet?.uuid || null,
     rarity: pet?.rarity || null,
     experience: pet?.experience ?? null,
+    level: pet?.level ?? null,
     active: pet?.active ?? null,
     heldItem: pet?.heldItem || null,
     skin: pet?.skin || null,
@@ -151,6 +152,8 @@ function accountDetection(snapshot, physical) {
     }),
     gardenProgress: Object.freeze({
       status: gardenStatus,
+      experience: snapshot?.garden?.experience ?? null,
+      level: snapshot?.garden?.level ?? null,
       cropUpgrades: Object.freeze({ ...(snapshot?.garden?.cropUpgrades || {}) }),
       unlockedPlotCount: snapshot?.garden?.unlockedPlotCount ?? null,
       visitorsCompleted: snapshot?.garden?.visitors?.totalCompleted ?? null,

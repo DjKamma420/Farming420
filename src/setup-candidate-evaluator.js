@@ -5,8 +5,15 @@ import { isHelianthusArmorPiece } from './armor-fortune.js';
 import { isBlossomPiece } from './equipment-fortune.js';
 import { activeSetup, normalizeSetups } from './setups.js';
 import { GARDEN_VACUUM_ITEMS } from './exact-farming-items.js';
+import { gardenLevelFromExperience } from './garden-level.js';
+import { setupPetItemContribution } from './setup-pet-items.js';
 
-export const SETUP_CANDIDATE_EVALUATOR_VERSION = 1;
+export const SETUP_CANDIDATE_EVALUATOR_VERSION = 2;
+
+const SETUP_LOCAL_PET_ITEM_ENTRY_IDS = Object.freeze([
+  'pet-item-green-bandana',
+  'pet-item-lucky-clover-poignant-lucky-clover',
+]);
 
 const STAT_FIELDS = Object.freeze([
   'globalFortune',
@@ -31,6 +38,15 @@ function normalizedState(state) {
   next.profile.toolProgress ||= {};
   next.profile.vacuumProgress ||= {};
   next.profile.autoApplied ||= {};
+
+  // Pet items are mutually exclusive setup-local state. Historical/manual
+  // account-level toggles must not leak into a complete candidate comparison.
+  for (const id of SETUP_LOCAL_PET_ITEM_ENTRY_IDS) {
+    delete next.profile.levels[id];
+    delete next.profile.owned[id];
+    delete next.profile.manualGain[id];
+    delete next.profile.autoApplied?.account?.[id];
+  }
   return next;
 }
 
@@ -122,6 +138,14 @@ function peridotQualityGaps(item, slotId) {
     .map(value => `${slotId} uses ${value}; non-Perfect Peridot setup contribution is not modeled yet`);
 }
 
+function missingWearableSlots(setup) {
+  const slots = setup?.slots || {};
+  return [
+    'helmet', 'chestplate', 'leggings', 'boots',
+    'equipment1', 'equipment2', 'equipment3', 'equipment4',
+  ].filter(slotId => !slots[slotId]);
+}
+
 function setupSupportGaps(setup) {
   const gaps = [];
   const slots = setup?.slots || {};
@@ -158,11 +182,29 @@ function setupSupportGaps(setup) {
       gaps.push(`${pet.displayName || petId || 'selected pet'} contribution is not modeled in computed setup stats`);
     }
   }
-  if (slots.petItem) {
-    gaps.push(`${slots.petItem.displayName || slots.petItem.skyblockId || 'selected pet item'} is not yet setup-local in computed stats`);
-  }
-
   return uniqueReasons(gaps);
+}
+
+function petItemContext(snapshot, options) {
+  return {
+    gardenLevel: snapshot?.garden?.level
+      ?? gardenLevelFromExperience(snapshot?.garden?.experience),
+    eligiblePestBestiaryTiers: options?.eligiblePestBestiaryTiers ?? null,
+  };
+}
+
+function petItemForPhase(setup, snapshot, phase, options) {
+  const contribution = setupPetItemContribution(
+    setup?.slots?.petItem || null,
+    petItemContext(snapshot, options),
+  );
+  const active = contribution.activityScope === 'any'
+    || (contribution.activityScope === 'pest-spawn' && phase === ACTIVITY_MODE.PEST_SPAWN);
+  return Object.freeze({
+    ...contribution,
+    active,
+    reasons: Object.freeze(active ? [...contribution.reasons] : []),
+  });
 }
 
 /**
@@ -181,17 +223,41 @@ export function evaluateSetupCandidate(state, candidate, options = {}) {
   const beforeState = normalizedState(state);
   const beforeSetupId = setupForPhase(beforeState, phase);
   const beforeSetup = activeSetup(beforeState.profile.setups);
-  const beforeSupportGaps = setupSupportGaps(beforeSetup);
+  const beforeMissingSlots = missingWearableSlots(beforeSetup);
+  const beforePetItem = petItemForPhase(beforeSetup, snapshot, phase, options);
+  const beforeSupportGaps = uniqueReasons([
+    ...setupSupportGaps(beforeSetup),
+    ...beforePetItem.reasons,
+  ]);
+  beforeState.profile.normalizedSnapshot = snapshot || beforeState.profile.normalizedSnapshot || null;
   const beforeApply = applySnapshotToProgress(beforeState, snapshot || {});
-  const beforeTotals = computeStatTotals(beforeState, cropId, phase, activeContextScope);
+  const beforeTotals = computeStatTotals(
+    beforeState,
+    cropId,
+    phase,
+    activeContextScope,
+    { eligiblePestBestiaryTiers: options.eligiblePestBestiaryTiers ?? null },
+  );
 
   const afterState = normalizedState(state);
   setupForPhase(afterState, phase);
   const afterSetupId = activateCandidate(afterState, candidate);
   const afterSetup = activeSetup(afterState.profile.setups);
-  const afterSupportGaps = setupSupportGaps(afterSetup);
+  const afterMissingSlots = missingWearableSlots(afterSetup);
+  const afterPetItem = petItemForPhase(afterSetup, snapshot, phase, options);
+  const afterSupportGaps = uniqueReasons([
+    ...setupSupportGaps(afterSetup),
+    ...afterPetItem.reasons,
+  ]);
+  afterState.profile.normalizedSnapshot = snapshot || afterState.profile.normalizedSnapshot || null;
   const afterApply = applySnapshotToProgress(afterState, snapshot || {});
-  const afterTotals = computeStatTotals(afterState, cropId, phase, activeContextScope);
+  const afterTotals = computeStatTotals(
+    afterState,
+    cropId,
+    phase,
+    activeContextScope,
+    { eligiblePestBestiaryTiers: options.eligiblePestBestiaryTiers ?? null },
+  );
 
   const freshness = candidateFreshness(candidate);
   const handItem = handItemObservation(snapshot || {}, phase, cropId);
@@ -201,7 +267,8 @@ export function evaluateSetupCandidate(state, candidate, options = {}) {
 
   if (!candidate || typeof candidate !== 'object') reasons.push('candidate is missing');
   if (candidate?.valid === false) reasons.push('candidate violates setup constraints');
-  if (!candidate?.wearableComplete) reasons.push('candidate does not contain a complete observed armor/equipment loadout');
+  if (beforeMissingSlots.length) reasons.push('current phase setup does not contain a complete armor/equipment loadout');
+  if (!candidate?.wearableComplete || afterMissingSlots.length) reasons.push('candidate does not contain a complete observed armor/equipment loadout');
   if (!freshness.fresh) reasons.push('candidate ownership is not currently verified by fresh item and pet profile data');
   if (!snapshot) reasons.push('normalized profile snapshot is unavailable');
   if (!afterSetupId) reasons.push('candidate setup is unavailable');
@@ -226,16 +293,22 @@ export function evaluateSetupCandidate(state, candidate, options = {}) {
     currentObserved: Boolean(candidate?.currentObserved),
     freshness,
     before: Object.freeze({
+      wearableComplete: beforeMissingSlots.length === 0,
+      missingSlots: Object.freeze(beforeMissingSlots),
       totals: beforeTotals,
       incomplete: Object.freeze(beforeIncomplete),
       supportGaps: Object.freeze(beforeSupportGaps),
+      petItem: beforePetItem,
       applied: Object.freeze(beforeApply.applied),
       skipped: Object.freeze(beforeApply.skipped),
     }),
     after: Object.freeze({
+      wearableComplete: afterMissingSlots.length === 0,
+      missingSlots: Object.freeze(afterMissingSlots),
       totals: afterTotals,
       incomplete: Object.freeze(afterIncomplete),
       supportGaps: Object.freeze(afterSupportGaps),
+      petItem: afterPetItem,
       applied: Object.freeze(afterApply.applied),
       skipped: Object.freeze(afterApply.skipped),
     }),

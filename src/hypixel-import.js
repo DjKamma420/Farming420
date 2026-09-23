@@ -69,6 +69,12 @@ function clamp(value, min, max) {
   return Math.max(min, Math.min(max, Number(value) || 0));
 }
 
+function finiteFieldOrNull(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
 function findGardenObject(payload) {
   if (!payload || typeof payload !== 'object') return null;
   if (payload.garden && typeof payload.garden === 'object') return payload.garden;
@@ -108,9 +114,9 @@ export function extractGardenData(payload) {
     cropUpgrades,
     unknownCropKeys,
     unlockedPlots,
-    gardenExperience: Number(garden.garden_experience || 0),
-    uniqueVisitors: Number(garden.commission_data?.unique_npcs_served || 0),
-    totalVisitorsCompleted: Number(garden.commission_data?.total_completed || 0),
+    gardenExperience: finiteFieldOrNull(garden.garden_experience),
+    uniqueVisitors: finiteFieldOrNull(garden.commission_data?.unique_npcs_served),
+    totalVisitorsCompleted: finiteFieldOrNull(garden.commission_data?.total_completed),
     resourcesCollected: garden.resources_collected || null,
     composterData: garden.composter_data || null,
   };

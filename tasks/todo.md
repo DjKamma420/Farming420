@@ -107,12 +107,27 @@ Implemented:
 - preserve explicit Rose Dragon levels through 200; do not force Rose Dragon XP through the ordinary level-100 pet curve
 - expose the candidate inventory through `detectFarmingProfile(snapshot)`
 
+Implemented above enumeration:
+
+- complete-state candidate evaluation now compares against the stored setup for the same activity phase
+- before/after armor, equipment and pet state is recomputed rather than stacked onto the old setup
+- saved Hypixel loadouts prove ownership only and are no longer summed as simultaneously worn gear
+- matching crop tools are required for Farming/Spawning and a Garden Vacuum for Killing
+- incomplete current or candidate wearable states block a misleading "complete" comparison
+- unmodeled setup components remain explicit support gaps rather than zero
+- Garden XP now derives Garden Level 1-15 with a sourced threshold table
+- Green Bandana is setup-local at +4 FF per Garden level (max +60)
+- Poignant Lucky Clover is setup-local at +13 Overbloom
+- Brown Bandana is Pest-Spawning-only and remains incomplete until the eligible Pest Bestiary tier total is known
+- historical account-global Green/Poignant toggles are ignored by computed stats so pet items cannot stack across pets
+
 Still required before this area is closed:
 
-- evaluate complete candidates by verified context-specific mechanics rather than raw-stat shortcuts
-- normal crop / Jacob Contest / Pest Spawn / Pest Kill objective evaluation
-- budget/progression versus endgame/max-profit candidate classes
+- normalize the eligible Pest Bestiary tier sum needed by Brown Bandana
 - profile-aware Rose Dragon contribution and legal before/after pet comparison
+- verify/model Mantid and Squeaky numerically before they can score
+- normal crop / Jacob Contest / Pest Spawn / Pest Kill objective evaluation beyond raw stat deltas
+- budget/progression versus endgame/max-profit candidate classes
 - convert an evaluated candidate into a user-selectable setup without overwriting manual setup choices
 
 The evaluator must keep mutually exclusive complete states separate and must not invent values for missing data.

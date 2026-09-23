@@ -80,6 +80,26 @@ test('a missing plot list stays unknown instead of becoming zero', () => {
   assert.equal(extractGardenData({ garden: { crop_upgrade_levels: {} } }).unlockedPlots, null);
 });
 
+test('missing Garden progression counters stay unknown instead of becoming zero', () => {
+  const parsed = extractGardenData({ garden: { crop_upgrade_levels: {} } });
+  assert.equal(parsed.gardenExperience, null);
+  assert.equal(parsed.uniqueVisitors, null);
+  assert.equal(parsed.totalVisitorsCompleted, null);
+});
+
+test('explicit zero Garden progression counters remain real zeroes', () => {
+  const parsed = extractGardenData({
+    garden: {
+      crop_upgrade_levels: {},
+      garden_experience: 0,
+      commission_data: { unique_npcs_served: 0, total_completed: 0 },
+    },
+  });
+  assert.equal(parsed.gardenExperience, 0);
+  assert.equal(parsed.uniqueVisitors, 0);
+  assert.equal(parsed.totalVisitorsCompleted, 0);
+});
+
 test('a single-member profile payload resolves without a UUID', () => {
   const parsed = extractProfileData({
     profiles: [{

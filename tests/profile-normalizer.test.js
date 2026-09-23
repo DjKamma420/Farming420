@@ -177,6 +177,8 @@ test('garden normalization preserves plot ids, upgrades, visitors and unknown ke
   }, { fetchedAt: '2026-09-15T20:00:00.000Z' });
 
   assert.equal(snapshot.garden.experience, 999);
+  assert.equal(snapshot.garden.level, 5);
+  assert.equal(snapshot.provenance['garden.level'].status, PROFILE_DATA_STATUS.DERIVED);
   assert.deepEqual(snapshot.garden.unlockedPlotIds, ['plot_a', 'plot_b']);
   assert.equal(snapshot.garden.unlockedPlotCount, 2);
   assert.equal(snapshot.garden.cropUpgrades.wheat, 4);
@@ -186,6 +188,13 @@ test('garden normalization preserves plot ids, upgrades, visitors and unknown ke
   assert.equal(snapshot.garden.visitors.uniqueNpcsServed, 12);
   assert.equal(snapshot.unknown.length, 1);
   assert.equal(snapshot.unknown[0].key, 'FUTURE_CROP');
+});
+
+test('missing Garden XP keeps Garden level unknown instead of inventing level 1', () => {
+  const snapshot = normalizeGardenPayload({ garden: { crop_upgrade_levels: {} } });
+  assert.equal(snapshot.garden.experience, null);
+  assert.equal(snapshot.garden.level, null);
+  assert.equal(snapshot.provenance['garden.level'].status, PROFILE_DATA_STATUS.UNKNOWN);
 });
 
 test('snapshot merge combines profile and Garden sections without losing either', () => {
