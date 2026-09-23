@@ -116,6 +116,28 @@ test('hidden item API keeps ownership freshness hidden even if a stale snapshot 
   assert.equal(detected.active.armor.status, PROFILE_DATA_STATUS.HIDDEN);
 });
 
+test('eligible Pest Bestiary tiers are exposed as derived account state', () => {
+  const snapshot = snapshotWithFreshSources();
+  snapshot.bestiary.eligiblePestTierTotal = 37;
+  snapshot.bestiary.eligiblePestMaxTierTotal = 225;
+  snapshot.bestiary.eligiblePestFamilyTiers = {
+    pest_fly_1: 15,
+    pest_mouse_1: 15,
+    pest_lunar_moth_1: 7,
+  };
+  snapshot.provenance['bestiary.eligiblePestTierTotal'] = {
+    status: PROFILE_DATA_STATUS.DERIVED,
+    sources: [],
+  };
+
+  const detected = detectFarmingProfile(snapshot);
+  assert.equal(detected.sourceStatus.bestiary, PROFILE_DATA_STATUS.DERIVED);
+  assert.equal(detected.account.pestBestiary.status, PROFILE_DATA_STATUS.DERIVED);
+  assert.equal(detected.account.pestBestiary.eligibleTierTotal, 37);
+  assert.equal(detected.account.pestBestiary.maxEligibleTierTotal, 225);
+  assert.equal(detected.account.pestBestiary.familyTiers.pest_lunar_moth_1, 7);
+});
+
 test('Garden progression is account state while shards and temporary buffs stay unobserved', () => {
   const snapshot = snapshotWithFreshSources();
   snapshot.skills.farming = { xp: 123, level: 60, cap: 60, status: PROFILE_DATA_STATUS.DERIVED };
