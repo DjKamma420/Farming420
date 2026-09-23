@@ -93,10 +93,10 @@ test('Visitor filter contains Visitor-system upgrades, not gear that merely scal
   const visitorCopper = {
     id: 'attribute-shard-ladybug-pretty-clothes',
     section: 'shards',
-    metric: 'Copper Rewards',
+    metric: 'Visitor Copper',
     attribute: 'Pretty Clothes',
-    name: 'Ladybug Shard',
-    notes: '+1% Copper from Garden Visitors',
+    name: 'Ladybug Shard - Pretty Clothes',
+    notes: '+1% Copper from Garden Visitors per level',
   };
   const cheaperOffers = {
     id: 'visitor-offer-discount',
