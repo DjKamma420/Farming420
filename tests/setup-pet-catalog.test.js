@@ -18,7 +18,8 @@ test('the setup pet picker exposes unique sourced farming pets', () => {
   assert.ok(ids.includes('HEDGEHOG'));
   for (const pet of FARMING_PETS) {
     assert.match(pet.source, /^https:\/\/hypixelskyblock\.minecraft\.wiki\/w\//);
-    assert.equal(pet.lastVerified, '2026-09-17');
+    assert.match(pet.lastVerified, /^\d{4}-\d{2}-\d{2}$/);
+    assert.ok(pet.lastVerified >= '2026-09-17', `${pet.id} verification date regressed`);
     assert.ok(pet.rarities.length > 0);
   }
 });
