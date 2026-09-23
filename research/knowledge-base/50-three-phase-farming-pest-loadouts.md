@@ -220,6 +220,14 @@ Sources:
 - https://hypixelskyblock.minecraft.wiki/w/Pest
 - https://hypixelskyblock.minecraft.wiki/w/Brown_Bandana
 - current individual Pest pages for bracket/tier thresholds
+Rose Dragon profile entries commonly expose XP rather than a ready-made level. The
+current NEU pet constants define Rose Dragon as a level-200 custom pet: the
+normal rarity-offset pet curve applies through level 100 and every level from
+100 to 200 costs 1,886,700 XP. Farming420 therefore derives the Rose Dragon
+level directly from live profile XP and does not require a manual level field.
+
+XP source:
+- https://github.com/NotEnoughUpdates/NotEnoughUpdates-REPO/blob/master/constants/pets.json
 Last verified: 2026-09-23.
 
 The common computed-stat path now ignores the legacy Green/Poignant planner
