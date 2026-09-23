@@ -210,6 +210,18 @@ test('missing required hand item keeps a setup comparison incomplete', () => {
   assert.ok(result.reasons.includes('no observed farming-tool is available for this phase and crop'));
 });
 
+test('an empty current phase setup prevents a fake complete before/after comparison', () => {
+  const profileSnapshot = snapshot();
+  const state = stateForSnapshot(profileSnapshot);
+  const candidate = savedCowCandidate(profileSnapshot, ACTIVITY_MODE.PEST_KILL);
+  const result = evaluateSetupCandidate(state, candidate, { phase: ACTIVITY_MODE.PEST_KILL });
+
+  assert.equal(result.before.wearableComplete, false);
+  assert.equal(result.after.wearableComplete, true);
+  assert.equal(result.complete, false);
+  assert.ok(result.reasons.includes('current phase setup does not contain a complete armor/equipment loadout'));
+});
+
 test('batch evaluation preserves enumeration order and does not rank by raw Fortune', () => {
   const profileSnapshot = snapshot();
   const state = stateForSnapshot(profileSnapshot);
@@ -296,15 +308,16 @@ test('Brown Bandana remains incomplete until eligible Pest Bestiary tiers are kn
 
   const unknown = evaluateSetupCandidate(state, candidate, { phase: ACTIVITY_MODE.PEST_SPAWN });
   assert.equal(unknown.complete, false);
-  assert.ok(unknown.before.supportGaps.some(reason => reason.includes('Eligible Pest Bestiary tier total')));
+  assert.ok(unknown.after.supportGaps.some(reason => reason.includes('Eligible Pest Bestiary tier total')));
 
   const known = evaluateSetupCandidate(state, candidate, {
     phase: ACTIVITY_MODE.PEST_SPAWN,
     eligiblePestBestiaryTiers: 100,
   });
-  assert.equal(known.complete, true);
-  assert.equal(known.before.petItem.bonusPestChance, 20);
-  assert.equal(known.before.totals.bonusPestChance, 20);
+  assert.equal(known.complete, false, 'the empty current Pest setup still prevents a complete before/after comparison');
+  assert.equal(known.after.petItem.bonusPestChance, 20);
+  assert.equal(known.after.totals.bonusPestChance, 20);
+  assert.ok(known.reasons.includes('current phase setup does not contain a complete armor/equipment loadout'));
 });
 
 test('Brown Bandana bestiary state is irrelevant outside the Pest Spawning phase', () => {
