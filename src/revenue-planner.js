@@ -937,7 +937,6 @@ function enhancePlanner() {
   content.dataset.revenuePlannerReady = '1';
 
   const raw = load();
-  const mode = activityModeForState(raw);
   const ready = true;
   const allRows = allSetBenchmarkRows(raw).filter(row => row.acquisitionMode !== 'EARNED');
   const activeFilter = selectedUpgradeFilter();
