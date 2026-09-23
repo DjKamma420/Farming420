@@ -8,13 +8,20 @@ import {
   greenThumbMarginalPerLevel,
   greenThumbTotalLevel,
   isBlossomPiece,
+  isPestEquipmentPiece,
   minimumGreenThumbLevel,
+  pestEquipmentBaseBonusPestChance,
+  pestEquipmentBaseCooldownReductionPct,
+  pesthunterEradicatorFortune,
   rootedFortuneForPiece,
   rootedFortuneForPieces,
   thornyArmorBonusOverbloom,
   thornyBaseOverbloomForPieces,
   thornyFortuneForPieces,
   thornyPieceCount,
+  squeakyBaseBonusPestChanceForPieces,
+  squeakyCooldownReductionPct,
+  squeakyFortuneForPieces,
 } from '../src/equipment-fortune.js';
 
 const piece = overrides => ({
@@ -40,6 +47,40 @@ test('Blossom base fortune is seven per equipped Blossom piece', () => {
   ];
   assert.equal(blossomPieceCount(pieces), 4);
   assert.equal(blossomBaseFortune(pieces), 28);
+});
+
+test('Pesthunter equipment and Pest Vest expose their direct BPC and additive cooldown reduction', () => {
+  const pieces = [
+    piece({ skyblockId: 'PESTHUNTERS_NECKLACE', displayName: "Pesthunter's Necklace", rarity: 'RARE', reforge: null }),
+    piece({ skyblockId: 'PEST_VEST', displayName: 'Pest Vest', rarity: 'EPIC', reforge: null }),
+    piece({ skyblockId: 'PESTHUNTERS_BELT', displayName: "Pesthunter's Belt", rarity: 'RARE', reforge: null }),
+    piece({ skyblockId: 'PESTHUNTERS_GLOVES', displayName: "Pesthunter's Gloves", rarity: 'RARE', reforge: null }),
+  ];
+  assert.ok(pieces.every(isPestEquipmentPiece));
+  assert.equal(pestEquipmentBaseBonusPestChance(pieces), 25);
+  assert.equal(pestEquipmentBaseCooldownReductionPct(pieces), 45);
+  assert.equal(pesthunterEradicatorFortune(pieces), 75, 'Pest Vest replaces the fourth Pesthunter piece');
+});
+
+test('Squeaky scales FF/BPC by effective rarity and adds 2.5% cooldown reduction per piece', () => {
+  const pieces = [
+    piece({ skyblockId: 'PESTHUNTERS_NECKLACE', rarity: 'RARE', recombobulated: true, reforge: 'squeaky' }),
+    piece({ skyblockId: 'PEST_VEST', rarity: 'EPIC', recombobulated: true, reforge: 'squeaky' }),
+    piece({ skyblockId: 'PESTHUNTERS_BELT', rarity: 'RARE', recombobulated: true, reforge: 'squeaky' }),
+    piece({ skyblockId: 'PESTHUNTERS_GLOVES', rarity: 'RARE', recombobulated: true, reforge: 'squeaky' }),
+  ];
+  assert.equal(squeakyFortuneForPieces(pieces), 34);
+  assert.equal(squeakyBaseBonusPestChanceForPieces(pieces), 6.5);
+  assert.equal(squeakyCooldownReductionPct(pieces), 10);
+});
+
+test('Eradicator follows the current Pesthunter piece-count tiers', () => {
+  const pesthunter = Array.from({ length: 4 }, (_, index) =>
+    piece({ skyblockId: ['PESTHUNTERS_NECKLACE', 'PESTHUNTERS_CLOAK', 'PESTHUNTERS_BELT', 'PESTHUNTERS_GLOVES'][index] }));
+  assert.equal(pesthunterEradicatorFortune(pesthunter.slice(0, 1)), 0);
+  assert.equal(pesthunterEradicatorFortune(pesthunter.slice(0, 2)), 50);
+  assert.equal(pesthunterEradicatorFortune(pesthunter.slice(0, 3)), 75);
+  assert.equal(pesthunterEradicatorFortune(pesthunter), 100);
 });
 
 test('Rooted fortune is derived from each effective item rarity', () => {
