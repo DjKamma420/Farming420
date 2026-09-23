@@ -207,32 +207,6 @@ function petItemForPhase(setup, snapshot, phase, options) {
   });
 }
 
-function applyPetItemToTotals(totals, contribution) {
-  if (!contribution?.active) return totals;
-
-  const globalFortune = Number(contribution.globalFortune || 0);
-  const overbloom = Number(contribution.overbloom || 0);
-  const bonusPestChance = Number(contribution.bonusPestChance || 0);
-
-  if (globalFortune) {
-    totals.globalFortune += globalFortune;
-    totals.effectiveFortune += globalFortune;
-    totals.sourceCount.globalFortune += 1;
-  }
-  if (overbloom) {
-    totals.overbloom += overbloom;
-    totals.sourceCount.overbloom += 1;
-  }
-  if (bonusPestChance) {
-    totals.bonusPestChance += bonusPestChance;
-    totals.sourceCount.bonusPestChance += 1;
-  }
-
-  totals.derived ||= {};
-  totals.derived.setupPetItem = contribution;
-  return totals;
-}
-
 /**
  * Evaluates one already-enumerated owned setup candidate as a complete state.
  *
@@ -255,10 +229,14 @@ export function evaluateSetupCandidate(state, candidate, options = {}) {
     ...setupSupportGaps(beforeSetup),
     ...beforePetItem.reasons,
   ]);
+  beforeState.profile.normalizedSnapshot = snapshot || beforeState.profile.normalizedSnapshot || null;
   const beforeApply = applySnapshotToProgress(beforeState, snapshot || {});
-  const beforeTotals = applyPetItemToTotals(
-    computeStatTotals(beforeState, cropId, phase, activeContextScope),
-    beforePetItem,
+  const beforeTotals = computeStatTotals(
+    beforeState,
+    cropId,
+    phase,
+    activeContextScope,
+    { eligiblePestBestiaryTiers: options.eligiblePestBestiaryTiers ?? null },
   );
 
   const afterState = normalizedState(state);
@@ -271,10 +249,14 @@ export function evaluateSetupCandidate(state, candidate, options = {}) {
     ...setupSupportGaps(afterSetup),
     ...afterPetItem.reasons,
   ]);
+  afterState.profile.normalizedSnapshot = snapshot || afterState.profile.normalizedSnapshot || null;
   const afterApply = applySnapshotToProgress(afterState, snapshot || {});
-  const afterTotals = applyPetItemToTotals(
-    computeStatTotals(afterState, cropId, phase, activeContextScope),
-    afterPetItem,
+  const afterTotals = computeStatTotals(
+    afterState,
+    cropId,
+    phase,
+    activeContextScope,
+    { eligiblePestBestiaryTiers: options.eligiblePestBestiaryTiers ?? null },
   );
 
   const freshness = candidateFreshness(candidate);
