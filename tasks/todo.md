@@ -159,10 +159,12 @@ Implemented in the current pricing pass:
 - missing component prices make the shown build value a lower bound rather than silently becoming zero
 - Visitor filtering now means Visitor-system mechanics (arrival/cooldown, rarity, Visitor Copper/rewards), not Farming Fortune that merely scales from Visitor progress
 - Ladybug / Pretty Clothes is included as the Visitor-Copper Attribute Shard
+- automatic 90-day market values now retain and display the oldest source timestamp used by each combined acquisition/replacement estimate
+- rebuild figures are explicitly labeled replacement value; consumed upgrade components are not mislabeled as recoverable resale value
 
 Still required:
 
-- Bazaar sell routes and timestamps
+- explicit Bazaar liquidation/sell routes for recoverable tradeable assets; the low-level price service already keeps acquisition and liquidation market sides separate
 - NPC prices where appropriate
 - auction-derived values for non-Bazaar items
 - confidence/liquidity

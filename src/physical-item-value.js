@@ -139,8 +139,12 @@ export function physicalItemBuildValue(slotId, item, {
   }
 
   const totalCoins = priced.reduce((sum, row) => sum + row.coins, 0);
+  const timestamps = priced
+    .map(row => Number(row.quote?.computedAtMs))
+    .filter(value => Number.isFinite(value) && value > 0);
   return Object.freeze({
     totalCoins: totalCoins > 0 ? totalCoins : null,
+    computedAtMs: timestamps.length ? Math.min(...timestamps) : null,
     complete: components.length > 0 && missing.length === 0,
     componentCount: components.length,
     pricedCount: priced.length,

@@ -215,6 +215,18 @@ export async function loadMarketAverage(descriptor, {
   return { ...result, fromCache: false };
 }
 
+export function marketAverageTimestampMs(quote) {
+  const value = Number(quote?.computedAtMs);
+  return Number.isFinite(value) && value > 0 ? value : null;
+}
+
+export function marketAverageTimestampLabel(quote) {
+  const value = marketAverageTimestampMs(quote);
+  if (value == null) return 'price time unavailable';
+  const iso = new Date(value).toISOString();
+  return `as of ${iso.slice(0, 16).replace('T', ' ')} UTC`;
+}
+
 export function marketAverageLabel(quote) {
   if (!quote) return '90-day market average unavailable';
   return quote.market === MARKET_KIND.AUCTION_HOUSE

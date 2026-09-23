@@ -25,6 +25,21 @@ function positiveCoins(value) {
   return Number.isFinite(number) && number > 0 ? number : null;
 }
 
+function marketComputedAtMs(market) {
+  const direct = Number(market?.computedAtMs);
+  if (Number.isFinite(direct) && direct > 0) return direct;
+  const timestamps = (market?.quotes || [])
+    .map(row => Number(row?.quote?.computedAtMs))
+    .filter(value => Number.isFinite(value) && value > 0);
+  return timestamps.length ? Math.min(...timestamps) : null;
+}
+
+function oldestTimestamp(current, candidate) {
+  if (candidate == null) return current;
+  if (current == null) return candidate;
+  return Math.min(current, candidate);
+}
+
 export function upgradePriceSummary(store, item, {
   resolveMarket = resolveUpgradeMarketAverage,
   resolveCost = resolveUpgradeCost,
@@ -36,6 +51,7 @@ export function upgradePriceSummary(store, item, {
 
   const entryMarket = resolveMarket(id, null);
   const entryMarketCoins = entryMarket?.complete ? positiveCoins(entryMarket.coins) : null;
+  const entryMarketComputedAtMs = entryMarket?.complete ? marketComputedAtMs(entryMarket) : null;
   const unitMarket = shard ? entryMarket : null;
   const unitShardCoins = unitMarket?.complete ? positiveCoins(unitMarket.coins) : null;
   const shardCountOwned = shard ? shardsForAttributeLevel(id, currentLevel) : null;
@@ -49,8 +65,11 @@ export function upgradePriceSummary(store, item, {
       currentLevel,
       maxLevel,
       entryMarketCoins,
+      entryMarketComputedAtMs,
       nextCostCoins: 0,
+      nextCostComputedAtMs: null,
       costToMaxCoins: 0,
+      costToMaxComputedAtMs: null,
       costToMaxComplete: true,
       remainingEarnedSteps: 0,
       remainingUnknownSteps: 0,
@@ -65,6 +84,8 @@ export function upgradePriceSummary(store, item, {
   let remainingEarnedSteps = 0;
   let remainingUnknownSteps = 0;
   let firstStepCoins = null;
+  let nextCostComputedAtMs = null;
+  let costToMaxComputedAtMs = null;
   let explicitStepSeen = false;
 
   for (let target = currentLevel + 1; target <= maxLevel; target += 1) {
@@ -73,8 +94,13 @@ export function upgradePriceSummary(store, item, {
       const market = resolveMarket(id, target);
       if (market?.complete && positiveCoins(market.coins) != null) {
         const coins = Number(market.coins);
+        const computedAtMs = marketComputedAtMs(market);
         costToMaxCoins += coins;
-        if (target === currentLevel + 1) firstStepCoins = coins;
+        costToMaxComputedAtMs = oldestTimestamp(costToMaxComputedAtMs, computedAtMs);
+        if (target === currentLevel + 1) {
+          firstStepCoins = coins;
+          nextCostComputedAtMs = computedAtMs;
+        }
       } else {
         remainingUnknownSteps += 1;
       }
@@ -100,6 +126,8 @@ export function upgradePriceSummary(store, item, {
       if (full?.complete && positiveCoins(full.coins) != null) {
         costToMaxCoins = Number(full.coins);
         firstStepCoins = Number(full.coins);
+        nextCostComputedAtMs = marketComputedAtMs(full);
+        costToMaxComputedAtMs = nextCostComputedAtMs;
       } else {
         const next = resolveCost(store, id);
         if (next?.acquisitionMode === 'EARNED') remainingEarnedSteps += 1;
@@ -115,6 +143,9 @@ export function upgradePriceSummary(store, item, {
     const next = resolveCost(store, id);
     if (next?.acquisitionMode === 'BUYABLE' && positiveCoins(next.coins) != null) {
       firstStepCoins = Number(next.coins);
+      nextCostComputedAtMs = Number.isFinite(Number(next.computedAtMs)) && Number(next.computedAtMs) > 0
+        ? Number(next.computedAtMs)
+        : null;
     }
   }
 
@@ -122,8 +153,11 @@ export function upgradePriceSummary(store, item, {
     currentLevel,
     maxLevel,
     entryMarketCoins,
+    entryMarketComputedAtMs,
     nextCostCoins: firstStepCoins,
+    nextCostComputedAtMs,
     costToMaxCoins: costToMaxCoins > 0 || remainingUnknownSteps === 0 ? costToMaxCoins : null,
+    costToMaxComputedAtMs,
     costToMaxComplete: remainingUnknownSteps === 0,
     remainingEarnedSteps,
     remainingUnknownSteps,
