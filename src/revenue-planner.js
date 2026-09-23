@@ -283,6 +283,7 @@ function evaluatedRows(raw) {
           gain: itemGain,
           costCoins: costSource.coins,
           acquisitionMode: costSource.acquisitionMode,
+          costKind: costSource.costKind,
           directCoinCost: costSource.directCoinCost,
           activeGrindHours,
           timeValueCoinsPerHour: timeValue.coinsPerHour,
@@ -297,6 +298,7 @@ function evaluatedRows(raw) {
         costSource,
       };
     })
+    .filter(row => row.costSource.costKind !== 'recurring-consumable')
     .filter(row => row.modeled && row.gain > 0));
 }
 
@@ -398,6 +400,7 @@ function benchmarkEvaluatedRows(raw, { includeGoalFilters = false } = {}) {
           gain: itemGain,
           costCoins: costSource.coins,
           acquisitionMode: costSource.acquisitionMode,
+          costKind: costSource.costKind,
           directCoinCost: costSource.directCoinCost,
           activeGrindHours: null,
           timeValueCoinsPerHour: PLANNER_BENCHMARK_COINS_PER_HOUR,
@@ -414,6 +417,7 @@ function benchmarkEvaluatedRows(raw, { includeGoalFilters = false } = {}) {
         costSource,
       };
     })
+    .filter(row => row.costSource.costKind !== 'recurring-consumable')
     .filter(row => {
       if (row.modeled && row.gain > 0) return true;
       if (isSpawningPrimary(row) && (row.gain > 0 || row.item.status === 'VERIFY')) return true;
