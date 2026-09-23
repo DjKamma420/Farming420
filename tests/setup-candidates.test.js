@@ -148,7 +148,7 @@ test('held pet items stay attached to the exact physical pet across candidates',
   assert.equal(byPet.get('pet:rose-clover').setup.slots.petItem.physicalItemId, 'pet-held:rose-clover');
 });
 
-test('Rose Dragon explicit level 100-200 is preserved and unknown XP is not forced through the standard pet curve', () => {
+test('Rose Dragon explicit level is preserved and XP-only profiles use the verified level-200 curve', () => {
   const explicit = itemRecordsFromSnapshotPet({
     uuid: 'rose-explicit',
     type: 'ROSE_DRAGON',
@@ -164,7 +164,7 @@ test('Rose Dragon explicit level 100-200 is preserved and unknown XP is not forc
     rarity: 'LEGENDARY',
     experience: 1_000_000_000,
   });
-  assert.equal(xpOnly.pet.petLevel, null);
+  assert.equal(xpOnly.pet.petLevel, 200);
 
   const standard = itemRecordsFromSnapshotPet({
     uuid: 'cow',

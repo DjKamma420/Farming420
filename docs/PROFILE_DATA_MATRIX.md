@@ -140,7 +140,8 @@ The current official Garden response documents these fields directly:
 | Crop upgrade levels | `garden.crop_upgrade_levels` | Set per-crop crop-upgrade progress automatically. | AUTO |
 | Unlocked plots | `garden.unlocked_plots_ids` | Account/Garden progression and plot Fortune. | AUTO |
 | Garden XP | `garden.garden_experience` | Derive Garden level when level table is verified. | AUTO/DERIVED |
-| Collected crop resources | `garden.resources_collected` | Progress/context, possible milestone derivation where rules are known. | AUTO |
+| Collected crop resources | `garden.resources_collected` | Raw cumulative Garden crop collection counters. | AUTO |
+| Crop Milestones | derived from `garden.resources_collected` against the current 13 crop threshold tables | Rose Dragon Rosy Scales, Dedication/context and progression. Maximum current total is 598 (13 × 46). Missing counters stay unknown. | DERIVED |
 | Visitor visits | `garden.commission_data.visits` | Visitor progress/context. | AUTO |
 | Completed visitors | `garden.commission_data.completed` | Visitor progress. | AUTO |
 | Total visitors completed | `garden.commission_data.total_completed` | Equipment/visitor scaling models. | AUTO |

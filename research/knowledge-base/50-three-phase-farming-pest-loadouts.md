@@ -85,6 +85,26 @@ The three phases still exist:
 
 For a fully developed account, Killing should be able to reference a **second Rose Dragon** carrying **Poignant Lucky Clover**, because pet items are fixed to the pet and Green Bandana remains better for the normal Farming phase. Do not model this as an impossible mid-phase pet-item swap on one physical pet.
 
+The Rose Dragon itself is now modeled as profile-dependent rather than as a flat
+planner gain. At pet level 200 it contributes 40 base Farming Fortune, +3
+Farming Fortune per Farming level, +0.15 Farming Fortune per total Crop
+Milestone, and +40 Overbloom. Symbiosis activates only at level 200 and adds +3
+Farming Fortune for each **other unique maxed Farming Pet**; duplicate species
+and other Rose Dragons do not add extra Symbiosis stacks. Between levels 100
+and 200 the four level-scaled terms interpolate exactly at +0.2 base FF,
++0.015 FF/Farming-level coefficient, +0.00075 FF/Crop-Milestone coefficient,
+and +0.2 Overbloom per pet level.
+
+The Garden API exposes cumulative `resources_collected`, so total Crop
+Milestones are derived from the current threshold tables rather than manually
+entered. There are currently 13 Garden crops × 46 milestones = 598 maximum.
+
+Sources:
+- https://hypixelskyblock.minecraft.wiki/w/Rose_Dragon_Pet
+- https://api.hypixel.net/v2/skyblock/garden
+- https://github.com/Vyriv/BetterPV/blob/master/src/main/resources/assets/betterpv/data/garden.json
+Last verified: 2026-09-23.
+
 ### Ultra-min-max optional split
 
 At the very top end, a third physical armor/equipment split can be modeled as a luxury optimization:
@@ -200,6 +220,14 @@ Sources:
 - https://hypixelskyblock.minecraft.wiki/w/Pest
 - https://hypixelskyblock.minecraft.wiki/w/Brown_Bandana
 - current individual Pest pages for bracket/tier thresholds
+Rose Dragon profile entries commonly expose XP rather than a ready-made level. The
+current NEU pet constants define Rose Dragon as a level-200 custom pet: the
+normal rarity-offset pet curve applies through level 100 and every level from
+100 to 200 costs 1,886,700 XP. Farming420 therefore derives the Rose Dragon
+level directly from live profile XP and does not require a manual level field.
+
+XP source:
+- https://github.com/NotEnoughUpdates/NotEnoughUpdates-REPO/blob/master/constants/pets.json
 Last verified: 2026-09-23.
 
 The common computed-stat path now ignores the legacy Green/Poignant planner

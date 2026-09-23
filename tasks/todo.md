@@ -84,8 +84,9 @@ was not a mass date stamp. Values that cannot be represented as a reliable
 static marginal gain remain `VERIFY`.
 
 The important example is the farming-pet switch: the old flat +280 planner gain
-was removed because Rose Dragon is profile-dependent. The future setup evaluator
-must compare a computed legal candidate against the currently active pet.
+was removed because Rose Dragon is profile-dependent. The setup evaluator now
+computes the selected Rose Dragon from pet level, Farming level, total Crop
+Milestones and unique maxed Farming Pets before comparing complete legal states.
 
 `tests/verification-coverage.test.js` now enforces zero undated `ACTIVE`
 entries, valid dates, non-empty sources, and no citations to the closed official
@@ -104,7 +105,7 @@ Implemented:
 - keep each pet's held item attached to that exact physical pet
 - preserve source freshness (`AUTO` / `HIDDEN` / `UNKNOWN`) on candidate data
 - Farming and Spawning candidates require a crop tool; Killing candidates require a Vacuum
-- preserve explicit Rose Dragon levels through 200; do not force Rose Dragon XP through the ordinary level-100 pet curve
+- preserve explicit Rose Dragon levels through 200 and derive XP-only Rose Dragons with the verified level-200 extension (normal rarity curve through 100, then 1,886,700 XP per level)
 - expose the candidate inventory through `detectFarmingProfile(snapshot)`
 
 Implemented above enumeration:
@@ -123,7 +124,6 @@ Implemented above enumeration:
 
 Still required before this area is closed:
 
-- profile-aware Rose Dragon contribution and legal before/after pet comparison
 - verify/model Mantid and Squeaky numerically before they can score
 - normal crop / Jacob Contest / Pest Spawn / Pest Kill objective evaluation beyond raw stat deltas
 - budget/progression versus endgame/max-profit candidate classes

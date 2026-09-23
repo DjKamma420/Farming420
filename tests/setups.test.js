@@ -158,6 +158,42 @@ test('autofill derives the active pet level from synced experience and keeps its
   assert.equal(setup.slots.petItem.physicalItemId, 'pet-held:pet-123');
 });
 
+test('Rose Dragon profile XP resolves through level 200 without a synthetic level field', () => {
+  const snapshot = {
+    items: [],
+    pets: [{
+      uuid: 'rose-xp',
+      type: 'ROSE_DRAGON',
+      rarity: 'LEGENDARY',
+      experience: 214_023_230,
+      level: null,
+      active: true,
+      heldItem: null,
+    }],
+  };
+  const { setup } = prefillSetupFromSnapshot(createSetup('a', 'A'), snapshot);
+  assert.equal(setup.slots.pet.skyblockId, 'ROSE_DRAGON');
+  assert.equal(setup.slots.pet.petLevel, 200);
+  assert.equal(setup.slots.pet.physicalItemId, 'pet:rose-xp');
+});
+
+test('an unhatched Rose Dragon profile remains below level 100 instead of being clamped to 100', () => {
+  const snapshot = {
+    items: [],
+    pets: [{
+      uuid: 'rose-egg',
+      type: 'ROSE_DRAGON',
+      rarity: 'LEGENDARY',
+      experience: 0,
+      level: null,
+      active: true,
+      heldItem: null,
+    }],
+  };
+  const { setup } = prefillSetupFromSnapshot(createSetup('a', 'A'), snapshot);
+  assert.equal(setup.slots.pet.petLevel, 1);
+});
+
 test('an inactive pet is never assumed to be the equipped one', () => {
   const snapshot = { items: [], pets: [{ type: 'ELEPHANT', active: false }, { type: 'HEDGEHOG', active: null }] };
   const { setup } = prefillSetupFromSnapshot(createSetup('a', 'A'), snapshot);

@@ -231,6 +231,39 @@ test('batch evaluation preserves enumeration order and does not rank by raw Fort
   assert.deepEqual(evaluated.map(row => row.candidateId), candidates.map(row => row.id));
 });
 
+test('Rose Dragon candidate uses Farming level, total Crop Milestones and Symbiosis instead of a fake zero', () => {
+  const profileSnapshot = snapshot({
+    extraPets: [{
+      index: 1,
+      uuid: 'dragon',
+      type: 'ROSE_DRAGON',
+      rarity: 'LEGENDARY',
+      level: 200,
+      experience: null,
+      active: false,
+      heldItem: null,
+    }],
+  });
+  profileSnapshot.garden.cropMilestoneTotal = 598;
+  const state = stateForSnapshot(profileSnapshot);
+  state.profile.levels['account-skill-farming-skill-level'] = 60;
+
+  const candidate = buildSetupCandidates(profileSnapshot).find(row =>
+    row.components.armorSetId === 'saved:saved'
+    && row.components.equipmentSetId === 'saved:saved'
+    && row.components.petId === 'pet:dragon');
+
+  const result = evaluateSetupCandidate(state, candidate);
+  assert.equal(result.complete, true);
+  assert.ok(!result.after.supportGaps.some(reason => reason.includes('Rose Dragon')));
+  assert.ok(Math.abs(result.after.totals.globalFortune - 845.7) < 1e-9);
+  assert.equal(result.after.totals.overbloom, 45);
+  assert.ok(Math.abs(result.delta.globalFortune - 45.7) < 1e-9);
+  assert.equal(result.delta.overbloom, 45);
+  assert.equal(result.after.totals.derived.roseDragon.symbiosisPetCount, 1);
+  assert.deepEqual([...result.after.totals.derived.roseDragon.symbiosisPets], ['MOOSHROOM_COW']);
+});
+
 test('an unmodeled farming pet makes a candidate incomplete instead of contributing a fake zero', () => {
   const profileSnapshot = snapshot({
     extraPets: [{
