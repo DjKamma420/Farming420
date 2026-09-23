@@ -47,6 +47,10 @@ export const FARMING_SHARD_MARKET = Object.freeze({
     rarity: 'RARE',
     itemTags: Object.freeze(['SHARD_INVISIBUG']),
   }),
+  'attribute-shard-ladybug-pretty-clothes': Object.freeze({
+    rarity: 'RARE',
+    itemTags: Object.freeze(['SHARD_LADYBUG']),
+  }),
   'attribute-shard-dragonfly-garden-wisdom': Object.freeze({
     rarity: 'EPIC',
     itemTags: Object.freeze(['SHARD_DRAGONFLY']),
