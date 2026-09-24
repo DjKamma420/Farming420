@@ -22,6 +22,7 @@ test('item normalization keeps raw farming-relevant item facts without calculati
         rarity_upgrades: 1,
         farmed_cultivating: 12345678,
         levelable_overclocks: 3,
+        talisman_enrichment: 'strength',
       },
     },
   }, { container: 'inventory', slot: 4 });
@@ -36,6 +37,7 @@ test('item normalization keeps raw farming-relevant item facts without calculati
   assert.equal(item.recombobulated, 1);
   assert.equal(item.cultivatingCounter, 12345678);
   assert.equal(item.overclockerLevel, 3);
+  assert.equal(item.talismanEnrichment, 'strength');
 });
 
 test('encoded inventory normalization preserves generic enchantments and ignores empty slots', async () => {
