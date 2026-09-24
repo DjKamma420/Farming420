@@ -28,6 +28,7 @@ test('the default setups are farming, pest spawning, and pest killing', () => {
   assert.deepEqual(setups.list.map(setup => setup.id), ['normal', 'pest', 'pest-kill']);
   assert.deepEqual(setups.list.map(setup => setup.name), ['Farming', 'Pest Spawning', 'Pest Killing']);
   assert.equal(setups.activeId, 'normal');
+  assert.equal(setups.shareFarmingKillingPet, false);
 });
 
 test('a new setup starts with every slot empty', () => {
@@ -349,7 +350,7 @@ test('editing one linked setup item updates every reference to the same physical
   assert.equal(setups.list[0].slots.helmet.physicalItemId, 'shared:normal:helmet');
 });
 
-test('clearing a linked slot removes only that loadout reference', () => {
+test('clearing Killing armor clears the shared FF gear slot as well', () => {
   const setups = createDefaultSetups();
   const shared = ensurePhysicalItemId({ ...createEmptyItem(), displayName: 'Helianthus Helmet' }, 'shared:normal:helmet');
   setups.list[0].slots.helmet = { ...shared };
@@ -357,11 +358,11 @@ test('clearing a linked slot removes only that loadout reference', () => {
 
   writeLinkedSetupSlot(setups, 'pest-kill', 'helmet', null);
 
-  assert.ok(setups.list[0].slots.helmet);
+  assert.equal(setups.list[0].slots.helmet, null);
   assert.equal(setups.list[2].slots.helmet, null);
 });
 
-test('replacing a linked slot with a different physical item does not mutate the old object elsewhere', () => {
+test('replacing Killing armor writes through to the shared FF gear slot', () => {
   const setups = createDefaultSetups();
   const shared = ensurePhysicalItemId({ ...createEmptyItem(), displayName: 'Old Helmet' }, 'shared:normal:helmet');
   setups.list[0].slots.helmet = { ...shared };
@@ -369,6 +370,7 @@ test('replacing a linked slot with a different physical item does not mutate the
 
   writeLinkedSetupSlot(setups, 'pest-kill', 'helmet', { ...createEmptyItem(), displayName: 'Different Helmet' });
 
-  assert.equal(setups.list[0].slots.helmet.displayName, 'Old Helmet');
+  assert.equal(setups.list[0].slots.helmet.displayName, 'Different Helmet');
   assert.equal(setups.list[2].slots.helmet.displayName, 'Different Helmet');
+  assert.equal(setups.list[0].slots.helmet.physicalItemId, setups.list[2].slots.helmet.physicalItemId);
 });
