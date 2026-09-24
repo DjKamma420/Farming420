@@ -2,7 +2,20 @@ import { CROPS, UPGRADES } from './data.js';
 import { FARMING_ACCESSORY_GROUPS, farmingAccessoryByItemId } from './farming-accessories.js';
 import { FARMING_PETS } from './setup-pet-catalog.js';
 import { searchEntries } from './global-search.js';
-import { accessoryCapabilityState } from './accessory-capabilities.js';
+import {
+  accessoryCapabilityState,
+  strengthEnrichmentCountFromSnapshot,
+} from './accessory-capabilities.js';
+import {
+  ELEMENTAL_STRENGTH_SHARDS,
+  FARMING_SHARD_SYNERGIES,
+  cowFortuneDeltaForAddedStrength,
+  cowFortuneDeltaForStrengthPercentChange,
+  elementalStrengthFromShardLevels,
+  jormungStrengthPercent,
+  nextElementalShardStrength,
+  strengthUntilNextCowFortune,
+} from './farming-synergies.js';
 import { DATA_SCHEMA_VERSION, STORAGE_KEY } from './config.js';
 import { applyComputedStatsToState, computeStatTotals } from './computed-stats.js';
 import { ACTIVITY_MODE, activityLabel, activityModeForState, setupIdForActivity } from './activity-mode.js';
@@ -211,6 +224,7 @@ const defaultState = {
     costs: {},
     manualGain: {},
     accessoryItems: {},
+    synergyShardLevels: {},
     farmingContext: 'normal',
   }
 };
@@ -1250,12 +1264,17 @@ function accessoryCatalogCard(accessory) {
     <div class="chips">
       ${badge(accessory.condition, 'soft')}
       ${badge(itemState.recombobulated ? 'recombobulated' : 'base rarity', itemState.recombobulated ? 'owned' : 'soft')}
+      ${capability.strengthBonus ? badge('+1 Strength enrichment', 'owned') : ''}
     </div>
     <div class="accessory-upgrades">
       <label class="accessory-upgrade-row">
         <span><strong>Recombobulator 3000</strong><small>Raises this accessory by exactly one rarity.</small></span>
         <input type="checkbox" data-accessory-recomb="${esc(accessory.itemId)}" ${itemState.recombobulated ? 'checked' : ''} ${capability.canRecombobulate ? '' : 'disabled'}>
       </label>
+      ${capability.canEnrich ? `<label class="accessory-upgrade-row">
+        <span><strong>Strength Enrichment</strong><small>+1 Strength. This can increase Farming Fortune through a Legendary Mooshroom Cow when the next Strength breakpoint is crossed.</small></span>
+        <input type="checkbox" data-accessory-strength-enrichment="${esc(accessory.itemId)}" ${capability.enrichment === 'strength' ? 'checked' : ''}>
+      </label>` : ''}
       ${upgrade ? `<button class="ghost small accessory-progression-btn" type="button" data-open="${esc(upgrade.id)}">Open calculator progression</button>` : ''}
     </div>
   </article>`;
@@ -1266,11 +1285,15 @@ function accessoriesPage() {
     ...group,
     items: group.items,
   })).filter(group => group.items.length);
+  const syncedStrengthEnrichments = strengthEnrichmentCountFromSnapshot(state.profile?.normalizedSnapshot);
+  const { cow, strength } = cowSynergyContext();
+  const cowReady = cow?.active && cow?.rarity === 'LEGENDARY' && Number.isFinite(strength);
+  const nextCowStrength = cowReady ? strengthUntilNextCowFortune(strength, cow.level, cow.rarity) : null;
 
-  return `${pageHeader('Accessories', 'Farming Accessories', 'Accessory progression keeps the physical item, effective rarity and Recombobulator state.')}
+  return `${pageHeader('Accessories', 'Farming Accessories', 'Accessory progression includes direct farming effects and indirect Strength paths that can feed Legendary Mooshroom Cow.')}
     <div class="accessory-model-note">
-      <strong>Exact item model and rarity</strong>
-      <span>Live Hypixel item metadata wins. Exact current player-head hashes are used as an offline fallback. A Recombobulator raises the accessory by exactly one rarity and is tracked per physical accessory.</span>
+      <strong>Accessory power, enrichment and Cow interaction</strong>
+      <span>Synced Strength Enrichments in the full Accessory Bag: ${syncedStrengthEnrichments}. Strength Enrichment gives +1 Strength on eligible accessories. ${cowReady ? `At ${formatNumber(strength)} current Strength, the next displayed Cow FF needs about ${formatNumber(nextCowStrength)} more Strength.` : 'Set an active Legendary Mooshroom Cow and current Strength to show its breakpoint.'} Accessory Power and Tuning can also change Strength, but Farming420 does not assign them a Cow value until the selected Power and tuning allocation are known.</span>
     </div>
     ${groups.length ? groups.map(group => `
       <section class="accessory-group" data-accessory-group="${esc(group.id)}">
@@ -1524,6 +1547,129 @@ function genericSectionPage(section, kicker, title, text) {
     ${section === 'tools' ? toolItemPanel() : ''}
     ${section === 'tools' ? '<div class="section-row"><div><h2>Every scored tool entry</h2><p>The same values, with the Fortune each one contributes and the source behind it.</p></div></div>' : ''}
     <div class="${gridClass}">${items.map(x=>card(x)).join('') || '<div class="empty">No matches.</div>'}</div>`;
+}
+
+function synergyShardLevel(id) {
+  return Math.max(0, Math.min(10, Math.floor(Number(state.profile.synergyShardLevels?.[id] || 0))));
+}
+
+function cowSynergyContext() {
+  const stats = computeStatTotals(state, state.selectedCrop || 'melon');
+  const cow = stats.derived?.mooshroomCow || null;
+  const rawStrength = state.profile?.inputs?.strength;
+  return {
+    cow,
+    strength: rawStrength === null || rawStrength === undefined || rawStrength === '' ? null : Number(rawStrength),
+  };
+}
+
+function cowDeltaText(delta) {
+  if (!delta) return 'Cow impact needs active Legendary Mooshroom Cow + Strength input';
+  return `+${formatNumber(delta.addedStrength)} Strength → +${formatNumber(delta.deltaFortune)} Cow FF`;
+}
+
+function shardSynergyPanel() {
+  const levels = state.profile.synergyShardLevels || {};
+  const starbornLevel = synergyShardLevel(FARMING_SHARD_SYNERGIES.echoOfElemental.id);
+  const elemental = elementalStrengthFromShardLevels(levels, starbornLevel);
+  const { cow, strength } = cowSynergyContext();
+  const cowReady = cow?.active && cow?.rarity === 'LEGENDARY' && Number.isFinite(strength);
+  const nextThreshold = cowReady ? strengthUntilNextCowFortune(strength, cow.level, cow.rarity) : null;
+  const jormungLevel = synergyShardLevel(FARMING_SHARD_SYNERGIES.unlimitedPower.id);
+  const molthornLevel = synergyShardLevel(FARMING_SHARD_SYNERGIES.almightyEcho.id);
+  const currentJormungPercent = jormungStrengthPercent(jormungLevel, molthornLevel);
+  const nextJormungPercent = jormungLevel < 10 ? jormungStrengthPercent(jormungLevel + 1, molthornLevel) : currentJormungPercent;
+  const nextMolthornPercent = molthornLevel < 10 ? jormungStrengthPercent(jormungLevel, molthornLevel + 1) : currentJormungPercent;
+  const jormungCow = cowReady && jormungLevel < 10
+    ? cowFortuneDeltaForStrengthPercentChange({
+        currentStrength: strength,
+        currentPercent: currentJormungPercent,
+        nextPercent: nextJormungPercent,
+        cowLevel: cow.level,
+        rarity: cow.rarity,
+      })
+    : null;
+  const molthornCow = cowReady && molthornLevel < 10 && jormungLevel > 0
+    ? cowFortuneDeltaForStrengthPercentChange({
+        currentStrength: strength,
+        currentPercent: currentJormungPercent,
+        nextPercent: nextMolthornPercent,
+        cowLevel: cow.level,
+        rarity: cow.rarity,
+      })
+    : null;
+
+  const elementalRows = ELEMENTAL_STRENGTH_SHARDS.map(shard => {
+    const current = synergyShardLevel(shard.id);
+    const nextStrength = current < shard.maxLevel ? nextElementalShardStrength(shard.id, starbornLevel) : 0;
+    const cowDelta = cowReady && nextStrength > 0
+      ? cowFortuneDeltaForAddedStrength({
+          currentStrength: strength,
+          addedStrength: nextStrength,
+          cowLevel: cow.level,
+          rarity: cow.rarity,
+        })
+      : null;
+    return `<label class="accessory-upgrade-row">
+      <span><strong>${esc(shard.name)} · ${esc(shard.attribute)}</strong><small>+1 Strength per level; Echo of Elemental currently makes the next level +${formatNumber(nextStrength || (1 + elemental.boostPercent / 100))} Strength. ${current < shard.maxLevel ? cowDeltaText(cowDelta) : 'Max level.'}</small></span>
+      <input type="number" min="0" max="10" step="1" value="${current}" data-synergy-shard-level="${esc(shard.id)}">
+    </label>`;
+  }).join('');
+
+  const starbornCurrent = synergyShardLevel(FARMING_SHARD_SYNERGIES.echoOfElemental.id);
+  const starbornAddedStrength = starbornCurrent < 10 ? elemental.baseStrength * 0.02 : 0;
+  const starbornCow = cowReady && starbornAddedStrength > 0
+    ? cowFortuneDeltaForAddedStrength({
+        currentStrength: strength,
+        addedStrength: starbornAddedStrength,
+        cowLevel: cow.level,
+        rarity: cow.rarity,
+      })
+    : null;
+
+  const relationRows = [
+    {
+      entry: FARMING_SHARD_SYNERGIES.echoOfElemental,
+      level: starbornCurrent,
+      detail: `Current Elemental Strength: ${formatNumber(elemental.effectiveStrength)} (${formatNumber(elemental.baseStrength)} base, +${formatNumber(elemental.boostPercent)}%). Next level: ${starbornCurrent < 10 ? cowDeltaText(starbornCow) : 'maxed'}.`,
+    },
+    {
+      entry: FARMING_SHARD_SYNERGIES.unlimitedPower,
+      level: jormungLevel,
+      detail: `Current Strength multiplier: +${formatNumber(currentJormungPercent)}%. Next level: ${jormungLevel < 10 ? cowDeltaText(jormungCow) : 'maxed'}.`,
+    },
+    {
+      entry: FARMING_SHARD_SYNERGIES.almightyEcho,
+      level: molthornLevel,
+      detail: jormungLevel > 0
+        ? `Jormung is currently boosted to +${formatNumber(currentJormungPercent)}% Strength. Next level: ${molthornLevel < 10 ? cowDeltaText(molthornCow) : 'maxed'}.`
+        : 'No Cow value until Unlimited Power/Jormung is present.',
+    },
+    ...['tuningBox', 'filterUpgrade', 'echoOfWisdom', 'queenlyEcho', 'echoOfEchoes'].map(key => ({
+      entry: FARMING_SHARD_SYNERGIES[key],
+      level: synergyShardLevel(FARMING_SHARD_SYNERGIES[key].id),
+      detail: FARMING_SHARD_SYNERGIES[key].farmingUse,
+    })),
+  ].map(row => `<label class="accessory-upgrade-row">
+    <span><strong>${esc(row.entry.name)} · ${esc(row.entry.attribute)}</strong><small>${esc(row.detail)} Target: ${esc(row.entry.target)}.</small></span>
+    <input type="number" min="0" max="10" step="1" value="${row.level}" data-synergy-shard-level="${esc(row.entry.id)}">
+  </label>`).join('');
+
+  return `<section class="accessory-model-note shard-synergy-panel">
+    <strong>Indirect shard synergies</strong>
+    <span>These effects stay separate from flat Farming Fortune. ${cowReady
+      ? `Current Strength: ${formatNumber(strength)} · next displayed Cow FF needs about ${formatNumber(nextThreshold)} more Strength.`
+      : 'Set an active Legendary Mooshroom Cow and current Strength to calculate Cow breakpoints.'}</span>
+    <div class="accessory-upgrades">${elementalRows}${relationRows}</div>
+  </section>`;
+}
+
+function shardsPage() {
+  const items = visibleUpgrades('shards');
+  return `${pageHeader('Attribute Shards','Shards','Direct Farming stats and indirect shard-to-shard / Strength interactions are evaluated separately so one effect is never counted twice.')}
+    ${!state.search.trim() ? shardSynergyPanel() : ''}
+    <div class="filter-line">${badge(`${items.length} direct entries`,'soft')}</div>
+    <div class="card-grid shard-gallery">${items.map(x=>card(x)).join('') || '<div class="empty">No matches.</div>'}</div>`;
 }
 
 function qolPage() {
@@ -2445,7 +2591,7 @@ function render({ preserveScroll = true } = {}) {
     case 'gear': content = genericSectionPage('gear','Gear','Armor & Equipment','Armor, equipment, reforges, gemstones and enchantments remain a separate setup layer.'); break;
     case 'pets': content = genericSectionPage('pets','Pets','Pets & Pet Items','Pets are mutually exclusive setup choices and are never added together.'); break;
     case 'chips': content = genericSectionPage('chips','Garden Chips','Garden Chips','Each chip has its own level path and activation conditions.'); break;
-    case 'shards': content = genericSectionPage('shards','Attribute Shards','Shards','Track day/night, pest-conditional and general Farming Fortune shards separately.'); break;
+    case 'shards': content = shardsPage(); break;
     case 'buffs': content = effectsPage(); break;
     case 'pests': content = genericSectionPage('pests','Pests','Pest Analysis','Vacuum kill thresholds and Pesthunter Phillip calculations live here. Explanations and strategy are in Info.'); break;
     case 'qol': content = qolPage(); break;
@@ -2622,6 +2768,28 @@ function bind() {
     next.recombobulated = Boolean(event.target.checked);
     next.source = 'manual';
     state.profile.accessoryItems[accessory.itemId] = next;
+    saveState();
+    render();
+  }));
+
+  document.querySelectorAll('[data-accessory-strength-enrichment]').forEach(el => el.addEventListener('change', event => {
+    const accessory = farmingAccessoryByItemId(event.target.dataset.accessoryStrengthEnrichment);
+    if (!accessory) return;
+    state.profile.accessoryItems ||= {};
+    const next = { ...(state.profile.accessoryItems[accessory.itemId] || {}) };
+    next.enrichment = event.target.checked ? 'strength' : null;
+    next.source = 'manual';
+    state.profile.accessoryItems[accessory.itemId] = next;
+    saveState();
+    render();
+  }));
+
+  document.querySelectorAll('[data-synergy-shard-level]').forEach(el => el.addEventListener('change', event => {
+    state.profile.synergyShardLevels ||= {};
+    state.profile.synergyShardLevels[event.target.dataset.synergyShardLevel] = Math.max(
+      0,
+      Math.min(10, Math.floor(Number(event.target.value || 0))),
+    );
     saveState();
     render();
   }));
