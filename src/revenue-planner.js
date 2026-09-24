@@ -12,6 +12,7 @@ import { MEASURED_FEAST_KEY, MEASURED_FIELDS, describeMissing, measuredBaseline 
 import { setTextIfChanged } from './set-text.js';
 import { costOriginNote, resolveUpgradeCost } from './upgrade-cost-resolution.js';
 import { INTERNET_FARMING_TIME_VALUE_COINS_PER_HOUR } from './upgrade-economics.js';
+import { marketAverageTimestampLabel } from './market-average-prices.js';
 import {
   PLANNER_UPGRADE_TARGET,
   plannerUpgradeTarget,
@@ -828,6 +829,40 @@ function maxingPanel(raw) {
   const priceNote = summary.costComplete
     ? 'all remaining buyable steps priced'
     : `${formatNumber(summary.remainingUnknownPriceSteps)} remaining price step${summary.remainingUnknownPriceSteps === 1 ? '' : 's'} unknown`;
+  const freshness = summary.knownCostComputedAtMs != null
+    ? marketAverageTimestampLabel({ computedAtMs: summary.knownCostComputedAtMs })
+    : null;
+  const unknownTargets = summary.unknownPriceTargets.slice(0, 8);
+  const hiddenUnknownTargets = Math.max(0, summary.unknownPriceTargets.length - unknownTargets.length);
+
+  const breakdownMarkup = summary.breakdown.map(section => {
+    const sectionCost = section.costComplete
+      ? `${compactCoins(section.knownCostCoins)} Coins left`
+      : section.knownCostCoins > 0
+        ? `≥ ${compactCoins(section.knownCostCoins)} Coins left`
+        : 'Price incomplete';
+    const sectionUnknown = section.remainingUnknownPriceSteps > 0
+      ? ` · ${formatNumber(section.remainingUnknownPriceSteps)} price gap${section.remainingUnknownPriceSteps === 1 ? '' : 's'}`
+      : '';
+    const sectionEarned = section.remainingEarnedSteps > 0
+      ? ` · ${formatNumber(section.remainingEarnedSteps)} earned step${section.remainingEarnedSteps === 1 ? '' : 's'} left`
+      : '';
+    return `<div>
+      <span>${esc(section.label)}</span>
+      <strong>${section.completionPercent.toFixed(1)}%</strong>
+      <small>${esc(sectionCost)}${esc(sectionUnknown)}${esc(sectionEarned)}</small>
+    </div>`;
+  }).join('');
+
+  const unknownMarkup = unknownTargets.length
+    ? `<div class="earned-route-list">
+        ${unknownTargets.map(target => `<div class="earned-route-row">
+          <span><strong>${esc(target.itemName)}</strong><small>${esc(target.sectionLabel)}${target.scopeLabel ? ` · ${esc(target.scopeLabel)}` : ''}</small></span>
+          <span class="revenue-note">${formatNumber(target.unknownSteps)} unknown step${target.unknownSteps === 1 ? '' : 's'}</span>
+        </div>`).join('')}
+      </div>
+      ${hiddenUnknownTargets > 0 ? `<p class="revenue-help">+${formatNumber(hiddenUnknownTargets)} more incomplete price target${hiddenUnknownTargets === 1 ? '' : 's'}.</p>` : ''}`
+    : '<p class="revenue-help">No remaining price gaps in the tracked maxing target.</p>';
 
   return `<section class="revenue-panel revenue-maxing">
     <div class="revenue-panel-head">
@@ -835,10 +870,16 @@ function maxingPanel(raw) {
       <span class="revenue-note">${formatNumber(summary.maxedTargets)}/${formatNumber(summary.trackedTargets)} tracked targets maxed</span>
     </div>
     <div class="benchmark-stat-grid">
-      <div><span>Cost until maxed out</span><strong>${esc(costText)}</strong><small>${esc(priceNote)}</small></div>
+      <div><span>Cost until maxed out</span><strong>${esc(costText)}</strong><small>${esc([priceNote, freshness].filter(Boolean).join(' · '))}</small></div>
       <div><span>Farming maxed</span><strong>${esc(progressText)}</strong><small>${formatNumber(summary.currentSteps)}/${formatNumber(summary.totalSteps)} permanent levels / steps</small></div>
       <div><span>Earned progress remaining</span><strong>${esc(earnedText)}</strong><small>counts toward the percentage, not direct coin cost</small></div>
     </div>
+    <details class="revenue-maxing-details">
+      <summary class="revenue-help">Show maxing breakdown and missing price data</summary>
+      <div class="qol-summary-grid">${breakdownMarkup}</div>
+      <div class="eyebrow">Price gaps blocking an exact total</div>
+      ${unknownMarkup}
+    </details>
     <p class="revenue-help">Temporary buffs and mutually exclusive tool-reforge choices are excluded from the cumulative maxing total. Shared physical purchases are counted once. Unknown market routes stay visibly incomplete instead of being treated as free.</p>
   </section>`;
 }
