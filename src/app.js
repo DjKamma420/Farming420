@@ -492,6 +492,8 @@ function relativeGainPct(item) {
 }
 
 let activeSearchResults = [];
+let activeSearchResultIndex = -1;
+let pendingSearchSpotlight = null;
 let cachedCatalogSearchSource = null;
 let cachedCatalogSearchEntries = [];
 
@@ -527,6 +529,7 @@ function selectableCatalogSearchEntries() {
       type: 'catalog-item',
       page: 'setups',
       itemId: item.id,
+      itemName: item.name,
       slotId: slots[0]?.id || null,
     },
   }));
@@ -594,11 +597,12 @@ function globalSearchEntries() {
       subtitle: `Setups pet picker · level ${pet.levelMin}-${pet.levelMax}`,
       keywords: [pet.id, ...(pet.rarities || [])],
       priority: 150,
-      target: { type: 'setup-slot', page: 'setups', slotId: 'pet' },
+      target: { type: 'setup-slot', page: 'setups', slotId: 'pet', petId: pet.id, petName: pet.name },
     });
   }
 
   for (const [toolName, ids] of Object.entries(FARMING_TOOL_ITEM_IDS)) {
+    const cropId = CROPS.find(entry => entry.tool === toolName)?.id || null;
     entries.push({
       id: `tool-item:${ids[0]}`,
       kind: 'Selectable tool',
@@ -606,7 +610,7 @@ function globalSearchEntries() {
       subtitle: 'Physical farming tool · Mk. I / II / III',
       keywords: [...ids, 'mk 1', 'mk 2', 'mk 3', 'farming tool'],
       priority: 170,
-      target: { type: 'page', page: 'tools' },
+      target: { type: 'tool', page: 'tools', cropId, toolName },
     });
   }
 
@@ -618,7 +622,7 @@ function globalSearchEntries() {
       subtitle: `${vacuum.rarity} Garden Vacuum`,
       keywords: [vacuum.id, 'vacuum', 'pest tool'],
       priority: 170,
-      target: { type: 'page', page: 'tools' },
+      target: { type: 'vacuum', page: 'tools', vacuumId: vacuum.id, vacuumName: vacuum.name },
     });
   }
 
@@ -651,12 +655,13 @@ function globalSearchEntries() {
 
 function searchResultsMarkup(query) {
   activeSearchResults = searchEntries(globalSearchEntries(), query, 12);
+  activeSearchResultIndex = -1;
   if (!String(query || '').trim()) return '';
   if (!activeSearchResults.length) {
     return '<div class="search-no-results">No direct match. Try an item, shard, setting, stat or upgrade name.</div>';
   }
   return activeSearchResults.map((entry, index) => `
-    <button class="search-result" type="button" role="option" data-search-result="${index}">
+    <button id="search-result-${index}" class="search-result" type="button" role="option" aria-selected="false" data-search-result="${index}">
       <span class="search-result-kind">${esc(entry.kind)}</span>
       <span class="search-result-copy">
         <strong>${esc(entry.title)}</strong>
@@ -672,14 +677,104 @@ function updateSearchResults(query) {
   panel.innerHTML = searchResultsMarkup(query);
   panel.hidden = !String(query || '').trim();
   input?.setAttribute('aria-expanded', panel.hidden ? 'false' : 'true');
+  input?.removeAttribute('aria-activedescendant');
+}
+
+function closeSearchResults({ clear = false } = {}) {
+  const panel = document.getElementById('searchResults');
+  const input = document.getElementById('search');
+  if (clear) {
+    state.search = '';
+    saveState();
+    if (input) input.value = '';
+    updateSearchResults('');
+    return;
+  }
+  if (panel) panel.hidden = true;
+  activeSearchResultIndex = -1;
+  input?.setAttribute('aria-expanded', 'false');
+  input?.removeAttribute('aria-activedescendant');
 }
 
 function clearGlobalSearch() {
-  state.search = '';
-  saveState();
+  closeSearchResults({ clear: true });
+}
+
+function focusSearchResult(index) {
+  const panel = document.getElementById('searchResults');
   const input = document.getElementById('search');
-  if (input) input.value = '';
-  updateSearchResults('');
+  const buttons = [...(panel?.querySelectorAll('[data-search-result]') || [])];
+  if (!buttons.length) return false;
+  const nextIndex = (Number(index) + buttons.length) % buttons.length;
+  activeSearchResultIndex = nextIndex;
+  buttons.forEach((button, buttonIndex) => {
+    button.setAttribute('aria-selected', buttonIndex === nextIndex ? 'true' : 'false');
+  });
+  const target = buttons[nextIndex];
+  input?.setAttribute('aria-activedescendant', target.id);
+  target.focus();
+  target.scrollIntoView({ block: 'nearest' });
+  return true;
+}
+
+function searchSpotlightNote(host, text) {
+  if (!host || !text) return;
+  host.classList.add('search-target-highlight');
+  const existing = host.querySelector(':scope > .search-target-note');
+  if (existing) {
+    existing.textContent = text;
+    return;
+  }
+  const note = document.createElement('div');
+  note.className = 'search-target-note';
+  note.textContent = text;
+  host.prepend(note);
+}
+
+function applyPendingSearchSpotlight(attempt = 0) {
+  const target = pendingSearchSpotlight;
+  if (!target) return;
+
+  let node = null;
+  if (target.type === 'catalog-item' && target.slotId) {
+    node = document.querySelector(`[data-slot-item="${target.slotId}"]`);
+    if (node) {
+      searchSpotlightNote(node.closest('.settings-field'), `Search result: ${target.itemName}. Select it here to update this setup.`);
+    }
+  } else if (target.type === 'setup-slot' && target.slotId === 'pet') {
+    node = document.querySelector('[data-farming-pet-select]');
+    if (node) {
+      searchSpotlightNote(node.closest('label') || node.parentElement, `Search result: ${target.petName}. Select it here to update this setup.`);
+    }
+  } else if (target.type === 'tool' && target.cropId) {
+    node = document.querySelector(`.sb-tool-card[data-sb-tool-crop="${target.cropId}"]`);
+    if (node) node.classList.add('search-target-highlight');
+  } else if (target.type === 'vacuum') {
+    const card = document.querySelector('[data-sb-vacuum]');
+    if (card && !card.classList.contains('selected')) card.click();
+    node = document.querySelector('[data-vacuum-model]');
+    if (node) {
+      searchSpotlightNote(node.closest('.workspace-level-row') || node.parentElement, `Search result: ${target.vacuumName}. Select this model here to update your Vacuum.`);
+    }
+  }
+
+  if (!node && attempt < 10) {
+    requestAnimationFrame(() => applyPendingSearchSpotlight(attempt + 1));
+    return;
+  }
+  if (!node) {
+    pendingSearchSpotlight = null;
+    return;
+  }
+
+  node.scrollIntoView({ block: 'center' });
+  if (typeof node.focus === 'function') node.focus({ preventScroll: true });
+  pendingSearchSpotlight = null;
+}
+
+function schedulePendingSearchSpotlight() {
+  if (!pendingSearchSpotlight) return;
+  requestAnimationFrame(() => applyPendingSearchSpotlight());
 }
 
 function scrollToSearchAnchor(id) {
@@ -713,12 +808,21 @@ function navigateSearchResult(entry) {
   } else if (target.type === 'catalog-item' || target.type === 'setup-slot') {
     state.page = target.page;
     if (target.slotId) state.setupSlot = target.slotId;
+    pendingSearchSpotlight = target;
+  } else if (target.type === 'tool') {
+    state.page = target.page;
+    if (target.cropId) state.selectedCrop = target.cropId;
+    pendingSearchSpotlight = target;
+  } else if (target.type === 'vacuum') {
+    state.page = target.page;
+    pendingSearchSpotlight = target;
   } else {
     state.page = target.page || state.page;
   }
 
   saveState();
   render({ preserveScroll: false });
+  schedulePendingSearchSpotlight();
 
   if (target.type === 'info') {
     scrollToSearchAnchor(target.anchor);
@@ -2454,17 +2558,16 @@ function bind() {
     search.addEventListener('keydown', event => {
       if (event.key === 'Escape') {
         event.preventDefault();
-        clearGlobalSearch();
+        if (searchResults && !searchResults.hidden) closeSearchResults();
+        else clearGlobalSearch();
         search.focus();
       } else if (event.key === 'Enter' && activeSearchResults[0]) {
         event.preventDefault();
-        navigateSearchResult(activeSearchResults[0]);
+        navigateSearchResult(activeSearchResults[Math.max(0, activeSearchResultIndex)]);
       } else if (event.key === 'ArrowDown') {
-        const first = searchResults?.querySelector('[data-search-result]');
-        if (first) {
-          event.preventDefault();
-          first.focus();
-        }
+        if (focusSearchResult(0)) event.preventDefault();
+      } else if (event.key === 'ArrowUp') {
+        if (focusSearchResult(activeSearchResults.length - 1)) event.preventDefault();
       }
     });
   }
@@ -2474,11 +2577,35 @@ function bind() {
     navigateSearchResult(activeSearchResults[Number(button.dataset.searchResult)]);
   });
   searchResults?.addEventListener('keydown', event => {
-    if (event.key !== 'Enter' && event.key !== ' ') return;
     const button = event.target.closest('[data-search-result]');
     if (!button) return;
+    const index = Number(button.dataset.searchResult);
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      focusSearchResult(index + 1);
+      return;
+    }
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      if (index === 0) {
+        activeSearchResultIndex = -1;
+        search?.removeAttribute('aria-activedescendant');
+        search?.focus();
+      } else {
+        focusSearchResult(index - 1);
+      }
+      return;
+    }
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeSearchResults();
+      search?.focus();
+      return;
+    }
+    if (event.key !== 'Enter' && event.key !== ' ') return;
     event.preventDefault();
-    navigateSearchResult(activeSearchResults[Number(button.dataset.searchResult)]);
+    navigateSearchResult(activeSearchResults[index]);
   });
   const profileName = document.getElementById('profileName');
   if (profileName) profileName.addEventListener('change', e => { state.profile.name=e.target.value; saveState(); });
