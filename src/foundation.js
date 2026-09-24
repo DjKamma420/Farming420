@@ -82,7 +82,7 @@ function settingsMarkup() {
 
       <div class="settings-status" data-settings-status data-type="neutral">Local data stays on this device unless you export a backup.</div>
 
-      <section class="settings-section">
+      <section class="settings-section" data-settings-section="live-sync">
         <div class="settings-section-copy">
           <h3>Live sync</h3>
           <p>Paste your API key and your Minecraft UUID, and Farming420 syncs automatically. It reads your selected SkyBlock profile and Garden and writes every value it can derive straight onto the cards.</p>
@@ -113,7 +113,7 @@ function settingsMarkup() {
         ${sync.warnings?.length ? `<div class="settings-warnings"><strong>${sync.warnings.length} note${sync.warnings.length === 1 ? '' : 's'} from the last sync</strong><ul>${sync.warnings.map(warning => `<li>${escapeHtml(warning)}</li>`).join('')}</ul></div>` : ''}
       </section>
 
-      <section class="settings-section">
+      <section class="settings-section" data-settings-section="hypixel-access">
         <div class="settings-section-copy">
           <h3>Hypixel access</h3>
           <p>Profile and Garden endpoints require a key. Yours stays in this browser and is sent only to api.hypixel.net. A key is never written into a backup.</p>
@@ -127,7 +127,7 @@ function settingsMarkup() {
         </div>
       </section>
 
-      <section class="settings-section">
+      <section class="settings-section" data-settings-section="backup">
         <div class="settings-section-copy">
           <h3>Backup & Restore</h3>
           <p>Backups include the complete local Farming420 state and schema metadata so future versions can migrate safely.</p>
@@ -139,7 +139,7 @@ function settingsMarkup() {
         </div>
       </section>
 
-      <section class="settings-section">
+      <section class="settings-section" data-settings-section="app-updates">
         <div class="settings-section-copy">
           <h3>App & Updates</h3>
           <p>Reloading checks the current GitHub Pages deployment, removes only obsolete Farming420 caches and service workers, and keeps your local profile/settings data.</p>
@@ -163,7 +163,8 @@ function closeSettings() {
   settingsDialog?.close();
 }
 
-function openSettings() {
+function openSettings(section = null) {
+  const requestedSection = typeof section === 'string' ? section : null;
   if (!settingsDialog) {
     settingsDialog = document.createElement('dialog');
     settingsDialog.className = 'settings-dialog';
@@ -174,7 +175,15 @@ function openSettings() {
   }
   settingsDialog.innerHTML = settingsMarkup();
   bindSettings();
-  settingsDialog.showModal();
+  if (!settingsDialog.open) settingsDialog.showModal();
+
+  if (requestedSection) {
+    requestAnimationFrame(() => {
+      const target = settingsDialog.querySelector(`[data-settings-section="${CSS.escape(requestedSection)}"]`);
+      target?.scrollIntoView({ block: 'start' });
+      target?.querySelector('input, select, button')?.focus({ preventScroll: true });
+    });
+  }
 }
 
 function saveProfileField(field, value) {
@@ -404,6 +413,10 @@ function bindAppControls() {
     settingsButton.addEventListener('click', openSettings);
   }
 }
+
+window.addEventListener('farming420:open-settings', event => {
+  openSettings(event.detail?.section || null);
+});
 
 window.addEventListener('beforeinstallprompt', event => {
   event.preventDefault();
