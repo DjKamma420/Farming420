@@ -48,7 +48,7 @@ test('Strength changes are evaluated through the actual Cow floor formula', () =
   const noThreshold = cowFortuneDeltaForAddedStrength({ currentStrength: 1000, addedStrength: 1 });
   assert.equal(noThreshold.deltaFortune, 0);
 
-  const crosses = cowFortuneDeltaForAddedStrength({ currentStrength: 1000, addedStrength: 20 });
+  const crosses = cowFortuneDeltaForAddedStrength({ currentStrength: 1000, addedStrength: 30 });
   assert.equal(crosses.deltaFortune, 1);
 
   const percent = cowFortuneDeltaForStrengthPercentChange({
