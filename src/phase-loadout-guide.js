@@ -71,6 +71,17 @@ function filledArmorCount(setup) {
   return ARMOR_SLOTS.filter(slot => setup?.slots?.[slot]?.skyblockId).length;
 }
 
+function armorSetPurpose(mode, phase) {
+  if (mode === ACTIVITY_MODE.PEST_SPAWN) return 'BPC set';
+  if (mode === ACTIVITY_MODE.PEST_KILL && !phase?.reusesArmorFrom) return 'Kill set';
+  return 'FF set';
+}
+
+function armorSetSummary(tier) {
+  if (tier.status === 'luxury') return 'FF set + BPC set + Kill set';
+  return 'FF set + BPC set';
+}
+
 function guidanceMarkup(raw) {
   const mode = activityModeForState(raw);
   const tier = tierById(storedTier());
@@ -81,7 +92,7 @@ function guidanceMarkup(raw) {
     && filledArmorCount(farmSetup) > 0;
 
   const rows = [
-    ['Armor', phase?.armor],
+    ['Armor', phase?.armor ? `${phase.armor} · ${armorSetPurpose(mode, phase)}` : null],
     ['Equipment', phase?.equipment],
     ['Pet', phase?.pet],
   ].filter(([, value]) => value);
@@ -110,7 +121,7 @@ function guidanceMarkup(raw) {
     ${phase?.note ? `<p class="phase-guide-note">${esc(phase.note)}</p>` : ''}
 
     <div class="phase-guide-baseline">
-      <strong data-phase-sets>${tier.physicalArmorSets} physical armor set${tier.physicalArmorSets === 1 ? '' : 's'}${tier.status === 'luxury' ? ' · optional' : ''}</strong>
+      <strong data-phase-sets>${tier.physicalArmorSets} physical armor set${tier.physicalArmorSets === 1 ? '' : 's'} · ${esc(armorSetSummary(tier))}${tier.status === 'luxury' ? ' · optional' : ''}</strong>
       <span>${tier.status === 'luxury'
         ? 'A luxury layer. The research is explicit that it is not a prerequisite for Pest farming or for the two-set baseline.'
         : `Three phases, ${baselineTiers()[0].physicalArmorSets} sets: Farming and Killing wear the same armor. Three tabs here do not mean three wardrobes.`}</span>
