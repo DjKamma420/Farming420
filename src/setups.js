@@ -18,7 +18,7 @@ import { baseRarityFromDisplayed } from './setup-rarity.js';
 import { petLevelFromExperience } from './mooshroom-cow.js';
 import { clampPetLevel, petLevelBounds } from './setup-pet-catalog.js';
 
-export const SETUPS_MODEL_VERSION = 3;
+export const SETUPS_MODEL_VERSION = 4;
 
 /** The slots a setup has, in the order the editor shows them. */
 export const SETUP_SLOTS = Object.freeze([
@@ -36,15 +36,28 @@ export const SETUP_SLOTS = Object.freeze([
 
 export const SLOT_IDS = Object.freeze(SETUP_SLOTS.map(slot => slot.id));
 
+export const FF_SETUP_ID = 'normal';
+export const BPC_SETUP_ID = 'pest';
+export const KILLING_SETUP_ID = 'pest-kill';
+export const VISIBLE_SETUP_IDS = Object.freeze([FF_SETUP_ID, BPC_SETUP_ID]);
+export const FARMING_KILLING_SHARED_GEAR_SLOTS = Object.freeze([
+  'helmet', 'chestplate', 'leggings', 'boots',
+  'equipment1', 'equipment2', 'equipment3', 'equipment4',
+]);
+export const PET_SETUP_SLOTS = Object.freeze(['pet', 'petItem']);
+
+const SHARED_GEAR_SLOT_SET = new Set(FARMING_KILLING_SHARED_GEAR_SLOTS);
+const PET_SLOT_SET = new Set(PET_SETUP_SLOTS);
+
 /**
  * The three activity loadouts used by current Farming/Pest play. Farming and
  * spawning both happen while breaking crops, but spawning optimizes BPC/cooldown
  * while killing switches to Vacuum/loot/Overbloom mechanics.
  */
 export const DEFAULT_SETUP_TEMPLATES = Object.freeze([
-  { id: 'normal', name: 'Farming' },
-  { id: 'pest', name: 'Pest Spawning' },
-  { id: 'pest-kill', name: 'Pest Killing' },
+  { id: FF_SETUP_ID, name: 'FF Set' },
+  { id: BPC_SETUP_ID, name: 'BPC Set' },
+  { id: KILLING_SETUP_ID, name: 'FF Set · Killing Pet' },
 ]);
 
 /** Where a value in a slot came from, so the UI never hides a guess as a fact. */
@@ -80,7 +93,8 @@ export function createSetup(id, name) {
 export function createDefaultSetups() {
   return {
     modelVersion: SETUPS_MODEL_VERSION,
-    activeId: DEFAULT_SETUP_TEMPLATES[0].id,
+    activeId: FF_SETUP_ID,
+    shareFarmingKillingPet: false,
     list: DEFAULT_SETUP_TEMPLATES.map(template => createSetup(template.id, template.name)),
   };
 }
@@ -113,12 +127,22 @@ export function normalizeSetups(raw) {
       return { id: String(setup.id), name: String(setup.name || setup.id), slots };
     });
 
+  for (const template of DEFAULT_SETUP_TEMPLATES) {
+    const existing = normalized.find(setup => setup.id === template.id);
+    if (existing) existing.name = template.name;
+    else normalized.push(createSetup(template.id, template.name));
+  }
+
   const result = {
+    ...source,
     modelVersion: SETUPS_MODEL_VERSION,
-    activeId: source.activeId,
-    list: normalized.length ? normalized : createDefaultSetups().list,
+    activeId: String(source.activeId || FF_SETUP_ID),
+    shareFarmingKillingPet: source.shareFarmingKillingPet === true,
+    list: normalized,
   };
-  if (!result.list.some(setup => setup.id === result.activeId)) result.activeId = result.list[0].id;
+  const activityIds = new Set([FF_SETUP_ID, BPC_SETUP_ID, KILLING_SETUP_ID]);
+  if (!activityIds.has(result.activeId)) result.activeId = FF_SETUP_ID;
+  synchronizeFarmingKillingLoadouts(result);
   return result;
 }
 
@@ -254,6 +278,50 @@ export function ensurePhysicalItemId(item, fallbackId) {
   return { ...item, physicalItemId: existing || String(fallbackId || '').trim() || null };
 }
 
+function setupById(setups, id) {
+  return (setups?.list || []).find(setup => setup?.id === id) || null;
+}
+
+function mirrorSlot(sourceSetup, targetSetup, slotId, fallbackId) {
+  const sourceItem = sourceSetup?.slots?.[slotId] || targetSetup?.slots?.[slotId] || null;
+  sourceSetup.slots ||= {};
+  targetSetup.slots ||= {};
+  if (!sourceItem) {
+    sourceSetup.slots[slotId] = null;
+    targetSetup.slots[slotId] = null;
+    return;
+  }
+  const linked = ensurePhysicalItemId(sourceItem, fallbackId);
+  sourceSetup.slots[slotId] = linked;
+  targetSetup.slots[slotId] = structuredClone(linked);
+}
+
+export function synchronizeFarmingKillingLoadouts(setups) {
+  const ff = setupById(setups, FF_SETUP_ID);
+  const killing = setupById(setups, KILLING_SETUP_ID);
+  if (!ff || !killing) return setups;
+  for (const slotId of FARMING_KILLING_SHARED_GEAR_SLOTS) {
+    mirrorSlot(ff, killing, slotId, `shared:${FF_SETUP_ID}:${slotId}`);
+  }
+  if (setups.shareFarmingKillingPet === true) {
+    for (const slotId of PET_SETUP_SLOTS) {
+      mirrorSlot(ff, killing, slotId, `shared:${FF_SETUP_ID}:${slotId}`);
+    }
+  }
+  return setups;
+}
+
+export function farmingKillingPetShared(setups) {
+  return setups?.shareFarmingKillingPet === true;
+}
+
+export function setFarmingKillingPetShared(setups, shared) {
+  if (!setups || typeof setups !== 'object') return false;
+  setups.shareFarmingKillingPet = Boolean(shared);
+  synchronizeFarmingKillingLoadouts(setups);
+  return setups.shareFarmingKillingPet;
+}
+
 /**
  * Writes one slot and propagates edits to every setup that references the same
  * physical item. Clearing a slot only removes that loadout reference; it does
@@ -261,7 +329,11 @@ export function ensurePhysicalItemId(item, fallbackId) {
  */
 export function writeLinkedSetupSlot(setups, setupId, slotId, item) {
   const list = Array.isArray(setups?.list) ? setups.list : [];
-  const target = list.find(setup => setup?.id === setupId) || null;
+  const redirectToFf = setupId === KILLING_SETUP_ID
+    && (SHARED_GEAR_SLOT_SET.has(slotId)
+      || (PET_SLOT_SET.has(slotId) && setups?.shareFarmingKillingPet === true));
+  const targetId = redirectToFf ? FF_SETUP_ID : setupId;
+  const target = list.find(setup => setup?.id === targetId) || null;
   if (!target) return false;
   target.slots ||= {};
   const previousId = physicalItemId(target.slots[slotId]);
@@ -269,23 +341,21 @@ export function writeLinkedSetupSlot(setups, setupId, slotId, item) {
 
   if (!item) {
     target.slots[slotId] = null;
+    synchronizeFarmingKillingLoadouts(setups);
     return true;
   }
-
-  // A replacement with a different/no identity is a different physical item
-  // and therefore changes only this loadout.
   if (!previousId || !nextId || previousId !== nextId) {
     target.slots[slotId] = item;
+    synchronizeFarmingKillingLoadouts(setups);
     return true;
   }
-
   for (const setup of list) {
     if (!setup?.slots) continue;
     for (const id of SLOT_IDS) {
-      if (physicalItemId(setup.slots[id]) !== nextId) continue;
-      setup.slots[id] = { ...item };
+      if (physicalItemId(setup.slots[id]) === previousId) setup.slots[id] = { ...item, physicalItemId: previousId };
     }
   }
+  synchronizeFarmingKillingLoadouts(setups);
   return true;
 }
 
@@ -380,6 +450,15 @@ export function applyCandidateSetupSafely(setups, targetSetupId, candidateSetup)
     slotId,
     candidateSetup.slots?.[slotId] ? structuredClone(candidateSetup.slots[slotId]) : null,
   ]));
+  if (target.id === KILLING_SETUP_ID && setups.shareFarmingKillingPet === true) {
+    const ff = setupById(setups, FF_SETUP_ID);
+    if (ff) {
+      for (const slotId of PET_SETUP_SLOTS) {
+        ff.slots[slotId] = target.slots[slotId] ? structuredClone(target.slots[slotId]) : null;
+      }
+    }
+  }
+  synchronizeFarmingKillingLoadouts(setups);
   setups.activeId = target.id;
 
   return Object.freeze({
