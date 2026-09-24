@@ -162,3 +162,9 @@
   .search-result{grid-template-columns:86px minmax(0,1fr)}
   .search-results{max-height:52vh}
 }
+
+
+/* A search result may reveal an available choice without silently changing saved gear. */
+.search-target-highlight{outline:2px solid var(--accent);outline-offset:3px;border-radius:10px;scroll-margin-top:96px}
+.search-target-note{margin:0 0 9px;padding:8px 10px;border:1px solid #3d6c51;border-radius:8px;background:#10291c;color:var(--accent2);font-size:11px;line-height:1.4}
+.search-result[aria-selected="true"]{background:var(--panel2)}
