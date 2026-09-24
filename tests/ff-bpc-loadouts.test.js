@@ -24,6 +24,7 @@ function item(name, id = name.toUpperCase().replace(/\s+/g, '_')) {
 
 test('only FF and BPC are visible physical sets', () => {
   assert.deepEqual(VISIBLE_SETUP_IDS, [FF_SETUP_ID, BPC_SETUP_ID]);
+  assert.equal(VISIBLE_SETUP_IDS.includes(KILLING_SETUP_ID), false);
   const setups = createDefaultSetups();
   assert.equal(setups.list.find(setup => setup.id === FF_SETUP_ID).name, 'Farming');
   assert.equal(setups.list.find(setup => setup.id === BPC_SETUP_ID).name, 'Pest Spawning');
