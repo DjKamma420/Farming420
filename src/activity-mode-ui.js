@@ -17,7 +17,7 @@ import { formatNumber } from './format-number.js';
 let scheduled = false;
 let applying = false;
 
-const MODE_SWITCH_PAGES = new Set(['dashboard', 'focus', 'planner']);
+const MODE_SWITCH_PAGES = new Set(['dashboard', 'setups', 'focus', 'planner']);
 
 function load() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
