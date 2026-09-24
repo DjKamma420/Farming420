@@ -55,9 +55,9 @@ const PET_SLOT_SET = new Set(PET_SETUP_SLOTS);
  * while killing switches to Vacuum/loot/Overbloom mechanics.
  */
 export const DEFAULT_SETUP_TEMPLATES = Object.freeze([
-  { id: FF_SETUP_ID, name: 'FF Set' },
-  { id: BPC_SETUP_ID, name: 'BPC Set' },
-  { id: KILLING_SETUP_ID, name: 'FF Set · Killing Pet' },
+  { id: FF_SETUP_ID, name: 'Farming' },
+  { id: BPC_SETUP_ID, name: 'Pest Spawning' },
+  { id: KILLING_SETUP_ID, name: 'Pest Killing' },
 ]);
 
 /** Where a value in a slot came from, so the UI never hides a guess as a fact. */
@@ -127,38 +127,13 @@ export function normalizeSetups(raw) {
       return { id: String(setup.id), name: String(setup.name || setup.id), slots };
     });
 
-  for (const template of DEFAULT_SETUP_TEMPLATES) {
-    const existing = normalized.find(setup => setup.id === template.id);
-    if (existing) existing.name = template.name;
-    else normalized.push(createSetup(template.id, template.name));
-  }
-
   const result = {
-    ...source,
     modelVersion: SETUPS_MODEL_VERSION,
-    activeId: String(source.activeId || FF_SETUP_ID),
+    activeId: source.activeId,
     shareFarmingKillingPet: source.shareFarmingKillingPet === true,
-    list: normalized,
+    list: normalized.length ? normalized : createDefaultSetups().list,
   };
-  const activityIds = new Set([FF_SETUP_ID, BPC_SETUP_ID, KILLING_SETUP_ID]);
-  if (!activityIds.has(result.activeId)) result.activeId = FF_SETUP_ID;
-
-  // Model v3 allowed Killing to carry its own armor/equipment. Preserve a
-  // Killing-only legacy slot by moving it into FF once, then make FF the only
-  // source of truth from v4 onward.
-  if (Number(source.modelVersion || 0) < SETUPS_MODEL_VERSION) {
-    const ff = normalized.find(setup => setup.id === FF_SETUP_ID);
-    const killing = normalized.find(setup => setup.id === KILLING_SETUP_ID);
-    if (ff && killing) {
-      for (const slotId of FARMING_KILLING_SHARED_GEAR_SLOTS) {
-        if (!ff.slots[slotId] && killing.slots[slotId]) {
-          ff.slots[slotId] = structuredClone(killing.slots[slotId]);
-        }
-      }
-    }
-  }
-
-  synchronizeFarmingKillingLoadouts(result);
+  if (!result.list.some(setup => setup.id === result.activeId)) result.activeId = result.list[0].id;
   return result;
 }
 
@@ -325,6 +300,38 @@ export function synchronizeFarmingKillingLoadouts(setups) {
     }
   }
   return setups;
+}
+
+/**
+ * Prepares the persisted player loadouts for the FF/BPC UI without changing
+ * the semantics of normalizeSetups(), which is also used for isolated
+ * comparison and test setups.
+ */
+export function prepareFfBpcSetups(raw) {
+  const source = (raw && typeof raw === 'object') ? raw : {};
+  const previousModelVersion = Number(source.modelVersion || 0);
+  const prepared = normalizeSetups(source);
+
+  for (const template of DEFAULT_SETUP_TEMPLATES) {
+    if (!prepared.list.some(setup => setup.id === template.id)) {
+      prepared.list.push(createSetup(template.id, template.name));
+    }
+  }
+
+  if (previousModelVersion < SETUPS_MODEL_VERSION) {
+    const ff = setupById(prepared, FF_SETUP_ID);
+    const killing = setupById(prepared, KILLING_SETUP_ID);
+    if (ff && killing) {
+      for (const slotId of FARMING_KILLING_SHARED_GEAR_SLOTS) {
+        if (!ff.slots[slotId] && killing.slots[slotId]) {
+          ff.slots[slotId] = structuredClone(killing.slots[slotId]);
+        }
+      }
+    }
+  }
+
+  synchronizeFarmingKillingLoadouts(prepared);
+  return prepared;
 }
 
 export function farmingKillingPetShared(setups) {
