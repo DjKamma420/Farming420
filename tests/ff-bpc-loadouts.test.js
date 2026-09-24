@@ -10,7 +10,7 @@ import {
   createDefaultSetups,
   createEmptyItem,
   farmingKillingPetShared,
-  normalizeSetups,
+  prepareFfBpcSetups,
   setFarmingKillingPetShared,
   writeLinkedSetupSlot,
 } from '../src/setups.js';
@@ -25,13 +25,13 @@ function item(name, id = name.toUpperCase().replace(/\s+/g, '_')) {
 test('only FF and BPC are visible physical sets', () => {
   assert.deepEqual(VISIBLE_SETUP_IDS, [FF_SETUP_ID, BPC_SETUP_ID]);
   const setups = createDefaultSetups();
-  assert.equal(setups.list.find(setup => setup.id === FF_SETUP_ID).name, 'FF Set');
-  assert.equal(setups.list.find(setup => setup.id === BPC_SETUP_ID).name, 'BPC Set');
+  assert.equal(setups.list.find(setup => setup.id === FF_SETUP_ID).name, 'Farming');
+  assert.equal(setups.list.find(setup => setup.id === BPC_SETUP_ID).name, 'Pest Spawning');
   assert.ok(setups.list.some(setup => setup.id === KILLING_SETUP_ID));
 });
 
 test('legacy Killing armor and equipment are forced to the FF source of truth', () => {
-  const normalized = normalizeSetups({
+  const normalized = prepareFfBpcSetups({
     modelVersion: 3,
     activeId: KILLING_SETUP_ID,
     list: [
@@ -51,7 +51,7 @@ test('legacy Killing armor and equipment are forced to the FF source of truth', 
 });
 
 test('a legacy Killing-only gear slot is migrated into FF instead of being discarded', () => {
-  const normalized = normalizeSetups({
+  const normalized = prepareFfBpcSetups({
     modelVersion: 3,
     activeId: KILLING_SETUP_ID,
     list: [
@@ -104,6 +104,7 @@ test('the Setups UI has FF/BPC tabs, dual FF pet roles, and no Killing phase swi
   assert.match(app, /Farming Pet/);
   assert.match(app, /Killing Pet/);
   assert.doesNotMatch(app, /data-setup-add|data-setup-remove|id="setupName"/);
+  assert.match(app, /return setupId === BPC_SETUP_ID \? 'BPC Set' : 'FF Set'/);
   const switchPages = activityUi.match(/MODE_SWITCH_PAGES = new Set\(\[[^\]]+\]\)/)?.[0] || '';
-  assert.doesNotMatch(switchPages, /setups/);
+  assert.match(switchPages, /setups/);
 });
