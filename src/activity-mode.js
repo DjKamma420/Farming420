@@ -36,11 +36,11 @@ export function activityModeForState(state) {
 export function activityLabel(mode) {
   switch (normalizeActivityMode(mode)) {
     case ACTIVITY_MODE.PEST_SPAWN:
-      return 'Pest Spawning Set';
+      return 'BPC Set';
     case ACTIVITY_MODE.PEST_KILL:
-      return 'Pest Killing Set';
+      return 'FF Set · Killing';
     default:
-      return 'Farming Set';
+      return 'FF Set';
   }
 }
 
