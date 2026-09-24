@@ -87,7 +87,7 @@ import {
 } from './item-catalog.js';
 import { itemCapabilities } from './item-capabilities.js';
 import { FARMING_TOOL_REFORGES } from './farming-reforges.js';
-import { farmingToolSkyblockId } from './exact-farming-items.js';
+import { FARMING_TOOL_ITEM_IDS, GARDEN_VACUUM_ITEMS, farmingToolSkyblockId } from './exact-farming-items.js';
 import {
   physicalItemBuildValue,
   physicalItemValueComponents,
@@ -595,6 +595,30 @@ function globalSearchEntries() {
       keywords: [pet.id, ...(pet.rarities || [])],
       priority: 150,
       target: { type: 'setup-slot', page: 'setups', slotId: 'pet' },
+    });
+  }
+
+  for (const [toolName, ids] of Object.entries(FARMING_TOOL_ITEM_IDS)) {
+    entries.push({
+      id: `tool-item:${ids[0]}`,
+      kind: 'Selectable tool',
+      title: toolName,
+      subtitle: 'Physical farming tool · Mk. I / II / III',
+      keywords: [...ids, 'mk 1', 'mk 2', 'mk 3', 'farming tool'],
+      priority: 170,
+      target: { type: 'page', page: 'tools' },
+    });
+  }
+
+  for (const vacuum of GARDEN_VACUUM_ITEMS) {
+    entries.push({
+      id: `vacuum:${vacuum.id}`,
+      kind: 'Selectable vacuum',
+      title: vacuum.name,
+      subtitle: `${vacuum.rarity} Garden Vacuum`,
+      keywords: [vacuum.id, 'vacuum', 'pest tool'],
+      priority: 170,
+      target: { type: 'page', page: 'tools' },
     });
   }
 
