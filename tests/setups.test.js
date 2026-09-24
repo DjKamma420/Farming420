@@ -23,10 +23,10 @@ function decoded(overrides = {}) {
   return { container: 'armor', slot: 3, displayName: '§6Helianthus Helmet', enchantments: {}, gems: {}, ...overrides };
 }
 
-test('the default model keeps three internal contexts but exposes FF and BPC names', () => {
+test('the default setups are farming, pest spawning, and pest killing', () => {
   const setups = createDefaultSetups();
   assert.deepEqual(setups.list.map(setup => setup.id), ['normal', 'pest', 'pest-kill']);
-  assert.deepEqual(setups.list.map(setup => setup.name), ['FF Set', 'BPC Set', 'FF Set · Killing Pet']);
+  assert.deepEqual(setups.list.map(setup => setup.name), ['Farming', 'Pest Spawning', 'Pest Killing']);
   assert.equal(setups.activeId, 'normal');
   assert.equal(setups.shareFarmingKillingPet, false);
 });
