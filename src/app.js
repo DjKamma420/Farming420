@@ -1897,7 +1897,7 @@ function setupsPage() {
            ${petSetupSection('Killing Pet', KILLING_SETUP_ID, 'Only the pet can differ for Killing; Armor and Equipment stay identical to the FF Set.')}`}`
     : petSetupSection('BPC Pet', BPC_SETUP_ID, 'Used with the BPC Set while preparing Pest spawns.');
 
-  return `${pageHeader('Setups', 'FF and BPC sets', 'FF owns the Farming/Killing armor and equipment. BPC is the separate spawning set. Killing only has a separate pet choice when you want one.')}
+  return `${pageHeader('Setups', 'Your gear, item by item · FF and BPC sets', 'FF owns the Farming/Killing armor and equipment. BPC is the separate spawning set. Killing only has a separate pet choice when you want one.')}
     ${setupObjectivePanel()}
     <div class="setup-tabs">
       ${VISIBLE_SETUP_IDS.map(setupId => {
