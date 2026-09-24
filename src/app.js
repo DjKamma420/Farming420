@@ -65,8 +65,8 @@ import {
   applyCandidateSetupSafely,
   createEmptyItem,
   farmingKillingPetShared,
-  normalizeSetups,
   prefillSetupFromSnapshot,
+  prepareFfBpcSetups,
   setFarmingKillingPetShared,
   setupSummary,
   synchronizeFarmingKillingLoadouts,
@@ -1562,7 +1562,7 @@ let catalogNotice = null;
 let catalogRequested = itemCatalog.length > 0;
 
 function setups() {
-  state.profile.setups = normalizeSetups(state.profile.setups);
+  state.profile.setups = prepareFfBpcSetups(state.profile.setups);
   return state.profile.setups;
 }
 
@@ -1586,6 +1586,10 @@ function setupById(all, setupId) {
 
 function visibleSetupId(all = setups()) {
   return all.activeId === BPC_SETUP_ID ? BPC_SETUP_ID : FF_SETUP_ID;
+}
+
+function visibleSetupLabel(setupId) {
+  return setupId === BPC_SETUP_ID ? 'BPC Set' : 'FF Set';
 }
 
 function slotItem(slotId, setupId = null) {
@@ -1667,10 +1671,10 @@ function enchantLine(slotId, row) {
  * actually be on it. The enchantment list is fixed per slot rather than typed,
  * so the player recognises what they own instead of recalling an identifier.
  */
-function slotEditor(slotId, setupId = null) {
+function slotEditor(slotId) {
   const slot = SETUP_SLOTS.find(entry => entry.id === slotId);
   if (!slot) return '';
-  const targetId = setupId || setups().activeId;
+  const targetId = state.setupSlotTarget || visibleSetupId(setups());
   const item = slotItem(slotId, targetId) || createEmptyItem();
   const catalogItems = itemsForSlot(itemCatalog, slotId);
   const capabilities = itemCapabilities(slotId, item, itemCatalog);
@@ -1875,7 +1879,6 @@ function setupsPage() {
   const hasSnapshot = Boolean(synced?.items?.length || synced?.pets?.some(pet => pet?.active === true));
   const ffSelected = selectedId === FF_SETUP_ID;
   const sharedPet = farmingKillingPetShared(all);
-  const editorTarget = state.setupSlotTarget || selectedId;
 
   const gearGroups = ['Armor', 'Equipment'].map(group => `
     <div class="section-row"><div><h2>${group}</h2></div></div>
@@ -1900,22 +1903,21 @@ function setupsPage() {
   return `${pageHeader('Setups', 'Your gear, item by item · FF and BPC sets', 'FF owns the Farming/Killing armor and equipment. BPC is the separate spawning set. Killing only has a separate pet choice when you want one.')}
     ${setupObjectivePanel()}
     <div class="setup-tabs">
-      ${VISIBLE_SETUP_IDS.map(setupId => {
-        const setup = setupById(all, setupId);
-        return `<button class="setup-tab ${setupId === selectedId ? 'active' : ''}" data-setup="${esc(setupId)}">${esc(setup?.name || setupId)}</button>`;
-      }).join('')}
+      ${VISIBLE_SETUP_IDS.map(setupId =>
+        `<button class="setup-tab ${setupId === selectedId ? 'active' : ''}" data-setup="${esc(setupId)}">${esc(visibleSetupLabel(setupId))}</button>`
+      ).join('')}
     </div>
 
     <div class="setup-bar">
       <div class="setup-actions">
         <button class="ghost small" data-setup-prefill="1" ${hasSnapshot ? '' : 'disabled'}>Fill from sync</button>
       </div>
-      <div class="hint">${summary.filled}/${summary.total} ${current.name} slots filled${summary.fromSync ? `, ${summary.fromSync} from your last sync` : ''}.${hasSnapshot ? '' : ' Sync your profile in Settings to fill these automatically.'}</div>
+      <div class="hint">${summary.filled}/${summary.total} ${visibleSetupLabel(selectedId)} slots filled${summary.fromSync ? `, ${summary.fromSync} from your last sync` : ''}.${hasSnapshot ? '' : ' Sync your profile in Settings to fill these automatically.'}</div>
     </div>
 
     ${gearGroups}
     ${petContent}
-    ${state.setupSlot ? slotEditor(state.setupSlot, editorTarget) : ''}`;
+    ${state.setupSlot ? slotEditor(state.setupSlot) : ''}`;
 }
 
 function bindSetups() {
