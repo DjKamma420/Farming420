@@ -55,16 +55,21 @@ import {
   withEnchantToggled,
 } from './item-editor.js';
 import {
+  BPC_SETUP_ID,
+  FF_SETUP_ID,
   ITEM_SOURCE,
+  KILLING_SETUP_ID,
   SETUP_SLOTS,
+  VISIBLE_SETUP_IDS,
   activeSetup,
   applyCandidateSetupSafely,
   createEmptyItem,
-  createSetup,
-  nextSetupId,
+  farmingKillingPetShared,
   normalizeSetups,
   prefillSetupFromSnapshot,
+  setFarmingKillingPetShared,
   setupSummary,
+  synchronizeFarmingKillingLoadouts,
   writeLinkedSetupSlot,
 } from './setups.js';
 import { buildSetupCandidates } from './setup-candidates.js';
@@ -1575,13 +1580,23 @@ function snapshot() {
   return state.profile.normalizedSnapshot || null;
 }
 
-function slotItem(slotId) {
-  return activeSetup(setups()).slots[slotId] || null;
+function setupById(all, setupId) {
+  return all.list.find(setup => setup.id === setupId) || null;
 }
 
-function writeSlot(slotId, item) {
+function visibleSetupId(all = setups()) {
+  return all.activeId === BPC_SETUP_ID ? BPC_SETUP_ID : FF_SETUP_ID;
+}
+
+function slotItem(slotId, setupId = null) {
   const all = setups();
-  writeLinkedSetupSlot(all, all.activeId, slotId, item);
+  const target = setupById(all, setupId || all.activeId) || activeSetup(all);
+  return target.slots[slotId] || null;
+}
+
+function writeSlot(slotId, item, setupId = null) {
+  const all = setups();
+  writeLinkedSetupSlot(all, setupId || all.activeId, slotId, item);
   saveState();
 }
 
@@ -1591,14 +1606,15 @@ function optionList(options, current) {
   return options;
 }
 
-function slotCard(slot) {
-  const item = slotItem(slot.id);
-  const open = state.setupSlot === slot.id;
+function slotCard(slot, setupId = null, roleLabel = null) {
+  const targetId = setupId || setups().activeId;
+  const item = slotItem(slot.id, targetId);
+  const open = state.setupSlot === slot.id && state.setupSlotTarget === targetId;
 
-  return `<button class="slot-card ${item ? 'filled' : ''} ${open ? 'open' : ''} ${esc(rarityClass(item?.rarity))}" data-slot="${esc(slot.id)}">
+  return `<button class="slot-card ${item ? 'filled' : ''} ${open ? 'open' : ''} ${esc(rarityClass(item?.rarity))}" data-slot="${esc(slot.id)}" data-setup-target="${esc(targetId)}">
       <span class="slot-portrait"><span class="item-portrait-fallback" aria-hidden="true">${esc(slot.label.slice(0, 2).toUpperCase())}</span></span>
       <span class="slot-text">
-        <span class="eyebrow">${esc(slot.label)}</span>
+        <span class="eyebrow">${esc(roleLabel || slot.label)}</span>
         <strong>${esc(item?.displayName || 'Choose an item')}</strong>
         <span>${esc(itemSummary(slot.id, item))}</span>
       </span>
@@ -1651,10 +1667,11 @@ function enchantLine(slotId, row) {
  * actually be on it. The enchantment list is fixed per slot rather than typed,
  * so the player recognises what they own instead of recalling an identifier.
  */
-function slotEditor(slotId) {
+function slotEditor(slotId, setupId = null) {
   const slot = SETUP_SLOTS.find(entry => entry.id === slotId);
   if (!slot) return '';
-  const item = slotItem(slotId) || createEmptyItem();
+  const targetId = setupId || setups().activeId;
+  const item = slotItem(slotId, targetId) || createEmptyItem();
   const catalogItems = itemsForSlot(itemCatalog, slotId);
   const capabilities = itemCapabilities(slotId, item, itemCatalog);
   const reforges = capabilities.reforges.map(option => ({ value: option.id, source: 'official' }));
@@ -1842,35 +1859,63 @@ function setupGroupTitle(group) {
   return mode === ACTIVITY_MODE.PEST_SPAWN ? 'Armor · BPC set' : 'Armor · FF set';
 }
 
+function petSetupSection(title, setupId, note = '') {
+  const petSlots = SETUP_SLOTS.filter(slot => slot.group === 'Pet');
+  return `
+    <div class="section-row"><div><h2>${esc(title)}</h2>${note ? `<p>${esc(note)}</p>` : ''}</div></div>
+    <div class="slot-grid">${petSlots.map(slot => slotCard(slot, setupId)).join('')}</div>`;
+}
+
 function setupsPage() {
   const all = setups();
-  const current = activeSetup(all);
+  const selectedId = visibleSetupId(all);
+  const current = setupById(all, selectedId);
   const summary = setupSummary(current);
   const synced = snapshot();
   const hasSnapshot = Boolean(synced?.items?.length || synced?.pets?.some(pet => pet?.active === true));
+  const ffSelected = selectedId === FF_SETUP_ID;
+  const sharedPet = farmingKillingPetShared(all);
+  const editorTarget = state.setupSlotTarget || selectedId;
 
-  return `${pageHeader('Setups', 'Your gear, item by item', 'A setup is one complete configuration you can actually wear. Setups sit beside each other because they are alternatives, never added together.')}
+  const gearGroups = ['Armor', 'Equipment'].map(group => `
+    <div class="section-row"><div><h2>${group}</h2></div></div>
+    <div class="slot-grid">${SETUP_SLOTS.filter(slot => slot.group === group).map(slot => slotCard(slot, selectedId)).join('')}</div>
+  `).join('');
+
+  const petContent = ffSelected
+    ? `<div class="setup-bar">
+        <label class="lever setup-pet-link">
+          <input type="checkbox" data-share-farming-killing-pet ${sharedPet ? 'checked' : ''}>
+          <span class="lever-track" aria-hidden="true"></span>
+          <span>Use one pet for Farming + Killing</span>
+        </label>
+        <div class="hint">Armor and Equipment are always shared. Enable this when one Pet and Pet Item should also be used for both jobs.</div>
+      </div>
+      ${sharedPet
+        ? petSetupSection('Farming + Killing Pet', FF_SETUP_ID, 'One pet configuration is used for both Farming and Killing.')
+        : `${petSetupSection('Farming Pet', FF_SETUP_ID, 'Used while farming crops.')}
+           ${petSetupSection('Killing Pet', KILLING_SETUP_ID, 'Only the pet can differ for Killing; Armor and Equipment stay identical to the FF Set.')}`}`
+    : petSetupSection('BPC Pet', BPC_SETUP_ID, 'Used with the BPC Set while preparing Pest spawns.');
+
+  return `${pageHeader('Setups', 'FF and BPC sets', 'FF owns the Farming/Killing armor and equipment. BPC is the separate spawning set. Killing only has a separate pet choice when you want one.')}
     ${setupObjectivePanel()}
     <div class="setup-tabs">
-      ${all.list.map(setup => `<button class="setup-tab ${setup.id === all.activeId ? 'active' : ''}" data-setup="${esc(setup.id)}">${esc(setup.name)}</button>`).join('')}
-      <button class="setup-tab add" data-setup-add="1">+ New setup</button>
+      ${VISIBLE_SETUP_IDS.map(setupId => {
+        const setup = setupById(all, setupId);
+        return `<button class="setup-tab ${setupId === selectedId ? 'active' : ''}" data-setup="${esc(setupId)}">${esc(setup?.name || setupId)}</button>`;
+      }).join('')}
     </div>
 
     <div class="setup-bar">
-      <label class="inline-input">Setup name<input type="text" id="setupName" value="${esc(current.name)}"></label>
       <div class="setup-actions">
         <button class="ghost small" data-setup-prefill="1" ${hasSnapshot ? '' : 'disabled'}>Fill from sync</button>
-        <button class="ghost small" data-setup-remove="1" ${all.list.length > 1 ? '' : 'disabled'}>Delete setup</button>
       </div>
-      <div class="hint">${summary.filled}/${summary.total} slots filled${summary.fromSync ? `, ${summary.fromSync} from your last sync` : ''}.${hasSnapshot ? '' : ' Sync your profile in Settings to fill these automatically.'}</div>
+      <div class="hint">${summary.filled}/${summary.total} ${current.name} slots filled${summary.fromSync ? `, ${summary.fromSync} from your last sync` : ''}.${hasSnapshot ? '' : ' Sync your profile in Settings to fill these automatically.'}</div>
     </div>
 
-    ${['Armor', 'Equipment', 'Pet'].map(group => `
-      <div class="section-row"><div><h2>${esc(setupGroupTitle(group))}</h2></div></div>
-      <div class="slot-grid">${SETUP_SLOTS.filter(slot => slot.group === group).map(slotCard).join('')}</div>
-    `).join('')}
-
-    ${state.setupSlot ? slotEditor(state.setupSlot) : ''}`;
+    ${gearGroups}
+    ${petContent}
+    ${state.setupSlot ? slotEditor(state.setupSlot, editorTarget) : ''}`;
 }
 
 function bindSetups() {
@@ -1878,18 +1923,16 @@ function bindSetups() {
   const rerender = () => { reapplyGear(); saveState(); render(); };
 
   document.querySelectorAll('[data-setup]').forEach(el => el.addEventListener('click', () => {
-    all.activeId = el.dataset.setup; state.setupSlot = null; rerender();
+    all.activeId = el.dataset.setup;
+    state.setupSlot = null;
+    state.setupSlotTarget = null;
+    rerender();
   }));
-  document.querySelector('[data-setup-add]')?.addEventListener('click', () => {
-    const id = nextSetupId(all);
-    all.list.push(createSetup(id, `Setup ${all.list.length + 1}`));
-    all.activeId = id; state.setupSlot = null; rerender();
-  });
-  document.querySelector('[data-setup-remove]')?.addEventListener('click', () => {
-    if (all.list.length <= 1) return;
-    if (!confirm('Delete this setup and everything in it?')) return;
-    all.list = all.list.filter(setup => setup.id !== all.activeId);
-    all.activeId = all.list[0].id; state.setupSlot = null; rerender();
+  document.querySelector('[data-share-farming-killing-pet]')?.addEventListener('change', event => {
+    setFarmingKillingPetShared(all, event.target.checked);
+    state.setupSlot = null;
+    state.setupSlotTarget = null;
+    rerender();
   });
   document.querySelectorAll('[data-setup-objective-apply]').forEach(button => {
     button.addEventListener('click', () => {
@@ -1950,16 +1993,11 @@ function bindSetups() {
       : SETUP_OBJECTIVE.NORMAL_CROP;
     rerender();
   });
-    const nameInput = document.getElementById('setupName');
-  if (nameInput) nameInput.addEventListener('change', event => {
-    const current = all.list.find(setup => setup.id === all.activeId);
-    current.name = String(event.target.value || '').trim() || current.id;
-    rerender();
-  });
   document.querySelector('[data-setup-prefill]')?.addEventListener('click', () => {
-    const current = all.list.find(setup => setup.id === all.activeId);
+    const current = setupById(all, visibleSetupId(all));
     const result = prefillSetupFromSnapshot(current, snapshot());
     Object.assign(current, result.setup);
+    synchronizeFarmingKillingLoadouts(all);
     if (!result.filled.length) {
       alert('Your last sync contained no worn armor, equipment or active pet, so nothing could be filled in. Items sitting in storage are not assumed to be worn.');
     }
@@ -1967,22 +2005,26 @@ function bindSetups() {
   });
 
   document.querySelectorAll('[data-slot]').forEach(el => el.addEventListener('click', () => {
-    state.setupSlot = state.setupSlot === el.dataset.slot ? null : el.dataset.slot;
+    const targetId = el.dataset.setupTarget || visibleSetupId(all);
+    const same = state.setupSlot === el.dataset.slot && state.setupSlotTarget === targetId;
+    state.setupSlot = same ? null : el.dataset.slot;
+    state.setupSlotTarget = same ? null : targetId;
     rerender();
   }));
 
   // --- slot editor ---
   const slotId = state.setupSlot;
   if (!slotId) return;
-  const currentItem = () => slotItem(slotId) || createEmptyItem();
+  const setupTargetId = state.setupSlotTarget || visibleSetupId(all);
+  const currentItem = () => slotItem(slotId, setupTargetId) || createEmptyItem();
   const itemForValue = currentItem();
   if (itemForValue?.displayName) queuePhysicalValueRefresh(slotId, itemForValue);
   // Any hand edit makes the slot the player's own, so a later sync prefill
   // leaves it alone instead of overwriting their work.
-  const patch = changes => writeSlot(slotId, { ...currentItem(), ...changes, source: ITEM_SOURCE.MANUAL });
+  const patch = changes => writeSlot(slotId, { ...currentItem(), ...changes, source: ITEM_SOURCE.MANUAL }, setupTargetId);
 
   document.querySelector(`[data-slot-clear="${slotId}"]`)?.addEventListener('click', () => {
-    writeSlot(slotId, null); rerender();
+    writeSlot(slotId, null, setupTargetId); rerender();
   });
   document.querySelector(`[data-slot-item="${slotId}"]`)?.addEventListener('change', event => {
     const chosen = itemsForSlot(itemCatalog, slotId).find(entry => entry.id === event.target.value);
