@@ -1,5 +1,7 @@
 import { CROPS, UPGRADES } from './data.js';
 import { FARMING_ACCESSORY_GROUPS, farmingAccessoryByItemId } from './farming-accessories.js';
+import { FARMING_PETS } from './setup-pet-catalog.js';
+import { searchEntries } from './global-search.js';
 import { accessoryCapabilityState } from './accessory-capabilities.js';
 import { DATA_SCHEMA_VERSION, STORAGE_KEY } from './config.js';
 import { applyComputedStatsToState, computeStatTotals } from './computed-stats.js';
@@ -126,6 +128,71 @@ const NAV = [
   ['focus', 'Focus on next'],
   ['planner', 'Upgrade Planner'],
 ];
+
+const INFO_UPGRADE_TOPICS = Object.freeze([
+  Object.freeze({
+    id: 'recombobulator',
+    label: 'Rarity upgrade',
+    title: 'Recombobulator 3000',
+    summary: 'Raises an eligible item by exactly one rarity. For farming gear the main benefit is indirect: rarity-scaled reforge and gemstone values can increase with the higher effective rarity. It is not a flat Farming Fortune bonus by itself.',
+    keywords: ['recomb', 'recombobulator', 'rarity upgrade', 'mythic rarity'],
+  }),
+  Object.freeze({
+    id: 'gemstones',
+    label: 'Item sockets',
+    title: 'Gemstones',
+    summary: 'Gemstone sockets belong to the concrete item. Farming420 only exposes official sockets that item can actually have; slot type, unlock requirements, gemstone quality and effective rarity determine what the socket can contribute.',
+    keywords: ['gem', 'gems', 'gemstone', 'gemstones', 'socket', 'slots'],
+  }),
+  Object.freeze({
+    id: 'reforges',
+    label: 'Item modifier',
+    title: 'Reforges',
+    summary: 'Reforges change the stats or role of a specific item. Their values can depend on item rarity, so a rarity change can also change the value of the reforge already installed. Farming, spawning and killing reforges are not interchangeable.',
+    keywords: ['reforge', 'reforges', 'modifier'],
+  }),
+  Object.freeze({
+    id: 'enchantments',
+    label: 'Item upgrade',
+    title: 'Enchantments',
+    summary: 'Enchantments are item-compatible upgrades with their own levels and conditions. Some add direct Fortune while others change a conditional farming or Pest effect, so Farming420 tracks the exact enchantment and level instead of treating every enchant as generic stats.',
+    keywords: ['enchant', 'enchants', 'enchantment', 'enchantments'],
+  }),
+  Object.freeze({
+    id: 'rarity',
+    label: 'Item capability',
+    title: 'Rarity and item capabilities',
+    summary: 'Base rarity and effective rarity are separate. Recombobulation raises effective rarity by one step, while the concrete item decides whether it can be recombobulated, reforged or socketed at all.',
+    keywords: ['rarity', 'item capability', 'capabilities', 'effective rarity'],
+  }),
+]);
+
+const SETTINGS_SEARCH_TOPICS = Object.freeze([
+  Object.freeze({
+    id: 'live-sync',
+    title: 'Live sync',
+    subtitle: 'Minecraft UUID, SkyBlock profile and Sync now',
+    keywords: ['profile sync', 'uuid', 'minecraft uuid', 'sync profile'],
+  }),
+  Object.freeze({
+    id: 'hypixel-access',
+    title: 'Hypixel access',
+    subtitle: 'API key stored in this browser',
+    keywords: ['api', 'api key', 'hypixel key', 'developer key'],
+  }),
+  Object.freeze({
+    id: 'backup',
+    title: 'Backup & Restore',
+    subtitle: 'Download, restore or reset local Farming420 data',
+    keywords: ['backup', 'restore', 'export', 'import', 'reset data'],
+  }),
+  Object.freeze({
+    id: 'app-updates',
+    title: 'App & Updates',
+    subtitle: 'Install Farming420 or reload the latest deployment',
+    keywords: ['install', 'update', 'reload', 'version', 'pwa'],
+  }),
+]);
 
 const defaultState = {
   schemaVersion: DATA_SCHEMA_VERSION,
@@ -400,12 +467,7 @@ function appliesToCrop(item) {
 }
 
 function visibleUpgrades(section) {
-  const term = state.search.trim().toLowerCase();
-  return UPGRADES.filter(item => {
-    const inSection = section ? item.section === section : true;
-    const matches = !term || `${item.name} ${item.category} ${item.notes}`.toLowerCase().includes(term);
-    return inSection && matches;
-  });
+  return UPGRADES.filter(item => section ? item.section === section : true);
 }
 
 function gainFor(item) {
@@ -427,6 +489,230 @@ function relativeGainPct(item) {
     return denom > 0 ? (g / denom) * 100 : 0;
   }
   return g;
+}
+
+let activeSearchResults = [];
+let cachedCatalogSearchSource = null;
+let cachedCatalogSearchEntries = [];
+
+function pageForUpgrade(item) {
+  if (item?.section === 'account') return 'crops';
+  return NAV.some(([id]) => id === item?.section) ? item.section : 'planner';
+}
+
+function selectableCatalogSearchEntries() {
+  if (cachedCatalogSearchSource === itemCatalog) return cachedCatalogSearchEntries;
+  cachedCatalogSearchSource = itemCatalog;
+
+  const byItem = new Map();
+  for (const slot of SETUP_SLOTS.filter(entry => slotHasOfficialCategory(entry.id))) {
+    for (const item of itemsForSlot(itemCatalog, slot.id)) {
+      const key = String(item.id || item.name);
+      const existing = byItem.get(key) || {
+        item,
+        slots: [],
+      };
+      if (!existing.slots.some(entry => entry.id === slot.id)) existing.slots.push(slot);
+      byItem.set(key, existing);
+    }
+  }
+
+  cachedCatalogSearchEntries = [...byItem.values()].map(({ item, slots }) => ({
+    id: `catalog:${item.id}`,
+    kind: 'Selectable item',
+    title: item.name,
+    subtitle: `Can be selected for ${slots.map(slot => slot.label).join(', ')}`,
+    keywords: [item.id, item.category, item.tier, ...slots.map(slot => slot.label)],
+    target: {
+      type: 'catalog-item',
+      page: 'setups',
+      itemId: item.id,
+      slotId: slots[0]?.id || null,
+    },
+  }));
+  return cachedCatalogSearchEntries;
+}
+
+function globalSearchEntries() {
+  const entries = [];
+
+  for (const [page, label] of NAV) {
+    entries.push({
+      id: `page:${page}`,
+      kind: 'Page',
+      title: label,
+      subtitle: 'Open this Farming420 section',
+      keywords: [page],
+      priority: 80,
+      target: { type: 'page', page },
+    });
+  }
+
+  for (const cropEntry of CROPS) {
+    entries.push({
+      id: `crop:${cropEntry.id}`,
+      kind: 'Crop',
+      title: cropEntry.name,
+      subtitle: `Garden crop · ${cropEntry.tool || 'farming tool'}`,
+      keywords: [cropEntry.id, cropEntry.tool],
+      priority: 120,
+      target: { type: 'crop', page: 'crops', cropId: cropEntry.id },
+    });
+  }
+
+  for (const item of UPGRADES) {
+    entries.push({
+      id: `upgrade:${item.id}`,
+      kind: item.section === 'shards' || item.category === 'Attribute Shard' ? 'Shard / upgrade' : 'Upgrade',
+      title: item.name,
+      subtitle: `${item.category} · ${pageForUpgrade(item)}`,
+      keywords: [item.id, item.notes, item.metric, item.attribute, item.cropScope, item.modeScope],
+      priority: 160,
+      target: { type: 'upgrade', page: pageForUpgrade(item), itemId: item.id },
+    });
+  }
+
+  for (const group of FARMING_ACCESSORY_GROUPS) {
+    for (const accessory of group.items) {
+      entries.push({
+        id: `accessory:${accessory.itemId}`,
+        kind: 'Accessory',
+        title: accessory.name,
+        subtitle: `${group.title} · ${accessory.condition}`,
+        keywords: [accessory.itemId, accessory.effect, group.note],
+        priority: 140,
+        target: { type: 'accessory', page: 'accessories', itemId: accessory.itemId },
+      });
+    }
+  }
+
+  for (const pet of FARMING_PETS) {
+    entries.push({
+      id: `pet:${pet.id}`,
+      kind: 'Selectable pet',
+      title: pet.name,
+      subtitle: `Setups pet picker · level ${pet.levelMin}-${pet.levelMax}`,
+      keywords: [pet.id, ...(pet.rarities || [])],
+      priority: 150,
+      target: { type: 'setup-slot', page: 'setups', slotId: 'pet' },
+    });
+  }
+
+  for (const topic of INFO_UPGRADE_TOPICS) {
+    entries.push({
+      id: `info:${topic.id}`,
+      kind: 'Info',
+      title: topic.title,
+      subtitle: topic.summary,
+      keywords: topic.keywords,
+      priority: 1200,
+      target: { type: 'info', page: 'info', anchor: `info-upgrade-${topic.id}` },
+    });
+  }
+
+  for (const topic of SETTINGS_SEARCH_TOPICS) {
+    entries.push({
+      id: `settings:${topic.id}`,
+      kind: 'Setting',
+      title: topic.title,
+      subtitle: topic.subtitle,
+      keywords: topic.keywords,
+      priority: 700,
+      target: { type: 'settings', section: topic.id },
+    });
+  }
+
+  return [...entries, ...selectableCatalogSearchEntries()];
+}
+
+function searchResultsMarkup(query) {
+  activeSearchResults = searchEntries(globalSearchEntries(), query, 12);
+  if (!String(query || '').trim()) return '';
+  if (!activeSearchResults.length) {
+    return '<div class="search-no-results">No direct match. Try an item, shard, setting, stat or upgrade name.</div>';
+  }
+  return activeSearchResults.map((entry, index) => `
+    <button class="search-result" type="button" role="option" data-search-result="${index}">
+      <span class="search-result-kind">${esc(entry.kind)}</span>
+      <span class="search-result-copy">
+        <strong>${esc(entry.title)}</strong>
+        <small>${esc(entry.subtitle || '')}</small>
+      </span>
+    </button>`).join('');
+}
+
+function updateSearchResults(query) {
+  const panel = document.getElementById('searchResults');
+  const input = document.getElementById('search');
+  if (!panel) return;
+  panel.innerHTML = searchResultsMarkup(query);
+  panel.hidden = !String(query || '').trim();
+  input?.setAttribute('aria-expanded', panel.hidden ? 'false' : 'true');
+}
+
+function clearGlobalSearch() {
+  state.search = '';
+  saveState();
+  const input = document.getElementById('search');
+  if (input) input.value = '';
+  updateSearchResults('');
+}
+
+function scrollToSearchAnchor(id) {
+  if (!id) return;
+  requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView({ block: 'start' }));
+}
+
+function navigateSearchResult(entry) {
+  if (!entry?.target) return;
+  const target = entry.target;
+  state.search = '';
+  state.drawer = null;
+
+  if (target.type === 'settings') {
+    saveState();
+    const input = document.getElementById('search');
+    if (input) input.value = '';
+    updateSearchResults('');
+    window.dispatchEvent(new CustomEvent('farming420:open-settings', { detail: { section: target.section } }));
+    return;
+  }
+
+  if (target.type === 'crop') {
+    state.selectedCrop = target.cropId;
+    state.page = target.page;
+  } else if (target.type === 'upgrade') {
+    state.page = target.page;
+    state.drawer = target.itemId;
+  } else if (target.type === 'accessory') {
+    state.page = target.page;
+  } else if (target.type === 'catalog-item' || target.type === 'setup-slot') {
+    state.page = target.page;
+    if (target.slotId) state.setupSlot = target.slotId;
+  } else {
+    state.page = target.page || state.page;
+  }
+
+  saveState();
+  render({ preserveScroll: false });
+
+  if (target.type === 'info') {
+    scrollToSearchAnchor(target.anchor);
+  } else if (target.type === 'accessory') {
+    requestAnimationFrame(() => {
+      [...document.querySelectorAll('[data-accessory-item-id]')]
+        .find(node => node.dataset.accessoryItemId === target.itemId)
+        ?.scrollIntoView({ block: 'center' });
+    });
+  } else if (target.type === 'catalog-item' || target.type === 'setup-slot') {
+    requestAnimationFrame(() => {
+      const editor = target.slotId
+        ? [...document.querySelectorAll('[data-item-editor]')].find(node => node.dataset.itemEditor === target.slotId)
+        : null;
+      editor?.scrollIntoView({ block: 'center' });
+      editor?.querySelector('select, input')?.focus({ preventScroll: true });
+    });
+  }
 }
 
 function plannerCandidates() {
@@ -539,7 +825,10 @@ function shell(content) {
             ${CROPS.map(c => `<option value="${c.id}" ${c.id===state.selectedCrop?'selected':''}>${esc(c.name)}</option>`).join('')}
           </select>
         </div>
-        <div class="search-wrap"><input id="search" placeholder="Search item, upgrade or effect…" value="${esc(state.search)}" /></div>
+        <div class="search-wrap">
+          <input id="search" aria-label="Search Farming420" aria-controls="searchResults" aria-expanded="${state.search.trim() ? 'true' : 'false'}" autocomplete="off" placeholder="Search items, shards, settings, effects…" value="${esc(state.search)}" />
+          <div id="searchResults" class="search-results" role="listbox" ${state.search.trim() ? '' : 'hidden'}>${searchResultsMarkup(state.search)}</div>
+        </div>
       </header>
       <section class="content">${content}</section>
     </main>
@@ -845,11 +1134,9 @@ function accessoryCatalogCard(accessory) {
 }
 
 function accessoriesPage() {
-  const term = state.search.trim().toLowerCase();
   const groups = FARMING_ACCESSORY_GROUPS.map(group => ({
     ...group,
-    items: group.items.filter(item => !term
-      || `${item.name} ${item.itemId} ${item.effect} ${item.condition}`.toLowerCase().includes(term)),
+    items: group.items,
   })).filter(group => group.items.length);
 
   return `${pageHeader('Accessories', 'Farming Accessories', 'Accessory progression keeps the physical item, effective rarity and Recombobulator state.')}
@@ -1106,7 +1393,7 @@ function genericSectionPage(section, kicker, title, text) {
   const gridClass = section === 'shards' ? 'card-grid shard-gallery' : 'card-grid';
   return `${pageHeader(kicker,title,text)}
     <div class="filter-line">${badge(`${items.length} entries`,'soft')}</div>
-    ${section === 'tools' && !state.search.trim() ? toolItemPanel() : ''}
+    ${section === 'tools' ? toolItemPanel() : ''}
     ${section === 'tools' ? '<div class="section-row"><div><h2>Every scored tool entry</h2><p>The same values, with the Fortune each one contributes and the source behind it.</p></div></div>' : ''}
     <div class="${gridClass}">${items.map(x=>card(x)).join('') || '<div class="empty">No matches.</div>'}</div>`;
 }
@@ -1525,6 +1812,12 @@ function setupObjectivePanel() {
   </div>`;
 }
 
+function setupGroupTitle(group) {
+  if (group !== 'Armor') return group;
+  const mode = activityModeForState(state);
+  return mode === ACTIVITY_MODE.PEST_SPAWN ? 'Armor · BPC set' : 'Armor · FF set';
+}
+
 function setupsPage() {
   const all = setups();
   const current = activeSetup(all);
@@ -1549,7 +1842,7 @@ function setupsPage() {
     </div>
 
     ${['Armor', 'Equipment', 'Pet'].map(group => `
-      <div class="section-row"><div><h2>${group}</h2></div></div>
+      <div class="section-row"><div><h2>${esc(setupGroupTitle(group))}</h2></div></div>
       <div class="slot-grid">${SETUP_SLOTS.filter(slot => slot.group === group).map(slotCard).join('')}</div>
     `).join('')}
 
@@ -1734,8 +2027,14 @@ async function ensureItemCatalog() {
   const result = await loadItemCatalog();
   itemCatalog = result.items;
   catalogNotice = result.error;
-  // Only repaint when there is something new to show.
-  if (['setups', 'accessories'].includes(state.page) && (result.items.length || result.error)) render();
+  cachedCatalogSearchSource = null;
+  if (state.search.trim()) updateSearchResults(state.search);
+
+  // Do not replace the global search input while the player is typing. The
+  // setup/accessory page can repaint after the search loses focus or another
+  // explicit state change happens.
+  const searchHasFocus = document.activeElement?.id === 'search';
+  if (!searchHasFocus && ['setups', 'accessories'].includes(state.page) && (result.items.length || result.error)) render();
 }
 
 // --- Guide 0-60 -------------------------------------------------------------
@@ -1868,6 +2167,19 @@ function infoPage() {
             <strong>${esc(stage.name)}</strong>
             <p>${esc(stage.summary)}</p>
             <ul>${stage.steps.slice(0, 4).map(step => `<li>${esc(step)}</li>`).join('')}</ul>
+          </article>`).join('')}
+        </div>
+      </section>
+
+      <section class="info-section" id="info-item-upgrades">
+        <div class="section-row">
+          <div><div class="eyebrow">Item upgrade reference</div><h2>What generic item upgrades actually do</h2><p>These systems are not tied to one single Farming420 card, so global search routes generic questions here.</p></div>
+        </div>
+        <div class="info-upgrade-grid">
+          ${INFO_UPGRADE_TOPICS.map(topic => `<article class="info-card" id="info-upgrade-${esc(topic.id)}">
+            <span>${esc(topic.label)}</span>
+            <strong>${esc(topic.title)}</strong>
+            <p>${esc(topic.summary)}</p>
           </article>`).join('')}
         </div>
       </section>
@@ -2103,7 +2415,47 @@ function bind() {
     render();
   }));
   const search = document.getElementById('search');
-  if (search) search.addEventListener('input', e => { state.search=e.target.value; saveState(); render(); });
+  const searchResults = document.getElementById('searchResults');
+  if (search) {
+    search.addEventListener('input', event => {
+      state.search = event.target.value;
+      saveState();
+      updateSearchResults(state.search);
+      if (!catalogRequested) ensureItemCatalog();
+    });
+    search.addEventListener('focus', () => {
+      updateSearchResults(search.value);
+      if (!catalogRequested) ensureItemCatalog();
+    });
+    search.addEventListener('keydown', event => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        clearGlobalSearch();
+        search.focus();
+      } else if (event.key === 'Enter' && activeSearchResults[0]) {
+        event.preventDefault();
+        navigateSearchResult(activeSearchResults[0]);
+      } else if (event.key === 'ArrowDown') {
+        const first = searchResults?.querySelector('[data-search-result]');
+        if (first) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    });
+  }
+  searchResults?.addEventListener('click', event => {
+    const button = event.target.closest('[data-search-result]');
+    if (!button) return;
+    navigateSearchResult(activeSearchResults[Number(button.dataset.searchResult)]);
+  });
+  searchResults?.addEventListener('keydown', event => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    const button = event.target.closest('[data-search-result]');
+    if (!button) return;
+    event.preventDefault();
+    navigateSearchResult(activeSearchResults[Number(button.dataset.searchResult)]);
+  });
   const profileName = document.getElementById('profileName');
   if (profileName) profileName.addEventListener('change', e => { state.profile.name=e.target.value; saveState(); });
   const gf = document.getElementById('globalFortune');
