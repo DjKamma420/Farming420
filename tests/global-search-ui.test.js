@@ -48,3 +48,29 @@ test('the two baseline armor roles are named FF set and BPC set', () => {
   assert.match(guide, /return 'FF set'/);
   assert.match(guide, /FF set \+ BPC set/);
 });
+
+
+test('search targets selectable items without silently applying them', () => {
+  const app = read('src/app.js');
+  assert.match(app, /pendingSearchSpotlight = target/);
+  assert.match(app, /Search result: \$\{target\.itemName\}\. Select it here to update this setup\./);
+  assert.match(app, /Search result: \$\{target\.vacuumName\}\. Select this model here to update your Vacuum\./);
+  assert.doesNotMatch(app, /pendingSearchSpotlight[\s\S]{0,180}dispatchEvent\(new Event\('change'/);
+});
+
+test('tool and vacuum results land on their exact editor surfaces', () => {
+  const app = read('src/app.js');
+  assert.match(app, /target: \{ type: 'tool', page: 'tools', cropId, toolName \}/);
+  assert.match(app, /target: \{ type: 'vacuum', page: 'tools', vacuumId: vacuum\.id, vacuumName: vacuum\.name \}/);
+  assert.match(app, /\.sb-tool-card\[data-sb-tool-crop=/);
+  assert.match(app, /\[data-vacuum-model\]/);
+});
+
+test('global search supports full keyboard movement', () => {
+  const app = read('src/app.js');
+  assert.match(app, /function focusSearchResult\(index\)/);
+  assert.match(app, /event\.key === 'ArrowDown'/);
+  assert.match(app, /event\.key === 'ArrowUp'/);
+  assert.match(app, /event\.key === 'Escape'/);
+  assert.match(app, /aria-selected="false"/);
+});
