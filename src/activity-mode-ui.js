@@ -17,7 +17,7 @@ import { formatNumber } from './format-number.js';
 let scheduled = false;
 let applying = false;
 
-const MODE_SWITCH_PAGES = new Set(['dashboard', 'setups', 'focus', 'planner']);
+const MODE_SWITCH_PAGES = new Set(['dashboard', 'focus', 'planner']);
 
 function load() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
@@ -172,25 +172,6 @@ function injectHeaderSwitch(raw) {
   }));
 }
 
-function simplifySetupEditor(raw) {
-  const content = document.querySelector('.content');
-  if (!content) return;
-  const title = content.querySelector('.page-head h1')?.textContent || '';
-  if (!title.includes('Your gear, item by item')) return;
-
-  const mode = activityModeForState(raw);
-  const tabs = content.querySelector('.setup-tabs');
-  if (tabs && tabs.dataset.modeSurface !== mode) {
-    tabs.dataset.modeSurface = mode;
-    tabs.innerHTML = `<div class="mode-editor-banner"><strong>${esc(activityLabel(mode))}</strong> is being edited. Loadout gear is phase-specific. Shared sources such as crop Tools, Shards, Account upgrades and Buffs are configured once and are not switched here.</div>`;
-  }
-
-  const nameInput = content.querySelector('#setupName');
-  nameInput?.closest('label')?.remove();
-  content.querySelector('[data-setup-remove]')?.remove();
-  content.querySelector('[data-setup-add]')?.remove();
-}
-
 /**
  * The core planner list from `app.js` -- never one an enhancement built.
  *
@@ -242,7 +223,6 @@ function apply() {
   try {
     const raw = load();
     injectHeaderSwitch(raw);
-    simplifySetupEditor(raw);
     renderPlanner(raw);
   } finally {
     applying = false;
