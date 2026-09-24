@@ -77,6 +77,7 @@ test('known remaining prices are summed while unknown price steps stay explicit'
         currentLevel,
         maxLevel: 2,
         costToMaxCoins: 12_500_000,
+        costToMaxComputedAtMs: 5_000,
         remainingEarnedSteps: 0,
         remainingUnknownSteps: 0,
       };
@@ -97,11 +98,19 @@ test('known remaining prices are summed while unknown price steps stay explicit'
   });
 
   assert.equal(summary.knownCostCoins, 12_500_000);
+  assert.equal(summary.knownCostComputedAtMs, 5_000);
   assert.equal(summary.currentSteps, 6);
   assert.equal(summary.totalSteps, 13);
   assert.equal(summary.remainingEarnedSteps, 5);
   assert.equal(summary.remainingUnknownPriceSteps, 1);
   assert.equal(summary.costComplete, false);
+  assert.equal(summary.breakdown.length, 1);
+  assert.equal(summary.breakdown[0].label, 'Account');
+  assert.equal(summary.breakdown[0].knownCostCoins, 12_500_000);
+  assert.equal(summary.breakdown[0].remainingUnknownPriceSteps, 1);
+  assert.equal(summary.unknownPriceTargets.length, 1);
+  assert.equal(summary.unknownPriceTargets[0].itemName, 'Unknown');
+  assert.equal(summary.unknownPriceTargets[0].unknownSteps, 1);
 });
 
 test('crop progression expands across crops instead of only counting the selected crop', () => {
@@ -144,4 +153,63 @@ test('crop progression expands across crops instead of only counting the selecte
   assert.equal(summary.currentSteps, 6);
   assert.equal(summary.totalSteps, 8);
   assert.equal(summary.completionPercent, 75);
+});
+
+
+test('total and section freshness use the oldest priced remaining component', () => {
+  const items = [
+    { id: 'newer', name: 'Newer', status: 'ACTIVE', section: 'account', category: 'Account', max: 1 },
+    { id: 'older', name: 'Older', status: 'ACTIVE', section: 'gear', category: 'Gear', max: 1 },
+  ];
+  const state = { selectedCrop: 'melon', profile: { levels: {}, owned: {} } };
+  const summarizePrice = (_store, item) => ({
+    currentLevel: 0,
+    maxLevel: 1,
+    costToMaxCoins: item.id === 'newer' ? 2_000_000 : 3_000_000,
+    costToMaxComputedAtMs: item.id === 'newer' ? 9_000 : 4_000,
+    remainingEarnedSteps: 0,
+    remainingUnknownSteps: 0,
+  });
+
+  const summary = plannerMaxSummary(state, { items, summarizePrice });
+  assert.equal(summary.knownCostCoins, 5_000_000);
+  assert.equal(summary.knownCostComputedAtMs, 4_000);
+  assert.equal(summary.breakdown.find(row => row.id === 'account').knownCostComputedAtMs, 9_000);
+  assert.equal(summary.breakdown.find(row => row.id === 'gear').knownCostComputedAtMs, 4_000);
+});
+
+test('unknown price targets keep crop scope so repeated crop progress is diagnosable', () => {
+  const item = {
+    id: 'crop-price-gap',
+    name: 'Crop price gap',
+    status: 'ACTIVE',
+    section: 'crops',
+    category: 'Crop Progression',
+    max: 2,
+    cropScope: 'Any',
+  };
+  const state = { selectedCrop: 'alpha', profile: { cropProgress: {} } };
+  const summarizePrice = () => ({
+    currentLevel: 0,
+    maxLevel: 2,
+    costToMaxCoins: null,
+    remainingEarnedSteps: 0,
+    remainingUnknownSteps: 2,
+  });
+
+  const summary = plannerMaxSummary(state, {
+    items: [item],
+    crops: [
+      { id: 'alpha', name: 'Alpha' },
+      { id: 'beta', name: 'Beta' },
+    ],
+    summarizePrice,
+    resolveCost: () => ({ acquisitionMode: 'UNKNOWN' }),
+  });
+
+  assert.deepEqual(
+    summary.unknownPriceTargets.map(row => [row.scopeLabel, row.unknownSteps]),
+    [['Alpha', 2], ['Beta', 2]],
+  );
+  assert.equal(summary.breakdown[0].remainingUnknownPriceSteps, 4);
 });
