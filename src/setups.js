@@ -142,6 +142,22 @@ export function normalizeSetups(raw) {
   };
   const activityIds = new Set([FF_SETUP_ID, BPC_SETUP_ID, KILLING_SETUP_ID]);
   if (!activityIds.has(result.activeId)) result.activeId = FF_SETUP_ID;
+
+  // Model v3 allowed Killing to carry its own armor/equipment. Preserve a
+  // Killing-only legacy slot by moving it into FF once, then make FF the only
+  // source of truth from v4 onward.
+  if (Number(source.modelVersion || 0) < SETUPS_MODEL_VERSION) {
+    const ff = normalized.find(setup => setup.id === FF_SETUP_ID);
+    const killing = normalized.find(setup => setup.id === KILLING_SETUP_ID);
+    if (ff && killing) {
+      for (const slotId of FARMING_KILLING_SHARED_GEAR_SLOTS) {
+        if (!ff.slots[slotId] && killing.slots[slotId]) {
+          ff.slots[slotId] = structuredClone(killing.slots[slotId]);
+        }
+      }
+    }
+  }
+
   synchronizeFarmingKillingLoadouts(result);
   return result;
 }
@@ -283,7 +299,7 @@ function setupById(setups, id) {
 }
 
 function mirrorSlot(sourceSetup, targetSetup, slotId, fallbackId) {
-  const sourceItem = sourceSetup?.slots?.[slotId] || targetSetup?.slots?.[slotId] || null;
+  const sourceItem = sourceSetup?.slots?.[slotId] || null;
   sourceSetup.slots ||= {};
   targetSetup.slots ||= {};
   if (!sourceItem) {
@@ -317,7 +333,19 @@ export function farmingKillingPetShared(setups) {
 
 export function setFarmingKillingPetShared(setups, shared) {
   if (!setups || typeof setups !== 'object') return false;
-  setups.shareFarmingKillingPet = Boolean(shared);
+  const enable = Boolean(shared);
+  if (enable && setups.shareFarmingKillingPet !== true) {
+    const ff = setupById(setups, FF_SETUP_ID);
+    const killing = setupById(setups, KILLING_SETUP_ID);
+    if (ff && killing) {
+      for (const slotId of PET_SETUP_SLOTS) {
+        if (!ff.slots?.[slotId] && killing.slots?.[slotId]) {
+          ff.slots[slotId] = structuredClone(killing.slots[slotId]);
+        }
+      }
+    }
+  }
+  setups.shareFarmingKillingPet = enable;
   synchronizeFarmingKillingLoadouts(setups);
   return setups.shareFarmingKillingPet;
 }
