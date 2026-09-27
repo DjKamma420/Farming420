@@ -186,7 +186,6 @@ Do not implement these from memory. Each needs a real payload/schema research ta
 - permanent consumables such as Rosewater Flask stacks
 - exportable crop items / permanent crop bonuses
 - Chocolate Factory farming bonuses
-- Garden Chips and their levels
 - Attribute Shards and active shard configuration
 - personal-best farming contest perk
 - current temporary Pesthunter Phillip buff
@@ -195,6 +194,14 @@ Do not implement these from memory. Each needs a real payload/schema research ta
 - Hypercharge state/level and which temporary sources it affects
 
 These are **AUTO_CANDIDATE**, not `AUTO`, until a current API path is confirmed.
+
+### Garden Chips
+
+Garden Chip rarity/level is currently `MANUAL`.
+
+The official `/v2/skyblock/garden` schema documented on 2026-09-27 lists the Garden UUID, commissions, composter data, resources, crop upgrades, plots, Garden XP and barn skins, but no consumed Garden Chip state. Farming420 must therefore preserve manually entered chip progress and must not infer missing chip data as level 0.
+
+If Hypixel later documents a stable chip field, move this back through `AUTO_CANDIDATE` and add payload fixtures before enabling automatic sync.
 
 ## Known incomplete/missing areas
 
