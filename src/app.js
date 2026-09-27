@@ -174,6 +174,7 @@ const defaultState = {
   schemaVersion: DATA_SCHEMA_VERSION,
   page: 'dashboard',
   selectedCrop: 'melon',
+  dashboardCrop: 'melon',
   search: '',
   drawer: null,
   profile: {
@@ -396,6 +397,12 @@ function esc(s='') {
 
 function crop() {
   return CROPS.find(c => c.id === state.selectedCrop) || CROPS[0];
+}
+
+function dashboardCrop() {
+  return CROPS.find(c => c.id === state.dashboardCrop)
+    || CROPS.find(c => c.id === state.selectedCrop)
+    || CROPS[0];
 }
 
 function isCropScopedItem(item) {
@@ -1053,12 +1060,12 @@ function shell(content) {
     <main class="main">
       <header class="topbar">
         <div class="mobile-title">Farming420</div>
-        <div class="crop-switch">
+        ${state.page === 'dashboard' ? '' : `<div class="crop-switch">
           <span>Crop</span>
           <select id="cropSelect">
             ${CROPS.map(c => `<option value="${c.id}" ${c.id===state.selectedCrop?'selected':''}>${esc(c.name)}</option>`).join('')}
           </select>
-        </div>
+        </div>`}
         <div class="search-wrap">
           <input id="search" aria-label="Search Farming420" aria-controls="searchResults" aria-expanded="${state.search.trim() ? 'true' : 'false'}" autocomplete="off" placeholder="Search items, shards, settings, effects…" value="${esc(state.search)}" />
           <div id="searchResults" class="search-results" role="listbox" ${state.search.trim() ? '' : 'hidden'}>${searchResultsMarkup(state.search)}</div>
@@ -1089,9 +1096,10 @@ function dashboardMeasuredValues(cropId, mode) {
 }
 
 function dashboardProfitEstimate(cropId, mode, context, stats) {
-  const stored = dashboardMeasuredValues(cropId, mode);
-  const normalPrice = mode === ACTIVITY_MODE.PEST_KILL ? null : averageCropUnitPrice(cropId);
-  const feastPrice = mode !== ACTIVITY_MODE.PEST_KILL && isHarvestFeastContext(context)
+  const cropScoped = mode === ACTIVITY_MODE.FARM && Boolean(cropId);
+  const stored = cropScoped ? dashboardMeasuredValues(cropId, mode) : {};
+  const normalPrice = cropScoped ? averageCropUnitPrice(cropId) : null;
+  const feastPrice = cropScoped && isHarvestFeastContext(context)
     ? averageHarvestFeastMaterialPrice(cropId)
     : null;
 
@@ -1156,21 +1164,24 @@ function dashboardLoadoutSummary(mode, selectedCrop) {
     const vacuum = GARDEN_VACUUM_ITEMS.find(item => item.id === vacuumId);
     return { ...base, tool: vacuum?.name || 'Vacuum not configured' };
   }
-  const tool = currentToolBuildRecord().item;
-  return { ...base, tool: [tool?.displayName || selectedCrop.tool, tool?.skyblockId].filter(Boolean).join(' · ') };
+  if (mode === ACTIVITY_MODE.PEST_SPAWN) {
+    return { ...base, tool: null };
+  }
+  return { ...base, tool: selectedCrop?.tool || 'Farming tool not configured' };
 }
 function dashboard() {
   const mode = activityModeForState(state);
-  const selectedCrop = crop();
+  const farmingMode = mode === ACTIVITY_MODE.FARM;
+  const selectedCrop = dashboardCrop();
   const context = farmingContextForState(state);
   const contextScopes = farmingContextScopes(context);
-  const stats = computeStatTotals(state, selectedCrop.id, mode, contextScopes);
-  const estimate = dashboardProfitEstimate(selectedCrop.id, mode, context, stats);
-  const loadout = dashboardLoadoutSummary(mode, selectedCrop);
+  const stats = computeStatTotals(state, farmingMode ? selectedCrop.id : null, mode, contextScopes);
+  const estimate = dashboardProfitEstimate(farmingMode ? selectedCrop.id : null, mode, context, stats);
+  const loadout = dashboardLoadoutSummary(mode, farmingMode ? selectedCrop : null);
   const marker = count => count ? ' ~' : '';
   const number = value => formatNumber(Number(value || 0), FRACTION_2);
   const effectiveIncomplete = stats.incomplete.globalFortune.length
-    + stats.incomplete.cropFortune.length
+    + (farmingMode ? stats.incomplete.cropFortune.length : 0)
     + stats.incomplete.pestFortune.length;
   const sourceNote = (values, axis) => {
     const sources = Number(values.sourceCount?.[axis] || 0);
@@ -1179,47 +1190,138 @@ function dashboard() {
     if (unresolved) return `${sources} configured source${sources === 1 ? '' : 's'} · ${unresolved} unresolved`;
     return `${sources} configured source${sources === 1 ? '' : 's'} · fully modeled`;
   };
-  const priceNote = estimate.normalPrice
+  const priceNote = farmingMode && estimate.normalPrice
     ? averageCropPriceNote(estimate.normalPrice)
-    : mode === ACTIVITY_MODE.PEST_KILL
-      ? 'Crop market value is not used for Pest Killing.'
-      : 'Crop price unavailable';
+    : farmingMode
+      ? 'Crop price unavailable'
+      : 'Crop market value is not used for Pest phase totals.';
   const contextHelp = context === 'normal'
     ? 'Only always-active configured sources are included.'
     : `${farmingContextLabel(context)}-only configured effects are included in the totals below.`;
-  const throughputText = estimate.values?.breaksPerSecond && estimate.values?.uptimePercent
+  const throughputText = farmingMode && estimate.values?.breaksPerSecond && estimate.values?.uptimePercent
     ? `${number(estimate.values.breaksPerSecond)} breaks/s · ${number(estimate.values.uptimePercent)}% uptime`
-    : 'Not measured yet';
+    : farmingMode ? 'Not measured yet' : 'Not used for this phase';
 
-  const cropRows = CROPS.map(entry => {
+  const cropRows = farmingMode ? CROPS.map(entry => {
     const values = computeStatTotals(state, entry.id, mode, contextScopes);
     const totalFortune = values.globalFortune + values.cropFortune;
     const totalIncomplete = values.incomplete.globalFortune.length
       + values.incomplete.cropFortune.length;
     const incomplete = totalIncomplete
-      + values.incomplete.overbloom.length
-      + values.incomplete.bonusPestChance.length;
+      + values.incomplete.overbloom.length;
     const configured = Number(values.sourceCount?.globalFortune || 0)
       + Number(values.sourceCount?.cropFortune || 0)
-      + Number(values.sourceCount?.overbloom || 0)
-      + Number(values.sourceCount?.bonusPestChance || 0);
+      + Number(values.sourceCount?.overbloom || 0);
     return `
       <article class="stat-card dashboard-crop-result ${entry.id === selectedCrop.id ? 'selected' : ''}">
         <span>${esc(entry.name)}</span>
         <strong>${number(totalFortune)} FF${marker(totalIncomplete)}</strong>
         <small>Global FF ${number(values.globalFortune)} · Crop FF ${number(values.cropFortune)}</small>
-        <small>Overbloom ${number(values.overbloom)}${marker(values.incomplete.overbloom.length)} · BPC ${number(values.bonusPestChance)}${marker(values.incomplete.bonusPestChance.length)}</small>
+        <small>Overbloom ${number(values.overbloom)}${marker(values.incomplete.overbloom.length)}</small>
         ${incomplete
           ? '<small>~ contains sources that are not fully modeled yet</small>'
           : configured
             ? '<small>fully calculated from configured sources</small>'
             : '<small>No configured sources in this context</small>'}
       </article>`;
-  }).join('');
+  }).join('') : '';
+
+  const phaseCard = farmingMode
+    ? `<article class="stat-card dashboard-total-card">
+        <span>Effective Fortune · ${esc(selectedCrop.name)}</span>
+        <strong>${number(stats.effectiveFortune)} FF${marker(effectiveIncomplete)}</strong>
+        <small>Global ${number(stats.globalFortune)} + Crop ${number(stats.cropFortune)}</small>
+        <small>${esc(farmingContextLabel(context))} context</small>
+      </article>`
+    : mode === ACTIVITY_MODE.PEST_SPAWN
+      ? `<article class="stat-card dashboard-total-card">
+          <span>BPC Set</span>
+          <strong>${number(stats.bonusPestChance)} BPC${marker(stats.incomplete.bonusPestChance.length)}</strong>
+          <small>Pest cooldown reduction ${number(stats.pestCooldownReductionPct)}%</small>
+          <small>No crop-specific Fortune or tool state is included.</small>
+        </article>`
+      : `<article class="stat-card dashboard-total-card">
+          <span>Pest Killing</span>
+          <strong>${number(stats.pestFortune)} Pest Fortune${marker(stats.incomplete.pestFortune.length)}</strong>
+          <small>Overbloom ${number(stats.overbloom)}${marker(stats.incomplete.overbloom.length)}</small>
+          <small>No crop-specific Fortune or crop tool state is included.</small>
+        </article>`;
+
+  const modeSpecificCards = farmingMode
+    ? `
+      <article class="stat-card">
+        <span>Global Farming Fortune</span>
+        <strong>${number(stats.globalFortune)}${marker(stats.incomplete.globalFortune.length)}</strong>
+        <small>Account-wide Fortune before crop-specific Fortune is added</small>
+        <small>${sourceNote(stats, 'globalFortune')}</small>
+      </article>
+      <article class="stat-card">
+        <span>${esc(selectedCrop.name)} Crop Fortune</span>
+        <strong>${number(stats.cropFortune)}${marker(stats.incomplete.cropFortune.length)}</strong>
+        <small>Crop-specific Fortune from the selected FF crop and matching tool sources</small>
+        <small>${sourceNote(stats, 'cropFortune')}</small>
+      </article>
+      <article class="stat-card">
+        <span>Overbloom</span>
+        <strong>${number(stats.overbloom)}${marker(stats.incomplete.overbloom.length)}</strong>
+        <small>Calculated drop-chance stat for applicable Farming event streams</small>
+        <small>${sourceNote(stats, 'overbloom')}</small>
+      </article>`
+    : mode === ACTIVITY_MODE.PEST_SPAWN
+      ? `
+        <article class="stat-card">
+          <span>Bonus Pest Chance</span>
+          <strong>${number(stats.bonusPestChance)}${marker(stats.incomplete.bonusPestChance.length)}</strong>
+          <small>Calculated BPC for the active BPC Set</small>
+          <small>${sourceNote(stats, 'bonusPestChance')}</small>
+        </article>
+        <article class="stat-card">
+          <span>Pest cooldown reduction</span>
+          <strong>${number(stats.pestCooldownReductionPct)}%${marker(stats.incomplete.pestCooldownReductionPct.length)}</strong>
+          <small>Calculated cooldown reduction for the active BPC Set</small>
+          <small>${sourceNote(stats, 'pestCooldownReductionPct')}</small>
+        </article>
+        <article class="stat-card">
+          <span>Global Farming Fortune</span>
+          <strong>${number(stats.globalFortune)}${marker(stats.incomplete.globalFortune.length)}</strong>
+          <small>Non-crop-specific Fortune carried by the spawning setup</small>
+          <small>${sourceNote(stats, 'globalFortune')}</small>
+        </article>`
+      : `
+        <article class="stat-card">
+          <span>Pest Fortune</span>
+          <strong>${number(stats.pestFortune)}${marker(stats.incomplete.pestFortune.length)}</strong>
+          <small>Vacuum/Pest Fortune for the active Killing phase</small>
+          <small>${sourceNote(stats, 'pestFortune')}</small>
+        </article>
+        <article class="stat-card">
+          <span>Overbloom</span>
+          <strong>${number(stats.overbloom)}${marker(stats.incomplete.overbloom.length)}</strong>
+          <small>Calculated Pest drop-chance stat for the Killing phase</small>
+          <small>${sourceNote(stats, 'overbloom')}</small>
+        </article>
+        <article class="stat-card">
+          <span>Global Farming Fortune</span>
+          <strong>${number(stats.globalFortune)}${marker(stats.incomplete.globalFortune.length)}</strong>
+          <small>Non-crop-specific Fortune carried by the shared FF gear</small>
+          <small>${sourceNote(stats, 'globalFortune')}</small>
+        </article>`;
+
+  const primaryInputCard = farmingMode
+    ? `<article class="stat-card"><span>FF crop / Tool</span><strong>${esc(selectedCrop.name)}</strong><small>${esc(loadout.tool)}</small></article>`
+    : mode === ACTIVITY_MODE.PEST_SPAWN
+      ? '<article class="stat-card"><span>Phase</span><strong>BPC Set</strong><small>Crop selection is intentionally not part of this phase.</small></article>'
+      : `<article class="stat-card"><span>Vacuum</span><strong>${esc(loadout.tool)}</strong><small>Killing is Pest-specific, not crop-specific.</small></article>`;
 
   return `
-    ${pageHeader('Dashboard', 'Calculated Farming Stats', `Result overview · ${activityLabel(mode)} · ${farmingContextLabel(context)}. Event context changes only documented conditional effects.`)}
+    ${pageHeader('Dashboard', 'Calculated Farming Stats', `Result overview · ${activityLabel(mode)} · ${farmingContextLabel(context)}. Crop selection exists only for the FF Set.`)}
     <section class="dashboard-context-panel">
+      ${farmingMode ? `<label>
+        <span>FF crop</span>
+        <select data-dashboard-crop>
+          ${CROPS.map(entry => `<option value="${entry.id}" ${entry.id === selectedCrop.id ? 'selected' : ''}>${esc(entry.name)}</option>`).join('')}
+        </select>
+      </label>` : ''}
       <label>
         <span>Farming context</span>
         <select data-dashboard-context>
@@ -1233,82 +1335,42 @@ function dashboard() {
     </section>
 
     <div class="card-grid dashboard-results-grid">
-      <article class="stat-card dashboard-total-card">
-        <span>Effective Fortune · ${esc(selectedCrop.name)}</span>
-        <strong>${number(stats.effectiveFortune)} FF${marker(effectiveIncomplete)}</strong>
-        <small>Global ${number(stats.globalFortune)} + Crop ${number(stats.cropFortune)}${stats.pestFortune ? ` + Pest ${number(stats.pestFortune)}` : ''}</small>
-        <small>${esc(farmingContextLabel(context))} context</small>
-      </article>
+      ${phaseCard}
       <article class="stat-card dashboard-profit-card">
-        <span>Estimated Coins/h · ${esc(selectedCrop.name)}</span>
+        <span>${farmingMode ? `Estimated Coins/h · ${esc(selectedCrop.name)}` : mode === ACTIVITY_MODE.PEST_SPAWN ? 'Pest spawning Coins/h' : 'Pest killing Coins/h'}</span>
         <strong>${esc(dashboardProfitDisplay(estimate))}</strong>
         <small>${esc(dashboardProfitNote(estimate))}</small>
         <small>${esc(priceNote)}</small>
       </article>
-      <article class="stat-card">
-        <span>Global Farming Fortune</span>
-        <strong>${number(stats.globalFortune)}${marker(stats.incomplete.globalFortune.length)}</strong>
-        <small>Account-wide Fortune before crop-specific Fortune is added</small>
-        <small>${sourceNote(stats, 'globalFortune')}</small>
-      </article>
-      <article class="stat-card">
-        <span>${esc(selectedCrop.name)} Crop Fortune</span>
-        <strong>${number(stats.cropFortune)}${marker(stats.incomplete.cropFortune.length)}</strong>
-        <small>Crop-specific Fortune from the selected tool and matching sources</small>
-        <small>${sourceNote(stats, 'cropFortune')}</small>
-      </article>
-      <article class="stat-card">
-        <span>Pest Fortune</span>
-        <strong>${number(stats.pestFortune)}${marker(stats.incomplete.pestFortune.length)}</strong>
-        <small>Pest/Vacuum Fortune in the active context</small>
-        <small>${sourceNote(stats, 'pestFortune')}</small>
-      </article>
-      <article class="stat-card">
-        <span>Overbloom</span>
-        <strong>${number(stats.overbloom)}${marker(stats.incomplete.overbloom.length)}</strong>
-        <small>Calculated drop-chance stat for applicable Feast and Pest streams</small>
-        <small>${sourceNote(stats, 'overbloom')}</small>
-      </article>
-      <article class="stat-card">
-        <span>Bonus Pest Chance</span>
-        <strong>${number(stats.bonusPestChance)}${marker(stats.incomplete.bonusPestChance.length)}</strong>
-        <small>Calculated BPC for the active set</small>
-        <small>${sourceNote(stats, 'bonusPestChance')}</small>
-      </article>
-      <article class="stat-card">
-        <span>Pest cooldown reduction</span>
-        <strong>${number(stats.pestCooldownReductionPct)}%${marker(stats.incomplete.pestCooldownReductionPct.length)}</strong>
-        <small>Calculated cooldown reduction for the active spawning set</small>
-        <small>${sourceNote(stats, 'pestCooldownReductionPct')}</small>
-      </article>
+      ${modeSpecificCards}
     </div>
 
     <section class="dashboard-account-summary">
-      <div class="section-row"><div><div class="eyebrow">Calculation inputs</div><h2>Current account state</h2><p>The Dashboard reads the same crop, tool, setup, pet and effect state as the central stat engine. It does not maintain a second calculation.</p></div></div>
+      <div class="section-row"><div><div class="eyebrow">Calculation inputs</div><h2>Current account state</h2><p>${farmingMode ? 'The FF Dashboard uses its own crop selection without changing Garden or Tool pages.' : 'Pest phase totals use only phase-wide and Pest-specific stats; crop-specific Fortune and crop tools are excluded.'}</p></div></div>
       <div class="card-grid">
-        <article class="stat-card"><span>Crop / Tool</span><strong>${esc(selectedCrop.name)}</strong><small>${esc(loadout.tool)}</small></article>
+        ${primaryInputCard}
         <article class="stat-card"><span>Armor</span><strong>${esc(loadout.armor)}</strong><small>${esc(loadout.setup)}</small></article>
         <article class="stat-card"><span>Equipment</span><strong>${esc(loadout.equipment)}</strong><small>${esc(loadout.setup)}</small></article>
         <article class="stat-card"><span>Pet</span><strong>${esc(loadout.pet)}</strong><small>Active phase pet</small></article>
         <article class="stat-card"><span>Effects / Event</span><strong>${esc(farmingContextLabel(context))}</strong><small>${esc(contextScopes.length ? contextScopes.join(' + ') : 'Always-active effects only')}</small></article>
-        <article class="stat-card"><span>Measured throughput</span><strong>${esc(throughputText)}</strong><small>Stored in Upgrade Planner, not configured on Dashboard</small></article>
+        ${farmingMode ? `<article class="stat-card"><span>Measured throughput</span><strong>${esc(throughputText)}</strong><small>Stored in Upgrade Planner, not configured on Dashboard</small></article>` : ''}
       </div>
     </section>
 
     <section class="dashboard-economics-panel">
       <div class="section-row">
-        <div><div class="eyebrow">Transparent estimate</div><h2>Coins/hour model</h2><p>Only sourced streams are monetized. Missing Pest or event economics stay visible as missing instead of receiving a guessed value.</p></div>
-        <button class="ghost small" type="button" data-dashboard-open-planner>Open throughput inputs</button>
+        <div><div class="eyebrow">Transparent estimate</div><h2>Coins/hour model</h2><p>${farmingMode ? 'Only sourced crop streams are monetized. Missing event economics stay visible as missing instead of receiving a guessed value.' : 'Pest economics stay crop-neutral and incomplete until verified Pest throughput and EV models exist.'}</p></div>
+        ${farmingMode ? '<button class="ghost small" type="button" data-dashboard-open-planner>Open throughput inputs</button>' : ''}
       </div>
       <div class="card-grid dashboard-revenue-streams">${dashboardRevenueCards(estimate)}</div>
-      <div class="setup-bar dashboard-economics-meta">
+      ${farmingMode ? `<div class="setup-bar dashboard-economics-meta">
         <div><div class="eyebrow">Throughput</div><strong>${esc(throughputText)}</strong><div class="hint">${estimate.throughput?.validBreaksPerHour != null ? `${formatNumber(Math.round(estimate.throughput.validBreaksPerHour))} valid breaks/h` : 'Required for crop Coins/h'}</div></div>
-        ${mode !== ACTIVITY_MODE.PEST_KILL ? `<div><div class="eyebrow">Crop market value</div><strong>${estimate.normalPrice?.coinsPerUnit ? `${formatNumber(Math.round(estimate.normalPrice.coinsPerUnit))} Coins` : 'Unavailable'}</strong><div class="hint">${esc(priceNote)}</div></div>` : ''}
+        <div><div class="eyebrow">Crop market value</div><strong>${estimate.normalPrice?.coinsPerUnit ? `${formatNumber(Math.round(estimate.normalPrice.coinsPerUnit))} Coins` : 'Unavailable'}</strong><div class="hint">${esc(priceNote)}</div></div>
         ${isHarvestFeastContext(context) ? `<div><div class="eyebrow">Feast market value</div><strong>${estimate.feastPrice?.coinsPerUnit ? `${formatNumber(Math.round(estimate.feastPrice.coinsPerUnit))} Coins` : 'Unavailable'}</strong><div class="hint">${esc(estimate.feastPrice ? averageCropPriceNote(estimate.feastPrice) : '90-day Bazaar average unavailable')}</div></div>` : ''}
-      </div>
+      </div>` : ''}
     </section>
 
-    <aside class="dashboard-farm-tip">
+    ${farmingMode ? `<aside class="dashboard-farm-tip">
       <div>
         <span>Farm layout reference</span>
         <strong>Copy a working Garden farm</strong>
@@ -1320,10 +1382,10 @@ function dashboard() {
     <div class="section-row">
       <div>
         <h2>All crops</h2>
-        <p>Each crop total is Global Farming Fortune + that crop's own Crop Fortune in the selected farming context. The selected crop is highlighted.</p>
+        <p>Each crop total is Global Farming Fortune + that crop's own Crop Fortune in the selected farming context. The FF Dashboard crop is highlighted.</p>
       </div>
     </div>
-    <div class="card-grid dashboard-crop-results">${cropRows}</div>
+    <div class="card-grid dashboard-crop-results">${cropRows}</div>` : ''}
   `;
 }
 
@@ -2927,6 +2989,14 @@ function bind() {
 
   const cropSel = document.getElementById('cropSelect');
   if (cropSel) cropSel.addEventListener('change', e => { state.selectedCrop=e.target.value; saveState(); render(); });
+
+  document.querySelector('[data-dashboard-crop]')?.addEventListener('change', event => {
+    const next = CROPS.find(entry => entry.id === event.target.value);
+    if (!next) return;
+    state.dashboardCrop = next.id;
+    saveState();
+    render();
+  });
 
   document.querySelector('[data-dashboard-context]')?.addEventListener('change', event => {
     const option = FARMING_CONTEXT_OPTIONS.find(entry => entry.id === event.target.value);
