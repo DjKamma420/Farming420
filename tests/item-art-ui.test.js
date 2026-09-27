@@ -113,7 +113,8 @@ test('manual equipment ids use their exact head model before the letter fallback
   const source = readFileSync(new URL('../src/item-art-ui.js', import.meta.url), 'utf8');
   assert.match(source, /knownSkyblockHeadTexture\(itemId\)/);
   assert.match(source, /const skull = skullNode\(textureId, item, \(\) => showCatalogOrLetterFallback/);
-  assert.match(source, /armorItemSvgMarkup/);
+  assert.match(source, /knownSkyblockRenderedIcon\(itemId\)/);
+  assert.doesNotMatch(source, /armorItemSvgMarkup/);
   assert.match(source, /loadItemCatalog/);
   assert.match(source, /document\.createElement\('img'\)/);
   assert.doesNotMatch(source, /style\.backgroundImage/);
