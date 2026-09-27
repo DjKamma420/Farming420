@@ -11,15 +11,8 @@ export const RECOMMENDATION_ACTION_TYPE = Object.freeze({
 const PURCHASE_CATEGORIES = new Set([
   'Accessory',
   'Armor',
-  'Armor Enchant',
-  'Armor Gem',
-  'Armor Reforge',
-  'Attribute Shard',
-  'Buff',
   'Consumable',
   'Equipment',
-  'Equipment Enchant',
-  'Equipment Reforge',
   'Harvest Feast',
   'Mixin',
   'Permanent Crop Item',
@@ -28,10 +21,6 @@ const PURCHASE_CATEGORIES = new Set([
   'Temporary',
   'Temporary Buff',
   'Tool',
-  'Tool Enchant',
-  'Tool Gem',
-  'Tool Reforge',
-  'Vacuum Reforge',
 ]);
 
 const UNLOCK_CATEGORIES = new Set([
@@ -64,14 +53,16 @@ function actionTypeFor(row) {
   return RECOMMENDATION_ACTION_TYPE.UPGRADE;
 }
 
-function actionIdFor(row, index = 0) {
+function actionIdFor(row) {
   const itemId = String(row?.item?.id || 'unknown');
   const mode = String(row?.activityMode || 'any');
   const setup = String(row?.setupId || row?.setupLabel || 'default')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '') || 'default';
-  return `action:${itemId}:${mode}:${setup}:${index}`;
+  const targetLevel = finiteOrNull(row?.costSource?.targetLevel);
+  const target = targetLevel === null ? 'next' : `level-${targetLevel}`;
+  return `action:${itemId}:${mode}:${setup}:${target}`;
 }
 
 function sourceList(item) {
@@ -107,7 +98,7 @@ function actionState(row, key) {
  * recurring cost, passive wait time or unlock chains. Those fields stay null
  * or explicitly unmodelled until their dedicated models exist.
  */
-export function recommendationActionFromRow(row, index = 0) {
+export function recommendationActionFromRow(row) {
   if (!row?.item?.id) throw new TypeError('recommendation action requires an evaluated row with item.id');
 
   const activeHours = finiteOrNull(row.activeGrindHours);
@@ -115,7 +106,7 @@ export function recommendationActionFromRow(row, index = 0) {
   const status = String(row.item.status || 'VERIFY');
 
   return Object.freeze({
-    id: actionIdFor(row, index),
+    id: actionIdFor(row),
     type: actionTypeFor(row),
     label: String(row.item.name || row.item.id),
     appliesTo: Object.freeze({
@@ -153,5 +144,5 @@ export function recommendationActionFromRow(row, index = 0) {
 
 export function generateRecommendationActions(rows) {
   return Object.freeze((Array.isArray(rows) ? rows : [])
-    .map((row, index) => recommendationActionFromRow(row, index)));
+    .map(row => recommendationActionFromRow(row)));
 }
