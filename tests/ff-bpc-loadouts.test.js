@@ -139,6 +139,7 @@ test('the Setups UI exposes a 2/3-set switch, fixed FF/BPC names and a custom th
   assert.match(app, /FF \(Farming Fortune\) Set/);
   assert.match(app, /BPC \(Bonus Pest Chance\) Set/);
   assert.match(app, /Switching back to 2 sets only hides Set 3; its items and name stay saved\./);
+  assert.match(app, /Set 3 has no automatic FF, BPC or Killing role\./);
   assert.match(app, /Use one pet for Farming \+ Killing/);
   assert.match(app, /Farming Pet/);
   assert.match(app, /Killing Pet/);
