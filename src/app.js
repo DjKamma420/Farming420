@@ -609,7 +609,7 @@ function globalSearchEntries() {
       id: `pet:${pet.id}`,
       kind: 'Selectable pet',
       title: pet.name,
-      subtitle: `Setups pet picker · level ${pet.levelMin}-${pet.levelMax}`,
+      subtitle: `Loadout pet picker · level ${pet.levelMin}-${pet.levelMax}`,
       keywords: [pet.id, ...(pet.rarities || [])],
       priority: 150,
       target: { type: 'setup-slot', page: 'setups', slotId: 'pet', petId: pet.id, petName: pet.name },
@@ -754,12 +754,12 @@ function applyPendingSearchSpotlight(attempt = 0) {
   if (target.type === 'catalog-item' && target.slotId) {
     node = document.querySelector(`[data-slot-item="${target.slotId}"]`);
     if (node) {
-      searchSpotlightNote(node.closest('.settings-field'), `Search result: ${target.itemName}. Select it here to update this setup.`);
+      searchSpotlightNote(node.closest('.settings-field'), `Search result: ${target.itemName}. Select it here to update this loadout.`);
     }
   } else if (target.type === 'setup-slot' && target.slotId === 'pet') {
     node = document.querySelector('[data-farming-pet-select]');
     if (node) {
-      searchSpotlightNote(node.closest('label') || node.parentElement, `Search result: ${target.petName}. Select it here to update this setup.`);
+      searchSpotlightNote(node.closest('label') || node.parentElement, `Search result: ${target.petName}. Select it here to update this loadout.`);
     }
   } else if (target.type === 'tool' && target.cropId) {
     node = document.querySelector(`.sb-tool-card[data-sb-tool-crop="${target.cropId}"]`);
@@ -1686,7 +1686,7 @@ function shardsPage() {
     </div>`;
 }
 function qolPage() {
-  return `${pageHeader('QoL', 'Quality of Life', 'Convenience, farm-building and setup tools live here. They are tracked separately from Farming Fortune and profit because their value is saved setup time and easier operation rather than a comparable stat gain.')}
+  return `${pageHeader('QoL', 'Quality of Life', 'Convenience, farm-building and loadout tools live here. They are tracked separately from Farming Fortune and profit because their value is saved configuration time and easier operation rather than a comparable stat gain.')}
     <div class="qol-list"><div class="empty">Loading QoL items…</div></div>`;
 }
 
@@ -1746,7 +1746,7 @@ function drawer() {
   return `<div class="drawer-backdrop" data-close-drawer><aside class="drawer">
     <div class="drawer-top"><div><div class="eyebrow">${esc(item.category)}</div><h2>${esc(item.name)}</h2></div><button class="close" data-close-drawer>×</button></div>
     <div class="drawer-badges">${badge(item.status,item.status==='VERIFY'?'verify':'soft')} ${isCropScopedItem(item)?badge(crop().name,'soft'):(item.cropScope!=='Any'?badge(item.cropScope,'soft'):'')} ${item.modeScope!=='Any'?badge(item.modeScope,'soft'):''}</div>
-    ${isSynced(item) ? '<div class="drawer-synced">Farming420 worked this value out for you, from your profile sync and your active setup. Editing it here overrides it until the next sync or setup change.</div>' : ''}
+    ${isSynced(item) ? '<div class="drawer-synced">Farming420 worked this value out for you, from your profile sync and your active loadout. Editing it here overrides it until the next sync or loadout change.</div>' : ''}
     <div class="drawer-section"><h3>Ownership & Level</h3>
       ${max>1 ? `<div class="stepper"><button data-step="-1" data-id="${item.id}">−</button><strong>${level}/${max}</strong><button data-step="1" data-id="${item.id}">+</button><button class="ghost small" data-max="${item.id}">Max</button></div>` : `<label class="switch-row"><span>Owned</span><input type="checkbox" data-owned="${item.id}" ${isOwned(item)?'checked':''}></label>`}
     </div>
@@ -2017,7 +2017,7 @@ function activeSetupObjective() {
 }
 
 function setupCandidateLabel(candidate) {
-  if (!candidate) return 'Unknown setup';
+  if (!candidate) return 'Unknown loadout';
   const pet = candidate.setup?.slots?.pet?.displayName || 'No pet';
   const armor = candidate.components?.armorSetId || 'no armor set';
   const equipment = candidate.components?.equipmentSetId || 'no equipment set';
@@ -2039,8 +2039,8 @@ function setupObjectivePanel() {
   const synced = snapshot();
   if (!synced) {
     return `<div class="setup-bar setup-objective-panel">
-      <div><div class="eyebrow">Owned setup objective</div><strong>Sync a profile to evaluate owned combinations</strong>
-      <div class="hint">No setup is guessed from missing ownership data.</div></div>
+      <div><div class="eyebrow">Owned loadout objective</div><strong>Sync a profile to evaluate owned combinations</strong>
+      <div class="hint">No loadout is guessed from missing ownership data.</div></div>
     </div>`;
   }
 
@@ -2084,10 +2084,10 @@ function setupObjectivePanel() {
     headline = setupCandidateLabel(chosen);
     detail = `Clear match for ${result.label} across ${result.eligibleCount} complete owned combination${result.eligibleCount === 1 ? '' : 's'}.`;
   } else if (result.recommendation.status === 'tradeoff') {
-    headline = `${result.frontierCount} non-dominated setup options`;
-    detail = 'No single setup is better on every primary objective, so Farming420 does not invent a weighted winner.';
+    headline = `${result.frontierCount} non-dominated loadout options`;
+    detail = 'No single loadout is better on every primary objective, so Farming420 does not invent a weighted winner.';
   } else if (result.recommendation.status === 'tie') {
-    headline = `${result.frontierCount} tied setup options`;
+    headline = `${result.frontierCount} tied loadout options`;
     detail = 'The modeled objective values are identical; no arbitrary winner is selected.';
   }
 
@@ -2098,14 +2098,14 @@ function setupObjectivePanel() {
           .map(([key, value]) => setupObjectiveMetricText(key, value))
           .join(' · ');
         return `<div class="hint"><strong>${esc(setupCandidateLabel(candidate))}</strong><br>${esc(metrics)}
-          <button class="ghost small" type="button" data-setup-objective-apply="${esc(row.candidateId)}">Use this setup</button>
+          <button class="ghost small" type="button" data-setup-objective-apply="${esc(row.candidateId)}">Use this loadout</button>
         </div>`;
       }).join('')}</div>`
     : '';
 
   return `<div class="setup-bar setup-objective-panel" data-setup-objective-panel>
     <div>
-      <div class="eyebrow">Owned setup objective · ${esc(result.label)}</div>
+      <div class="eyebrow">Owned loadout objective · ${esc(result.label)}</div>
       <strong>${esc(headline)}</strong>
       <div class="hint">${esc(detail)}</div>
       ${state.setupRecommendationNotice ? `<div class="hint"><strong>${esc(state.setupRecommendationNotice)}</strong></div>` : ''}
