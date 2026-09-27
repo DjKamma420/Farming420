@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 const app = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
 const enhancements = readFileSync(new URL('../src/enhancements.js', import.meta.url), 'utf8');
 const art = readFileSync(new URL('../src/skyblock-redesign.js', import.meta.url), 'utf8');
+const info = readFileSync(new URL('../src/info-content.js', import.meta.url), 'utf8');
 
 test('Info replaces the standalone Guide navigation entry', () => {
   assert.match(app, /\['info', 'Info'\]/);
@@ -17,9 +18,10 @@ test('Info replaces the standalone Guide navigation entry', () => {
 test('Info is explicitly a beginner strategy and location hub', () => {
   assert.match(app, /Farming Info & Beginner Guide/);
   assert.match(app, /Early-game strategy/);
-  assert.match(app, /Important places and NPCs/);
-  for (const place of ['Farm Merchant', 'Sam', 'SkyMart', 'Garden Desk', 'Beth', 'Jacob & Anita', 'Pesthunter Phillip']) {
-    assert.ok(app.includes(place), place);
+  assert.match(app, /INFO_SECTIONS\.map\(section => infoReferenceSection/);
+  assert.match(info, /eyebrow: 'Important places'/);
+  for (const place of ['Farm Merchant', 'SkyMart', 'Garden Desk', 'Beth', 'Jacob and Anita', 'Pesthunter Phillip']) {
+    assert.ok(info.includes(place), place);
   }
 });
 

@@ -29,6 +29,7 @@ const SOURCE = Object.freeze({
   rarity: 'https://hypixelskyblock.minecraft.wiki/w/Rarity',
   farmingGuide: 'https://hypixelskyblock.minecraft.wiki/w/Tutorial:Farming_Guide',
   jacob: 'https://hypixelskyblock.minecraft.wiki/w/Jacob%27s_Farming_Contest',
+  greenhousePatch: 'https://hypixel.net/threads/hypixel-skyblock-0-24-the-greenhouse.6027542/page-3',
 });
 
 function freezeEntry(entry) {
@@ -282,6 +283,34 @@ export const INFO_ENTRIES = Object.freeze([
     source: SOURCE.vacuums,
     lastVerified: VERIFIED_CURRENT,
     keywords: ['vacuum', 'pest vacuum', 'skymart vacuum', 'hooverius', 'pest damage', 'pest tool'],
+  }),
+  freezeEntry({
+    id: 'farm-merchant',
+    anchor: 'info-place-farm-merchant',
+    section: 'places',
+    label: 'Hub starter shop',
+    title: 'Farm Merchant',
+    what: 'The Farm Merchant is the simple starter route for a Rookie Hoe before Garden progression and specialized farming tools take over.',
+    why: 'It gives a new profile a cheap first farming tool without implying that the Rookie Hoe remains the correct tool after crop-specific progression unlocks.',
+    when: 'Relevant at the very start of Farming, before your Garden and specialized crop tools become the main progression path.',
+    where: 'Find the Farm Merchant in the Hub farming area. The current farming guide lists the Rookie Hoe as the first hoe to buy there.',
+    source: SOURCE.farmingGuide,
+    lastVerified: VERIFIED_CURRENT,
+    keywords: ['farm merchant', 'rookie hoe', 'starter hoe', 'hub farming', 'first farming tool'],
+  }),
+  freezeEntry({
+    id: 'beth',
+    anchor: 'info-place-beth',
+    section: 'places',
+    label: 'Greenhouse quest',
+    title: 'Beth',
+    what: 'Beth is part of the Greenhouse progression questline that leads to access to the Crop Analyzer.',
+    why: 'The Crop Analyzer is progression content, not a profile setting. If it is unavailable, the relevant problem is quest progression rather than a missing Farming420 value.',
+    when: 'Relevant once Greenhouse mutation progression and the Crop Analyzer become part of your farming goals.',
+    where: 'Continue Beth\'s quest/visitor progression and follow the Underground Lab sequence with Jake. Hypixel\'s Greenhouse release notes tie Crop Analyzer access to completing the new part of Beth\'s questline.',
+    source: SOURCE.greenhousePatch,
+    lastVerified: VERIFIED_CURRENT,
+    keywords: ['beth', 'crop analyzer', 'greenhouse', 'underground lab', 'jake', 'beth quest'],
   }),
   freezeEntry({
     id: 'garden',
