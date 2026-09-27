@@ -9,19 +9,31 @@ import {
   readCachedMarketAverage,
 } from './market-average-prices.js';
 
-const dualMarket = itemTag => Object.freeze([
-  marketAverageDescriptor({ market: MARKET_KIND.BAZAAR, itemTag, side: MARKET_SIDE.ACQUIRE }),
-  marketAverageDescriptor({ market: MARKET_KIND.AUCTION_HOUSE, itemTag, side: MARKET_SIDE.ACQUIRE }),
-].filter(Boolean));
+function marketAlternatives(itemTag, preferredMarket = MARKET_KIND.BAZAAR) {
+  const primary = Object.values(MARKET_KIND).includes(preferredMarket)
+    ? preferredMarket
+    : MARKET_KIND.BAZAAR;
+  const secondary = primary === MARKET_KIND.BAZAAR
+    ? MARKET_KIND.AUCTION_HOUSE
+    : MARKET_KIND.BAZAAR;
+  return Object.freeze(
+    [primary, secondary]
+      .map(market => marketAverageDescriptor({ market, itemTag, side: MARKET_SIDE.ACQUIRE }))
+      .filter(Boolean),
+  );
+}
 
-function component(id, label, itemTag, quantity = 1) {
+function component(id, label, itemTag, quantity = 1, {
+  preferredMarket = MARKET_KIND.BAZAAR,
+} = {}) {
   const normalizedQuantity = Math.max(1, Number(quantity) || 1);
   return Object.freeze({
     id,
     label,
     itemTag,
     quantity: normalizedQuantity,
-    alternatives: dualMarket(itemTag),
+    preferredMarket,
+    alternatives: marketAlternatives(itemTag, preferredMarket),
   });
 }
 
@@ -87,7 +99,12 @@ export function physicalItemValueComponents(slotId, item, { extraComponents = []
   if (!item || typeof item !== 'object') return Object.freeze([]);
   const rows = [];
   const baseTag = baseMarketTag(slotId, item);
-  if (baseTag) rows.push(component('base', item.displayName || baseTag, baseTag));
+  if (baseTag) {
+    const preferredMarket = slotId === 'petItem'
+      ? MARKET_KIND.BAZAAR
+      : MARKET_KIND.AUCTION_HOUSE;
+    rows.push(component('base', item.displayName || baseTag, baseTag, 1, { preferredMarket }));
+  }
 
   const reforge = reforgeComponent(slotId, item);
   if (reforge) rows.push(reforge);
@@ -106,6 +123,7 @@ export function physicalItemValueComponents(slotId, item, { extraComponents = []
       String(extra.label || extra.itemTag),
       String(extra.itemTag),
       Number(extra.quantity),
+      { preferredMarket: extra.preferredMarket || MARKET_KIND.BAZAAR },
     ));
   }
 
@@ -113,15 +131,16 @@ export function physicalItemValueComponents(slotId, item, { extraComponents = []
 }
 
 function pricedAlternative(componentRow, readQuote) {
-  const priced = [];
   for (const descriptor of componentRow.alternatives || []) {
     const quote = readQuote(descriptor);
     const unit = Number(quote?.coinsPerUnit);
     if (!Number.isFinite(unit) || unit <= 0) continue;
-    priced.push({ descriptor, quote, coins: unit * componentRow.quantity });
+    // Alternatives are ordered by market semantics, not price. A physical
+    // base item prefers AH history; applied tradeable upgrades prefer Bazaar.
+    // The second market is only a missing-history fallback, never arbitrage.
+    return { descriptor, quote, coins: unit * componentRow.quantity };
   }
-  priced.sort((a, b) => a.coins - b.coins);
-  return priced[0] || null;
+  return null;
 }
 
 export function physicalItemBuildValue(slotId, item, {

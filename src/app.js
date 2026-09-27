@@ -1177,8 +1177,8 @@ function dashboard() {
       <div class="dashboard-estimate-grid">
         <label><span>Crop breaks/s</span><input type="number" min="0" step="0.1" data-dashboard-estimate="breaksPerSecond" value="${esc(measuredValues.breaksPerSecond ?? '')}" placeholder="required"></label>
         <label><span>Farming uptime %</span><input type="number" min="0" max="100" step="1" data-dashboard-estimate="uptimePercent" value="${esc(measuredValues.uptimePercent ?? '')}" placeholder="required"></label>
-        <div class="dashboard-estimate-readonly"><span>Crop sell value</span><strong>${estimate.normalPrice?.coinsPerUnit ? `${formatNumber(Math.round(estimate.normalPrice.coinsPerUnit))} Coins` : '—'}</strong><small>${esc(estimate.normalPrice ? averageCropPriceNote(estimate.normalPrice) : '90-day Bazaar average unavailable')}</small></div>
-        ${isHarvestFeastContext(context) ? `<div class="dashboard-estimate-readonly"><span>Feast crop value</span><strong>${estimate.feastPrice?.coinsPerUnit ? `${formatNumber(Math.round(estimate.feastPrice.coinsPerUnit))} Coins` : '—'}</strong><small>${esc(estimate.feastPrice ? averageCropPriceNote(estimate.feastPrice) : '90-day Bazaar average unavailable')}</small></div>` : ''}
+        <div class="dashboard-estimate-readonly"><span>Crop sell value</span><strong>${estimate.normalPrice?.coinsPerUnit ? formatApproxCoins(estimate.normalPrice.coinsPerUnit) : '—'}</strong><small>${esc(estimate.normalPrice ? averageCropPriceNote(estimate.normalPrice) : '90-day Bazaar average unavailable')}</small></div>
+        ${isHarvestFeastContext(context) ? `<div class="dashboard-estimate-readonly"><span>Feast crop value</span><strong>${estimate.feastPrice?.coinsPerUnit ? formatApproxCoins(estimate.feastPrice.coinsPerUnit) : '—'}</strong><small>${esc(estimate.feastPrice ? averageCropPriceNote(estimate.feastPrice) : '90-day Bazaar average unavailable')}</small></div>` : ''}
       </div>
       <small>Coin values are fixed rolling 90-day market averages and cannot be entered manually. Throughput remains measurable; unknown market history stays unknown.</small>
       <small>Market history: <a href="https://sky.coflnet.com/data" target="_blank" rel="noreferrer">SkyCofl</a>.</small>
@@ -1702,7 +1702,7 @@ function plannerPage() {
         <div class="planner-main"><strong>${esc(x.item.name)}</strong><span>${esc(x.item.category)} · ${esc(x.item.metric)}</span></div>
         <div class="planner-number"><strong>+${formatNumber(x.gain)}</strong><span>marginal</span></div>
         <div class="planner-number"><strong>${x.rel.toFixed(2)}%</strong><span>relative</span></div>
-        <div class="planner-number"><strong>${x.cost?`${formatNumber(Math.round(x.cost))} Coins`:'—'}</strong><span>${x.efficiency!==null?`${x.efficiency.toFixed(3)} / 1M`:'Cost missing'}</span></div>
+        <div class="planner-number"><strong>${x.cost ? formatApproxCoins(x.cost) : '—'}</strong><span>${x.efficiency!==null?`${x.efficiency.toFixed(3)} / 1M`:'Cost missing'}</span></div>
       </button>`).join('') || '<div class="empty">No calculated upgrades for the current state.</div>'}
     </div>`;
 }

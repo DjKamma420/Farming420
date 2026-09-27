@@ -106,3 +106,63 @@ test('pets use the explicit PET market tag while held pet items use their exact 
     'GREEN_BANDANA',
   );
 });
+
+
+test('physical build pricing prefers AH for the base and Bazaar for applied upgrades', () => {
+  const item = {
+    skyblockId: 'HELIANTHUS_HELMET',
+    displayName: 'Helianthus Helmet',
+    reforge: 'mantid',
+    recombobulated: true,
+    enchantments: {},
+    gems: [],
+  };
+  const prices = {
+    'auction-house:HELIANTHUS_HELMET': 10_000_000,
+    'bazaar:HELIANTHUS_HELMET': 1_000_000,
+    'bazaar:MANTID_CLAW': 2_000_000,
+    'auction-house:MANTID_CLAW': 100_000,
+    'bazaar:RECOMBOBULATOR_3000': 8_000_000,
+    'auction-house:RECOMBOBULATOR_3000': 500_000,
+  };
+  const result = physicalItemBuildValue('helmet', item, {
+    readQuote: descriptor => {
+      const coinsPerUnit = prices[`${descriptor.market}:${descriptor.itemTag}`];
+      return coinsPerUnit ? { ...descriptor, coinsPerUnit } : null;
+    },
+  });
+
+  assert.equal(result.complete, true);
+  assert.equal(result.totalCoins, 20_000_000);
+  assert.deepEqual(
+    result.priced.map(row => row.descriptor.market),
+    ['auction-house', 'bazaar', 'bazaar'],
+  );
+});
+
+test('physical build pricing uses the secondary market only when preferred history is missing', () => {
+  const item = {
+    skyblockId: 'HELIANTHUS_HELMET',
+    displayName: 'Helianthus Helmet',
+    recombobulated: true,
+    enchantments: {},
+    gems: [],
+  };
+  const prices = {
+    'bazaar:HELIANTHUS_HELMET': 9_000_000,
+    'auction-house:RECOMBOBULATOR_3000': 7_000_000,
+  };
+  const result = physicalItemBuildValue('helmet', item, {
+    readQuote: descriptor => {
+      const coinsPerUnit = prices[`${descriptor.market}:${descriptor.itemTag}`];
+      return coinsPerUnit ? { ...descriptor, coinsPerUnit } : null;
+    },
+  });
+
+  assert.equal(result.complete, true);
+  assert.equal(result.totalCoins, 16_000_000);
+  assert.deepEqual(
+    result.priced.map(row => row.descriptor.market),
+    ['bazaar', 'auction-house'],
+  );
+});

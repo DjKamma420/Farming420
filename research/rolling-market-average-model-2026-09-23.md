@@ -1,7 +1,7 @@
 # Rolling 90-day market price model
 
 **Status:** ACTIVE  
-**Last verified:** 2026-09-23
+**Last verified:** 2026-09-27
 
 ## Product rule
 
@@ -45,6 +45,22 @@ to the previous 90 days and computes:
 
 Rows without a positive price or positive sale volume do not become zero-price
 data points.
+
+### Physical item build routing
+
+A replacement/build value must not compare AH and Bazaar quotes and silently pick
+the cheaper market. The component's role determines the primary market:
+
+- physical base gear, tools, vacuums and pets: **Auction House first**;
+- tradeable applied components such as Recombobulators, reforge stones,
+  gemstones, enchantment books and counted upgrade consumables: **Bazaar first**;
+- held pet items use Bazaar first because they are upgrade components rather
+  than the physical pet base.
+
+The other market may be used only when the preferred market has no usable
+90-day history for that exact item tag. This is a data-availability fallback,
+not an arbitrage rule. A missing component remains visibly incomplete; it is
+never assigned zero or a snapshot-derived fantasy price.
 
 ## Cache
 
