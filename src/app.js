@@ -24,7 +24,6 @@ import {
   farmingContextForState,
   farmingContextLabel,
   farmingContextScopes,
-  isGrandFeastContext,
   isHarvestFeastContext,
 } from './farming-context.js';
 import {
@@ -37,7 +36,7 @@ import { costOriginNote, resolveUpgradeCost } from './upgrade-cost-resolution.js
 import { formatApproxCoins } from './compact-coins.js';
 import { marketAverageTimestampLabel } from './market-average-prices.js';
 import { upgradePriceSummary } from './upgrade-price-summary.js';
-import { MEASURED_FEAST_KEY, measuredBaseline } from './measured-baseline.js';
+import { DASHBOARD_STREAM_STATUS, calculateDashboardEconomics } from './dashboard-economics.js';
 import { ensureProgressBucket, migrateState, toolKeyForCropId } from './migrations.js';
 import { applySnapshotToProgress, isAutoApplied } from './snapshot-apply.js';
 import { LOCATION_STATUS, isSyncFilled, locationFor } from './help-locations.js';
@@ -1002,69 +1001,76 @@ function dashboardMeasuredValues(cropId, mode) {
 }
 
 function dashboardProfitEstimate(cropId, mode, context, stats) {
-  if (mode === ACTIVITY_MODE.PEST_KILL) {
-    return {
-      result: null,
-      values: dashboardMeasuredValues(cropId, mode),
-      normalPrice: null,
-      feastPrice: null,
-      display: '—',
-      note: 'Pest Killing needs a Vacuum/loot throughput model; crop Coins/h is not substituted here.',
-    };
-  }
-
   const stored = dashboardMeasuredValues(cropId, mode);
-  // Old backups can contain manually entered coin fields. Preserve them in the
-  // backup, but never read them into a calculation again.
-  const values = { ...stored };
-  delete values.coinsPerUnit;
-  delete values.feastMaterialCoins;
+  const normalPrice = mode === ACTIVITY_MODE.PEST_KILL ? null : averageCropUnitPrice(cropId);
+  const feastPrice = mode !== ACTIVITY_MODE.PEST_KILL && isHarvestFeastContext(context)
+    ? averageHarvestFeastMaterialPrice(cropId)
+    : null;
 
-  const normalPrice = averageCropUnitPrice(cropId);
-  if (normalPrice.status === AVERAGE_CROP_PRICE_STATUS.AVERAGE) {
-    values.coinsPerUnit = normalPrice.coinsPerUnit;
-  }
+  const economics = calculateDashboardEconomics({
+    cropId,
+    mode,
+    context,
+    measured: stored,
+    stats,
+    cropUnitValueCoins: normalPrice?.status === AVERAGE_CROP_PRICE_STATUS.AVERAGE ? normalPrice.coinsPerUnit : null,
+    feastMaterialCoins: feastPrice?.status === AVERAGE_CROP_PRICE_STATUS.AVERAGE ? feastPrice.coinsPerUnit : null,
+  });
 
-  const feastActive = isHarvestFeastContext(context);
-  const feastPrice = feastActive ? averageHarvestFeastMaterialPrice(cropId) : null;
-  if (feastActive) {
-    values[MEASURED_FEAST_KEY] = true;
-    if (feastPrice?.status === AVERAGE_CROP_PRICE_STATUS.AVERAGE) {
-      values.feastMaterialCoins = feastPrice.coinsPerUnit;
-    }
-  } else {
-    delete values[MEASURED_FEAST_KEY];
-  }
-
-  const result = measuredBaseline(values, {
-    farmingFortune: stats.globalFortune,
-    cropFortune: stats.cropFortune,
-    overbloom: stats.overbloom,
-  }, cropId);
-
-  if (result.normalCropCoinsPerHour == null) {
-    const modelNote = result.cropDataStatus !== 'VERIFIED'
-      ? 'This crop still lacks a verified base-drop model.'
-      : 'Enter breaks/s and farming uptime; crop value comes from the rolling 90-day Bazaar average.';
-    return { result, values: stored, normalPrice, feastPrice, display: '—', note: modelNote };
-  }
-
-  const rareKnown = feastActive && result.rareCropCoinsPerHour != null;
-  const total = result.normalCropCoinsPerHour + (rareKnown ? result.rareCropCoinsPerHour : 0);
-  const display = feastActive && !rareKnown
-    ? `≥ ${compactDashboardCoins(total)}/h`
-    : `${compactDashboardCoins(total)}/h`;
-  const note = feastActive
-    ? rareKnown
-      ? `Normal crop + priced Feast crop · ${farmingContextLabel(context)}${isGrandFeastContext(context) ? ' · Kernels/Seasoning progression excluded' : ''}`
-      : `Normal crop only · Feast material value is unavailable${isGrandFeastContext(context) ? ' · Kernels/Seasoning progression excluded' : ''}`
-    : mode === ACTIVITY_MODE.PEST_SPAWN
-      ? 'Crop stream only; Pest spawn/kill value is not added without a verified spawn-profit model.'
-      : 'Calculated from current Fortune, crop drops, throughput and sell price.';
-
-  return { result, values: stored, normalPrice, feastPrice, display, note };
+  return { ...economics, values: stored, normalPrice, feastPrice };
 }
 
+function dashboardProfitDisplay(estimate) {
+  if (estimate.netCoinsPerHour != null) return `${compactDashboardCoins(estimate.netCoinsPerHour)}/h`;
+  if (estimate.knownCoinsPerHour != null) return `Known ${compactDashboardCoins(estimate.knownCoinsPerHour)}/h`;
+  return '—';
+}
+
+function dashboardProfitNote(estimate) {
+  if (estimate.complete) return 'Complete for every revenue stream requested by the active farming context.';
+  if (estimate.knownCoinsPerHour != null) return 'Partial estimate: unresolved Pest or event revenue remains separate instead of being guessed.';
+  return 'No complete Coins/h baseline is available for this activity yet; missing inputs stay unknown instead of becoming zero.';
+}
+
+function dashboardRevenueCards(estimate) {
+  return estimate.streams.map(stream => {
+    const value = stream.status === DASHBOARD_STREAM_STATUS.KNOWN
+      ? `${compactDashboardCoins(stream.coinsPerHour)}/h`
+      : stream.status === DASHBOARD_STREAM_STATUS.UNMODELLED ? 'Not included' : 'Incomplete';
+    return `<article class="stat-card dashboard-revenue-card ${esc(stream.status)}">
+      <span>${esc(stream.label)}</span>
+      <strong>${esc(value)}</strong>
+      <small>${esc(stream.note)}</small>
+    </article>`;
+  }).join('');
+}
+
+function dashboardGroupSummary(setup, group) {
+  const slots = SETUP_SLOTS.filter(slot => slot.group === group);
+  const items = slots.map(slot => setup?.slots?.[slot.id]).filter(item => item?.displayName || item?.skyblockId);
+  if (!items.length) return `0/${slots.length} configured`;
+  const names = [...new Set(items.map(item => item.displayName || item.skyblockId).filter(Boolean))];
+  const preview = names.slice(0, 2).join(', ');
+  return `${items.length}/${slots.length} · ${preview}${names.length > 2 ? ` +${names.length - 2}` : ''}`;
+}
+
+function dashboardLoadoutSummary(mode, selectedCrop) {
+  const setup = state.profile.setups?.list?.find(entry => entry.id === setupIdForActivity(mode)) || null;
+  const pet = setup?.slots?.pet?.displayName || setup?.slots?.pet?.skyblockId || 'Not configured';
+  const base = {
+    armor: dashboardGroupSummary(setup, 'Armor'),
+    equipment: dashboardGroupSummary(setup, 'Equipment'),
+    pet,
+    setup: setup?.name || activityLabel(mode),
+  };
+  if (mode === ACTIVITY_MODE.PEST_KILL) {
+    const vacuumId = state.profile.vacuumProgress?.skyblockId;
+    const vacuum = GARDEN_VACUUM_ITEMS.find(item => item.id === vacuumId);
+    return { ...base, tool: vacuum?.name || 'Vacuum not configured' };
+  }
+  const tool = currentToolBuildRecord().item;
+  return { ...base, tool: [tool?.displayName || selectedCrop.tool, tool?.skyblockId].filter(Boolean).join(' · ') };
+}
 function dashboard() {
   const mode = activityModeForState(state);
   const selectedCrop = crop();
@@ -1072,7 +1078,7 @@ function dashboard() {
   const contextScopes = farmingContextScopes(context);
   const stats = computeStatTotals(state, selectedCrop.id, mode, contextScopes);
   const estimate = dashboardProfitEstimate(selectedCrop.id, mode, context, stats);
-  const measuredValues = estimate.values || {};
+  const loadout = dashboardLoadoutSummary(mode, selectedCrop);
   const marker = count => count ? ' ~' : '';
   const number = value => formatNumber(Number(value || 0), FRACTION_2);
   const effectiveIncomplete = stats.incomplete.globalFortune.length
@@ -1091,6 +1097,9 @@ function dashboard() {
   const contextHelp = context === 'normal'
     ? 'Only always-active configured sources are included.'
     : `${farmingContextLabel(context)}-only configured effects are included in the totals below.`;
+  const throughputText = estimate.values?.breaksPerSecond && estimate.values?.uptimePercent
+    ? `${number(estimate.values.breaksPerSecond)} breaks/s · ${number(estimate.values.uptimePercent)}% uptime`
+    : 'Not measured yet';
 
   const cropRows = CROPS.map(entry => {
     const values = computeStatTotals(state, entry.id, mode, contextScopes);
@@ -1142,8 +1151,8 @@ function dashboard() {
       </article>
       <article class="stat-card dashboard-profit-card">
         <span>Estimated Coins/h · ${esc(selectedCrop.name)}</span>
-        <strong>${esc(estimate.display)}</strong>
-        <small>${esc(estimate.note)}</small>
+        <strong>${esc(dashboardProfitDisplay(estimate))}</strong>
+        <small>${esc(dashboardProfitNote(estimate))}</small>
         <small>${esc(priceNote)}</small>
       </article>
       <article class="stat-card">
@@ -1172,17 +1181,30 @@ function dashboard() {
       </article>
     </div>
 
-    <details class="dashboard-estimate-inputs">
-      <summary>Coins/h estimate inputs</summary>
-      <div class="dashboard-estimate-grid">
-        <label><span>Crop breaks/s</span><input type="number" min="0" step="0.1" data-dashboard-estimate="breaksPerSecond" value="${esc(measuredValues.breaksPerSecond ?? '')}" placeholder="required"></label>
-        <label><span>Farming uptime %</span><input type="number" min="0" max="100" step="1" data-dashboard-estimate="uptimePercent" value="${esc(measuredValues.uptimePercent ?? '')}" placeholder="required"></label>
-        <div class="dashboard-estimate-readonly"><span>Crop sell value</span><strong>${estimate.normalPrice?.coinsPerUnit ? `${formatNumber(Math.round(estimate.normalPrice.coinsPerUnit))} Coins` : '—'}</strong><small>${esc(estimate.normalPrice ? averageCropPriceNote(estimate.normalPrice) : '90-day Bazaar average unavailable')}</small></div>
-        ${isHarvestFeastContext(context) ? `<div class="dashboard-estimate-readonly"><span>Feast crop value</span><strong>${estimate.feastPrice?.coinsPerUnit ? `${formatNumber(Math.round(estimate.feastPrice.coinsPerUnit))} Coins` : '—'}</strong><small>${esc(estimate.feastPrice ? averageCropPriceNote(estimate.feastPrice) : '90-day Bazaar average unavailable')}</small></div>` : ''}
+    <section class="dashboard-account-summary">
+      <div class="section-row"><div><div class="eyebrow">Calculation inputs</div><h2>Current account state</h2><p>The Dashboard reads the same crop, tool, setup, pet and effect state as the central stat engine. It does not maintain a second calculation.</p></div></div>
+      <div class="card-grid">
+        <article class="stat-card"><span>Crop / Tool</span><strong>${esc(selectedCrop.name)}</strong><small>${esc(loadout.tool)}</small></article>
+        <article class="stat-card"><span>Armor</span><strong>${esc(loadout.armor)}</strong><small>${esc(loadout.setup)}</small></article>
+        <article class="stat-card"><span>Equipment</span><strong>${esc(loadout.equipment)}</strong><small>${esc(loadout.setup)}</small></article>
+        <article class="stat-card"><span>Pet</span><strong>${esc(loadout.pet)}</strong><small>Active phase pet</small></article>
+        <article class="stat-card"><span>Effects / Event</span><strong>${esc(farmingContextLabel(context))}</strong><small>${esc(contextScopes.length ? contextScopes.join(' + ') : 'Always-active effects only')}</small></article>
+        <article class="stat-card"><span>Measured throughput</span><strong>${esc(throughputText)}</strong><small>Stored in Upgrade Planner, not configured on Dashboard</small></article>
       </div>
-      <small>Coin values are fixed rolling 90-day market averages and cannot be entered manually. Throughput remains measurable; unknown market history stays unknown.</small>
-      <small>Market history: <a href="https://sky.coflnet.com/data" target="_blank" rel="noreferrer">SkyCofl</a>.</small>
-    </details>
+    </section>
+
+    <section class="dashboard-economics-panel">
+      <div class="section-row">
+        <div><div class="eyebrow">Transparent estimate</div><h2>Coins/hour model</h2><p>Only sourced streams are monetized. Missing Pest or event economics stay visible as missing instead of receiving a guessed value.</p></div>
+        <button class="ghost small" type="button" data-dashboard-open-planner>Open throughput inputs</button>
+      </div>
+      <div class="card-grid dashboard-revenue-streams">${dashboardRevenueCards(estimate)}</div>
+      <div class="setup-bar dashboard-economics-meta">
+        <div><div class="eyebrow">Throughput</div><strong>${esc(throughputText)}</strong><div class="hint">${estimate.throughput?.validBreaksPerHour != null ? `${formatNumber(Math.round(estimate.throughput.validBreaksPerHour))} valid breaks/h` : 'Required for crop Coins/h'}</div></div>
+        ${mode !== ACTIVITY_MODE.PEST_KILL ? `<div><div class="eyebrow">Crop market value</div><strong>${estimate.normalPrice?.coinsPerUnit ? `${formatNumber(Math.round(estimate.normalPrice.coinsPerUnit))} Coins` : 'Unavailable'}</strong><div class="hint">${esc(priceNote)}</div></div>` : ''}
+        ${isHarvestFeastContext(context) ? `<div><div class="eyebrow">Feast market value</div><strong>${estimate.feastPrice?.coinsPerUnit ? `${formatNumber(Math.round(estimate.feastPrice.coinsPerUnit))} Coins` : 'Unavailable'}</strong><div class="hint">${esc(estimate.feastPrice ? averageCropPriceNote(estimate.feastPrice) : '90-day Bazaar average unavailable')}</div></div>` : ''}
+      </div>
+    </section>
 
     <aside class="dashboard-farm-tip">
       <div>
@@ -2721,17 +2743,12 @@ function bind() {
     render();
   });
 
-  document.querySelectorAll('[data-dashboard-estimate]').forEach(input => input.addEventListener('change', event => {
-    state.profile.plannerMeasured ||= {};
-    const key = `${state.selectedCrop}:${activityModeForState(state)}`;
-    state.profile.plannerMeasured[key] ||= {};
-    const field = event.target.dataset.dashboardEstimate;
-    const raw = String(event.target.value || '').trim();
-    if (raw === '') delete state.profile.plannerMeasured[key][field];
-    else state.profile.plannerMeasured[key][field] = Math.max(0, Number(raw) || 0);
+  document.querySelector('[data-dashboard-open-planner]')?.addEventListener('click', () => {
+    state.page = 'planner';
+    state.drawer = null;
     saveState();
-    render();
-  }));
+    render({ preserveScroll: false });
+  });
   const search = document.getElementById('search');
   const searchResults = document.getElementById('searchResults');
   if (search) {
