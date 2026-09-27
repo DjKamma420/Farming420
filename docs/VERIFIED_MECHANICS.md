@@ -141,8 +141,7 @@ Source: <https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune>
 
 - **Turbo-Crop** maxes at **+35 Crop Fortune at level VII** (+5 per level), not
   at level V. `src/data.js` capped it at 5.
-- **Garden Bestiary** is up to **+102** Farming Fortune with 17 Pest Bestiary on
-  the Farming Fortune page, while the Pests page says 0.4 per tier up to +100.
+- **Garden Bestiary** is up to **+102** Farming Fortune with 17 Pest Bestiary in the Farming Fortune reference, while the Pest model says 0.4 per tier up to +100.
   The two disagree by 2, so the entry stays marked as needing confirmation
   rather than silently taking one number.
 

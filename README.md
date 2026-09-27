@@ -10,7 +10,9 @@ The goal is not to show a giant maxing checklist. The app should understand the 
 
 The application is designed around these layers:
 
-**Account → Crop → Physical Tool → Setup → Profit → Next Action**
+**Account → Crop → Physical Tool → Loadout → Profit → Next Action**
+
+The top-level UI is intentionally limited to: **Dashboard · Loadouts / Farming System · Garden · Effects · Tools · Shards / Accessories · Upgrades · QoL · Focus on Next · Info**. Vacuum configuration is part of Tools; Pest explanations and analysis are part of Info.
 
 The main optimization target is long-term coin profit, while progression gates, unlock requirements, active grind time and passive/time-gated upgrades remain part of the recommendation path.
 
@@ -43,8 +45,8 @@ Read these files before changing progression or calculation logic:
 - Garden crop-upgrade and unlocked-plot import
 - live sync from your own API key, run automatically once it is entered
 - synced values written straight onto the cards and marked as `synced`
-- item-centric **Setups**: pick the piece, its reforge, enchantments,
-  recombobulator state and gemstones, per wearable configuration
+- item-centric **Loadouts / Farming System**: pick the piece, its reforge,
+  enchantments, recombobulator state and gemstones, per wearable configuration
 - current `pets_data.pets` import with hidden-data semantics instead of treating missing data as no pets
 - normalized profile snapshots with explicit provenance and unknown/hidden states
 - profile and Garden imports merge into one stable internal model instead of exposing raw API field names to future calculators
@@ -97,24 +99,20 @@ with a short early-game strategy, an important-places/NPC routing sheet and a
 Pest guide that explains spawning, killing, guaranteed drops and rare drops as
 separate jobs.
 
-The former **Guide 0-60** now lives inside Info instead of occupying its own
-navigation page. It still follows the player's Farming level, marks reached
+The **Farming 0-60 reference** lives inside Info. It follows the player's
+Farming level, marks reached
 armour milestones, explains pet alternatives, enchantment acquisition and the
 three-phase farming/spawning/killing loadout. Pet cards are informational here;
-actual configuration stays on the dedicated setup pages.
+actual configuration stays in Loadouts / Farming System.
 
-The Pests page is correspondingly analysis-only: Vacuum kill thresholds and the
-Pesthunter Phillip conversion remain there, while explanatory Pest mechanics and
-the crop-to-Pest mapping live under Info.
+Pest analysis now lives in **Info** beside the explanatory Pest mechanics and crop-to-Pest mapping. Vacuum kill thresholds read the physical Vacuum configured under **Tools**, and the Pesthunter Phillip converter remains an analysis-only helper rather than a separate page.
 
-## Setups
+## Loadouts / Farming System
 
-**Setups** in the sidebar is the gear editor. A setup is one complete
-configuration you can actually wear, and setups sit beside each other -- Normal
-Farming, Pest Farming, Jacob Contest by default, renameable and extendable --
-because they are alternatives, never added together.
+**Loadouts / Farming System** is the gear editor. A loadout is one complete
+configuration you can actually wear. The current model exposes the FF and BPC physical sets, with Farming/Killing sharing FF armor and equipment and optionally using separate pets. These are alternatives, never additive sources.
 
-Each setup has slots for armour, equipment and the pet. Open a slot and you pick
+Each loadout has slots for armour, equipment and the pet. Open a slot and you pick
 the item, then its reforge, its enchantments and their levels, whether it is
 recombobulated, and its gemstones. **Fill from sync** pre-fills the slots from
 the gear your last profile sync found you wearing; a slot you filled in yourself
@@ -129,27 +127,24 @@ a missing suggestion never blocks you.
 Items sitting in storage are not assumed to be worn: only the armour, equipment
 and active-pet data from your profile is used to pre-fill.
 
-**Your active setup drives the gear cards.** The set-wide bonuses -- Mossy on
+**Your active loadout drives the gear cards.** The set-wide bonuses -- Mossy on
 full armour, Pesterminator on full armour, Rooted on full equipment and so on --
 are worked out from the setup you have open, and they update the moment you
 change it. Take one piece out of the set and the card clears again, because a
 derived value should never outlive what supports it. A class you have not
 touched falls back to the gear your last sync detected, so the cards still work
-before you ever open this page. Values you typed in by hand are never
+before you ever open the loadout workspace. Values you typed in by hand are never
 recomputed away.
 
-The farming tool is deliberately not a setup slot. It is already crop-scoped and
+The farming tool is deliberately not a loadout slot. It is already crop-scoped and
 filled automatically by the sync, and a second manual copy would give the same
 value two competing sources.
 
 ### Where do I find a value?
 
 The app asks for values you have to read out of the game, which only helps if
-you can find them. Two places answer that:
-
-- **What to enter** in the sidebar lists everything a sync cannot fill, biggest
-  win first, with each entry's explanation and a direct link to its source.
-- Every card's detail drawer has a **Where do I find this?** section.
+you can find them. Global search routes known systems to their current workspace,
+and every card's detail drawer has a **Where do I find this?** section.
 
 An entry is one of three things: filled by the sync and needing no lookup at
 all; carrying a documented in-game location; or not documented yet, in which

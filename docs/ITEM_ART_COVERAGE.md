@@ -72,8 +72,7 @@ so this does not make the setup editor depend on the remote source.
 | Crops | see `CROP_ART` in `src/skyblock-redesign.js` | 13 |
 | Peridot gemstones, 5 tiers plus the generic | `*_peridot_gem`, `peridot_crystal` | 6 |
 
-The crop table is shared: the Pests page borrows it rather than starting a
-second copy.
+The crop table is shared: the Info Pest guide borrows it rather than starting a second copy.
 
 ## Set representatives
 
