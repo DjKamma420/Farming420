@@ -98,16 +98,17 @@ test('Grand Feast keeps progression rewards separate instead of inventing a coin
   assert.ok(result.knownCoinsPerHour > 0);
 });
 
-test('Pest Spawning shows crop revenue separately from the unmodelled Pest stream', () => {
+test('Pest Spawning stays crop-neutral and never substitutes crop Coins/h', () => {
   const result = calculateDashboardEconomics(input({
     mode: ACTIVITY_MODE.PEST_SPAWN,
   }));
-  const pest = result.streams.find(stream => stream.id === DASHBOARD_REVENUE_STREAM.PEST_SYSTEM);
-  assert.equal(pest.status, DASHBOARD_STREAM_STATUS.UNMODELLED);
-  assert.equal(pest.coinsPerHour, null);
-  assert.equal(result.complete, false);
+  assert.equal(result.cropId, null);
+  assert.equal(result.knownCoinsPerHour, null);
   assert.equal(result.netCoinsPerHour, null);
-  assert.ok(result.knownCoinsPerHour > 0);
+  assert.equal(result.streams.length, 1);
+  assert.equal(result.streams[0].id, DASHBOARD_REVENUE_STREAM.PEST_SYSTEM);
+  assert.equal(result.streams[0].status, DASHBOARD_STREAM_STATUS.UNMODELLED);
+  assert.equal(result.streams[0].coinsPerHour, null);
 });
 
 test('Pest Killing never substitutes crop Coins/h for Vacuum profit', () => {
@@ -145,4 +146,15 @@ test('Dashboard has no throughput configuration fields and delegates economics t
   assert.doesNotMatch(app, /from '\.\/measured-baseline\.js'/);
   assert.match(app, /Current account state/);
   assert.match(app, /Coins\/hour model/);
+});
+
+
+test('Dashboard owns an FF-only crop selector and hides the global crop selector on Dashboard', () => {
+  const app = read('src/app.js');
+  assert.match(app, /dashboardCrop: 'melon'/);
+  assert.match(app, /data-dashboard-crop/);
+  assert.match(app, /state\.page === 'dashboard'/);
+  assert.match(app, /computeStatTotals\(state, farmingMode \? selectedCrop\.id : null/);
+  assert.match(app, /Crop selection exists only for the FF Set/);
+  assert.match(app, /No crop-specific Fortune or tool state is included/);
 });

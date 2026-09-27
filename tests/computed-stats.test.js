@@ -340,3 +340,38 @@ test('event-scoped sources only enter totals when their context is active', () =
   const contest = computeTotalsFromEntries(state, entries, 'melon', 'farm', 'Jacob Contest');
   assert.equal(contest.globalFortune, 31);
 });
+
+
+test('crop-neutral Pest totals exclude crop tools and crop-scoped Fortune', () => {
+  const state = baseState();
+  state.profile.levels.global = 1;
+  state.profile.levels.cropSpecific = 1;
+  state.profile.toolProgress['melon-dicer'] = {
+    levels: { farmTool: 1 },
+    owned: {},
+    manualGain: {},
+  };
+  state.profile.vacuumProgress = {
+    skyblockId: 'SKYMART_VACUUM',
+    levels: { vacuum: 1 },
+    owned: {},
+    manualGain: {},
+  };
+
+  const entries = [
+    { id: 'global', section: 'account', metric: 'Crop Yield', modeScope: 'Any', cropScope: 'Any', status: 'ACTIVE', max: 1, stepGain: 10 },
+    { id: 'cropSpecific', section: 'account', metric: 'Crop Yield', modeScope: 'Any', cropScope: 'Melon', status: 'ACTIVE', max: 1, stepGain: 15 },
+    { id: 'farmTool', section: 'tools', metric: 'Crop Yield', modeScope: 'Any', cropScope: 'Any', status: 'ACTIVE', max: 1, stepGain: 20 },
+    { id: 'vacuum', section: 'tools', category: 'Vacuum Reforge', metric: 'Crop Yield', modeScope: 'Pest Vacuum Drops', cropScope: 'Any', status: 'ACTIVE', max: 1, stepGain: 100 },
+  ];
+
+  const spawn = computeTotalsFromEntries(state, entries, null, 'pest-spawn');
+  assert.equal(spawn.globalFortune, 10);
+  assert.equal(spawn.cropFortune, 0);
+  assert.equal(spawn.pestFortune, 0);
+
+  const kill = computeTotalsFromEntries(state, entries, null, 'pest-kill');
+  assert.equal(kill.globalFortune, 10);
+  assert.equal(kill.cropFortune, 0);
+  assert.equal(kill.pestFortune, 100);
+});

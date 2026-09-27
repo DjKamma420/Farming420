@@ -14,7 +14,7 @@ test('Dashboard owns the farming event context selector', () => {
   assert.match(contexts, /Harvest Feast/);
   assert.match(contexts, /Grand Feast/);
   assert.match(contexts, /Jacob's Contest/);
-  assert.match(app, /computeStatTotals\(state, selectedCrop\.id, mode, contextScopes\)/);
+  assert.match(app, /computeStatTotals\(state, farmingMode \? selectedCrop\.id : null, mode, contextScopes\)/);
 });
 
 test('Dashboard Coins per hour is source-driven instead of a fixed 20m claim', () => {
