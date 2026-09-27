@@ -97,6 +97,7 @@ test('Bug Blender item level contributes its Pest-only Farming Fortune', () => {
     selectedCrop: 'melon',
     profile: {
       vacuumProgress: {
+        skyblockId: 'SKYMART_VACUUM',
         levels: { [VACUUM_BUG_BLENDER.id]: 5 },
         owned: { [VACUUM_BUG_BLENDER.id]: true },
         enchantments: { bug_blender: 5 },
@@ -105,5 +106,5 @@ test('Bug Blender item level contributes its Pest-only Farming Fortune', () => {
     },
   };
   const totals = computeStatTotals(state, 'melon', ACTIVITY_MODE.PEST_KILL);
-  assert.equal(totals.pestFortune, 100);
+  assert.equal(totals.pestFortune, 105, '5 SkyMart base + 100 Bug Blender');
 });
