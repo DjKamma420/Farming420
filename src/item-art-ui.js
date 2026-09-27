@@ -146,16 +146,27 @@ export function renderSetupItemArt({ root = document, rawState = readState(), ma
   root.querySelectorAll('[data-pack-asset]').forEach(card => {
     const requestedKey = String(card.dataset.packAsset || '');
     if (!requestedKey) return;
-    if ((card.classList.contains('has-official-item-art') || card.classList.contains('has-item-art-fallback')) && card.dataset.renderedPackAsset === requestedKey) return;
-    removeRenderedArt(card);
+
+    const sameKey = card.dataset.renderedPackAsset === requestedKey;
+    if (sameKey && card.classList.contains('has-official-item-art')) return;
+
     const asset = itemAssetForSkyblockId(manifestValue, requestedKey);
     const label = card.closest('.item-card')?.querySelector('.item-title')?.textContent || requestedKey;
+
+    // The first render intentionally runs before the async pack manifest has
+    // loaded. A fallback from that pass must not block the second pass: once
+    // the real asset exists, replace the fallback instead of keeping the paper
+    // placeholder for the lifetime of the page.
     if (!asset) {
+      if (sameKey && card.classList.contains('has-item-art-fallback')) return;
+      removeRenderedArt(card);
       card.prepend(fallbackNode(label, requestedKey));
       card.classList.add('has-item-art-fallback');
       card.dataset.renderedPackAsset = requestedKey;
       return;
     }
+
+    removeRenderedArt(card);
     const img = imageNode(asset, { displayName: label }, () => {
       card.prepend(fallbackNode(label, requestedKey));
       card.classList.remove('has-official-item-art');
