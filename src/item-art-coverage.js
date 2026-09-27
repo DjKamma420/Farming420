@@ -290,6 +290,18 @@ function decorateProgressionCards(catalog) {
     const record = catalogItemForUpgrade(catalog, entry);
     if (!record) {
       delete card.dataset.physicalItemId;
+      if (entry.category === 'Attribute Shard') {
+        let portrait = card.querySelector('.card-head > .card-portrait');
+        if (!portrait) {
+          portrait = document.createElement('span');
+          portrait.className = 'card-portrait shard-portrait coverage-card-portrait';
+          card.querySelector('.card-head')?.prepend(portrait);
+        }
+        if (!portrait.querySelector(':scope > .official-item-art, :scope > .coverage-item-art')) {
+          const fallback = packArtNodeFor(entry, entry.name) || letterArtNode(entry, entry.name);
+          putArt(portrait, fallback, `shard-fallback:${entry.id}`, { prepend: false });
+        }
+      }
       return;
     }
     if (card.dataset.physicalItemId !== record.id) card.dataset.physicalItemId = record.id;
@@ -432,7 +444,8 @@ export async function applyItemArtCoverage(root = document, rawState = readState
   applying = true;
   try {
     const items = await ensureCatalog();
-    if (!items.length) return 0;
+    // Progression fallback art must still run when the live item catalog is
+    // unavailable; otherwise Attribute Shards render as empty portrait boxes.
     decorateProgressionCards(items);
     decorateAccessoryCatalog(items);
     decorateDrawer(items, rawState);

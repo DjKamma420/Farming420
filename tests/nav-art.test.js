@@ -63,3 +63,10 @@ test('every nav page in app.js has art', () => {
   });
   assert.deepEqual(bare, [], `these nav entries would show a bare letter: ${bare.join(', ')}`);
 });
+
+
+test('the mixed Accessories-Chips-Shards workspace no longer uses a shard-only primary nav icon', () => {
+  const table = navArtTable();
+  assert.equal(table.shards[0], 'condensed_fermento');
+  assert.ok(table.shards.includes('earth_shard'));
+});

@@ -16,9 +16,9 @@ test('every calculator-linked accessory resolves to the same exact physical item
   }
 });
 
-test('the main navigation folds accessories into Shards / Accessories', () => {
+test('the main navigation folds accessories, chips and shards into one workspace', () => {
   const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
-  assert.match(source, /\['shards', 'Shards \/ Accessories'\]/);
+  assert.match(source, /\['shards', 'Accessories \/ Chips \/ Shards'\]/);
   assert.doesNotMatch(source, /case 'accessories':/);
   assert.match(source, /function accessorySections\(\)/);
   assert.match(source, /data-accessory-item-id=/);
@@ -90,5 +90,8 @@ test('Shards page exposes verified indirect shard-to-shard and Cow synergy contr
   assert.match(source, /Echo of Elemental/);
   assert.match(source, /Unlimited Power/);
   assert.match(source, /data-synergy-shard-level/);
+  assert.match(source, /data-synergy-shard-value/);
+  assert.match(source, /function synergyShardLevelControl/);
+  assert.doesNotMatch(source.slice(source.indexOf('function shardSynergyPanel'), source.indexOf('function shardsPage')), /input type="number"/);
   assert.match(source, /case 'shards': content = shardsPage\(\);/);
 });

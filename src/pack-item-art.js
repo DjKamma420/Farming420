@@ -57,6 +57,11 @@ export const SET_ART = Object.freeze([
   // BLOSSOM, and both give way to a head texture the moment one exists.
   ['THORNY', 'blooming_thorns'],
   ['ROOTED', 'deep_root'],
+
+  // Attribute Shards are player-head items and normally use the exact live
+  // texture. If that metadata is unavailable, keep the portrait meaningful
+  // instead of leaving an empty frame.
+  ['SHARD', 'earth_shard'],
 ]);
 
 /** Ids and names, flattened to one comparable shape. */

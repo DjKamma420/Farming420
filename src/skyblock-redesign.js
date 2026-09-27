@@ -49,7 +49,7 @@ const NAV_ART = Object.freeze({
   crops: ['basket_of_seeds', 'box_of_seeds'],
   buffs: ['pest_repellent_max', 'pest_repellent'],
   tools: ['theoretical_hoe_wheat_3', 'melon_dicer_3'],
-  shards: ['earth_shard'],
+  shards: ['condensed_fermento', 'cropshot_chip', 'earth_shard'],
   planner: ['wishing_compass'],
   qol: ['builders_ruler'],
   focus: ['super_jacob_system'],

@@ -64,3 +64,10 @@ test('Pesthunter and Freshly Baked progressions are real global calculator entri
   assert.equal(freshly.stepGain, 1);
   assert.equal(plannerUpgradeTarget(freshly), PLANNER_UPGRADE_TARGET.OVERBLOOM);
 });
+
+
+test('every visible Attribute Shard uses the same ten-level progression scale', () => {
+  const shards = UPGRADES.filter(item => item.section === 'shards' && item.category === 'Attribute Shard');
+  assert.ok(shards.length >= 20);
+  for (const shard of shards) assert.equal(shard.max, 10, shard.id);
+});

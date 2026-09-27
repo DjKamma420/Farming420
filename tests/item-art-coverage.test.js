@@ -233,3 +233,11 @@ test('the Shards page reserves a large portrait surface for physical shard art',
   assert.match(css, /\.shard-gallery \.shard-card \.shard-portrait[\s\S]*?width:\s*76px\s*!important/);
   assert.match(css, /\.shard-gallery \.shard-card \.shard-portrait > \.coverage-item-art[\s\S]*?width:\s*88%/);
 });
+
+
+test('Attribute Shards keep a non-empty portrait fallback without the live item catalog', () => {
+  const source = readFileSync(new URL('../src/item-art-coverage.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(source, /if \(!items\.length\) return 0/);
+  assert.match(source, /entry\.category === 'Attribute Shard'/);
+  assert.match(source, /packArtNodeFor\(entry, entry\.name\) \|\| letterArtNode\(entry, entry\.name\)/);
+});

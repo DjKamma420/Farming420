@@ -136,7 +136,7 @@ const NAV = [
   ['crops', 'Garden'],
   ['buffs', 'Effects'],
   ['tools', 'Tools'],
-  ['shards', 'Shards / Accessories'],
+  ['shards', 'Accessories / Chips / Shards'],
   ['planner', 'Upgrades'],
   ['qol', 'QoL'],
   ['focus', 'Focus on Next'],
@@ -1681,6 +1681,12 @@ function synergyShardLevel(id) {
   return Math.max(0, Math.min(10, Math.floor(Number(state.profile.synergyShardLevels?.[id] || 0))));
 }
 
+function synergyShardLevelControl(id, current, label) {
+  return `<span class="sb-card-chain shard-synergy-levels" role="group" aria-label="${esc(label)} level">${Array.from({ length: 11 }, (_, value) =>
+    `<button type="button" class="sb-card-stage ${value === current ? 'selected' : ''}" data-synergy-shard-level="${esc(id)}" data-synergy-shard-value="${value}" aria-pressed="${value === current ? 'true' : 'false'}">${value}</button>`
+  ).join('')}</span>`;
+}
+
 function cowSynergyContext() {
   const stats = computeStatTotals(state, state.selectedCrop || 'melon');
   const cow = stats.derived?.mooshroomCow || null;
@@ -1738,10 +1744,10 @@ function shardSynergyPanel() {
           rarity: cow.rarity,
         })
       : null;
-    return `<label class="accessory-upgrade-row">
+    return `<div class="accessory-upgrade-row shard-synergy-row">
       <span><strong>${esc(shard.name)} · ${esc(shard.attribute)}</strong><small>+1 Strength per level; Echo of Elemental currently makes the next level +${formatNumber(nextStrength || (1 + elemental.boostPercent / 100))} Strength. ${current < shard.maxLevel ? cowDeltaText(cowDelta) : 'Max level.'}</small></span>
-      <input type="number" min="0" max="10" step="1" value="${current}" data-synergy-shard-level="${esc(shard.id)}">
-    </label>`;
+      ${synergyShardLevelControl(shard.id, current, shard.name)}
+    </div>`;
   }).join('');
 
   const starbornCurrent = synergyShardLevel(FARMING_SHARD_SYNERGIES.echoOfElemental.id);
@@ -1781,10 +1787,10 @@ function shardSynergyPanel() {
         ? `Current Filter Upgrade: +${formatNumber(filterEffects.boostPercent)}%. Spring ${formatNumber(filterEffects.springFarmingFortune)} FF · Summer ${formatNumber(filterEffects.summerFarmingWisdom)} Farming Wisdom · Autumn ${formatNumber(filterEffects.autumnPestSpawnChancePercent)}% extra Pest spawn chance · Winter ${formatNumber(filterEffects.winterVisitorCopperPercent)}% Visitor Copper. Autumn changes spawn chance after cooldown; it does not shorten the cooldown.`
         : FARMING_SHARD_SYNERGIES[key].farmingUse,
     })),
-  ].map(row => `<label class="accessory-upgrade-row">
+  ].map(row => `<div class="accessory-upgrade-row shard-synergy-row">
     <span><strong>${esc(row.entry.name)} · ${esc(row.entry.attribute)}</strong><small>${esc(row.detail)} Target: ${esc(row.entry.target)}.</small></span>
-    <input type="number" min="0" max="10" step="1" value="${row.level}" data-synergy-shard-level="${esc(row.entry.id)}">
-  </label>`).join('');
+    ${synergyShardLevelControl(row.entry.id, row.level, row.entry.name)}
+  </div>`).join('');
 
   return `<section class="accessory-model-note shard-synergy-panel">
     <strong>Indirect shard synergies</strong>
@@ -1798,7 +1804,7 @@ function shardSynergyPanel() {
 function shardsPage() {
   const shards = visibleUpgrades('shards');
   const chips = visibleUpgrades('chips');
-  return `${pageHeader('Progression', 'Shards / Accessories', 'Farming accessories, Garden Chips and Attribute Shards share one progression workspace. Their direct and indirect effects remain calculated separately.')}
+  return `${pageHeader('Progression', 'Accessories / Chips / Shards', 'Farming accessories, Garden Chips and Attribute Shards share one progression workspace. Their direct and indirect effects remain calculated separately.')}
     <div class="group">
       <div class="section-row"><div><h2>Accessories</h2><p>Accessory progression, recombobulation, enrichments and Strength interactions.</p></div></div>
       ${accessorySections()}
@@ -3006,12 +3012,12 @@ function bind() {
     render();
   }));
 
-  document.querySelectorAll('[data-synergy-shard-level]').forEach(el => el.addEventListener('change', event => {
+  document.querySelectorAll('[data-synergy-shard-value]').forEach(el => el.addEventListener('click', event => {
     state.profile.synergyShardLevels ||= {};
-    state.profile.synergyShardLevels[event.target.dataset.synergyShardLevel] = Math.max(
-      0,
-      Math.min(10, Math.floor(Number(event.target.value || 0))),
-    );
+    const id = event.currentTarget.dataset.synergyShardLevel;
+    const value = Math.max(0, Math.min(10, Math.floor(Number(event.currentTarget.dataset.synergyShardValue || 0))));
+    if (value > 0) state.profile.synergyShardLevels[id] = value;
+    else delete state.profile.synergyShardLevels[id];
     saveState();
     render();
   }));
