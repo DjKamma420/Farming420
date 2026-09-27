@@ -35,6 +35,7 @@ import {
   upgradeFilterTags,
 } from './planner-upgrade-filters.js';
 import { plannerMaxSummary } from './planner-max-summary.js';
+import { generateRecommendationActions } from './recommendation-actions.js';
 
 const PLANNER_BENCHMARK_COINS_PER_HOUR = INTERNET_FARMING_TIME_VALUE_COINS_PER_HOUR;
 const FOCUS_AVERAGE_STEP_HOURS = 1;
@@ -747,18 +748,20 @@ function earnedAssumptionsPanel(raw) {
   </details>`;
 }
 
-function rankingMarkup(rows, ready) {
-  if (!rows.length) return '<div class="empty">No upgrades match the current activity objective.</div>';
-  return rows.slice(0, 30).map((row, index) => {
+function rankingMarkup(actions, ready) {
+  if (!actions.length) return '<div class="empty">No actions match the current activity objective.</div>';
+  return actions.slice(0, 30).map((action, index) => {
+    const row = action.evaluation;
+    const item = action.sourceUpgrade;
     const costKnown = row.costKnown === true;
     const marginalKnown = Number.isFinite(row.marginalCoinsHour);
     const spawnPrimary = isSpawningPrimary(row);
-    const valueLabel = plannerUpgradeValueText(row.item, row.gain);
+    const valueLabel = plannerUpgradeValueText(item, row.gain);
     const equivalent = row.modeled === 'overbloom' && row.fortuneEquivalent > 0
       ? `≈ ${row.fortuneEquivalent.toFixed(2)} FF eq.`
       : row.modeled === 'fortune'
         ? `${row.fortuneEquivalent.toFixed(2)} FF eq.`
-        : row.item.status === 'VERIFY' ? 'manual value required' : 'activity-specific stat';
+        : item.status === 'VERIFY' ? 'manual value required' : 'activity-specific stat';
     const costLabel = costKnown
       ? `${compactCoins(row.cost)} ${row.acquisitionMode === 'EARNED' ? 'Coins eq.' : 'Coins'}`
       : '—';
@@ -780,12 +783,12 @@ function rankingMarkup(rows, ready) {
       ? '—'
       : costKnown && row.payback !== null ? formatPayback(row.payback) : '—';
     const paybackNote = spawnPrimary ? 'no FF conversion' : 'benchmark payback';
-    const statusNote = row.item.status === 'VERIFY' ? ' · manual/verify' : '';
+    const statusNote = item.status === 'VERIFY' ? ' · manual/verify' : '';
     const setupNote = row.setupLabel ? ` · ${row.setupLabel}` : '';
 
-    return `<button class="planner-row revenue-row" data-revenue-open="${esc(row.item.id)}">
+    return `<button class="planner-row revenue-row" data-revenue-open="${esc(item.id)}">
       <div class="rank">${index + 1}</div>
-      <div class="planner-main"><strong>${esc(row.item.name)}</strong><span>${esc(row.item.category)} · ${esc(row.targetRole?.label || row.modeled || 'upgrade')}${esc(statusNote)}${esc(setupNote)}</span></div>
+      <div class="planner-main"><strong>${esc(action.label)}</strong><span>${esc(item.category)} · ${esc(action.type)} action · ${esc(row.targetRole?.label || row.modeled || 'upgrade')}${esc(statusNote)}${esc(setupNote)}</span></div>
       <div class="planner-number"><strong>${esc(valueLabel)}</strong><span>${esc(equivalent)}</span></div>
       <div class="planner-number"><strong>${esc(valueDisplay)}</strong><span>${esc(valueNote)}</span></div>
       <div class="planner-number"><strong>${esc(costLabel)}</strong><span>${esc(costNote)}</span></div>
@@ -944,37 +947,39 @@ function focusScopePanel(raw, scope) {
   </section>`;
 }
 
-function focusNextMarkup(raw, rows, scope = focusScope()) {
-  if (!rows.length) {
+function focusNextMarkup(raw, actions, scope = focusScope()) {
+  if (!actions.length) {
     const empty = scope === 'crop'
       ? 'No tracked crop-specific progression goals remain for the selected crop.'
       : 'No tracked global progression goals remain.';
     return `<div class="empty">${esc(empty)}</div>`;
   }
-  return rows.slice(0, 30).map((row, index) => {
-    const max = Math.max(1, Number(row.item.max || 1));
-    const current = level(raw, row.item);
+  return actions.slice(0, 30).map((action, index) => {
+    const row = action.evaluation;
+    const item = action.sourceUpgrade;
+    const max = Math.max(1, Number(item.max || 1));
+    const current = level(raw, item);
     const target = Math.min(max, current + 1);
-    const focusName = row.item.id === 'account-skill-farming-skill-level'
+    const focusName = item.id === 'account-skill-farming-skill-level'
       ? `Farming Level ${target}`
-      : row.item.id === 'tool-tool-base-counter-fortune'
+      : item.id === 'tool-tool-base-counter-fortune'
         ? `Tool Level ${target}`
-        : row.item.name;
+        : item.name;
     const remaining = Math.max(1, max - current);
     const remainingHours = remaining * FOCUS_AVERAGE_STEP_HOURS;
     const spawnPrimary = isSpawningPrimary(row);
-    const valueLabel = plannerUpgradeValueText(row.item, row.gain);
+    const valueLabel = plannerUpgradeValueText(item, row.gain);
     const marginal = spawnPrimary
       ? 'Primary'
       : Number.isFinite(row.marginalCoinsHour)
         ? `+${compactCoins(row.marginalCoinsHour)}/h`
         : '—';
     const marginalNote = spawnPrimary ? 'spawning focus' : 'benchmark value';
-    const statusNote = row.item.status === 'VERIFY' ? ' · manual/verify' : '';
+    const statusNote = item.status === 'VERIFY' ? ' · manual/verify' : '';
 
-    return `<button class="planner-row focus-next-row" data-focus-open="${esc(row.item.id)}">
+    return `<button class="planner-row focus-next-row" data-focus-open="${esc(item.id)}">
       <div class="rank">${index + 1}</div>
-      <div class="planner-main"><strong>${esc(focusName)}</strong><span>${esc(row.item.category)} · progression goal${esc(statusNote)}</span></div>
+      <div class="planner-main"><strong>${esc(focusName)}</strong><span>${esc(item.category)} · ${esc(action.type)} action · progression goal${esc(statusNote)}</span></div>
       <div class="planner-number"><strong>${esc(valueLabel)}</strong><span>next step</span></div>
       <div class="planner-number"><strong>${esc(marginal)}</strong><span>${esc(marginalNote)}</span></div>
       <div class="planner-number"><strong>~${FOCUS_AVERAGE_STEP_HOURS.toFixed(1)} h</strong><span>next step · ~${remainingHours.toFixed(1)} h remaining</span></div>
@@ -987,6 +992,7 @@ function renderFocusNext(host, raw) {
   const mode = activityModeForState(raw);
   const scope = focusScope();
   const rows = focusNextRows(raw, scope);
+  const actions = generateRecommendationActions(rows);
   const objectiveHelp = mode === ACTIVITY_MODE.PEST_SPAWN
     ? '<p>Spawning is purpose-ranked: Bonus Pest Chance and Pest cooldown reduction are primary. Farming Fortune is secondary because it only affects crop output during the short spawning window.</p>'
     : `<p>Value is calculated from the active Fortune/Overbloom against the same ${compactCoins(PLANNER_BENCHMARK_COINS_PER_HOUR)}/h standard stream used by Upgrade Planner.</p>`;
@@ -999,7 +1005,7 @@ function renderFocusNext(host, raw) {
       <p>Time is separate from upgrades: every tracked progression step uses a fixed ~${FOCUS_AVERAGE_STEP_HOURS.toFixed(1)} h planning average. It is a scheduling assumption, not an asserted in-game completion time.</p>
       ${objectiveHelp}
     </section>
-    <div class="focus-next-results">${focusNextMarkup(raw, rows, scope)}</div>`;
+    <div class="focus-next-results">${focusNextMarkup(raw, actions, scope)}</div>`;
 
   host.querySelector('[data-focus-scope]')?.addEventListener('change', event => {
     localStorage.setItem(FOCUS_SCOPE_KEY, event.target.value === 'crop' ? 'crop' : 'global');
@@ -1044,8 +1050,9 @@ function enhancePlanner() {
   const allRows = allSetBenchmarkRows(raw).filter(row => row.acquisitionMode !== 'EARNED');
   const activeFilter = selectedUpgradeFilter();
   const rows = allRows.filter(row => matchesUpgradeFilter(row.item, activeFilter));
-  const rankingTitle = 'Recommended upgrades · all sets';
-  const rankingHelp = `Farming, Pest Spawning and Pest Killing are evaluated together. Global upgrades appear once. Crop-tool upgrades are shared between Farming and Spawning. Gear is merged only when the setup slots reference the same physical items; separate physical sets stay separate. Marginal value and payback use the common ${compactCoins(PLANNER_BENCHMARK_COINS_PER_HOUR)}/h affected-income benchmark.`;
+  const actions = generateRecommendationActions(rows);
+  const rankingTitle = 'Recommended actions · all sets';
+  const rankingHelp = `Farming, Pest Spawning and Pest Killing are evaluated together. Global actions appear once. Crop-tool actions are shared between Farming and Spawning. Gear is merged only when the setup slots reference the same physical items; separate physical sets stay separate. Marginal value and payback use the common ${compactCoins(PLANNER_BENCHMARK_COINS_PER_HOUR)}/h affected-income benchmark.`;
 
   original.classList.add('planner-v1-source');
   const panel = document.createElement('div');
@@ -1054,7 +1061,7 @@ function enhancePlanner() {
     ${benchmarkPanel(raw)}
     <div class="section-row revenue-ranking-head"><div><h2>${esc(rankingTitle)}</h2><p>${esc(rankingHelp)}</p></div><span class="revenue-note">${rows.length}/${allRows.length} shown</span></div>
     ${upgradeFilterMarkup(allRows, activeFilter)}
-    <div class="planner-list revenue-list">${rankingMarkup(rows, ready)}</div>`;
+    <div class="planner-list revenue-list">${rankingMarkup(actions, ready)}</div>`;
   original.before(panel);
 
   panel.querySelectorAll('[data-upgrade-filter]').forEach(button => button.addEventListener('click', () => {
