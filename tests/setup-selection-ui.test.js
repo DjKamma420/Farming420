@@ -72,16 +72,16 @@ test('production loads the safe setup selection module and stylesheet', () => {
 test('setup picker writes to the explicitly opened FF or Killing pet target', () => {
   const source = read('src/setup-selection-ui.js');
   assert.match(source, /state\.setupSlotTarget \|\| setups\.activeId/);
-  assert.match(source, /const \{ setups, setup \} = currentSetupRecord\(state\)/);
-  assert.match(source, /writeLinkedSetupSlot\(setups, setup\.id, slotId, nextItem\)/);
+  assert.match(source, /const \{ setups, setup, targetId \} = currentSetupRecord\(state\)/);
+  assert.match(source, /writeLinkedSetupSlot\(setups, targetId, slotId, nextItem\)/);
 });
 
 
 test('setup picker writes to the explicitly opened FF or Killing pet target', () => {
   const source = read('src/setup-selection-ui.js');
   assert.match(source, /state\.setupSlotTarget \|\| setups\.activeId/);
-  assert.match(source, /const \{ setups, setup \} = currentSetupRecord\(state\)/);
-  assert.match(source, /writeLinkedSetupSlot\(setups, setup\.id, slotId, nextItem\)/);
+  assert.match(source, /const \{ setups, setup, targetId \} = currentSetupRecord\(state\)/);
+  assert.match(source, /writeLinkedSetupSlot\(setups, targetId, slotId, nextItem\)/);
 });
 
 
