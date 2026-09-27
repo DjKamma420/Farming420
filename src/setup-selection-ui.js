@@ -43,6 +43,7 @@ const REAPPLY_CHANGE_SELECTOR = [
   '[data-farming-pet-select]',
   '[data-farming-pet-rarity]',
   '[data-farming-pet-level]',
+  '[data-cow-strength]',
 ].join(',');
 
 function normalizedRarity(value) {
@@ -97,6 +98,29 @@ function replaceSlot(slotId, mutator) {
   const nextItem = mutator(setup.slots[slotId] || null);
   writeLinkedSetupSlot(setups, setup.id, slotId, nextItem);
   return writeState(state);
+}
+
+function writeProfileStrength(value) {
+  const state = readState();
+  if (!state) return false;
+  state.profile ||= {};
+  state.profile.inputs ||= {};
+  if (value === '' || value === null || value === undefined) {
+    delete state.profile.inputs.strength;
+  } else {
+    const strength = Number(value);
+    if (!Number.isFinite(strength) || strength < 0) delete state.profile.inputs.strength;
+    else state.profile.inputs.strength = strength;
+  }
+  return writeState(state);
+}
+
+function currentProfileStrength() {
+  const state = readState();
+  const raw = state?.profile?.inputs?.strength;
+  if (raw === '' || raw === null || raw === undefined) return null;
+  const strength = Number(raw);
+  return Number.isFinite(strength) && strength >= 0 ? strength : null;
 }
 
 function element(tag, attrs = {}, text = null) {
@@ -174,6 +198,40 @@ function buildPetPicker(editor, item) {
 
   const levelSelect = buildLevelSelect(currentId, item?.petLevel);
 
+  const isMooshroomCow = currentId === 'MOOSHROOM_COW';
+  const currentStrength = isMooshroomCow ? currentProfileStrength() : null;
+  const strengthMissing = isMooshroomCow && currentStrength === null;
+  let strengthField = null;
+  if (isMooshroomCow) {
+    const strengthInput = element('input', {
+      type: 'number',
+      min: '0',
+      step: '1',
+      value: currentStrength === null ? '' : String(currentStrength),
+      className: `sb-cow-strength-input${strengthMissing ? ' is-missing' : ''}`,
+      dataset: { cowStrength: '1' },
+      placeholder: 'Enter current Strength',
+    });
+    strengthInput.addEventListener('change', () => {
+      writeProfileStrength(strengthInput.value);
+    });
+    strengthField = field('Strength', strengthInput, `sb-cow-strength-field${strengthMissing ? ' is-missing' : ''}`);
+    if (strengthMissing) {
+      strengthField.querySelector(':scope > span')?.append(
+        element('strong', {
+          className: 'sb-required-alert',
+          title: 'Strength is required for the Mooshroom Cow Farming Fortune calculation.',
+          ariaLabel: 'Strength required',
+        }, '!'),
+      );
+    }
+    strengthField.append(element(
+      'small',
+      { className: 'sb-cow-strength-hint' },
+      'Use your current total Strength. Shard planning never changes this value automatically.',
+    ));
+  }
+
   petSelect.addEventListener('change', () => {
     const pet = farmingPetById(petSelect.value);
     if (!pet) {
@@ -221,6 +279,7 @@ function buildPetPicker(editor, item) {
     field('Pet', petSelect),
     field('Rarity', raritySelect),
     field('Level', levelSelect),
+    ...(strengthField ? [strengthField] : []),
   );
   editor.querySelector('.item-editor-head')?.insertAdjacentElement('afterend', picker);
 }
