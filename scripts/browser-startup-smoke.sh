@@ -102,6 +102,24 @@ if ! grep -q 'Farming System · FF and BPC sets' "$SETUPS_DOM"; then
   exit 1
 fi
 
+if ! grep -q 'data-physical-set-count="2"' "$SETUPS_DOM" || ! grep -q 'data-physical-set-count="3"' "$SETUPS_DOM"; then
+  echo "The Loadouts header is missing the 2 Sets / 3 Sets control" >&2
+  sed -n '1,240p' "$SETUPS_DOM" >&2 || true
+  exit 1
+fi
+
+if ! grep -q 'FF (Farming Fortune) Set' "$SETUPS_DOM" || ! grep -q 'BPC (Bonus Pest Chance) Set' "$SETUPS_DOM"; then
+  echo "The Loadouts header is missing the fixed FF/BPC physical set names" >&2
+  sed -n '1,240p' "$SETUPS_DOM" >&2 || true
+  exit 1
+fi
+
+if grep -q 'data-activity-mode=' "$SETUPS_DOM"; then
+  echo "The Loadouts header still renders the old Farming/Spawning/Killing phase switch" >&2
+  sed -n '1,240p' "$SETUPS_DOM" >&2 || true
+  exit 1
+fi
+
 if ! grep -q 'data-farming-pet-picker="1"' "$SETUPS_DOM"; then
   echo "The Loadouts page rendered, but the closed Pet picker is missing" >&2
   sed -n '1,260p' "$SETUPS_DOM" >&2 || true
