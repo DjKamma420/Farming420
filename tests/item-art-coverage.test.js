@@ -11,7 +11,7 @@ import {
   normalizeItemName,
   skinTextureUrl,
 } from '../src/item-art-coverage.js';
-import { knownSkyblockRenderedIcon } from '../src/skull-art.js';
+import { knownSkyblockHeadTexture, knownSkyblockRenderedIcon } from '../src/skull-art.js';
 
 const catalog = [
   { id: 'BLESSED_BAIT', name: 'Blessed Bait', material: 'SKULL_ITEM', skin: 'a'.repeat(64) },
@@ -245,6 +245,43 @@ test('Attribute Shards keep exact physical art without depending on live catalog
   assert.match(source, /knownSkyblockRenderedIcon/);
 });
 
+
+test('current Attribute Shards resolve by attribute id, not creature name', () => {
+  const currentCatalog = [
+    ...catalog,
+    { id: 'ATTRIBUTE_SHARD_LUNAR_POWER;1', name: 'Lunar Moth Shard', material: 'SKULL_ITEM', skin: '5'.repeat(64) },
+    { id: 'ATTRIBUTE_SHARD_STONE_ELEMENTAL;1', name: 'Quake Shard', material: 'SKULL_ITEM', skin: '6'.repeat(64) },
+  ];
+  const lunar = catalogItemForUpgrade(currentCatalog, {
+    id: 'attribute-shard-lunar-moth-lunar-power',
+    name: 'Lunar Moth Shard - Lunar Power',
+    attribute: 'Lunar Power',
+    category: 'Attribute Shard',
+  });
+  const quake = catalogItemForUpgrade(currentCatalog, {
+    id: 'synergy-quake',
+    name: 'Quake Shard',
+    attribute: 'Stone Elemental',
+    category: 'Attribute Shard',
+  });
+  assert.equal(lunar?.id, 'ATTRIBUTE_SHARD_LUNAR_POWER;1');
+  assert.equal(quake?.id, 'ATTRIBUTE_SHARD_STONE_ELEMENTAL;1');
+});
+
+test('current farming Attribute Shards have stable exact head-texture fallbacks', () => {
+  assert.equal(
+    knownSkyblockHeadTexture('ATTRIBUTE_SHARD_LUNAR_POWER;1'),
+    'bee4fcc5aac27bdbb0be210df08b05bca5aebc89bf2821f608a55fd2cf0434be',
+  );
+  assert.equal(
+    knownSkyblockHeadTexture('ATTRIBUTE_SHARD_STONE_ELEMENTAL;1'),
+    '12708998025a200c1e872e8a7ed7046d26c7e8d669322ed9e5b64eee3a9865f1',
+  );
+  assert.equal(
+    knownSkyblockHeadTexture('ATTRIBUTE_SHARD_LIGHTNING_ELEMENTAL;1'),
+    '6294de8959d9bb49c0eda98eda370ea069f3ca683bf764e145171f8101a45d58',
+  );
+});
 
 test('shards never use the unreliable external rendered-icon fallback', () => {
   assert.equal(knownSkyblockRenderedIcon('SHARD_LUNAR_MOTH'), null);
