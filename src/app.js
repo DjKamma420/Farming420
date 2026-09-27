@@ -1093,7 +1093,9 @@ function dashboard() {
   };
   const priceNote = estimate.normalPrice
     ? averageCropPriceNote(estimate.normalPrice)
-    : 'crop price unavailable';
+    : mode === ACTIVITY_MODE.PEST_KILL
+      ? 'Crop market value is not used for Pest Killing.'
+      : 'Crop price unavailable';
   const contextHelp = context === 'normal'
     ? 'Only always-active configured sources are included.'
     : `${farmingContextLabel(context)}-only configured effects are included in the totals below.`;
@@ -1176,7 +1178,7 @@ function dashboard() {
       <article class="stat-card">
         <span>Overbloom</span>
         <strong>${number(stats.overbloom)}${marker(stats.incomplete.overbloom.length)}</strong>
-        <small>Calculated rare-crop multiplier stat</small>
+        <small>Calculated drop-chance stat for applicable Feast and Pest streams</small>
         <small>${sourceNote(stats, 'overbloom')}</small>
       </article>
       <article class="stat-card">
