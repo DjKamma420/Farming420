@@ -28,7 +28,7 @@ graph TD
   subgraph enhance["Enhancement layer — 24 MutationObserver modules over #app"]
     revenue_planner_js["Revenue planner<br/>revenue-planner.js"]
     planner_mode_ui_js["Planner modes<br/>planner-mode-ui.js"]
-    pests_page_js["Pests page<br/>pests-page.js"]
+    pest_analysis_ui_js["Pest analysis UI<br/>pest-analysis-ui.js"]
     foundation_js["Sync + backup UI<br/>foundation.js"]
     skyblock_redesign_js["Redesign shell<br/>skyblock-redesign.js"]
     item_art_coverage_js["Item art<br/>item-art-coverage.js"]
@@ -85,7 +85,7 @@ graph TD
 
   revenue_planner_js -.-> app_js
   planner_mode_ui_js -.-> app_js
-  pests_page_js -.-> app_js
+  pest_analysis_ui_js -.-> app_js
   foundation_js -.-> app_js
   skyblock_redesign_js -.-> app_js
   item_art_coverage_js -.-> app_js
@@ -112,7 +112,7 @@ graph TD
 
   planner_mode_ui_js --> contest_estimate_js
   contest_estimate_js --> jacob_contest_model_js
-  pests_page_js --> pest_model_js
+  pest_analysis_ui_js --> pest_model_js
   pest_model_js --> pest_mechanics_data_js
   phase_loadout_guide_js --> activity_mode_js
 
@@ -177,7 +177,7 @@ naming, because each is a different kind of mistake:
 | `profile-sync.js → hypixel-client.js` | reversed — `live-sync.js` owns the client |
 | `profit adapter → live price refresh` | no link; the adapter knows nothing about prices |
 | `profit adapter → computed stats` | reached via `planner-activity-context.js` |
-| `profit adapter → pest model` | no link; the pests page owns that model |
+| `profit adapter → pest model` | no link; the Pest analysis UI owns that model |
 | `revenue planner → progression.js` | no link; `app.js` owns progression rendering |
 | `revenue planner → profit adapter` | one hop missing: `measured-baseline.js` |
 | `profile-items.js → nbt.js` | one hop missing: `item-normalizer.js` |

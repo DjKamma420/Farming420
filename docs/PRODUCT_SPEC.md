@@ -89,103 +89,60 @@ The complete project is English-only:
 
 ## Main navigation
 
-The target navigation should stay small even when the underlying data model grows.
+The top-level navigation stays small even when the underlying data model grows. Domain layers may remain separate internally without becoming separate pages.
 
 ### Dashboard
 
-Shows only:
+Read-only overview of the current farming state, selected context, calculated totals and high-level results.
 
-- current profile and selected SkyBlock profile
-- data freshness/API status
-- selected crop/activity
-- expected current coins/hour
-- next recommended action
-- next 3-5 alternatives
-- major blockers/unlocks
-- account/crop/tool/setup completion summaries
+### Loadouts / Farming System
 
-### Profile
+Owns the wearable farming system:
 
-Contains automatically detected and manually overridden account state:
+- FF set for Farming and Killing armor/equipment
+- BPC set for Pest spawning
+- Farming and Killing pet selection
+- pet items
+- armor/equipment item details and upgrades
 
-- Farming Skill
-- Garden level/XP
-- account upgrades
-- Anita progression
-- Garden plots
-- visitors
-- permanent account bonuses
-- API visibility status
-- last sync
+Killing never gets a second armor/equipment copy; it reuses the FF set.
 
-### Crops
+### Garden
 
-One workspace per crop. Each crop workspace contains tabs/layers for:
+Owns account-wide farming progression, Garden progression and crop-specific progression. Crop selection changes the crop-scoped state without creating a separate top-level page per crop.
 
-- Progression
-- Tool
-- Farming Setup
-- Pest Spawning Setup
-- Pest Killing Setup
-- Profit
+### Effects
 
-### Setups
+Combines permanent and temporary farming effects while keeping their calculation semantics separate.
 
-Reusable setup editor for:
+### Tools
 
-- armor
-- equipment
-- pet
-- pet item
-- accessory-dependent state
-- shards
-- chips
-- temporary buffs
+Owns physical crop tools and the Vacuum. Tool type, reforge, enchantments, gemstones, counters and tier belong here.
 
-The same owned item can participate in multiple saved setup presets without being double-counted in net worth.
+### Shards / Accessories
 
-### Planner
+Combines farming accessories, Garden Chips and Attribute Shards in one progression workspace. Direct bonuses and indirect Strength/Cow interactions remain separate in the model.
 
-Ranks actions, not just items.
+### Upgrades
 
-Each recommendation should show:
+Ranks coin-cost upgrade actions. Pricing and planner logic stay independent from navigation structure.
 
-- action
-- prerequisite chain
-- cost
-- recoverable/resale value
-- active grind time
-- passive wait time
-- estimated profit/hour before and after
-- marginal coins/hour
-- payback time
-- Farming Fortune/stat delta where relevant
-- unlocks enabled by the action
-- confidence/data quality
+### QoL
 
-### Profit Calculator
+Contains convenience, farm-building and operational items whose value is not a comparable Farming Fortune or profit stat.
 
-Calculates expected value for a selected crop, setup and activity.
+### Focus on Next
 
-Inputs include:
+Contains earned progression, level goals, milestones and other time-based next actions instead of coin-cost purchases.
 
-- blocks broken per second
-- effective uptime
-- crop-specific mechanics
-- Farming Fortune
-- crop yield multipliers
-- pet effects
-- armor/equipment effects
-- rare drops
-- RNG drops
-- pest spawn/drop expected value
-- visitor/contest value where attributable
-- Bazaar/NPC/Auction sale route
-- consumable/temporary costs
+### Info
 
-The UI may expose a conventional target such as 20 blocks/s, but the default realistic sustained assumption should be modeled separately and must be evidence-based. Do not hard-code 19.5 blocks/s until the exact model and assumptions are documented in `MATH_MODEL.md`.
+Contains explanations, beginner strategy, the Farming 0-60 reference, Pest mechanics, Pest analysis and routing information. Configuration remains in the owning workspace.
 
 ### Settings
+
+Settings is a utility surface rather than one of the ten main farming workspaces.
+
 
 Use the settings quality bar from StundenplanNothing.
 

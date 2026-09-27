@@ -1,9 +1,9 @@
 /**
- * The Pests page.
+ * Pest analysis embedded in Info.
  *
- * Explanations and beginner Pest strategy live on the Info page. This page is
- * now limited to Pest-specific analysis: the configured Vacuum's kill threshold
- * and Pesthunter Phillip's temporary-Fortune conversion.
+ * Explanations, beginner strategy, the configured Vacuum's kill threshold and
+ * Pesthunter Phillip's temporary-Fortune conversion all live in the Info
+ * workspace. Vacuum configuration itself remains under Tools.
  */
 import { STORAGE_KEY } from './config.js';
 import {
@@ -50,7 +50,7 @@ function philipMarkup(pests) {
     <p class="pest-note">${esc(PESTHUNTER_PHILIP.alternativeUseNote)}</p>`;
 }
 
-/** The Pests page reads the physical Vacuum configured under Tools. */
+/** Pest analysis reads the physical Vacuum configured under Tools. */
 function vacuumBuild(raw) {
   const bucket = raw?.profile?.vacuumProgress || {};
   const legacy = raw?.profile?.pestVacuumBuild || {};
@@ -133,7 +133,7 @@ function vacuumPanelMarkup(raw) {
         </div>`).join('')}
       </div>
       <p class="pest-note" data-vacuum-advice>${build.vacuumId ? esc(killAdviceText(result, advice)) : 'Choose a Vacuum under Tools first.'}</p>
-      <p class="pest-note">Vacuum selection, Reforge, books, Recombobulator and gemstones are configured under Tools. This page only analyzes the resulting Pest kill threshold.</p>
+      <p class="pest-note">Vacuum selection, Reforge, books, Recombobulator and gemstones are configured under Tools. This analysis only reads the resulting Pest kill threshold.</p>
       <p class="pest-note">Pulls, not seconds: pull rate, range and travel are not modeled, so no time estimate is claimed.</p>
     </div>
   </details>`;
@@ -150,16 +150,16 @@ function panelMarkup(raw) {
     </details>`;
 }
 
-function applyPestsPage() {
-  if (pageId() !== 'pests') return;
+function applyPestAnalysis() {
+  if (pageId() !== 'info') return;
   const content = document.querySelector('.content');
-  if (!content || content.querySelector('.pest-page-addon')) return;
-  const anchor = content.querySelector('.filter-line') || content.querySelector('.page-head');
+  if (!content || content.querySelector('.pest-analysis-addon')) return;
+  const anchor = content.querySelector('#info-pests');
   if (!anchor) return;
 
   const raw = load();
   const host = document.createElement('div');
-  host.className = 'pest-page-addon';
+  host.className = 'pest-analysis-addon';
   host.innerHTML = panelMarkup(raw);
   anchor.insertAdjacentElement('afterend', host);
 
@@ -182,10 +182,10 @@ function applyPestsPage() {
 }
 
 function boot() {
-  applyPestsPage();
+  applyPestAnalysis();
   const root = document.querySelector('#app');
   if (!root) return;
-  new MutationObserver(() => queueMicrotask(applyPestsPage)).observe(root, { childList: true, subtree: true });
+  new MutationObserver(() => queueMicrotask(applyPestAnalysis)).observe(root, { childList: true, subtree: true });
 }
 
 if (typeof document !== 'undefined') {
