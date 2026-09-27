@@ -264,7 +264,9 @@ function renderVacuumSurface(raw) {
     <section class="item-editor-section" data-vacuum-section="upgrades">
       <div class="workspace-section-head"><div><h3>Vacuum upgrades</h3><p>Use the same 0-to-max progression controls as the farming tools. Zero means the upgrade is not applied.</p></div></div>
       <div class="workspace-level-list">
-        ${entries.map(item => vacuumUpgradeRow(bucket, item)).join('') || '<p class="hint">No other modeled Vacuum values are available yet.</p>'}
+        ${vacuumStats.selected
+          ? (entries.map(item => vacuumUpgradeRow(bucket, item)).join('') || '<p class="hint">No other modeled Vacuum values are available yet.</p>')
+          : '<p class="hint">Choose the physical Vacuum model above before configuring item-local upgrades.</p>'}
       </div>
     </section>
     <section class="item-editor-section" data-vacuum-section="totals">
