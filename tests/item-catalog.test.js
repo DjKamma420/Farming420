@@ -10,6 +10,7 @@ import {
   intrinsicEnchantmentsForCatalogItem,
   itemsForSlot,
   loadItemCatalog,
+  mergeFarmingSetupCatalog,
   reduceItemResource,
   reforgeOptions,
   slotHasOfficialCategory,
@@ -83,6 +84,51 @@ test('a slot offers only the items in its own categories', () => {
   assert.deepEqual(itemsForSlot(items, 'helmet').map(item => item.name), ['Fermento Helmet', 'Helianthus Helmet']);
   assert.deepEqual(itemsForSlot(items, 'boots').map(item => item.id), ['HELIANTHUS_BOOTS']);
   assert.deepEqual(itemsForSlot(items, 'equipment4').map(item => item.id), ['LOTUS_BRACELET']);
+});
+
+
+test('the local setup fallback keeps farming armor and equipment selectable without fetched catalog data', () => {
+  const catalog = mergeFarmingSetupCatalog([]);
+  const helmetIds = new Set(itemsForSlot(catalog, 'helmet').map(item => item.id));
+  const bootsIds = new Set(itemsForSlot(catalog, 'boots').map(item => item.id));
+  const cloakIds = new Set(itemsForSlot(catalog, 'equipment2').map(item => item.id));
+
+  for (const id of ['FARM_SUIT_HELMET', 'CROPIE_HELMET', 'SQUASH_HELMET', 'FERMENTO_HELMET', 'HELIANTHUS_HELMET']) {
+    assert.equal(helmetIds.has(id), true, `${id} should remain selectable offline`);
+  }
+  assert.equal(bootsIds.has('RANCHERS_BOOTS'), true);
+  assert.equal(bootsIds.has('FARMER_BOOTS'), true);
+  assert.equal(cloakIds.has('LOTUS_CLOAK'), true);
+  assert.equal(cloakIds.has('BLOSSOM_CLOAK'), true);
+  assert.equal(cloakIds.has('PESTHUNTERS_CLOAK'), true);
+  assert.equal(cloakIds.has('PEST_VEST'), true);
+  assert.equal(cloakIds.has('ZORROS_CAPE'), true);
+
+  const helianthus = itemsForSlot(catalog, 'helmet').find(item => item.id === 'HELIANTHUS_HELMET');
+  assert.equal(helianthus.name, 'Helianthus Helmet');
+  assert.equal(helianthus.tier, 'LEGENDARY');
+  const peony = itemsForSlot(catalog, 'equipment1').find(item => item.id === 'LOTUS_NECKLACE');
+  assert.equal(peony.name, 'Peony Necklace');
+  assert.equal(peony.tier, 'RARE');
+});
+
+test('official catalog metadata overrides fallback metadata while fallback coverage stays available', () => {
+  const catalog = mergeFarmingSetupCatalog([
+    {
+      id: 'HELIANTHUS_HELMET',
+      name: 'Helianthus Helmet',
+      category: 'HELMET',
+      tier: 'MYTHIC',
+      skin: 'live-skin',
+      gemstoneSlots: [{ index: 0, slotType: 'PERIDOT', requirements: [], costs: [] }],
+    },
+  ]);
+
+  const helianthus = catalog.find(item => item.id === 'HELIANTHUS_HELMET');
+  assert.equal(helianthus.tier, 'MYTHIC');
+  assert.equal(helianthus.skin, 'live-skin');
+  assert.equal(helianthus.gemstoneSlots.length, 1);
+  assert.equal(catalog.some(item => item.id === 'FERMENTO_HELMET'), true);
 });
 
 test('current Pesthunter and Zorro ids stay selectable in their equipment slots', () => {

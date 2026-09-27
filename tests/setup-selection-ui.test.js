@@ -42,11 +42,19 @@ test('pets use an illustrated closed dropdown plus closed rarity and level selec
 test('armor, equipment and pet items replace free-text item names with closed item selects', () => {
   const source = read('src/setup-selection-ui.js');
   assert.match(source, /buildClosedItemPicker/);
-  assert.match(source, /itemsForSlot\(readCachedCatalog\(\)\?\.items \|\| \[\], slotId\)/);
+  assert.match(source, /let pickerCatalogItems = readCachedCatalog\(\)\?\.items \|\| \[\]/);
+  assert.match(source, /itemsForSlot\(mergeFarmingSetupCatalog\(pickerCatalogItems\), slotId\)/);
   assert.match(source, /dataSet|dataset/);
   assert.match(source, /closedItemSelect/);
   assert.match(source, /oldField\.replaceWith\(closedField\)/);
   assert.match(source, /slotId === 'petItem'/);
+});
+
+test('setup picker keeps fetched catalog data in memory when storage persistence is unavailable', () => {
+  const source = read('src/setup-selection-ui.js');
+  assert.match(source, /loadItemCatalog\(\)\s*\.then\(result =>/);
+  assert.match(source, /pickerCatalogItems = result\.items/);
+  assert.match(source, /mergeFarmingSetupCatalog\(pickerCatalogItems\)/);
 });
 
 test('closed armor picker refreshes when the item catalog arrives after the editor opened', () => {

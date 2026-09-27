@@ -11,6 +11,7 @@ import {
   intrinsicEnchantmentsForCatalogItem,
   itemsForSlot,
   loadItemCatalog,
+  mergeFarmingSetupCatalog,
   readCachedCatalog,
   slotHasOfficialCategory,
 } from './item-catalog.js';
@@ -370,8 +371,10 @@ function buildPetPicker(editor, item) {
   editor.querySelector('.item-editor-head')?.insertAdjacentElement('afterend', picker);
 }
 
+let pickerCatalogItems = readCachedCatalog()?.items || [];
+
 function currentCatalogItems(slotId) {
-  return itemsForSlot(readCachedCatalog()?.items || [], slotId);
+  return itemsForSlot(mergeFarmingSetupCatalog(pickerCatalogItems), slotId);
 }
 
 function closedItemPickerSignature(options, item) {
@@ -494,9 +497,13 @@ export function dockSetupEditor(root = document, setupTargetId = null) {
 
 let catalogRequestStarted = false;
 function ensurePickerCatalog() {
-  if (catalogRequestStarted || (readCachedCatalog()?.items || []).length) return;
+  if (catalogRequestStarted) return;
   catalogRequestStarted = true;
-  loadItemCatalog().finally(() => schedule());
+  loadItemCatalog()
+    .then(result => {
+      if (Array.isArray(result?.items) && result.items.length) pickerCatalogItems = result.items;
+    })
+    .finally(() => schedule());
 }
 
 export function applySetupSelectionUi(root = document) {

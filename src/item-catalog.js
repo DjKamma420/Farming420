@@ -60,6 +60,78 @@ const FARMING_STANDALONE_EQUIPMENT_NAMES = new Set([
   'pest vest', "zorro's cape", 'zorros cape',
 ]);
 
+/**
+ * Minimal local setup catalog used when the browser cannot persist or fetch the
+ * official Hypixel item resource. Item identities, current display names and
+ * base rarities were verified against NotEnoughUpdates/NotEnoughUpdates-REPO
+ * commit 392fd5db2afc4f5020eb9bd379d140a1f6df2011 on 2026-09-28.
+ *
+ * Live official resource entries still win when available. The fallback keeps
+ * the setup picker usable offline and in browsers where localStorage writes are
+ * blocked; it is not a replacement for exact capability metadata.
+ */
+const FALLBACK_ARMOR_SET_SPECS = Object.freeze([
+  Object.freeze({ idPrefix: 'FARM_SUIT', name: 'Farmhand', tier: 'COMMON' }),
+  Object.freeze({ idPrefix: 'FARM_ARMOR', name: 'Haymaker', tier: 'COMMON' }),
+  Object.freeze({ idPrefix: 'PUMPKIN', name: 'Sprout', tier: 'UNCOMMON' }),
+  Object.freeze({ idPrefix: 'MELON', name: 'Tater', tier: 'UNCOMMON' }),
+  Object.freeze({ idPrefix: 'CROPIE', name: 'Cropie', tier: 'UNCOMMON' }),
+  Object.freeze({ idPrefix: 'SQUASH', name: 'Squash', tier: 'RARE' }),
+  Object.freeze({ idPrefix: 'FERMENTO', name: 'Fermento', tier: 'EPIC' }),
+  Object.freeze({ idPrefix: 'HELIANTHUS', name: 'Helianthus', tier: 'LEGENDARY' }),
+]);
+
+const FALLBACK_ARMOR_PIECES = Object.freeze([
+  Object.freeze({ suffix: 'HELMET', category: 'HELMET', name: 'Helmet' }),
+  Object.freeze({ suffix: 'CHESTPLATE', category: 'CHESTPLATE', name: 'Chestplate' }),
+  Object.freeze({ suffix: 'LEGGINGS', category: 'LEGGINGS', name: 'Leggings' }),
+  Object.freeze({ suffix: 'BOOTS', category: 'BOOTS', name: 'Boots' }),
+]);
+
+const FALLBACK_EQUIPMENT_ITEMS = Object.freeze([
+  Object.freeze({ id: 'LOTUS_NECKLACE', name: 'Peony Necklace', category: 'NECKLACE', tier: 'RARE' }),
+  Object.freeze({ id: 'LOTUS_CLOAK', name: 'Peony Cloak', category: 'CLOAK', tier: 'RARE' }),
+  Object.freeze({ id: 'LOTUS_BELT', name: 'Peony Belt', category: 'BELT', tier: 'RARE' }),
+  Object.freeze({ id: 'LOTUS_BRACELET', name: 'Peony Bracelet', category: 'BRACELET', tier: 'RARE' }),
+  Object.freeze({ id: 'BLOSSOM_NECKLACE', name: 'Blossom Necklace', category: 'NECKLACE', tier: 'EPIC' }),
+  Object.freeze({ id: 'BLOSSOM_CLOAK', name: 'Blossom Cloak', category: 'CLOAK', tier: 'EPIC' }),
+  Object.freeze({ id: 'BLOSSOM_BELT', name: 'Blossom Belt', category: 'BELT', tier: 'EPIC' }),
+  Object.freeze({ id: 'BLOSSOM_BRACELET', name: 'Blossom Bracelet', category: 'BRACELET', tier: 'EPIC' }),
+  Object.freeze({ id: 'PESTHUNTERS_NECKLACE', name: "Pesthunter's Necklace", category: 'NECKLACE', tier: 'RARE' }),
+  Object.freeze({ id: 'PESTHUNTERS_CLOAK', name: "Pesthunter's Cloak", category: 'CLOAK', tier: 'RARE' }),
+  Object.freeze({ id: 'PESTHUNTERS_BELT', name: "Pesthunter's Belt", category: 'BELT', tier: 'RARE' }),
+  Object.freeze({ id: 'PESTHUNTERS_GLOVES', name: "Pesthunter's Gloves", category: 'GLOVES', tier: 'RARE' }),
+  Object.freeze({ id: 'PEST_VEST', name: 'Pest Vest', category: 'CLOAK', tier: 'EPIC' }),
+  Object.freeze({ id: 'ZORROS_CAPE', name: "Zorro's Cape", category: 'CLOAK', tier: 'LEGENDARY' }),
+]);
+
+export const FARMING_SETUP_FALLBACK_ITEMS = Object.freeze([
+  ...FALLBACK_ARMOR_SET_SPECS.flatMap(set => FALLBACK_ARMOR_PIECES.map(piece => Object.freeze({
+    id: `${set.idPrefix}_${piece.suffix}`,
+    name: `${set.name} ${piece.name}`,
+    category: piece.category,
+    tier: set.tier,
+  }))),
+  Object.freeze({ id: 'RANCHERS_BOOTS', name: "Rancher's Boots", category: 'BOOTS', tier: 'EPIC' }),
+  Object.freeze({ id: 'FARMER_BOOTS', name: 'Farmer Boots', category: 'BOOTS', tier: 'UNCOMMON' }),
+  Object.freeze({ id: 'ENCHANTED_JACK_O_LANTERN', name: 'Lantern Helmet', category: 'HELMET', tier: 'UNCOMMON' }),
+  Object.freeze({ id: 'PUFFERFISH_HAT', name: 'Pufferfish Hat', category: 'HELMET', tier: 'COMMON' }),
+  Object.freeze({ id: 'PUFFERFISH_HAT_CELEBRATION', name: 'Pufferfish Hat', category: 'HELMET', tier: 'COMMON' }),
+  ...FALLBACK_EQUIPMENT_ITEMS,
+]);
+
+export function mergeFarmingSetupCatalog(catalog) {
+  const merged = new Map(FARMING_SETUP_FALLBACK_ITEMS.map(item => [item.id, item]));
+  for (const item of Array.isArray(catalog) ? catalog : []) {
+    if (!item || typeof item !== 'object') continue;
+    const id = String(item.id || '').trim().toUpperCase();
+    if (!id) continue;
+    const fallback = merged.get(id);
+    merged.set(id, fallback ? { ...fallback, ...item, id } : item);
+  }
+  return [...merged.values()];
+}
+
 export function intrinsicEnchantmentsForCatalogItem(item) {
   const id = String(item?.id || item?.skyblockId || '').trim().toUpperCase();
   // The Century/Raffle reward is a distinct Pufferfish Hat variant that comes
