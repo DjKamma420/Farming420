@@ -1282,7 +1282,7 @@ function accessoryCatalogCard(accessory) {
   </article>`;
 }
 
-function accessoriesPage() {
+function accessorySections() {
   const groups = FARMING_ACCESSORY_GROUPS.map(group => ({
     ...group,
     items: group.items,
@@ -1292,8 +1292,7 @@ function accessoriesPage() {
   const cowReady = cow?.active && cow?.rarity === 'LEGENDARY' && Number.isFinite(strength);
   const nextCowStrength = cowReady ? strengthUntilNextCowFortune(strength, cow.level, cow.rarity) : null;
 
-  return `${pageHeader('Accessories', 'Farming Accessories', 'Accessory progression includes direct farming effects and indirect Strength paths that can feed Legendary Mooshroom Cow.')}
-    <div class="accessory-model-note">
+  return `<div class="accessory-model-note">
       <strong>Accessory power, enrichment and Cow interaction</strong>
       <span>Synced Strength Enrichments in the full Accessory Bag: ${syncedStrengthEnrichments}. Strength Enrichment gives +1 Strength on eligible accessories. ${cowReady ? `At ${formatNumber(strength)} current Strength, the next displayed Cow FF needs about ${formatNumber(nextCowStrength)} more Strength.` : 'Set an active Legendary Mooshroom Cow and current Strength to show its breakpoint.'} Accessory Power and Tuning can also change Strength, but Farming420 does not assign them a Cow value until the selected Power and tuning allocation are known.</span>
     </div>
@@ -1667,13 +1666,25 @@ function shardSynergyPanel() {
 }
 
 function shardsPage() {
-  const items = visibleUpgrades('shards');
-  return `${pageHeader('Attribute Shards','Shards','Direct Farming stats and indirect shard-to-shard / Strength interactions are evaluated separately so one effect is never counted twice.')}
-    ${!state.search.trim() ? shardSynergyPanel() : ''}
-    <div class="filter-line">${badge(`${items.length} direct entries`,'soft')}</div>
-    <div class="card-grid shard-gallery">${items.map(x=>card(x)).join('') || '<div class="empty">No matches.</div>'}</div>`;
+  const shards = visibleUpgrades('shards');
+  const chips = visibleUpgrades('chips');
+  return `${pageHeader('Progression', 'Shards / Accessories', 'Farming accessories, Garden Chips and Attribute Shards share one progression workspace. Their direct and indirect effects remain calculated separately.')}
+    <div class="group">
+      <div class="section-row"><div><h2>Accessories</h2><p>Accessory progression, recombobulation, enrichments and Strength interactions.</p></div></div>
+      ${accessorySections()}
+    </div>
+    <div class="group">
+      <div class="section-row"><div><h2>Garden Chips</h2><p>Chip levels and activation conditions stay here instead of using a separate top-level page.</p></div></div>
+      <div class="filter-line">${badge(`${chips.length} entries`,'soft')}</div>
+      <div class="card-grid">${chips.map(x=>card(x)).join('') || '<div class="empty">No matches.</div>'}</div>
+    </div>
+    <div class="group">
+      <div class="section-row"><div><h2>Attribute Shards</h2><p>Direct Farming stats and indirect shard-to-shard / Strength interactions are evaluated separately so one effect is never counted twice.</p></div></div>
+      ${!state.search.trim() ? shardSynergyPanel() : ''}
+      <div class="filter-line">${badge(`${shards.length} direct entries`,'soft')}</div>
+      <div class="card-grid shard-gallery">${shards.map(x=>card(x)).join('') || '<div class="empty">No matches.</div>'}</div>
+    </div>`;
 }
-
 function qolPage() {
   return `${pageHeader('QoL', 'Quality of Life', 'Convenience, farm-building and setup tools live here. They are tracked separately from Farming Fortune and profit because their value is saved setup time and easier operation rather than a comparable stat gain.')}
     <div class="qol-list"><div class="empty">Loading QoL items…</div></div>`;
@@ -2624,28 +2635,23 @@ function render({ preserveScroll = true } = {}) {
   let content = '';
   switch(state.page) {
     case 'dashboard': content = dashboard(); break;
-    case 'accessories': content = accessoriesPage(); break;
+    case 'setups': content = setupsPage(); break;
     case 'crops': content = cropsPage(); break;
+    case 'buffs': content = effectsPage(); break;
     // The heading says what the page is; the picker and the editor below both
     // name the selected tool, so repeating it a third time here added nothing.
     case 'tools': content = genericSectionPage('tools','Tools','Farming tools','Pick the tool, then set what is actually on it: reforge, enchantments, gemstones, counters and tier.'); break;
-    case 'gear': content = genericSectionPage('gear','Gear','Armor & Equipment','Armor, equipment, reforges, gemstones and enchantments remain a separate setup layer.'); break;
-    case 'pets': content = genericSectionPage('pets','Pets','Pets & Pet Items','Pets are mutually exclusive setup choices and are never added together.'); break;
-    case 'chips': content = genericSectionPage('chips','Garden Chips','Garden Chips','Each chip has its own level path and activation conditions.'); break;
     case 'shards': content = shardsPage(); break;
-    case 'buffs': content = effectsPage(); break;
-    case 'pests': content = genericSectionPage('pests','Pests','Pest Analysis','Vacuum kill thresholds and Pesthunter Phillip calculations live here. Explanations and strategy are in Info.'); break;
-    case 'qol': content = qolPage(); break;
-    case 'info': content = infoPage(); break;
-    case 'setups': content = setupsPage(); break;
-    case 'focus': content = focusNextPage(); break;
     case 'planner': content = plannerPage(); break;
+    case 'qol': content = qolPage(); break;
+    case 'focus': content = focusNextPage(); break;
+    case 'info': content = infoPage(); break;
     default: content = dashboard();
   }
   document.getElementById('app').innerHTML = shell(content);
   bind();
   if (state.page === 'setups') bindSetups();
-  if (['setups', 'accessories'].includes(state.page)) ensureItemCatalog();
+  if (['setups', 'shards'].includes(state.page)) ensureItemCatalog();
   if (state.page === 'tools') bindToolPanel();
   if (state.page === 'info') bindGuide();
 
