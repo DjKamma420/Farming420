@@ -13,6 +13,7 @@ export const FARMING_PETS = Object.freeze([
   {
     id: 'BEE',
     name: 'Bee Pet',
+    iconUrl: 'https://skyah.net/icons/pets/bee.webp',
     rarities: STANDARD_TO_MYTHIC,
     levelMin: 1,
     levelMax: 100,
@@ -22,6 +23,7 @@ export const FARMING_PETS = Object.freeze([
   {
     id: 'CHICKEN',
     name: 'Chicken Pet',
+    iconUrl: 'https://skyah.net/icons/pets/chicken.webp',
     rarities: STANDARD_TO_LEGENDARY,
     levelMin: 1,
     levelMax: 100,
@@ -31,6 +33,7 @@ export const FARMING_PETS = Object.freeze([
   {
     id: 'ELEPHANT',
     name: 'Elephant Pet',
+    iconUrl: 'https://skyah.net/icons/pets/elephant.webp',
     rarities: STANDARD_TO_MYTHIC,
     levelMin: 1,
     levelMax: 100,
@@ -40,6 +43,7 @@ export const FARMING_PETS = Object.freeze([
   {
     id: 'HEDGEHOG',
     name: 'Hedgehog Pet',
+    iconUrl: 'https://skyah.net/icons/pets/hedgehog.webp',
     rarities: Object.freeze(['LEGENDARY']),
     levelMin: 1,
     levelMax: 100,
@@ -49,6 +53,7 @@ export const FARMING_PETS = Object.freeze([
   {
     id: 'MOOSHROOM_COW',
     name: 'Mooshroom Cow Pet',
+    iconUrl: 'https://skyah.net/icons/pets/mooshroom_cow.webp',
     rarities: STANDARD_TO_LEGENDARY,
     levelMin: 1,
     levelMax: 100,
@@ -58,6 +63,7 @@ export const FARMING_PETS = Object.freeze([
   {
     id: 'MOSQUITO',
     name: 'Mosquito Pet',
+    iconUrl: 'https://skyah.net/icons/pets/mosquito.webp',
     rarities: STANDARD_TO_LEGENDARY,
     levelMin: 1,
     levelMax: 100,
@@ -67,6 +73,7 @@ export const FARMING_PETS = Object.freeze([
   {
     id: 'ORCHID_MANTIS',
     name: 'Orchid Mantis Pet',
+    iconUrl: 'https://skyah.net/icons/pets/orchid_mantis.webp',
     rarities: STANDARD_TO_LEGENDARY,
     levelMin: 1,
     levelMax: 100,
@@ -76,6 +83,7 @@ export const FARMING_PETS = Object.freeze([
   {
     id: 'PIG',
     name: 'Pig Pet',
+    iconUrl: 'https://skyah.net/icons/pets/pig.webp',
     rarities: STANDARD_TO_LEGENDARY,
     levelMin: 1,
     levelMax: 100,
@@ -85,6 +93,7 @@ export const FARMING_PETS = Object.freeze([
   {
     id: 'RABBIT',
     name: 'Rabbit Pet',
+    iconUrl: 'https://skyah.net/icons/pets/rabbit.webp',
     rarities: STANDARD_TO_MYTHIC,
     levelMin: 1,
     levelMax: 100,
@@ -94,6 +103,7 @@ export const FARMING_PETS = Object.freeze([
   {
     id: 'ROSE_DRAGON',
     name: 'Rose Dragon Pet',
+    iconUrl: 'https://skyah.net/icons/pets/rose_dragon.webp',
     rarities: Object.freeze(['LEGENDARY']),
     levelMin: 1,
     levelMax: 200,
@@ -103,6 +113,7 @@ export const FARMING_PETS = Object.freeze([
   {
     id: 'SLUG',
     name: 'Slug Pet',
+    iconUrl: 'https://skyah.net/icons/pets/slug.webp',
     rarities: Object.freeze(['EPIC', 'LEGENDARY']),
     levelMin: 1,
     levelMax: 100,
@@ -114,6 +125,10 @@ export const FARMING_PETS = Object.freeze([
 export function farmingPetById(id) {
   const normalized = String(id || '').trim().toUpperCase();
   return FARMING_PETS.find(pet => pet.id === normalized) || null;
+}
+
+export function petIconUrl(id) {
+  return farmingPetById(id)?.iconUrl || null;
 }
 
 export function petLevelBounds(id) {
