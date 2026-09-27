@@ -269,9 +269,9 @@ export function applyExactVacuumUI() {
     const signature = `${bucket.skyblockId || ''}|${bucket.recombobulated ? 1 : 0}|${JSON.stringify(enchantmentsForBucket(bucket))}|${JSON.stringify(bucket.gemSlots || [])}|${readCachedCatalog()?.fetchedAt || ''}|${assetManifest?.pack?.hash || ''}`;
     if (oldProgression?.dataset.signature === signature
       && Boolean(oldEnchantments) === wantsEnchantments
-      && (!oldEnchantments || oldEnchantments.dataset.signature === signature)
+      && (!oldEnchantments || oldEnchantments?.dataset.signature === signature)
       && Boolean(oldGemstones) === wantsGemstones
-      && (!oldGemstones || oldGemstones.dataset.signature === signature)) return;
+      && (!oldGemstones || oldGemstones?.dataset.signature === signature)) return;
 
     oldProgression?.remove();
     oldEnchantments?.remove();
