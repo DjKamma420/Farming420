@@ -1440,6 +1440,20 @@ function queuePhysicalValueRefresh(slotId, item, extraComponents = []) {
 
 
 function setEntryLevel(item, level) {
+  const chip = gardenChipForItem(item);
+  if (chip) {
+    state.profile.gardenChips ||= {};
+    const existing = gardenChipProgressForItem(item);
+    const max = gardenChipMaxLevel(existing?.rarity) ?? 20;
+    const value = Math.max(0, Math.min(max, Math.floor(Number(level) || 0)));
+    state.profile.gardenChips[chip.id] = {
+      rarity: existing?.rarity || null,
+      level: value,
+      source: 'manual',
+    };
+    return;
+  }
+
   const store = itemStore(item);
   const max = Number(item.max || 1);
   const value = Math.max(0, Math.min(max, Math.floor(Number(level) || 0)));
@@ -1589,6 +1603,7 @@ function genericSectionPage(section, kicker, title, text) {
   const items = visibleUpgrades(section);
   const gridClass = section === 'shards' ? 'card-grid shard-gallery' : 'card-grid';
   return `${pageHeader(kicker,title,text)}
+    ${section === 'chips' ? '<section class="accessory-model-note"><strong>Rarity-aware chip levels</strong><span>Rare caps at 10, Epic at 15 and Legendary at 20. Duplicate chips raise rarity; Sowdust raises level. Chip progress remains manual until a documented profile API field exists.</span></section>' : ''}
     <div class="filter-line">${badge(`${items.length} entries`,'soft')}</div>
     ${section === 'tools' ? toolItemPanel() : ''}
     ${section === 'tools' ? '<div class="section-row"><div><h2>Every scored tool entry</h2><p>The same values, with the Fortune each one contributes and the source behind it.</p></div></div>' : ''}
@@ -1753,7 +1768,7 @@ function drawer() {
   const item = UPGRADES.find(x=>x.id===state.drawer);
   if (!item) return '';
   const level = currentLevel(item);
-  const max = Number(item.max||1);
+  const max = maxLevelForItem(item);
   const store = itemStore(item);
   const costSource = resolveUpgradeCost(store, item.id);
   const pricing = upgradePriceSummary(store, item);
@@ -1776,12 +1791,28 @@ function drawer() {
   ].filter(Boolean).join(' · ');
   const isShard = item.section === 'shards' || item.category === 'Attribute Shard';
   const manual = store.manualGain[item.id] ?? '';
+  const chip = gardenChipForItem(item);
+  const chipProgress = chip ? gardenChipProgressForItem(item) : null;
+  const chipEffect = chip ? gardenChipEffectAtLevel(chip, chipProgress?.rarity, level) : null;
+  const chipCopies = chip ? gardenChipCopiesForRarity(chipProgress?.rarity) : null;
+  const chipSowdustSpent = chip ? gardenChipSowdustSpent(level) : null;
+  const chipSowdustRemaining = chip ? gardenChipSowdustToLevel(level, max) : null;
   return `<div class="drawer-backdrop" data-close-drawer><aside class="drawer">
     <div class="drawer-top"><div><div class="eyebrow">${esc(item.category)}</div><h2>${esc(item.name)}</h2></div><button class="close" data-close-drawer>×</button></div>
     <div class="drawer-badges">${badge(item.status,item.status==='VERIFY'?'verify':'soft')} ${isCropScopedItem(item)?badge(crop().name,'soft'):(item.cropScope!=='Any'?badge(item.cropScope,'soft'):'')} ${item.modeScope!=='Any'?badge(item.modeScope,'soft'):''}</div>
     ${isSynced(item) ? '<div class="drawer-synced">Farming420 worked this value out for you, from your profile sync and your active setup. Editing it here overrides it until the next sync or setup change.</div>' : ''}
     <div class="drawer-section"><h3>Ownership & Level</h3>
+      ${chip ? `<label>Rarity<select data-chip-rarity="${esc(chip.id)}">
+        <option value="" ${chipProgress?.rarity ? '' : 'selected'}>Unknown</option>
+        ${Object.values(GARDEN_CHIP_RARITIES).map(rarity => `<option value="${rarity.id}" ${chipProgress?.rarity === rarity.id ? 'selected' : ''}>${esc(rarity.label)} · max ${rarity.maxLevel}</option>`).join('')}
+      </select></label>` : ''}
       ${max>1 ? `<div class="stepper"><button data-step="-1" data-id="${item.id}">−</button><strong>${level}/${max}</strong><button data-step="1" data-id="${item.id}">+</button><button class="ghost small" data-max="${item.id}">Max</button></div>` : `<label class="switch-row"><span>Owned</span><input type="checkbox" data-owned="${item.id}" ${isOwned(item)?'checked':''}></label>`}
+      ${chip ? `<div class="detail-grid">
+        <div><span>Current effect</span><strong>${chipEffect == null ? 'Set rarity' : `+${formatNumber(chipEffect)} ${esc(chip.unit)}`}</strong></div>
+        <div><span>Copies for rarity</span><strong>${chipCopies ?? '—'}</strong></div>
+        <div><span>Sowdust spent</span><strong>${formatApproxCoins(chipSowdustSpent)} Sowdust</strong></div>
+        <div><span>Sowdust to rarity cap</span><strong>${formatApproxCoins(chipSowdustRemaining)} Sowdust</strong></div>
+      </div><p class="hint">Garden Chip progress is manual because the documented public Garden API does not expose consumed chip state.</p>` : ''}
     </div>
     <div class="drawer-section"><h3>Evaluation</h3><div class="detail-grid"><div><span>Next step</span><strong>+${formatNumber(gainFor(item))}</strong></div><div><span>Relative effect</span><strong>${relativeGainPct(item).toFixed(2)}%</strong></div></div>
       <div class="detail-grid">
@@ -1793,7 +1824,7 @@ function drawer() {
         <div><span>Current level replacement value</span><strong>${esc(pricing.currentShardValueCoins != null ? formatApproxCoins(pricing.currentShardValueCoins) : '—')}</strong><small>${esc([`${pricing.shardCountOwned ?? '—'} shard${pricing.shardCountOwned === 1 ? '' : 's'} equivalent`, pricing.entryMarketComputedAtMs != null ? marketAverageTimestampLabel({ computedAtMs: pricing.entryMarketComputedAtMs }) : ''].filter(Boolean).join(' · '))}</small></div>
         <div><span>Shards to max</span><strong>${pricing.shardCountToMax ?? '—'}</strong><small>${esc(pricing.costToMaxCoins != null ? formatApproxCoins(pricing.costToMaxCoins) : 'price unavailable')}</small></div>
       </div>` : ''}
-      <label>Manual marginal value<input type="number" step="0.01" data-manual="${item.id}" value="${esc(manual)}" placeholder="only for dynamic values"></label>
+      ${chip ? '' : `<label>Manual marginal value<input type="number" step="0.01" data-manual="${item.id}" value="${esc(manual)}" placeholder="only for dynamic values"></label>`}
     </div>
     ${whereToFindSection(item)}
     <div class="drawer-section"><h3>Rule</h3><p>${esc(item.notes || 'No additional note.')}</p></div>
@@ -2879,27 +2910,40 @@ function bind() {
     render();
   }));
 
+  document.querySelectorAll('[data-chip-rarity]').forEach(el => el.addEventListener('change', event => {
+    const chip = gardenChipById(event.target.dataset.chipRarity);
+    if (!chip) return;
+    state.profile.gardenChips ||= {};
+    const item = UPGRADES.find(entry => entry.gardenChipId === chip.id);
+    const current = item ? gardenChipProgressForItem(item) : normalizeGardenChipProgress(state.profile.gardenChips[chip.id]);
+    const rarity = normalizeGardenChipRarity(event.target.value);
+    const cap = gardenChipMaxLevel(rarity) ?? 20;
+    state.profile.gardenChips[chip.id] = {
+      rarity,
+      level: Math.min(cap, current?.level || 0),
+      source: 'manual',
+    };
+    saveState();
+    render();
+  }));
   document.querySelectorAll('[data-step]').forEach(el => el.addEventListener('click', () => {
     const item = UPGRADES.find(x=>x.id===el.dataset.id); if (!item) return;
-    const store = itemStore(item);
-    const nextLevel = Math.max(0, Math.min(Number(item.max||1), currentLevel(item)+Number(el.dataset.step)));
+    const nextLevel = Math.max(0, Math.min(maxLevelForItem(item), currentLevel(item)+Number(el.dataset.step)));
     if (nextLevel > 0) clearExclusivePeers(item);
-    store.levels[item.id] = nextLevel;
-    store.owned[item.id] = nextLevel > 0;
+    setEntryLevel(item, nextLevel);
     saveState(); render();
   }));
   document.querySelectorAll('[data-max]').forEach(el => el.addEventListener('click', () => {
     const item = UPGRADES.find(x=>x.id===el.dataset.max); if (!item) return;
     clearExclusivePeers(item);
-    const store = itemStore(item);
-    store.levels[item.id]=Number(item.max||1); store.owned[item.id]=true; saveState(); render();
+    setEntryLevel(item, maxLevelForItem(item));
+    saveState(); render();
   }));
   document.querySelectorAll('[data-owned]').forEach(el => el.addEventListener('change', e => {
     const item = UPGRADES.find(x=>x.id===e.target.dataset.owned); if (!item) return;
     if (e.target.checked) clearExclusivePeers(item);
-    const store = itemStore(item);
-    store.owned[item.id]=e.target.checked;
-    store.levels[item.id]=e.target.checked?1:0; saveState(); render();
+    setEntryLevel(item, e.target.checked ? 1 : 0);
+    saveState(); render();
   }));
   document.querySelectorAll('[data-manual]').forEach(el => el.addEventListener('change', e => {
     const item = UPGRADES.find(x=>x.id===e.target.dataset.manual); if (!item) return;
