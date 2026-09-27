@@ -21,6 +21,9 @@ test('rarity presentation covers every physical farming item surface', () => {
   assert.match(uiSource, /data-vacuum-panel/);
   assert.match(uiSource, /\.sb-tool-card\[data-sb-vacuum\]/);
   assert.match(uiSource, /effectiveSetupItemRarity/);
+  assert.match(uiSource, /effectiveSetup/);
+  assert.match(uiSource, /card\.dataset\.setupTarget/);
+  assert.match(uiSource, /state\?\.setupSlotTarget/);
   assert.match(uiSource, /vacuumRarity/);
   assert.match(uiSource, /deriveRarity/);
 });
@@ -63,4 +66,10 @@ test('the rarity presentation is loaded after the redesign styles and item UI sc
   const rarityScript = indexSource.indexOf('src/rarity-background-ui.js');
   assert.ok(redesignCss >= 0 && rarityCss > redesignCss, 'rarity CSS must override the generic redesign card background');
   assert.ok(capabilityScript >= 0 && rarityScript > capabilityScript, 'rarity JS runs after the physical item editors');
+});
+
+test('setup rarity is resolved per rendered setup card instead of only from the active stored setup', () => {
+  assert.match(uiSource, /root\.querySelectorAll\('\.slot-card\[data-slot\]'\)/);
+  assert.match(uiSource, /setupFor\(setupId\)\?\.slots\?\.\[slotId\]/);
+  assert.doesNotMatch(uiSource, /root\.querySelector\(\`\.slot-card\[data-slot=/);
 });

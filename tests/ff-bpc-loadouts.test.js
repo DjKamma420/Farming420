@@ -110,4 +110,6 @@ test('the Setups UI exposes FF/BPC physical sets and Killing only as a pet role'
   assert.match(app, /Only the pet can differ for Killing; Armor and Equipment stay identical to the FF Set\./);
   assert.doesNotMatch(app, /data-setup-add|data-setup-remove|id="setupName"/);
   assert.match(app, /return setupId === BPC_SETUP_ID \? 'BPC Set' : 'FF Set'/);
+  assert.match(app, /effectiveSetup\(all, setupId \|\| all\.activeId\)/);
+  assert.match(app, /data-skyblock-item-id/);
 });

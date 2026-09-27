@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 
 import {
   activeSetupFromStoredState,
+  catalogItemForSetupArt,
   itemForSetupSlot,
   setupItemAsset,
 } from '../src/item-art-ui.js';
@@ -73,17 +74,32 @@ test('setup art resolves from exact skyblockId and never display-name guesses', 
 
 test('rendering binds portraits to the card setup target and item id', () => {
   const source = readFileSync(new URL('../src/item-art-ui.js', import.meta.url), 'utf8');
+  const app = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  assert.match(app, /data-skyblock-item-id/);
   assert.match(source, /slotCard\?\.dataset\.setupTarget/);
+  assert.match(source, /slotCard\?\.dataset\.skyblockItemId/);
   assert.match(source, /dataset\.skyblockItemId/);
   assert.match(source, /itemAssetForSkyblockId\(manifestValue, itemId\)/);
   assert.match(source, /knownSkyblockHeadTexture\(itemId\)/);
   assert.doesNotMatch(source, /itemAssetForSkyblockId\(manifestValue, item\.displayName\)/);
 });
 
+test('official item catalog fallback is exact-id only', () => {
+  const catalog = [
+    { id: 'HELIANTHUS_CHESTPLATE', name: 'Helianthus Chestplate', category: 'CHESTPLATE' },
+    { id: 'HELIANTHUS_BOOTS', name: 'Helianthus Boots', category: 'BOOTS' },
+  ];
+  assert.equal(catalogItemForSetupArt(catalog, 'helianthus_chestplate')?.id, 'HELIANTHUS_CHESTPLATE');
+  assert.equal(catalogItemForSetupArt(catalog, 'helianthus')?.id, undefined);
+  assert.equal(catalogItemForSetupArt(catalog, ''), null);
+});
+
 test('manual equipment ids use their exact head model before the letter fallback', () => {
   const source = readFileSync(new URL('../src/item-art-ui.js', import.meta.url), 'utf8');
   assert.match(source, /knownSkyblockHeadTexture\(itemId\)/);
-  assert.match(source, /const skull = skullNode\(textureId, item, \(\) => showFallback/);
+  assert.match(source, /const skull = skullNode\(textureId, item, \(\) => showCatalogOrLetterFallback/);
+  assert.match(source, /armorItemSvgMarkup/);
+  assert.match(source, /loadItemCatalog/);
   assert.match(source, /document\.createElement\('img'\)/);
   assert.doesNotMatch(source, /style\.backgroundImage/);
 });
@@ -91,7 +107,7 @@ test('manual equipment ids use their exact head model before the letter fallback
 test('head art renders before the optional pack manifest finishes loading', () => {
   const source = readFileSync(new URL('../src/item-art-ui.js', import.meta.url), 'utf8');
   const firstRender = source.indexOf('renderSetupItemArt({ manifestValue: manifest })');
-  const manifestLoad = source.indexOf('const loaded = await ensureManifest()');
+  const manifestLoad = source.indexOf('const [loaded] = await Promise.all([ensureManifest(), ensureCatalog()])');
   assert.ok(firstRender >= 0 && manifestLoad > firstRender);
 });
 

@@ -1,7 +1,7 @@
 import { STORAGE_KEY } from './config.js';
 import { CROPS } from './data.js';
 import { rarityClass, RARITY_COLORS } from './item-editor.js';
-import { normalizeSetups } from './setups.js';
+import { effectiveSetup } from './setups.js';
 import { effectiveSetupItemRarity, normalizeRarity } from './setup-rarity.js';
 import { loadItemCatalog, readCachedCatalog } from './item-catalog.js';
 import { canRecombobulateItem, catalogItemForSetupItem } from './item-capabilities.js';
@@ -25,9 +25,10 @@ function readState() {
   }
 }
 
-function activeSetupFromState(state) {
-  const setups = normalizeSetups(state?.profile?.setups);
-  return setups.list.find(setup => setup.id === setups.activeId) || setups.list[0] || null;
+function setupFromState(state, setupId = null) {
+  const setups = state?.profile?.setups;
+  if (!setups || !Array.isArray(setups.list) || !setups.list.length) return null;
+  return effectiveSetup(setups, setupId || setups.activeId);
 }
 
 function applyRarityClass(node, rarity) {
@@ -50,20 +51,35 @@ function setupItemRarity(item, catalog) {
 }
 
 function applySetupRarity(root, state, catalog) {
-  const setup = activeSetupFromState(state);
-  if (!setup) return;
+  const activeId = state?.profile?.setups?.activeId || null;
+  const cache = new Map();
+  const setupFor = setupId => {
+    const targetId = setupId || activeId || '';
+    if (!cache.has(targetId)) cache.set(targetId, setupFromState(state, setupId || activeId));
+    return cache.get(targetId);
+  };
 
-  for (const [slotId, item] of Object.entries(setup.slots || {})) {
-    if (!item) continue;
-    const { rarity, catalogItem } = setupItemRarity(item, catalog);
-    if (!rarity) continue;
-
-    const card = root.querySelector(`.slot-card[data-slot="${slotId}"]`);
-    const editor = root.querySelector(`[data-item-editor="${slotId}"]`);
-    applyRarityClass(card, rarity);
-    applyRarityClass(editor, rarity);
-
+  for (const card of root.querySelectorAll('.slot-card[data-slot]')) {
+    const slotId = card.dataset.slot;
+    const setupId = card.dataset.setupTarget || activeId;
+    const item = setupFor(setupId)?.slots?.[slotId] || null;
+    if (!item) {
+      clearRarityClass(card);
+      continue;
+    }
+    const { rarity } = setupItemRarity(item, catalog);
+    if (rarity) applyRarityClass(card, rarity);
+    else clearRarityClass(card);
   }
+
+  const editor = root.querySelector('[data-item-editor]');
+  const slotId = editor?.dataset.itemEditor;
+  if (!editor || !slotId) return;
+  const setupId = state?.setupSlotTarget || activeId;
+  const item = setupFor(setupId)?.slots?.[slotId] || null;
+  const { rarity } = setupItemRarity(item, catalog);
+  if (rarity) applyRarityClass(editor, rarity);
+  else clearRarityClass(editor);
 }
 
 function bucketForCrop(state, cropId) {
