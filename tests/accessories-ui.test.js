@@ -54,10 +54,10 @@ test('accessory cards no longer expose Recombobulator or Enrichment configuratio
   assert.equal(ACCESSORY_CAPABILITIES_VERIFIED, '2026-09-23');
 });
 
-test('accessory state is persistent and the consolidated workspace loads the official item catalog', () => {
+test('accessory workspace reads synced ownership from the normalized profile and loads the official item catalog', () => {
   const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
-  assert.match(source, /accessoryItems: \{\}/);
-  assert.match(source, /state\.profile\.accessoryItems/);
+  assert.match(source, /state\.profile\?\.normalizedSnapshot\?\.items/);
+  assert.match(source, /function accessorySnapshotRecord/);
   assert.match(source, /\['setups', 'shards'\]\.includes\(state\.page\)/);
 });
 
