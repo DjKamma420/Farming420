@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { createDefaultSetups } from '../src/setups.js';
+import { GARDEN_CHIP_UPGRADES } from '../src/garden-chips.js';
 
 import {
   applyComputedStatsToState,
@@ -339,4 +340,56 @@ test('event-scoped sources only enter totals when their context is active', () =
 
   const contest = computeTotalsFromEntries(state, entries, 'melon', 'farm', 'Jacob Contest');
   assert.equal(contest.globalFortune, 31);
+});
+
+
+test('Garden Chip stats use the configured rarity and level', () => {
+  const state = baseState();
+  state.profile.gardenChips = {
+    cropshot: { rarity: 'RARE', level: 10, source: 'manual' },
+    rarefinder: { rarity: 'LEGENDARY', level: 20, source: 'manual' },
+  };
+  const entries = GARDEN_CHIP_UPGRADES.filter(item => ['cropshot', 'rarefinder'].includes(item.gardenChipId));
+  const totals = computeTotalsFromEntries(state, entries, 'melon', 'farm');
+  assert.equal(totals.globalFortune, 30);
+  assert.equal(totals.overbloom, 50);
+  assert.deepEqual(totals.incomplete.globalFortune, []);
+  assert.deepEqual(totals.incomplete.overbloom, []);
+});
+
+test('a legacy Garden Chip level with unknown rarity stays incomplete instead of assuming Legendary', () => {
+  const state = baseState();
+  state.profile.gardenChips = {
+    cropshot: { rarity: null, level: 10, source: 'legacy' },
+  };
+  const entry = GARDEN_CHIP_UPGRADES.find(item => item.gardenChipId === 'cropshot');
+  const totals = computeTotalsFromEntries(state, [entry], 'melon', 'farm');
+  assert.equal(totals.globalFortune, 0);
+  assert.deepEqual(totals.incomplete.globalFortune, [
+    { id: 'garden-chip-cropshot-chip', reason: 'Garden Chip rarity is unknown' },
+  ]);
+});
+
+test('Vermin Vaporizer contributes Bonus Pest Chance only while spawning', () => {
+  const state = baseState();
+  state.profile.gardenChips = {
+    'vermin-vaporizer': { rarity: 'LEGENDARY', level: 20, source: 'manual' },
+  };
+  const entry = GARDEN_CHIP_UPGRADES.find(item => item.gardenChipId === 'vermin-vaporizer');
+  assert.equal(computeTotalsFromEntries(state, [entry], 'melon', 'farm').bonusPestChance, 0);
+  assert.equal(computeTotalsFromEntries(state, [entry], 'melon', 'pest-spawn').bonusPestChance, 100);
+  assert.equal(computeTotalsFromEntries(state, [entry], 'melon', 'pest-kill').bonusPestChance, 0);
+});
+
+test('Overdrive is crop Fortune only during Jacob Contest context', () => {
+  const state = baseState();
+  state.profile.gardenChips = {
+    overdrive: { rarity: 'LEGENDARY', level: 20, source: 'manual' },
+  };
+  const entry = GARDEN_CHIP_UPGRADES.find(item => item.gardenChipId === 'overdrive');
+  const normal = computeTotalsFromEntries(state, [entry], 'melon', 'farm');
+  assert.equal(normal.cropFortune, 0);
+  const contest = computeTotalsFromEntries(state, [entry], 'melon', 'farm', 'Jacob Contest');
+  assert.equal(contest.globalFortune, 0);
+  assert.equal(contest.cropFortune, 140);
 });
