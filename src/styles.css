@@ -168,3 +168,12 @@
 .search-target-highlight{outline:2px solid var(--accent);outline-offset:3px;border-radius:10px;scroll-margin-top:96px}
 .search-target-note{margin:0 0 9px;padding:8px 10px;border:1px solid #3d6c51;border-radius:8px;background:#10291c;color:var(--accent2);font-size:11px;line-height:1.4}
 .search-result[aria-selected="true"]{background:var(--panel2)}
+
+.info-reference-card{scroll-margin-top:92px}
+.info-entry-copy{display:grid;gap:6px}
+.info-entry-copy p b{color:var(--text)}
+.info-entry-source{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:3px;font-size:11px}
+.info-entry-source a{color:var(--accent2);font-weight:800;text-decoration:none}
+.info-entry-source a:hover{text-decoration:underline}
+.info-entry-source span{color:var(--muted)}
+.info-source-note{padding-top:7px;border-top:1px solid var(--line);font-style:italic}

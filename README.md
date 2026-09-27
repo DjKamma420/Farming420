@@ -92,20 +92,22 @@ third-party service and cannot silently resolve to the wrong account.
 
 ## Info
 
-**Info** in the sidebar is the explanation-only hub for new players. It starts
-with a short early-game strategy, an important-places/NPC routing sheet and a
-Pest guide that explains spawning, killing, guaranteed drops and rare drops as
-separate jobs.
+**Info** in the sidebar is the explanation-only hub for early- and midgame
+players. Reference cards explain **what** a mechanic or upgrade is, **why** it
+matters, **when** it becomes relevant, and **where/how** to find or obtain it.
+The page covers FF, Crop Fortune, Overbloom, BPC, Pest pressure/spawning/loot,
+Vacuums, Recombobulators, gemstones, reforges, important Garden locations and a
+crop-specific strategy entry for every supported crop.
 
-The former **Guide 0-60** now lives inside Info instead of occupying its own
-navigation page. It still follows the player's Farming level, marks reached
-armour milestones, explains pet alternatives, enchantment acquisition and the
-three-phase farming/spawning/killing loadout. Pet cards are informational here;
-actual configuration stays on the dedicated setup pages.
+Every Info record has a stable anchor and search keywords. Global search routes
+directly to the matching explanation instead of treating explanatory content as
+an account setting. Current mechanic cards carry a source and verification date;
+crop-specific cards reuse the source metadata already stored with the crop/tool
+research.
 
-The Pests page is correspondingly analysis-only: Vacuum kill thresholds and the
-Pesthunter Phillip conversion remain there, while explanatory Pest mechanics and
-the crop-to-Pest mapping live under Info.
+The former **Guide 0-60** remains embedded inside Info instead of occupying its
+own navigation page. The Pests page stays analysis-only: calculations belong
+there, while explanations and the crop-to-Pest mapping belong in Info.
 
 ## Setups
 
@@ -144,21 +146,16 @@ value two competing sources.
 
 ### Where do I find a value?
 
-The app asks for values you have to read out of the game, which only helps if
-you can find them. Two places answer that:
+Use **Info** for explanations and acquisition/location guidance. Search for the
+mechanic, item, crop or place and open its direct Info result. Values that are
+actual profile inputs keep their **Where do I find this?** detail in the
+relevant card/drawer.
 
-- **What to enter** in the sidebar lists everything a sync cannot fill, biggest
-  win first, with each entry's explanation and a direct link to its source.
-- Every card's detail drawer has a **Where do I find this?** section.
-
-An entry is one of three things: filled by the sync and needing no lookup at
-all; carrying a documented in-game location; or not documented yet, in which
-case the app says so and offers the source instead of guessing at a menu path.
-A wrong path is worse than none, so `src/help-locations.js` never invents one.
-See [`docs/FINDING_VALUES.md`](docs/FINDING_VALUES.md).
-
-Today 20 of 77 entries are filled by the sync, and the in-game locations for the
-remaining 57 still need a research pass.
+`src/help-locations.js` still distinguishes synced values from verified and
+unverified lookup guidance, but the UI does not use a generic "Ingame location
+not documented" placeholder. When an exact path is not verified, Farming420
+gives category-level lookup guidance plus the source instead of inventing a
+specific menu path. See [`docs/FINDING_VALUES.md`](docs/FINDING_VALUES.md).
 
 ### What gets filled in
 
