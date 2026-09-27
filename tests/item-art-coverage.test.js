@@ -11,6 +11,7 @@ import {
   normalizeItemName,
   skinTextureUrl,
 } from '../src/item-art-coverage.js';
+import { knownSkyblockRenderedIcon } from '../src/skull-art.js';
 
 const catalog = [
   { id: 'BLESSED_BAIT', name: 'Blessed Bait', material: 'SKULL_ITEM', skin: 'a'.repeat(64) },
@@ -240,4 +241,20 @@ test('Attribute Shards keep a non-empty portrait fallback without the live item 
   assert.doesNotMatch(source, /if \(!items\.length\) return 0/);
   assert.match(source, /entry\.category === 'Attribute Shard'/);
   assert.match(source, /packArtNodeFor\(entry, entry\.name\) \|\| letterArtNode\(entry, entry\.name\)/);
+});
+
+
+test('current shard ids use exact rendered item icons instead of initials', () => {
+  assert.equal(
+    knownSkyblockRenderedIcon('SHARD_LUNAR_MOTH'),
+    'https://skyah.net/icons/items/shard_lunar_moth.webp',
+  );
+  assert.equal(
+    knownSkyblockRenderedIcon('SHARD_GALAXY_FISH'),
+    'https://skyah.net/icons/items/shard_galaxy_fish.webp',
+  );
+  const source = readFileSync(new URL('../src/item-art-coverage.js', import.meta.url), 'utf8');
+  assert.match(source, /function shardPhysicalItemId/);
+  assert.match(source, /knownSkyblockRenderedIcon/);
+  assert.match(source, /decorateSynergyShardCards\(items\)/);
 });
