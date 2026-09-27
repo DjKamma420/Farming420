@@ -477,10 +477,6 @@ function upgradeFilterMarkup(rows, activeFilter) {
   </div>`;
 }
 
-function compactCoins(value) {
-  return compactCoinNumber(value) ?? '—';
-}
-
 function formatPayback(hours) {
   if (!Number.isFinite(hours)) return '—';
   if (hours < 1) return `${Math.round(hours * 60)} min`;
@@ -599,10 +595,10 @@ function measuredWithMarketAverage(values, cropId) {
 
 function measuredResultText(result) {
   if (result.normalCropCoinsPerHour == null) return '\u2014';
-  const normal = `${compactCoins(result.normalCropCoinsPerHour)}/h`;
+  const normal = `${compactCoinNumber(result.normalCropCoinsPerHour)}/h`;
   return result.rareCropCoinsPerHour == null
     ? normal
-    : `${normal} + ${compactCoins(result.rareCropCoinsPerHour)}/h Feast`;
+    : `${normal} + ${compactCoinNumber(result.rareCropCoinsPerHour)}/h Feast`;
 }
 
 /**
@@ -658,7 +654,7 @@ function measuredPanel(raw, context) {
   const result = measuredBaseline(priced.values, measuredStats(context), cropId);
   const caveats = fortuneCaveats(context);
   const priceText = price => price?.coinsPerUnit
-    ? `${compactCoins(price.coinsPerUnit)} Coins`
+    ? formatApproxCoins(price.coinsPerUnit)
     : '—';
   return `<details class="revenue-measured">
     <summary>
@@ -727,7 +723,7 @@ function earnedAssumptionsPanel(raw) {
     <summary class="revenue-summary">
       <div class="revenue-panel-head">
         <div><div class="eyebrow">${esc(activityLabel(mode))} acquisition routes</div><h2>Earned upgrade time</h2></div>
-        <span class="revenue-note">${compactCoins(timeValue.coinsPerHour)} Coins/h · ${esc(sourceLabel)}</span>
+        <span class="revenue-note">${compactCoinNumber(timeValue.coinsPerHour)} Coins/h · ${esc(sourceLabel)}</span>
       </div>
     </summary>
     <div class="earned-route-list">
@@ -759,19 +755,21 @@ function rankingMarkup(actions, ready) {
         ? `${row.fortuneEquivalent.toFixed(2)} FF eq.`
         : item.status === 'VERIFY' ? 'manual value required' : 'activity-specific stat';
     const costLabel = costKnown
-      ? `${compactCoins(row.cost)} ${row.acquisitionMode === 'EARNED' ? 'Coins eq.' : 'Coins'}`
+      ? row.acquisitionMode === 'EARNED'
+        ? `~${compactCoinNumber(row.cost)} Coins eq.`
+        : formatApproxCoins(row.cost)
       : '—';
     const targetCost = targetUnitCost(row);
     const costNote = row.acquisitionMode === 'EARNED' && costKnown
-      ? `EARNED — time converted to coins · ${formatHours(row.activeGrindHours)} @ ${compactCoins(row.timeValueCoinsPerHour)}/h${row.directCoinCost > 0 ? ` + ${compactCoins(row.directCoinCost)} direct` : ''}`
+      ? `EARNED — time converted to coins · ${formatHours(row.activeGrindHours)} @ ${compactCoinNumber(row.timeValueCoinsPerHour)}/h${row.directCoinCost > 0 ? ` + ${formatApproxCoins(row.directCoinCost)} direct` : ''}`
       : spawnPrimary && row.target === PLANNER_UPGRADE_TARGET.BONUS_PEST_CHANCE && targetCost !== null
-        ? `${compactCoins(targetCost)} / BPC · ${costOriginNote(row.costSource)}`
+        ? `~${compactCoinNumber(targetCost)} Coins / BPC · ${costOriginNote(row.costSource)}`
         : costKnown && row.coinsPerEffectiveFortune
-          ? `${compactCoins(row.coinsPerEffectiveFortune)} / FF eq. · ${costOriginNote(row.costSource)}`
+          ? `~${compactCoinNumber(row.coinsPerEffectiveFortune)} Coins / FF eq. · ${costOriginNote(row.costSource)}`
           : costOriginNote(row.costSource);
     const valueDisplay = spawnPrimary
       ? 'Primary'
-      : marginalKnown ? `+${compactCoins(row.marginalCoinsHour)}/h` : '—';
+      : marginalKnown ? `+${compactCoinNumber(row.marginalCoinsHour)}/h` : '—';
     const valueNote = spawnPrimary
       ? 'spawning focus'
       : ready ? 'benchmark Coins/h' : 'value unavailable';
@@ -998,7 +996,7 @@ function focusNextMarkup(raw, actions, scope = focusScope()) {
     const marginal = spawnPrimary
       ? 'Primary'
       : Number.isFinite(row.marginalCoinsHour)
-        ? `+${compactCoins(row.marginalCoinsHour)}/h`
+        ? `+${compactCoinNumber(row.marginalCoinsHour)}/h`
         : '—';
     const marginalNote = spawnPrimary ? 'spawning focus' : 'benchmark value';
     const statusNote = item.status === 'VERIFY' ? ' · manual/verify' : '';
@@ -1021,7 +1019,7 @@ function renderFocusNext(host, raw) {
   const actions = generateRecommendationActions(rows);
   const objectiveHelp = mode === ACTIVITY_MODE.PEST_SPAWN
     ? '<p>Spawning is purpose-ranked: Bonus Pest Chance and Pest cooldown reduction are primary. Farming Fortune is secondary because it only affects crop output during the short spawning window.</p>'
-    : `<p>Value is calculated from the active Fortune/Overbloom against the same ${compactCoins(PLANNER_BENCHMARK_COINS_PER_HOUR)}/h standard stream used by Upgrade Planner.</p>`;
+    : `<p>Value is calculated from the active Fortune/Overbloom against the same ${compactCoinNumber(PLANNER_BENCHMARK_COINS_PER_HOUR)}/h standard stream used by Upgrade Planner.</p>`;
 
   host.innerHTML = `
     ${focusScopePanel(raw, scope)}
@@ -1078,7 +1076,7 @@ function enhancePlanner() {
   const rows = allRows.filter(row => matchesUpgradeFilter(row.item, activeFilter));
   const actions = generateRecommendationActions(rows);
   const rankingTitle = 'Recommended actions · all sets';
-  const rankingHelp = `Farming, Pest Spawning and Pest Killing are evaluated together. Global actions appear once. Crop-tool actions are shared between Farming and Spawning. Gear is merged only when the setup slots reference the same physical items; separate physical sets stay separate. Marginal value and payback use the common ${compactCoins(PLANNER_BENCHMARK_COINS_PER_HOUR)}/h affected-income benchmark.`;
+  const rankingHelp = `Farming, Pest Spawning and Pest Killing are evaluated together. Global actions appear once. Crop-tool actions are shared between Farming and Spawning. Gear is merged only when the setup slots reference the same physical items; separate physical sets stay separate. Marginal value and payback use the common ${compactCoinNumber(PLANNER_BENCHMARK_COINS_PER_HOUR)}/h affected-income benchmark.`;
 
   original.classList.add('planner-v1-source');
   const panel = document.createElement('div');
