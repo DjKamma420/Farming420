@@ -85,7 +85,10 @@ function actionCost(row) {
   if (row?.acquisitionMode === 'BUYABLE') {
     return row?.costKnown === true ? finiteOrNull(row.cost) : null;
   }
-  return finiteOrNull(row?.directCoinCost);
+  if (row?.acquisitionMode === 'EARNED') {
+    return finiteOrNull(row?.directCoinCost);
+  }
+  return null;
 }
 
 function actionState(row, key) {
