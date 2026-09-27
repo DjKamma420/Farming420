@@ -205,16 +205,26 @@
     "mutual_exclusion_rule":"Only one compatible reforge per item; always compare the lost alternative effect"
   },
   "chips": {
-    "cropshot":{"rare_ff_per_level":3,"epic_ff_per_level":4,"legendary_ff_per_level":5,"legendary_max_ff":100},
-    "rarefinder":{"current_legendary_max_overbloom":50},
-    "vermin_vaporizer":{"role":"Bonus Pest Chance"},
-    "overdrive":{"role":"Jacob active-crop Fortune; contest-only"},
-    "hypercharge":{"role":"amplifies only whitelisted temporary FF sources","rule":"never multiply total FF"},
-    "evergreen":{"role":"Greenhouse base crops"},
-    "quickdraw":{"role":"Visitor cooldown"},
-    "mechamind":{"role":"Tool XP","primary_profit_priority":false},
-    "sowledge":{"role":"Farming Wisdom","wisdom_marker":true,"primary_profit_priority":false},
-    "synthesis":{"role":"Crop Analyzer base Copper"},
+    "last_verified":"2026-09-27",
+    "source":"https://hypixelskyblock.minecraft.wiki/w/Garden_Chips",
+    "official_change_sources":[
+      "https://hypixel.net/threads/hypixel-skyblock-0-26-1-new-player-improvements-harvest-feast-changes-healing-revamp-and-more.6127383/",
+      "https://hypixel.net/threads/aug-3-0-27-alpha-changes-2.6134812/"
+    ],
+    "rarity":{"rare":{"max_level":10,"total_copies":1},"epic":{"max_level":15,"total_copies":5},"legendary":{"max_level":20,"total_copies":21}},
+    "sowdust_cost_by_target_level":{"2":100000,"3":200000,"4":300000,"5":400000,"6":550000,"7":700000,"8":850000,"9":1000000,"10":1150000,"11":1300000,"12":1450000,"13":1600000,"14":1750000,"15":1900000,"16":2050000,"17":2200000,"18":2350000,"19":2500000,"20":2650000},
+    "sowdust_cumulative":{"level_10":5250000,"level_15":13250000,"level_20":25000000},
+    "cropshot":{"per_level":{"rare":3,"epic":4,"legendary":5},"unit":"Farming Fortune","legendary_max":100},
+    "rarefinder":{"per_level":{"rare":1.5,"epic":2,"legendary":2.5},"unit":"Overbloom","legendary_max":50,"live_change":"0.26.1 reduced max from 60 to 50"},
+    "vermin_vaporizer":{"per_level":{"rare":3,"epic":4,"legendary":5},"unit":"Bonus Pest Chance","legendary_max":100},
+    "overdrive":{"per_level":{"rare":5,"epic":6,"legendary":7},"unit":"Crop Fortune","legendary_max":140,"role":"active Jacob Contest crop only"},
+    "hypercharge":{"per_level_percent":{"rare":3,"epic":4,"legendary":5},"legendary_max_percent":100,"role":"amplifies only whitelisted temporary FF sources","rule":"never multiply total FF"},
+    "evergreen":{"per_level_percent":{"rare":2,"epic":2.5,"legendary":3},"legendary_max_percent":60,"role":"Greenhouse base crops"},
+    "quickdraw":{"per_level_percent":{"rare":1.5,"epic":2,"legendary":2.5},"legendary_max_percent":50,"role":"Visitor appearance-time reduction while harvesting"},
+    "mechamind":{"per_level_percent":{"rare":1.5,"epic":2,"legendary":2.5},"legendary_max_percent":50,"role":"Farming Tool XP","primary_profit_priority":false},
+    "sowledge":{"per_level":{"rare":1,"epic":1.25,"legendary":1.5},"unit":"Farming Wisdom","legendary_max":30,"wisdom_marker":true,"primary_profit_priority":false},
+    "synthesis":{"per_level_percent":{"rare":1,"epic":1.5,"legendary":2},"legendary_max_percent":40,"role":"Copper from Mutation Analysis"},
+    "profile_rule":"Public Garden API documentation does not document consumed chip rarity/level state as of 2026-09-27; store manual/unknown rather than assuming zero.",
     "time_factor_rule":"remaining Sowdust / measured Sowdust per hour plus duplicate-chip rarity requirements"
   },
   "temporary_and_consumable": {
@@ -286,7 +296,6 @@
     "Hypercharge exact whitelist",
     "Rose Dragon exact current scaling",
     "Tool level 1-50 tables for all Farming Tool classes",
-    "Chip Sowdust cost table by level/rarity",
     "Greenhouse exact order of operations",
     "gear-swap snapshot timing for Pest spawn/loot and Greenhouse harvest"
   ],
