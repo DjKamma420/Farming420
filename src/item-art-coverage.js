@@ -441,7 +441,11 @@ export async function applyItemArtCoverage(root = document, rawState = readState
   applying = true;
   try {
     const items = await ensureCatalog();
-    if (!items.length) return 0;
+    // Progression cards still need deterministic fallback art when the official
+    // item catalogue is unavailable. In particular, Shards always reserve a
+    // portrait surface, so returning early here leaves an empty box offline or
+    // during a failed catalogue refresh. The decorators already tolerate an
+    // empty catalogue; let them run so pack/letter fallbacks can do their job.
     decorateProgressionCards(items);
     decorateAccessoryCatalog(items);
     decorateDrawer(items, rawState);
