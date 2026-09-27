@@ -7,8 +7,8 @@ const app = read('app.js');
 const planner = read('revenue-planner.js');
 const activity = read('activity-mode-ui.js');
 
-test('Focus on next is a first-class navigation page', () => {
-  assert.match(app, /\['focus', 'Focus on next'\]/);
+test('Focus on Next is a first-class navigation page', () => {
+  assert.match(app, /\['focus', 'Focus on Next'\]/);
   assert.match(app, /case 'focus': content = focusNextPage\(\); break;/);
   assert.match(app, /class="focus-next-list"/);
   assert.match(activity, /MODE_SWITCH_PAGES = new Set\(\[[^\]]*'focus'/);
