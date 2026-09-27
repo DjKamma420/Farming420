@@ -13,7 +13,8 @@ test('Legendary shard level 10 represents 24 total shards', () => {
 });
 
 test('Epic and Uncommon Farming shards use their real cumulative level quantities', () => {
-  assert.equal(shardsForAttributeLevel('attribute-shard-firefly-or-lunar-moth-shard', 10), 32);
+  assert.equal(shardsForAttributeLevel('attribute-shard-firefly-solar-power', 10), 32);
+  assert.equal(shardsForAttributeLevel('attribute-shard-lunar-moth-lunar-power', 10), 32);
   assert.equal(shardsForAttributeLevel('attribute-shard-cricket-pest-fortune', 10), 64);
   assert.equal(shardsForAttributeStep('attribute-shard-cricket-pest-fortune', 2), 2);
   assert.equal(shardsRemainingToMax('attribute-shard-cricket-pest-fortune', 7), 36);
