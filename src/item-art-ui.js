@@ -1,5 +1,6 @@
 import { STORAGE_KEY } from './config.js';
 import { itemAssetForSkyblockId, loadItemAssetManifest } from './item-assets.js';
+import { effectiveSetup } from './setups.js';
 import { knownSkyblockHeadTexture, knownSkyblockRenderedIcon, skullTextureUrl } from './skull-art.js?v=20260918-4';
 
 let manifest = null;
@@ -7,23 +8,28 @@ let manifestRequested = false;
 let applying = false;
 let applyQueued = false;
 
-export function activeSetupFromStoredState(rawState) {
+export function setupFromStoredState(rawState, setupId = null) {
   const setups = rawState?.profile?.setups;
   if (!setups || !Array.isArray(setups.list) || !setups.list.length) return null;
-  return setups.list.find(setup => setup?.id === setups.activeId) || setups.list[0] || null;
+  return effectiveSetup(setups, setupId || setups.activeId);
 }
 
-export function itemForSetupSlot(rawState, slotId) {
+export function activeSetupFromStoredState(rawState) {
+  return setupFromStoredState(rawState);
+}
+
+export function itemForSetupSlot(rawState, slotId, setupId = null) {
   if (!slotId) return null;
-  const setup = activeSetupFromStoredState(rawState);
+  const setup = setupFromStoredState(rawState, setupId);
   const item = setup?.slots?.[slotId];
   return item && typeof item === 'object' ? item : null;
 }
 
-export function setupItemAsset(manifestValue, rawState, slotId) {
-  const item = itemForSetupSlot(rawState, slotId);
-  if (!item?.skyblockId) return null;
-  return itemAssetForSkyblockId(manifestValue, item.skyblockId);
+export function setupItemAsset(manifestValue, rawState, slotId, setupId = null) {
+  const item = itemForSetupSlot(rawState, slotId, setupId);
+  const itemId = String(item?.skyblockId || '').trim().toUpperCase();
+  if (!itemId) return null;
+  return itemAssetForSkyblockId(manifestValue, itemId);
 }
 
 function readState(storage = globalThis.localStorage) {
@@ -80,10 +86,6 @@ function skullNode(textureId, item, onError = null) {
   node.setAttribute('role', 'img');
   node.setAttribute('aria-label', item?.displayName ? `${item.displayName} head texture` : 'SkyBlock head texture');
 
-  // Use real image elements rather than CSS background-image. The CSP permits
-  // Mojang in img-src, while a dynamically assigned background style is a much
-  // more fragile path on mobile/WebView. Both images show the same skin sheet;
-  // CSS shifts one to the face square and the other to the hat square.
   let failed = false;
   const fail = () => {
     if (failed) return;
@@ -166,25 +168,33 @@ export function renderSetupItemArt({ root = document, rawState = readState(), ma
   });
 
   root.querySelectorAll('.slot-portrait').forEach(card => {
-    const slotId = card.dataset.slot || card.closest('[data-slot]')?.dataset.slot;
+    const slotCard = card.closest('[data-slot]');
+    const slotId = card.dataset.slot || slotCard?.dataset.slot;
     if (!slotId) return;
-    const item = itemForSetupSlot(rawState, slotId);
+
+    const setupId = slotCard?.dataset.setupTarget || null;
+    const item = itemForSetupSlot(rawState, slotId, setupId);
+    const itemId = String(item?.skyblockId || '').trim().toUpperCase();
     if (!item) {
       if (card.querySelector(':scope > .official-item-art, :scope > .skull-art, :scope > .item-art-fallback')) removeRenderedArt(card);
+      delete card.dataset.skyblockItemId;
       return;
     }
 
-    const textureId = item.skullTexture || knownSkyblockHeadTexture(item.skyblockId);
-    const renderedIconUrl = item.skullTexture ? null : knownSkyblockRenderedIcon(item.skyblockId);
+    if (itemId) card.dataset.skyblockItemId = itemId;
+    else delete card.dataset.skyblockItemId;
+
+    const textureId = item.skullTexture || knownSkyblockHeadTexture(itemId);
+    const renderedIconUrl = item.skullTexture ? null : knownSkyblockRenderedIcon(itemId);
     const identity = renderedIconUrl
-      ? `rendered:${String(item.skyblockId || '').toUpperCase()}`
+      ? `rendered:${itemId}`
       : textureId
         ? `skull:${textureId}`
-        : item.skyblockId ? `item:${item.skyblockId}` : `name:${item.displayName || slotId}`;
+        : itemId ? `item:${itemId}` : `unresolved:${setupId || 'active'}:${slotId}`;
     if ((card.classList.contains('has-official-item-art') || card.classList.contains('has-item-art-fallback')) && card.dataset.renderedItemArt === identity) return;
     removeRenderedArt(card);
 
-    const asset = item.skyblockId ? itemAssetForSkyblockId(manifestValue, item.skyblockId) : null;
+    const asset = itemId ? itemAssetForSkyblockId(manifestValue, itemId) : null;
 
     if (renderedIconUrl) {
       const exact = remoteIconNode(renderedIconUrl, item, () => {
@@ -238,9 +248,6 @@ async function apply() {
   if (applying) return;
   applying = true;
   try {
-    // Heads are independent of the Hypixel resource-pack manifest. Render them
-    // immediately so a slow/missing manifest can never leave a setup portrait
-    // blank. Once the manifest arrives, run a second pass for non-head items.
     renderSetupItemArt({ manifestValue: manifest });
     const loaded = await ensureManifest();
     renderSetupItemArt({ manifestValue: loaded });
