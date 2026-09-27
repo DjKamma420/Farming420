@@ -9,6 +9,20 @@ export const PLANNER_UPGRADE_TARGET = Object.freeze({
   OTHER: 'other',
 });
 
+function explicitPlannerTarget(item) {
+  if (!Array.isArray(item?.plannerTargets)) return null;
+  const supported = new Set(Object.values(PLANNER_UPGRADE_TARGET));
+  const targets = item.plannerTargets
+    .map(value => String(value || '').trim().toLowerCase())
+    .filter(value => supported.has(value) && value !== PLANNER_UPGRADE_TARGET.OTHER);
+
+  // Multiple independent outputs need their own economics model before they can
+  // be reduced to one recommendation target. Empty explicitly means "relevant
+  // to Farming420, but do not auto-rank as crop/Pest profit".
+  if (targets.length !== 1) return PLANNER_UPGRADE_TARGET.OTHER;
+  return targets[0];
+}
+
 function normalizedSearchText(item) {
   return [
     item?.metric,
@@ -20,6 +34,9 @@ function normalizedSearchText(item) {
 }
 
 export function plannerUpgradeTarget(item) {
+  const explicit = explicitPlannerTarget(item);
+  if (explicit !== null) return explicit;
+
   const metric = String(item?.metric || '').toLowerCase();
   const attribute = String(item?.attribute || '').toLowerCase();
   const searchable = normalizedSearchText(item);
