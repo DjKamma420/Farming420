@@ -26,7 +26,7 @@ function decoded(overrides = {}) {
 test('the default setups are farming, pest spawning, and pest killing', () => {
   const setups = createDefaultSetups();
   assert.deepEqual(setups.list.map(setup => setup.id), ['normal', 'pest', 'pest-kill']);
-  assert.deepEqual(setups.list.map(setup => setup.name), ['Farming', 'Pest Spawning', 'Pest Killing']);
+  assert.deepEqual(setups.list.map(setup => setup.name), ['FF (Farming Fortune) Set', 'BPC (Bonus Pest Chance) Set', 'Pest Killing']);
   assert.equal(setups.activeId, 'normal');
   assert.equal(setups.shareFarmingKillingPet, false);
 });
