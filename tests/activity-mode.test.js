@@ -214,3 +214,25 @@ test('Killing resolves the shared FF pet instead of falling back to the last syn
   assert.equal(cow.type, 'MOOSHROOM_COW');
   assert.equal(cow.source, 'setup');
 });
+
+
+test('Killing resolves the shared FF pet instead of falling back to the last synced active pet', () => {
+  const state = baseState();
+  state.profile.setups.modelVersion = 5;
+  state.profile.setups.activeId = 'pest-kill';
+  state.profile.setups.shareFarmingKillingPet = true;
+  state.profile.setups.list[0].slots.pet = {
+    skyblockId: 'MOOSHROOM_COW',
+    displayName: 'Mooshroom Cow',
+    rarity: 'LEGENDARY',
+    petLevel: 100,
+  };
+  state.profile.setups.list[2].slots.pet = null;
+  state.profile.normalizedSnapshot = {
+    pets: [{ type: 'ELEPHANT', rarity: 'LEGENDARY', active: true }],
+  };
+
+  const cow = activeMooshroomCow(state);
+  assert.equal(cow.type, 'MOOSHROOM_COW');
+  assert.equal(cow.source, 'setup');
+});
