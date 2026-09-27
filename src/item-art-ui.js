@@ -172,7 +172,7 @@ function exactSetupArtNode(itemId, item, onError = null) {
   }
 
   if (descriptor.kind === 'rendered') {
-    return remoteIconNode(knownSkyblockRenderedIcon(itemId), item, onError);
+    return remoteIconNode(descriptor.iconUrl || knownSkyblockRenderedIcon(itemId), item, onError);
   }
 
   if (descriptor.kind === 'armor') {
