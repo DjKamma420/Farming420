@@ -44,9 +44,12 @@ jobs:
                       docs/PRODUCT_SPEC.md docs/PROFILE_DATA_MATRIX.md docs/PROFILE_MODEL.md docs/MATH_MODEL.md docs/FINDING_VALUES.md \
                       docs/VERIFIED_MECHANICS.md docs/FARMING_HISTORY.md docs/RENDER_FREEZE_SAFETY.md \
                       docs/ARCHITECTURE.md \
-                      scripts/browser-startup-smoke.sh scripts/prepare-pages-deploy.js; do
+                      scripts/browser-startup-smoke.sh scripts/prepare-pages-deploy.js scripts/check-static-references.js; do
             test -f "$file" || { echo "missing required file: $file"; exit 1; }
           done
+
+      - name: Audit local static references
+        run: node scripts/check-static-references.js
 
       - name: Validate service-worker retirement mode
         run: node scripts/check-sw-manifest.js
@@ -56,3 +59,9 @@ jobs:
 
       - name: Run tests
         run: npm test
+
+      - name: Run page sweep
+        run: npm run sweep
+
+      - name: Audit overlay behavior
+        run: npm run audit:overlay
