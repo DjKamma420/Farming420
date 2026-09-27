@@ -1839,7 +1839,7 @@ function plannerPage() {
         <div class="planner-main"><strong>${esc(x.item.name)}</strong><span>${esc(x.item.category)} · ${esc(x.item.metric)}</span></div>
         <div class="planner-number"><strong>+${formatNumber(x.gain)}</strong><span>marginal</span></div>
         <div class="planner-number"><strong>${x.rel.toFixed(2)}%</strong><span>relative</span></div>
-        <div class="planner-number"><strong>${x.cost?`${formatNumber(Math.round(x.cost))} Coins`:'—'}</strong><span>${x.efficiency!==null?`${x.efficiency.toFixed(3)} / 1M`:'Cost missing'}</span></div>
+        <div class="planner-number"><strong>${x.cost ? formatApproxCoins(x.cost) : '—'}</strong><span>${x.efficiency!==null?`${x.efficiency.toFixed(3)} / 1M`:'Cost missing'}</span></div>
       </button>`).join('') || '<div class="empty">No calculated upgrades for the current state.</div>'}
     </div>`;
 }
