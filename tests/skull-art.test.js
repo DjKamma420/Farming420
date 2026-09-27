@@ -122,6 +122,7 @@ test('farming armor uses the same exact rendered-icon path as equipment', () => 
     CROPIE_HELMET: 'https://skyah.net/icons/items/cropie_helmet.webp',
     SQUASH_LEGGINGS: 'https://skyah.net/icons/items/squash_leggings.webp',
     FERMENTO_HELMET: 'https://skyah.net/icons/items/fermento_helmet.webp',
+    HELIANTHUS_HELMET: 'https://skyah.net/icons/items/helianthus_helmet.webp',
     HELIANTHUS_CHESTPLATE: 'https://skyah.net/icons/items/iron_chestplate.webp',
     HELIANTHUS_BOOTS: 'https://skyah.net/icons/items/iron_boots.webp',
     RANCHERS_BOOTS: 'https://skyah.net/icons/items/ranchers_boots.webp',

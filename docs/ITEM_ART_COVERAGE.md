@@ -14,19 +14,23 @@ Killing then resolves shared Armor and Equipment through the effective FF setup.
 
 ## The precedence, strongest first
 
-1. **Player-head NBT texture** from the synced item's own tag. The item's real picture.
-2. **Exact rendered item icon** for verified manual/offline gear ids. This is the
+1. **Explicit exact portrait route** for an item whose normal fallback shape is
+   visibly wrong. `HELIANTHUS_HELMET` deliberately uses its full rendered 3D
+   item icon instead of flattening the player-head skin to a face square.
+2. **Player-head NBT texture** from the synced item's own tag.
+3. **Exact rendered item icon** for verified manual/offline gear ids. This is the
    same route used for equipment when flat skin cropping is unreliable.
-3. **`skin`** from Hypixel's official item resource.
-4. **Verified id-backed player-head model** for current farming equipment whose
+4. **`skin`** from Hypixel's official item resource.
+5. **Verified id-backed player-head model** for current farming equipment whose
    saved/manual setup record only contains a SkyBlock id.
-5. **Exact pack texture** for the item's own id.
-6. **Vanilla/material fallback.**
-7. **Letter badge.** The last resort, and a coverage failure.
+6. **Exact pack texture** for the item's own id.
+7. **Vanilla/material fallback.**
+8. **Letter badge.** The last resort, and a coverage failure.
 
-Live NBT and Hypixel metadata always outrank the static id-backed table. That is
-intentional: if Hypixel changes an item's model, live data replaces the frozen
-fallback automatically.
+Live NBT and Hypixel metadata outrank static id-backed fallbacks unless an
+explicit portrait-route override exists for a known presentation mismatch.
+That narrow exception currently applies to the Helianthus Helmet so a synced
+player-head texture cannot replace its intended 3D card portrait.
 
 ## Exact equipment head models
 
@@ -65,8 +69,13 @@ farming pieces `RANCHERS_BOOTS`, `FARMER_BOOTS`,
 Examples verified on current SkyAH item pages on 2026-09-18 include
 `FARM_SUIT_LEGGINGS`, `FARM_ARMOR_CHESTPLATE`, `MELON_BOOTS` (shown
 in-game as Tater Boots), `CROPIE_HELMET`, `SQUASH_LEGGINGS`,
-`FERMENTO_HELMET`, `HELIANTHUS_CHESTPLATE`, `RANCHERS_BOOTS` and
-`FARMER_BOOTS`.
+`FERMENTO_HELMET`, `HELIANTHUS_HELMET`, `HELIANTHUS_CHESTPLATE`,
+`RANCHERS_BOOTS` and `FARMER_BOOTS`.
+
+The Helianthus Helmet is intentionally pinned to that rendered-icon route even
+when a synced skull texture exists. The skull texture is correct source data,
+but the app's 2D face crop is not the portrait shown in the target UI; the
+rendered icon restores the 3D helmet model.
 
 A failed remote icon still falls back to the existing head/pack/material path,
 so this does not make the setup editor depend on the remote source.
