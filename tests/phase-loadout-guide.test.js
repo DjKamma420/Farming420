@@ -26,7 +26,7 @@ test('the visible progression choices stay on the two-set baseline', () => {
   const guide = read('src/phase-loadout-guide.js');
   assert.match(guide, /function tiers\(\) \{\s*return baselineTiers\(\);/);
   assert.match(guide, /2 physical sets:/);
-  assert.match(guide, /FF set \+ BPC set/);
+  assert.match(guide, /FF Set \+ BPC Set/);
 });
 
 test('Killing reuses the Farming armor in the researched baseline', () => {

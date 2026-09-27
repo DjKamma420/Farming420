@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import { DATA_SCHEMA_VERSION } from '../src/config.js';
 import { ensureProgressBucket, migrateState, toolKeyForCropId } from '../src/migrations.js';
+import { SETUPS_MODEL_VERSION, effectiveSetup } from '../src/setups.js';
 
 const CROP_UPGRADE_ID = 'crop-progression-crop-upgrade-selected-crop';
 const TOOL_LEVEL_ID = 'tool-mk-ii';
@@ -254,12 +255,15 @@ test('schema 8 migrates persisted Killing gear into the FF/BPC source-of-truth m
   const spawning = setups.list.find(setup => setup.id === 'pest');
   const killing = setups.list.find(setup => setup.id === 'pest-kill');
 
-  assert.equal(setups.modelVersion, 4);
+  assert.equal(setups.modelVersion, SETUPS_MODEL_VERSION);
   assert.equal(setups.shareFarmingKillingPet, false);
   assert.equal(farming.slots.helmet.displayName, 'Existing FF Helmet', 'existing FF gear wins a conflict');
-  assert.equal(killing.slots.helmet.displayName, 'Existing FF Helmet', 'Killing mirrors the FF source of truth');
+  assert.equal(killing.slots.helmet, null, 'Killing does not persist a duplicate FF helmet');
   assert.equal(farming.slots.equipment2.displayName, 'Legacy Killing Cloak', 'Killing-only legacy gear is rescued into FF');
-  assert.equal(killing.slots.equipment2.displayName, 'Legacy Killing Cloak');
+  assert.equal(killing.slots.equipment2, null, 'Killing does not persist duplicate shared equipment');
+  const effectiveKilling = effectiveSetup(setups, 'pest-kill');
+  assert.equal(effectiveKilling.slots.helmet.displayName, 'Existing FF Helmet', 'effective Killing inherits FF armor');
+  assert.equal(effectiveKilling.slots.equipment2.displayName, 'Legacy Killing Cloak', 'effective Killing inherits rescued FF equipment');
   assert.equal(farming.slots.pet.skyblockId, 'ELEPHANT');
   assert.equal(killing.slots.pet.skyblockId, 'HEDGEHOG', 'pets stay separate by default');
   assert.equal(spawning.slots.helmet.displayName, 'BPC Helmet', 'BPC gear remains independent');

@@ -26,6 +26,7 @@ import {
   plannerProgressBucket,
 } from './planner-activity-context.js';
 import { formatNumber } from './format-number.js';
+import { compactCoinNumber, formatApproxCoins } from './compact-coins.js';
 import { applySnapshotToProgress } from './snapshot-apply.js';
 import {
   UPGRADE_FILTER,
@@ -476,15 +477,6 @@ function upgradeFilterMarkup(rows, activeFilter) {
   </div>`;
 }
 
-function compactCoins(value) {
-  if (!Number.isFinite(value)) return '—';
-  const abs = Math.abs(value);
-  if (abs >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(2)}b`;
-  if (abs >= 1_000_000) return `${(value / 1_000_000).toFixed(2)}m`;
-  if (abs >= 1_000) return `${(value / 1_000).toFixed(1)}k`;
-  return formatNumber(Math.round(value));
-}
-
 function formatPayback(hours) {
   if (!Number.isFinite(hours)) return '—';
   if (hours < 1) return `${Math.round(hours * 60)} min`;
@@ -603,10 +595,10 @@ function measuredWithMarketAverage(values, cropId) {
 
 function measuredResultText(result) {
   if (result.normalCropCoinsPerHour == null) return '\u2014';
-  const normal = `${compactCoins(result.normalCropCoinsPerHour)}/h`;
+  const normal = `${compactCoinNumber(result.normalCropCoinsPerHour)}/h`;
   return result.rareCropCoinsPerHour == null
     ? normal
-    : `${normal} + ${compactCoins(result.rareCropCoinsPerHour)}/h Feast`;
+    : `${normal} + ${compactCoinNumber(result.rareCropCoinsPerHour)}/h Feast`;
 }
 
 /**
@@ -662,7 +654,7 @@ function measuredPanel(raw, context) {
   const result = measuredBaseline(priced.values, measuredStats(context), cropId);
   const caveats = fortuneCaveats(context);
   const priceText = price => price?.coinsPerUnit
-    ? `${compactCoins(price.coinsPerUnit)} Coins`
+    ? formatApproxCoins(price.coinsPerUnit)
     : '—';
   return `<details class="revenue-measured">
     <summary>
@@ -731,7 +723,7 @@ function earnedAssumptionsPanel(raw) {
     <summary class="revenue-summary">
       <div class="revenue-panel-head">
         <div><div class="eyebrow">${esc(activityLabel(mode))} acquisition routes</div><h2>Earned upgrade time</h2></div>
-        <span class="revenue-note">${compactCoins(timeValue.coinsPerHour)} Coins/h · ${esc(sourceLabel)}</span>
+        <span class="revenue-note">${compactCoinNumber(timeValue.coinsPerHour)} Coins/h · ${esc(sourceLabel)}</span>
       </div>
     </summary>
     <div class="earned-route-list">
@@ -763,19 +755,21 @@ function rankingMarkup(actions, ready) {
         ? `${row.fortuneEquivalent.toFixed(2)} FF eq.`
         : item.status === 'VERIFY' ? 'manual value required' : 'activity-specific stat';
     const costLabel = costKnown
-      ? `${compactCoins(row.cost)} ${row.acquisitionMode === 'EARNED' ? 'Coins eq.' : 'Coins'}`
+      ? row.acquisitionMode === 'EARNED'
+        ? `~${compactCoinNumber(row.cost)} Coins eq.`
+        : formatApproxCoins(row.cost)
       : '—';
     const targetCost = targetUnitCost(row);
     const costNote = row.acquisitionMode === 'EARNED' && costKnown
-      ? `EARNED — time converted to coins · ${formatHours(row.activeGrindHours)} @ ${compactCoins(row.timeValueCoinsPerHour)}/h${row.directCoinCost > 0 ? ` + ${compactCoins(row.directCoinCost)} direct` : ''}`
+      ? `EARNED — time converted to coins · ${formatHours(row.activeGrindHours)} @ ${compactCoinNumber(row.timeValueCoinsPerHour)}/h${row.directCoinCost > 0 ? ` + ${formatApproxCoins(row.directCoinCost)} direct` : ''}`
       : spawnPrimary && row.target === PLANNER_UPGRADE_TARGET.BONUS_PEST_CHANCE && targetCost !== null
-        ? `${compactCoins(targetCost)} / BPC · ${costOriginNote(row.costSource)}`
+        ? `~${compactCoinNumber(targetCost)} Coins / BPC · ${costOriginNote(row.costSource)}`
         : costKnown && row.coinsPerEffectiveFortune
-          ? `${compactCoins(row.coinsPerEffectiveFortune)} / FF eq. · ${costOriginNote(row.costSource)}`
+          ? `~${compactCoinNumber(row.coinsPerEffectiveFortune)} Coins / FF eq. · ${costOriginNote(row.costSource)}`
           : costOriginNote(row.costSource);
     const valueDisplay = spawnPrimary
       ? 'Primary'
-      : marginalKnown ? `+${compactCoins(row.marginalCoinsHour)}/h` : '—';
+      : marginalKnown ? `+${compactCoinNumber(row.marginalCoinsHour)}/h` : '—';
     const valueNote = spawnPrimary
       ? 'spawning focus'
       : ready ? 'benchmark Coins/h' : 'value unavailable';
@@ -821,9 +815,9 @@ function benchmarkPanel(raw) {
 function maxingPanel(raw) {
   const summary = plannerMaxSummary(raw);
   const costText = summary.costComplete
-    ? `${compactCoins(summary.knownCostCoins)} Coins`
+    ? formatApproxCoins(summary.knownCostCoins)
     : summary.knownCostCoins > 0
-      ? `≥ ${compactCoins(summary.knownCostCoins)} Coins`
+      ? `≥ ${formatApproxCoins(summary.knownCostCoins)}`
       : 'Price incomplete';
   const progressText = `${summary.completionPercent.toFixed(1)}%`;
   const earnedText = summary.remainingEarnedSteps > 0
@@ -840,9 +834,9 @@ function maxingPanel(raw) {
 
   const breakdownMarkup = summary.breakdown.map(section => {
     const sectionCost = section.costComplete
-      ? `${compactCoins(section.knownCostCoins)} Coins left`
+      ? `${formatApproxCoins(section.knownCostCoins)} left`
       : section.knownCostCoins > 0
-        ? `≥ ${compactCoins(section.knownCostCoins)} Coins left`
+        ? `≥ ${formatApproxCoins(section.knownCostCoins)} left`
         : 'Price incomplete';
     const sectionUnknown = section.remainingUnknownPriceSteps > 0
       ? ` · ${formatNumber(section.remainingUnknownPriceSteps)} price gap${section.remainingUnknownPriceSteps === 1 ? '' : 's'}`
@@ -867,6 +861,34 @@ function maxingPanel(raw) {
       ${hiddenUnknownTargets > 0 ? `<p class="revenue-help">+${formatNumber(hiddenUnknownTargets)} more incomplete price target${hiddenUnknownTargets === 1 ? '' : 's'}.</p>` : ''}`
     : '<p class="revenue-help">No remaining price gaps in the tracked maxing target.</p>';
 
+  const shardMarkup = summary.shardTargets.length
+    ? `<div class="earned-route-list">
+        ${summary.shardTargets.map(target => {
+          const unitValue = target.unitShardCoins != null ? formatApproxCoins(target.unitShardCoins) : '—';
+          const ownedValue = target.shardCountOwned === 0
+            ? '~0 Coins'
+            : target.currentShardValueCoins != null
+              ? formatApproxCoins(target.currentShardValueCoins)
+              : '—';
+          const toMaxValue = target.currentLevel >= target.maxLevel
+            ? 'Maxed'
+            : target.costToMaxCoins != null
+              ? `${target.costToMaxComplete ? '' : '≥ '}${formatApproxCoins(target.costToMaxCoins)}`
+              : 'Price incomplete';
+          const ownedCount = target.shardCountOwned == null
+            ? 'owned shard count unavailable'
+            : `${formatNumber(target.shardCountOwned)} shard${target.shardCountOwned === 1 ? '' : 's'} owned`;
+          const remainingCount = target.shardCountToMax == null
+            ? 'remaining shard count unavailable'
+            : `${formatNumber(target.shardCountToMax)} shard${target.shardCountToMax === 1 ? '' : 's'} to level ${formatNumber(target.maxLevel)}`;
+          return `<div class="earned-route-row shard-maxing-row">
+            <span><strong>${esc(target.itemName)}</strong><small>Level ${formatNumber(target.currentLevel)}/${formatNumber(target.maxLevel)} · ${esc(ownedCount)}</small></span>
+            <span class="revenue-note">1 shard ${esc(unitValue)} · owned value ${esc(ownedValue)} · to max ${esc(toMaxValue)}<small>${esc(remainingCount)}</small></span>
+          </div>`;
+        }).join('')}
+      </div>`
+    : '<p class="revenue-help">No Farming shard targets are tracked.</p>';
+
   return `<section class="revenue-panel revenue-maxing">
     <div class="revenue-panel-head">
       <div><div class="eyebrow">Permanent farming progression</div><h2>Maxing progress</h2></div>
@@ -878,8 +900,10 @@ function maxingPanel(raw) {
       <div><span>Earned progress remaining</span><strong>${esc(earnedText)}</strong><small>counts toward the percentage, not direct coin cost</small></div>
     </div>
     <details class="revenue-maxing-details">
-      <summary class="revenue-help">Show maxing breakdown and missing price data</summary>
+      <summary class="revenue-help">Show maxing breakdown, shard values and missing price data</summary>
       <div class="qol-summary-grid">${breakdownMarkup}</div>
+      <div class="eyebrow">Shard value breakdown</div>
+      ${shardMarkup}
       <div class="eyebrow">Price gaps blocking an exact total</div>
       ${unknownMarkup}
     </details>
@@ -972,7 +996,7 @@ function focusNextMarkup(raw, actions, scope = focusScope()) {
     const marginal = spawnPrimary
       ? 'Primary'
       : Number.isFinite(row.marginalCoinsHour)
-        ? `+${compactCoins(row.marginalCoinsHour)}/h`
+        ? `+${compactCoinNumber(row.marginalCoinsHour)}/h`
         : '—';
     const marginalNote = spawnPrimary ? 'spawning focus' : 'benchmark value';
     const statusNote = item.status === 'VERIFY' ? ' · manual/verify' : '';
@@ -995,7 +1019,7 @@ function renderFocusNext(host, raw) {
   const actions = generateRecommendationActions(rows);
   const objectiveHelp = mode === ACTIVITY_MODE.PEST_SPAWN
     ? '<p>Spawning is purpose-ranked: Bonus Pest Chance and Pest cooldown reduction are primary. Farming Fortune is secondary because it only affects crop output during the short spawning window.</p>'
-    : `<p>Value is calculated from the active Fortune/Overbloom against the same ${compactCoins(PLANNER_BENCHMARK_COINS_PER_HOUR)}/h standard stream used by Upgrade Planner.</p>`;
+    : `<p>Value is calculated from the active Fortune/Overbloom against the same ${compactCoinNumber(PLANNER_BENCHMARK_COINS_PER_HOUR)}/h standard stream used by Upgrade Planner.</p>`;
 
   host.innerHTML = `
     ${focusScopePanel(raw, scope)}
@@ -1052,7 +1076,7 @@ function enhancePlanner() {
   const rows = allRows.filter(row => matchesUpgradeFilter(row.item, activeFilter));
   const actions = generateRecommendationActions(rows);
   const rankingTitle = 'Recommended actions · all sets';
-  const rankingHelp = `Farming, Pest Spawning and Pest Killing are evaluated together. Global actions appear once. Crop-tool actions are shared between Farming and Spawning. Gear is merged only when the setup slots reference the same physical items; separate physical sets stay separate. Marginal value and payback use the common ${compactCoins(PLANNER_BENCHMARK_COINS_PER_HOUR)}/h affected-income benchmark.`;
+  const rankingHelp = `Farming, Pest Spawning and Pest Killing are evaluated together. Global actions appear once. Crop-tool actions are shared between Farming and Spawning. Gear is merged only when the setup slots reference the same physical items; separate physical sets stay separate. Marginal value and payback use the common ${compactCoinNumber(PLANNER_BENCHMARK_COINS_PER_HOUR)}/h affected-income benchmark.`;
 
   original.classList.add('planner-v1-source');
   const panel = document.createElement('div');

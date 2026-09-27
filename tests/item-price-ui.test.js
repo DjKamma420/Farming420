@@ -4,6 +4,7 @@ import test from 'node:test';
 
 const root = new URL('../', import.meta.url);
 const app = readFileSync(new URL('src/app.js', root), 'utf8');
+const revenuePlanner = readFileSync(new URL('src/revenue-planner.js', root), 'utf8');
 
 test('priced upgrade cards use compact approximate coin tags', () => {
   assert.match(app, /formatApproxCoins\(priceTagCoins\)/);
@@ -35,4 +36,13 @@ test('physical market refresh starts from bind paths, not during render helpers'
   assert.doesNotMatch(slotEditor, /queuePhysicalValueRefresh/);
   assert.match(app, /function bindToolPanel[\s\S]*queuePhysicalValueRefresh/);
   assert.match(app, /function bindSetups[\s\S]*queuePhysicalValueRefresh/);
+});
+
+
+test('market-price UI uses the shared approximate compact formatter', () => {
+  assert.match(app, /formatApproxCoins\(x\.cost\)/);
+  assert.match(revenuePlanner, /from '\.\/compact-coins\.js'/);
+  assert.doesNotMatch(revenuePlanner, /function compactCoins\(/);
+  assert.match(revenuePlanner, /formatApproxCoins\(price\.coinsPerUnit\)/);
+  assert.match(revenuePlanner, /formatApproxCoins\(summary\.knownCostCoins\)/);
 });

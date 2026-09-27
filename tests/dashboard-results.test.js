@@ -29,9 +29,10 @@ test('dashboard keeps global Fortune separate while also exposing the selected c
   assert.ok(source.includes('Global FF ${number(values.globalFortune)} · Crop FF ${number(values.cropFortune)}'));
   assert.match(source, /Effective Fortune/);
   assert.match(source, /stats\.effectiveFortune/);
-  assert.ok(!source.includes('${esc(selectedCrop.name)} Crop Fortune'));
-  assert.doesNotMatch(source, /Next upgrade|Account layer|Open upgrade planner|cropFocusCard\(\)/);
-  assert.doesNotMatch(source, /data-open=|data-page=/, 'dashboard results must not contain editing/navigation actions');
+  assert.ok(source.includes('${esc(selectedCrop.name)} Crop Fortune'));
+  assert.doesNotMatch(source, /Next upgrade|Account layer|cropFocusCard\(\)/);
+  assert.match(source, /data-dashboard-open-planner/, 'Dashboard may link to the Planner for throughput configuration');
+  assert.doesNotMatch(source, /data-dashboard-estimate|data-open=|data-page=/, 'Dashboard must not contain inline configuration controls');
   assert.match(source, /sourceCount/, 'dashboard must distinguish configured sources from an empty profile');
   assert.match(source, /No configured sources in this context/);
   assert.match(source, /fully calculated from configured sources/);

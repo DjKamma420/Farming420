@@ -169,7 +169,7 @@ export function liveHarvestFeastMaterialPrice(cropId, {
  */
 export function liveCropPriceNote(price) {
   if (price?.status === CROP_PRICE_STATUS.NO_QUOTE) {
-    return 'No live Bazaar price cached yet \u2014 enter your sell price.';
+    return 'No live Bazaar quote cached yet \u2014 value stays unknown.';
   }
   if (price?.status !== CROP_PRICE_STATUS.LIVE) return price?.reason || 'no live price';
   const where = price.source === PRICE_SOURCE.NPC ? 'NPC sell price' : 'live Bazaar';

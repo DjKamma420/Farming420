@@ -94,18 +94,22 @@ third-party service and cannot silently resolve to the wrong account.
 
 ## Info
 
-**Info** in the sidebar is the explanation-only hub for new players. It starts
-with a short early-game strategy, an important-places/NPC routing sheet and a
-Pest guide that explains spawning, killing, guaranteed drops and rare drops as
-separate jobs.
+**Info** is the explanation-only hub for early- and midgame players. Reference
+cards explain **what** a mechanic or upgrade is, **why** it matters, **when** it
+becomes relevant, and **where/how** to find or obtain it. The page covers FF,
+Crop Fortune, Overbloom, BPC, Pest pressure/spawning/loot, Vacuums,
+Recombobulators, gemstones, reforges, important Garden locations and a
+crop-specific strategy entry for every supported crop.
 
-The **Farming 0-60 reference** lives inside Info. It follows the player's
-Farming level, marks reached
-armour milestones, explains pet alternatives, enchantment acquisition and the
-three-phase farming/spawning/killing loadout. Pet cards are informational here;
-actual configuration stays in Loadouts / Farming System.
+Every Info record has a stable anchor and search keywords. Global search routes
+directly to the matching explanation instead of treating explanatory content as
+an account setting. Current mechanic cards carry a source and verification date;
+crop-specific cards reuse the source metadata already stored with the crop/tool
+research.
 
-Pest analysis now lives in **Info** beside the explanatory Pest mechanics and crop-to-Pest mapping. Vacuum kill thresholds read the physical Vacuum configured under **Tools**, and the Pesthunter Phillip converter remains an analysis-only helper rather than a separate page.
+The former **Guide 0-60** and the Pest explanation/analysis material live inside
+Info instead of occupying separate top-level navigation pages. Account settings
+and editable gear remain in their dedicated workspaces.
 
 ## Loadouts / Farming System
 
@@ -142,18 +146,16 @@ value two competing sources.
 
 ### Where do I find a value?
 
-The app asks for values you have to read out of the game, which only helps if
-you can find them. Global search routes known systems to their current workspace,
-and every card's detail drawer has a **Where do I find this?** section.
+Use **Info** for explanations and acquisition/location guidance. Search for the
+mechanic, item, crop or place and open its direct Info result. Values that are
+actual profile inputs keep their **Where do I find this?** detail in the
+relevant card or drawer.
 
-An entry is one of three things: filled by the sync and needing no lookup at
-all; carrying a documented in-game location; or not documented yet, in which
-case the app says so and offers the source instead of guessing at a menu path.
-A wrong path is worse than none, so `src/help-locations.js` never invents one.
-See [`docs/FINDING_VALUES.md`](docs/FINDING_VALUES.md).
-
-Today 20 of 77 entries are filled by the sync, and the in-game locations for the
-remaining 57 still need a research pass.
+`src/help-locations.js` still distinguishes synced values from verified and
+unverified lookup guidance, but the UI does not use a generic "Ingame location
+not documented" placeholder. When an exact path is not verified, Farming420
+gives category-level lookup guidance plus the source instead of inventing a
+specific menu path. See [`docs/FINDING_VALUES.md`](docs/FINDING_VALUES.md).
 
 ### What gets filled in
 

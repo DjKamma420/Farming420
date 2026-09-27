@@ -1,4 +1,5 @@
 import { CROPS, UPGRADES } from './data.js';
+import { INFO_ENTRIES, INFO_SECTIONS, allInfoEntries, cropStrategyInfo } from './info-content.js';
 import { FARMING_ACCESSORY_GROUPS, farmingAccessoryByItemId } from './farming-accessories.js';
 import { FARMING_PETS } from './setup-pet-catalog.js';
 import { searchEntries } from './global-search.js';
@@ -26,7 +27,6 @@ import {
   farmingContextForState,
   farmingContextLabel,
   farmingContextScopes,
-  isGrandFeastContext,
   isHarvestFeastContext,
 } from './farming-context.js';
 import {
@@ -39,7 +39,7 @@ import { costOriginNote, resolveUpgradeCost } from './upgrade-cost-resolution.js
 import { formatApproxCoins } from './compact-coins.js';
 import { marketAverageTimestampLabel } from './market-average-prices.js';
 import { upgradePriceSummary } from './upgrade-price-summary.js';
-import { MEASURED_FEAST_KEY, measuredBaseline } from './measured-baseline.js';
+import { DASHBOARD_STREAM_STATUS, calculateDashboardEconomics } from './dashboard-economics.js';
 import { ensureProgressBucket, migrateState, toolKeyForCropId } from './migrations.js';
 import { applySnapshotToProgress, isAutoApplied } from './snapshot-apply.js';
 import { LOCATION_STATUS, isSyncFilled, locationFor } from './help-locations.js';
@@ -76,6 +76,7 @@ import {
   activeSetup,
   applyCandidateSetupSafely,
   createEmptyItem,
+  effectiveSetup,
   farmingKillingPetShared,
   prefillSetupFromSnapshot,
   prepareFfBpcSetups,
@@ -141,44 +142,6 @@ const NAV = [
   ['focus', 'Focus on Next'],
   ['info', 'Info'],
 ];
-
-const INFO_UPGRADE_TOPICS = Object.freeze([
-  Object.freeze({
-    id: 'recombobulator',
-    label: 'Rarity upgrade',
-    title: 'Recombobulator 3000',
-    summary: 'Raises an eligible item by exactly one rarity. For farming gear the main benefit is indirect: rarity-scaled reforge and gemstone values can increase with the higher effective rarity. It is not a flat Farming Fortune bonus by itself.',
-    keywords: ['recomb', 'recombobulator', 'rarity upgrade', 'mythic rarity'],
-  }),
-  Object.freeze({
-    id: 'gemstones',
-    label: 'Item sockets',
-    title: 'Gemstones',
-    summary: 'Gemstone sockets belong to the concrete item. Farming420 only exposes official sockets that item can actually have; slot type, unlock requirements, gemstone quality and effective rarity determine what the socket can contribute.',
-    keywords: ['gem', 'gems', 'gemstone', 'gemstones', 'socket', 'slots'],
-  }),
-  Object.freeze({
-    id: 'reforges',
-    label: 'Item modifier',
-    title: 'Reforges',
-    summary: 'Reforges change the stats or role of a specific item. Their values can depend on item rarity, so a rarity change can also change the value of the reforge already installed. Farming, spawning and killing reforges are not interchangeable.',
-    keywords: ['reforge', 'reforges', 'modifier'],
-  }),
-  Object.freeze({
-    id: 'enchantments',
-    label: 'Item upgrade',
-    title: 'Enchantments',
-    summary: 'Enchantments are item-compatible upgrades with their own levels and conditions. Some add direct Fortune while others change a conditional farming or Pest effect, so Farming420 tracks the exact enchantment and level instead of treating every enchant as generic stats.',
-    keywords: ['enchant', 'enchants', 'enchantment', 'enchantments'],
-  }),
-  Object.freeze({
-    id: 'rarity',
-    label: 'Item capability',
-    title: 'Rarity and item capabilities',
-    summary: 'Base rarity and effective rarity are separate. Recombobulation raises effective rarity by one step, while the concrete item decides whether it can be recombobulated, reforged or socketed at all.',
-    keywords: ['rarity', 'item capability', 'capabilities', 'effective rarity'],
-  }),
-]);
 
 const SETTINGS_SEARCH_TOPICS = Object.freeze([
   Object.freeze({
@@ -533,21 +496,47 @@ function selectableCatalogSearchEntries() {
     }
   }
 
-  cachedCatalogSearchEntries = [...byItem.values()].map(({ item, slots }) => ({
-    id: `catalog:${item.id}`,
-    kind: 'Selectable item',
-    title: item.name,
-    subtitle: `Can be selected for ${slots.map(slot => slot.label).join(', ')}`,
-    keywords: [item.id, item.category, item.tier, ...slots.map(slot => slot.label)],
-    target: {
-      type: 'catalog-item',
-      page: 'setups',
-      itemId: item.id,
-      itemName: item.name,
-      slotId: slots[0]?.id || null,
-    },
-  }));
+  cachedCatalogSearchEntries = [...byItem.values()].map(({ item, slots }) => {
+    const groups = [...new Set(slots.map(slot => slot.group).filter(Boolean))];
+    const armorRoles = groups.includes('Armor') ? ['ff set', 'bpc set', 'farming set', 'pest spawning set'] : [];
+    const roleLabel = groups.includes('Armor') ? ' · FF set / BPC set' : '';
+    return {
+      id: `catalog:${item.id}`,
+      kind: groups.length === 1 ? groups[0] : 'Selectable item',
+      title: item.name,
+      subtitle: `${groups.join(' / ') || 'Selectable item'}${roleLabel} · ${slots.map(slot => slot.label).join(', ')}`,
+      keywords: [item.id, item.category, item.tier, ...groups, ...armorRoles, ...slots.map(slot => slot.label)],
+      target: {
+        type: 'catalog-item',
+        page: 'setups',
+        itemId: item.id,
+        itemName: item.name,
+        slotId: slots[0]?.id || null,
+      },
+    };
+  });
   return cachedCatalogSearchEntries;
+}
+
+function searchAnchorSlug(prefix, value) {
+  const slug = String(value || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return `${prefix}-${slug || 'entry'}`;
+}
+
+function searchKeywordAliases(...values) {
+  const haystack = values.flat().filter(Boolean).join(' ').toLowerCase();
+  const aliases = [];
+  if (haystack.includes('farming fortune')) aliases.push('ff');
+  if (haystack.includes('bonus pest chance')) aliases.push('bpc');
+  if (haystack.includes('pest fortune')) aliases.push('pf');
+  if (haystack.includes('pest overbloom')) aliases.push('pest rng');
+  if (haystack.includes('overbloom')) aliases.push('rare drop chance', 'rng');
+  if (haystack.includes('vacuum')) aliases.push('vacuum damage', 'pest killing');
+  if (haystack.includes('cooldown')) aliases.push('pest cooldown');
+  return aliases;
 }
 
 function globalSearchEntries() {
@@ -640,15 +629,15 @@ function globalSearchEntries() {
     });
   }
 
-  for (const topic of INFO_UPGRADE_TOPICS) {
+  for (const topic of allInfoEntries(CROPS)) {
     entries.push({
       id: `info:${topic.id}`,
       kind: 'Info',
       title: topic.title,
-      subtitle: topic.summary,
+      subtitle: topic.what,
       keywords: topic.keywords,
-      priority: 1200,
-      target: { type: 'info', page: 'info', anchor: `info-upgrade-${topic.id}` },
+      priority: topic.section === 'crops' ? 1050 : 1200,
+      target: { type: 'info', page: 'info', anchor: topic.anchor },
     });
   }
 
@@ -664,24 +653,121 @@ function globalSearchEntries() {
     });
   }
 
+  SPAWN_PIPELINE.forEach((topic, index) => {
+    entries.push({
+      id: `info:pest-spawn:${index}`,
+      kind: 'Mechanic',
+      title: topic.step,
+      subtitle: topic.detail,
+      keywords: ['pest', 'spawn', 'spawning', ...searchKeywordAliases(topic.step, topic.detail)],
+      priority: 980,
+      target: { type: 'info', page: 'info', anchor: 'info-pests' },
+    });
+  });
+
+  LOOT_PIPELINE.forEach((topic, index) => {
+    entries.push({
+      id: `info:pest-loot:${index}`,
+      kind: 'Mechanic',
+      title: topic.step,
+      subtitle: topic.detail,
+      keywords: ['pest', 'loot', 'drops', ...searchKeywordAliases(topic.step, topic.detail)],
+      priority: 980,
+      target: { type: 'info', page: 'info', anchor: 'info-pests' },
+    });
+  });
+
+  for (const [sideId, side] of Object.entries(PEST_STAT_SIDES)) {
+    entries.push({
+      id: `info:pest-side:${sideId}`,
+      kind: 'Mechanic',
+      title: side.label,
+      subtitle: side.note,
+      keywords: [sideId, 'pest stats', ...searchKeywordAliases(side.label, side.note)],
+      priority: 940,
+      target: { type: 'info', page: 'info', anchor: 'info-pests' },
+    });
+  }
+
+  for (const pest of GARDEN_PESTS) {
+    const cropName = infoCropName(pest);
+    entries.push({
+      id: `info:pest:${pest.name}`,
+      kind: 'Pest',
+      title: pest.name,
+      subtitle: `${cropName} · ${guaranteedDropText(pest) || 'Pest crop mapping'}`,
+      keywords: [cropName, pest.cropId, pest.vinyl, pest.notes, ...searchKeywordAliases(pest.name, cropName, pest.notes)],
+      priority: 760,
+      target: { type: 'info', page: 'info', anchor: searchAnchorSlug('info-pest', pest.name) },
+    });
+  }
+
+  for (const stage of STAGES) {
+    entries.push({
+      id: `info:stage:${stage.id}`,
+      kind: 'Progression',
+      title: stage.name,
+      subtitle: `Farming ${stage.levelFrom}-${stage.levelTo} · ${stage.summary}`,
+      keywords: [stage.id, `farming ${stage.levelFrom}`, `farming ${stage.levelTo}`, ...stage.steps],
+      priority: 700,
+      target: { type: 'info', page: 'info', anchor: 'info-progression', guideStage: stage.id },
+    });
+  }
+
+  for (const ladder of ENCHANT_LADDERS) {
+    entries.push({
+      id: `info:enchant:${ladder.name}`,
+      kind: 'Info',
+      title: ladder.name,
+      subtitle: `${ladder.scope} · ${ladder.perLevel}`,
+      keywords: [ladder.scope, ladder.max, ladder.gate, ...ladder.steps.flatMap(step => [step.levels, step.from])],
+      priority: 760,
+      target: { type: 'info', page: 'info', anchor: searchAnchorSlug('info-enchant', ladder.name) },
+    });
+  }
+
   return [...entries, ...selectableCatalogSearchEntries()];
 }
 
+function searchResultGroup(entry) {
+  const kind = String(entry?.kind || '').toLowerCase();
+  if (kind.includes('setting')) return 'Settings';
+  if (/info|mechanic|progression|pest/.test(kind)) return 'Info & mechanics';
+  if (/upgrade|shard/.test(kind)) return 'Upgrades';
+  if (/page|crop/.test(kind)) return 'Navigation';
+  return 'Items';
+}
+
+function searchResultButtonMarkup(entry, index) {
+  return `<button id="search-result-${index}" class="search-result" type="button" role="option" aria-selected="false" data-search-result="${index}">
+    <span class="search-result-kind">${esc(entry.kind)}</span>
+    <span class="search-result-copy">
+      <strong>${esc(entry.title)}</strong>
+      <small>${esc(entry.subtitle || '')}</small>
+    </span>
+  </button>`;
+}
+
 function searchResultsMarkup(query) {
-  activeSearchResults = searchEntries(globalSearchEntries(), query, 12);
+  activeSearchResults = searchEntries(globalSearchEntries(), query, 16);
   activeSearchResultIndex = -1;
   if (!String(query || '').trim()) return '';
   if (!activeSearchResults.length) {
-    return '<div class="search-no-results">No direct match. Try an item, shard, setting, stat or upgrade name.</div>';
+    return '<div class="search-no-results">No direct match. Try an item, shard, setting, stat, mechanic or upgrade name.</div>';
   }
-  return activeSearchResults.map((entry, index) => `
-    <button id="search-result-${index}" class="search-result" type="button" role="option" aria-selected="false" data-search-result="${index}">
-      <span class="search-result-kind">${esc(entry.kind)}</span>
-      <span class="search-result-copy">
-        <strong>${esc(entry.title)}</strong>
-        <small>${esc(entry.subtitle || '')}</small>
-      </span>
-    </button>`).join('');
+
+  const groups = new Map();
+  activeSearchResults.forEach((entry, index) => {
+    const group = searchResultGroup(entry);
+    if (!groups.has(group)) groups.set(group, []);
+    groups.get(group).push({ entry, index });
+  });
+
+  return [...groups.entries()].map(([group, rows]) => `
+    <div class="search-result-group" role="group" aria-label="${esc(group)}">
+      <div class="search-result-group-title">${esc(group)}</div>
+      ${rows.map(({ entry, index }) => searchResultButtonMarkup(entry, index)).join('')}
+    </div>`).join('');
 }
 
 function updateSearchResults(query) {
@@ -726,7 +812,7 @@ function focusSearchResult(index) {
   });
   const target = buttons[nextIndex];
   input?.setAttribute('aria-activedescendant', target.id);
-  target.focus();
+  input?.focus({ preventScroll: true });
   target.scrollIntoView({ block: 'nearest' });
   return true;
 }
@@ -830,6 +916,9 @@ function navigateSearchResult(entry) {
   } else if (target.type === 'vacuum') {
     state.page = target.page;
     pendingSearchSpotlight = target;
+  } else if (target.type === 'info') {
+    state.page = target.page;
+    if (target.guideStage) state.guideStage = target.guideStage;
   } else {
     state.page = target.page || state.page;
   }
@@ -1000,69 +1089,76 @@ function dashboardMeasuredValues(cropId, mode) {
 }
 
 function dashboardProfitEstimate(cropId, mode, context, stats) {
-  if (mode === ACTIVITY_MODE.PEST_KILL) {
-    return {
-      result: null,
-      values: dashboardMeasuredValues(cropId, mode),
-      normalPrice: null,
-      feastPrice: null,
-      display: '—',
-      note: 'Pest Killing needs a Vacuum/loot throughput model; crop Coins/h is not substituted here.',
-    };
-  }
-
   const stored = dashboardMeasuredValues(cropId, mode);
-  // Old backups can contain manually entered coin fields. Preserve them in the
-  // backup, but never read them into a calculation again.
-  const values = { ...stored };
-  delete values.coinsPerUnit;
-  delete values.feastMaterialCoins;
+  const normalPrice = mode === ACTIVITY_MODE.PEST_KILL ? null : averageCropUnitPrice(cropId);
+  const feastPrice = mode !== ACTIVITY_MODE.PEST_KILL && isHarvestFeastContext(context)
+    ? averageHarvestFeastMaterialPrice(cropId)
+    : null;
 
-  const normalPrice = averageCropUnitPrice(cropId);
-  if (normalPrice.status === AVERAGE_CROP_PRICE_STATUS.AVERAGE) {
-    values.coinsPerUnit = normalPrice.coinsPerUnit;
-  }
+  const economics = calculateDashboardEconomics({
+    cropId,
+    mode,
+    context,
+    measured: stored,
+    stats,
+    cropUnitValueCoins: normalPrice?.status === AVERAGE_CROP_PRICE_STATUS.AVERAGE ? normalPrice.coinsPerUnit : null,
+    feastMaterialCoins: feastPrice?.status === AVERAGE_CROP_PRICE_STATUS.AVERAGE ? feastPrice.coinsPerUnit : null,
+  });
 
-  const feastActive = isHarvestFeastContext(context);
-  const feastPrice = feastActive ? averageHarvestFeastMaterialPrice(cropId) : null;
-  if (feastActive) {
-    values[MEASURED_FEAST_KEY] = true;
-    if (feastPrice?.status === AVERAGE_CROP_PRICE_STATUS.AVERAGE) {
-      values.feastMaterialCoins = feastPrice.coinsPerUnit;
-    }
-  } else {
-    delete values[MEASURED_FEAST_KEY];
-  }
-
-  const result = measuredBaseline(values, {
-    farmingFortune: stats.globalFortune,
-    cropFortune: stats.cropFortune,
-    overbloom: stats.overbloom,
-  }, cropId);
-
-  if (result.normalCropCoinsPerHour == null) {
-    const modelNote = result.cropDataStatus !== 'VERIFIED'
-      ? 'This crop still lacks a verified base-drop model.'
-      : 'Enter breaks/s and farming uptime; crop value comes from the rolling 90-day Bazaar average.';
-    return { result, values: stored, normalPrice, feastPrice, display: '—', note: modelNote };
-  }
-
-  const rareKnown = feastActive && result.rareCropCoinsPerHour != null;
-  const total = result.normalCropCoinsPerHour + (rareKnown ? result.rareCropCoinsPerHour : 0);
-  const display = feastActive && !rareKnown
-    ? `≥ ${compactDashboardCoins(total)}/h`
-    : `${compactDashboardCoins(total)}/h`;
-  const note = feastActive
-    ? rareKnown
-      ? `Normal crop + priced Feast crop · ${farmingContextLabel(context)}${isGrandFeastContext(context) ? ' · Kernels/Seasoning progression excluded' : ''}`
-      : `Normal crop only · Feast material value is unavailable${isGrandFeastContext(context) ? ' · Kernels/Seasoning progression excluded' : ''}`
-    : mode === ACTIVITY_MODE.PEST_SPAWN
-      ? 'Crop stream only; Pest spawn/kill value is not added without a verified spawn-profit model.'
-      : 'Calculated from current Fortune, crop drops, throughput and sell price.';
-
-  return { result, values: stored, normalPrice, feastPrice, display, note };
+  return { ...economics, values: stored, normalPrice, feastPrice };
 }
 
+function dashboardProfitDisplay(estimate) {
+  if (estimate.netCoinsPerHour != null) return `${compactDashboardCoins(estimate.netCoinsPerHour)}/h`;
+  if (estimate.knownCoinsPerHour != null) return `Known ${compactDashboardCoins(estimate.knownCoinsPerHour)}/h`;
+  return '—';
+}
+
+function dashboardProfitNote(estimate) {
+  if (estimate.complete) return 'Complete for every revenue stream requested by the active farming context.';
+  if (estimate.knownCoinsPerHour != null) return 'Partial estimate: unresolved Pest or event revenue remains separate instead of being guessed.';
+  return 'No complete Coins/h baseline is available for this activity yet; missing inputs stay unknown instead of becoming zero.';
+}
+
+function dashboardRevenueCards(estimate) {
+  return estimate.streams.map(stream => {
+    const value = stream.status === DASHBOARD_STREAM_STATUS.KNOWN
+      ? `${compactDashboardCoins(stream.coinsPerHour)}/h`
+      : stream.status === DASHBOARD_STREAM_STATUS.UNMODELLED ? 'Not included' : 'Incomplete';
+    return `<article class="stat-card dashboard-revenue-card ${esc(stream.status)}">
+      <span>${esc(stream.label)}</span>
+      <strong>${esc(value)}</strong>
+      <small>${esc(stream.note)}</small>
+    </article>`;
+  }).join('');
+}
+
+function dashboardGroupSummary(setup, group) {
+  const slots = SETUP_SLOTS.filter(slot => slot.group === group);
+  const items = slots.map(slot => setup?.slots?.[slot.id]).filter(item => item?.displayName || item?.skyblockId);
+  if (!items.length) return `0/${slots.length} configured`;
+  const names = [...new Set(items.map(item => item.displayName || item.skyblockId).filter(Boolean))];
+  const preview = names.slice(0, 2).join(', ');
+  return `${items.length}/${slots.length} · ${preview}${names.length > 2 ? ` +${names.length - 2}` : ''}`;
+}
+
+function dashboardLoadoutSummary(mode, selectedCrop) {
+  const setup = state.profile.setups?.list?.find(entry => entry.id === setupIdForActivity(mode)) || null;
+  const pet = setup?.slots?.pet?.displayName || setup?.slots?.pet?.skyblockId || 'Not configured';
+  const base = {
+    armor: dashboardGroupSummary(setup, 'Armor'),
+    equipment: dashboardGroupSummary(setup, 'Equipment'),
+    pet,
+    setup: setup?.name || activityLabel(mode),
+  };
+  if (mode === ACTIVITY_MODE.PEST_KILL) {
+    const vacuumId = state.profile.vacuumProgress?.skyblockId;
+    const vacuum = GARDEN_VACUUM_ITEMS.find(item => item.id === vacuumId);
+    return { ...base, tool: vacuum?.name || 'Vacuum not configured' };
+  }
+  const tool = currentToolBuildRecord().item;
+  return { ...base, tool: [tool?.displayName || selectedCrop.tool, tool?.skyblockId].filter(Boolean).join(' · ') };
+}
 function dashboard() {
   const mode = activityModeForState(state);
   const selectedCrop = crop();
@@ -1070,7 +1166,7 @@ function dashboard() {
   const contextScopes = farmingContextScopes(context);
   const stats = computeStatTotals(state, selectedCrop.id, mode, contextScopes);
   const estimate = dashboardProfitEstimate(selectedCrop.id, mode, context, stats);
-  const measuredValues = estimate.values || {};
+  const loadout = dashboardLoadoutSummary(mode, selectedCrop);
   const marker = count => count ? ' ~' : '';
   const number = value => formatNumber(Number(value || 0), FRACTION_2);
   const effectiveIncomplete = stats.incomplete.globalFortune.length
@@ -1085,10 +1181,15 @@ function dashboard() {
   };
   const priceNote = estimate.normalPrice
     ? averageCropPriceNote(estimate.normalPrice)
-    : 'crop price unavailable';
+    : mode === ACTIVITY_MODE.PEST_KILL
+      ? 'Crop market value is not used for Pest Killing.'
+      : 'Crop price unavailable';
   const contextHelp = context === 'normal'
     ? 'Only always-active configured sources are included.'
     : `${farmingContextLabel(context)}-only configured effects are included in the totals below.`;
+  const throughputText = estimate.values?.breaksPerSecond && estimate.values?.uptimePercent
+    ? `${number(estimate.values.breaksPerSecond)} breaks/s · ${number(estimate.values.uptimePercent)}% uptime`
+    : 'Not measured yet';
 
   const cropRows = CROPS.map(entry => {
     const values = computeStatTotals(state, entry.id, mode, contextScopes);
@@ -1140,8 +1241,8 @@ function dashboard() {
       </article>
       <article class="stat-card dashboard-profit-card">
         <span>Estimated Coins/h · ${esc(selectedCrop.name)}</span>
-        <strong>${esc(estimate.display)}</strong>
-        <small>${esc(estimate.note)}</small>
+        <strong>${esc(dashboardProfitDisplay(estimate))}</strong>
+        <small>${esc(dashboardProfitNote(estimate))}</small>
         <small>${esc(priceNote)}</small>
       </article>
       <article class="stat-card">
@@ -1149,6 +1250,12 @@ function dashboard() {
         <strong>${number(stats.globalFortune)}${marker(stats.incomplete.globalFortune.length)}</strong>
         <small>Account-wide Fortune before crop-specific Fortune is added</small>
         <small>${sourceNote(stats, 'globalFortune')}</small>
+      </article>
+      <article class="stat-card">
+        <span>${esc(selectedCrop.name)} Crop Fortune</span>
+        <strong>${number(stats.cropFortune)}${marker(stats.incomplete.cropFortune.length)}</strong>
+        <small>Crop-specific Fortune from the selected tool and matching sources</small>
+        <small>${sourceNote(stats, 'cropFortune')}</small>
       </article>
       <article class="stat-card">
         <span>Pest Fortune</span>
@@ -1159,7 +1266,7 @@ function dashboard() {
       <article class="stat-card">
         <span>Overbloom</span>
         <strong>${number(stats.overbloom)}${marker(stats.incomplete.overbloom.length)}</strong>
-        <small>Calculated rare-crop multiplier stat</small>
+        <small>Calculated drop-chance stat for applicable Feast and Pest streams</small>
         <small>${sourceNote(stats, 'overbloom')}</small>
       </article>
       <article class="stat-card">
@@ -1168,19 +1275,38 @@ function dashboard() {
         <small>Calculated BPC for the active set</small>
         <small>${sourceNote(stats, 'bonusPestChance')}</small>
       </article>
+      <article class="stat-card">
+        <span>Pest cooldown reduction</span>
+        <strong>${number(stats.pestCooldownReductionPct)}%${marker(stats.incomplete.pestCooldownReductionPct.length)}</strong>
+        <small>Calculated cooldown reduction for the active spawning set</small>
+        <small>${sourceNote(stats, 'pestCooldownReductionPct')}</small>
+      </article>
     </div>
 
-    <details class="dashboard-estimate-inputs">
-      <summary>Coins/h estimate inputs</summary>
-      <div class="dashboard-estimate-grid">
-        <label><span>Crop breaks/s</span><input type="number" min="0" step="0.1" data-dashboard-estimate="breaksPerSecond" value="${esc(measuredValues.breaksPerSecond ?? '')}" placeholder="required"></label>
-        <label><span>Farming uptime %</span><input type="number" min="0" max="100" step="1" data-dashboard-estimate="uptimePercent" value="${esc(measuredValues.uptimePercent ?? '')}" placeholder="required"></label>
-        <div class="dashboard-estimate-readonly"><span>Crop sell value</span><strong>${estimate.normalPrice?.coinsPerUnit ? `${formatNumber(Math.round(estimate.normalPrice.coinsPerUnit))} Coins` : '—'}</strong><small>${esc(estimate.normalPrice ? averageCropPriceNote(estimate.normalPrice) : '90-day Bazaar average unavailable')}</small></div>
-        ${isHarvestFeastContext(context) ? `<div class="dashboard-estimate-readonly"><span>Feast crop value</span><strong>${estimate.feastPrice?.coinsPerUnit ? `${formatNumber(Math.round(estimate.feastPrice.coinsPerUnit))} Coins` : '—'}</strong><small>${esc(estimate.feastPrice ? averageCropPriceNote(estimate.feastPrice) : '90-day Bazaar average unavailable')}</small></div>` : ''}
+    <section class="dashboard-account-summary">
+      <div class="section-row"><div><div class="eyebrow">Calculation inputs</div><h2>Current account state</h2><p>The Dashboard reads the same crop, tool, setup, pet and effect state as the central stat engine. It does not maintain a second calculation.</p></div></div>
+      <div class="card-grid">
+        <article class="stat-card"><span>Crop / Tool</span><strong>${esc(selectedCrop.name)}</strong><small>${esc(loadout.tool)}</small></article>
+        <article class="stat-card"><span>Armor</span><strong>${esc(loadout.armor)}</strong><small>${esc(loadout.setup)}</small></article>
+        <article class="stat-card"><span>Equipment</span><strong>${esc(loadout.equipment)}</strong><small>${esc(loadout.setup)}</small></article>
+        <article class="stat-card"><span>Pet</span><strong>${esc(loadout.pet)}</strong><small>Active phase pet</small></article>
+        <article class="stat-card"><span>Effects / Event</span><strong>${esc(farmingContextLabel(context))}</strong><small>${esc(contextScopes.length ? contextScopes.join(' + ') : 'Always-active effects only')}</small></article>
+        <article class="stat-card"><span>Measured throughput</span><strong>${esc(throughputText)}</strong><small>Stored in Upgrade Planner, not configured on Dashboard</small></article>
       </div>
-      <small>Coin values are fixed rolling 90-day market averages and cannot be entered manually. Throughput remains measurable; unknown market history stays unknown.</small>
-      <small>Market history: <a href="https://sky.coflnet.com/data" target="_blank" rel="noreferrer">SkyCofl</a>.</small>
-    </details>
+    </section>
+
+    <section class="dashboard-economics-panel">
+      <div class="section-row">
+        <div><div class="eyebrow">Transparent estimate</div><h2>Coins/hour model</h2><p>Only sourced streams are monetized. Missing Pest or event economics stay visible as missing instead of receiving a guessed value.</p></div>
+        <button class="ghost small" type="button" data-dashboard-open-planner>Open throughput inputs</button>
+      </div>
+      <div class="card-grid dashboard-revenue-streams">${dashboardRevenueCards(estimate)}</div>
+      <div class="setup-bar dashboard-economics-meta">
+        <div><div class="eyebrow">Throughput</div><strong>${esc(throughputText)}</strong><div class="hint">${estimate.throughput?.validBreaksPerHour != null ? `${formatNumber(Math.round(estimate.throughput.validBreaksPerHour))} valid breaks/h` : 'Required for crop Coins/h'}</div></div>
+        ${mode !== ACTIVITY_MODE.PEST_KILL ? `<div><div class="eyebrow">Crop market value</div><strong>${estimate.normalPrice?.coinsPerUnit ? `${formatNumber(Math.round(estimate.normalPrice.coinsPerUnit))} Coins` : 'Unavailable'}</strong><div class="hint">${esc(priceNote)}</div></div>` : ''}
+        ${isHarvestFeastContext(context) ? `<div><div class="eyebrow">Feast market value</div><strong>${estimate.feastPrice?.coinsPerUnit ? `${formatNumber(Math.round(estimate.feastPrice.coinsPerUnit))} Coins` : 'Unavailable'}</strong><div class="hint">${esc(estimate.feastPrice ? averageCropPriceNote(estimate.feastPrice) : '90-day Bazaar average unavailable')}</div></div>` : ''}
+      </div>
+    </section>
 
     <aside class="dashboard-farm-tip">
       <div>
@@ -1714,7 +1840,7 @@ function plannerPage() {
         <div class="planner-main"><strong>${esc(x.item.name)}</strong><span>${esc(x.item.category)} · ${esc(x.item.metric)}</span></div>
         <div class="planner-number"><strong>+${formatNumber(x.gain)}</strong><span>marginal</span></div>
         <div class="planner-number"><strong>${x.rel.toFixed(2)}%</strong><span>relative</span></div>
-        <div class="planner-number"><strong>${x.cost?`${formatNumber(Math.round(x.cost))} Coins`:'—'}</strong><span>${x.efficiency!==null?`${x.efficiency.toFixed(3)} / 1M`:'Cost missing'}</span></div>
+        <div class="planner-number"><strong>${x.cost ? formatApproxCoins(x.cost) : '—'}</strong><span>${x.efficiency!==null?`${x.efficiency.toFixed(3)} / 1M`:'Cost missing'}</span></div>
       </button>`).join('') || '<div class="empty">No calculated upgrades for the current state.</div>'}
     </div>`;
 }
@@ -2019,9 +2145,10 @@ function activeSetupObjective() {
   return setupObjectiveForActivity(mode);
 }
 
-function setupCandidateLabel(candidate) {
+function setupCandidateLabel(candidate, mode = activityModeForState(state)) {
   if (!candidate) return 'Unknown loadout';
   const pet = candidate.setup?.slots?.pet?.displayName || 'No pet';
+  if (mode === ACTIVITY_MODE.PEST_KILL) return `FF Set · ${pet}`;
   const armor = candidate.components?.armorSetId || 'no armor set';
   const equipment = candidate.components?.equipmentSetId || 'no equipment set';
   return `${armor} · ${equipment} · ${pet}`;
@@ -2050,7 +2177,13 @@ function setupObjectivePanel() {
   const objective = activeSetupObjective();
   const mode = activityModeForState(state);
   const runtimeContext = setupRuntimeContextForState(state);
-  const candidates = buildSetupCandidates(synced, { phase: mode });
+  const all = setups();
+  const candidates = buildSetupCandidates(synced, {
+    phase: mode,
+    lockedWearableSetup: mode === ACTIVITY_MODE.PEST_KILL
+      ? effectiveSetup(all, FF_SETUP_ID)
+      : null,
+  });
   const result = evaluateSetupObjective(state, candidates, { objective, ...runtimeContext });
   const candidateById = new Map(candidates.map(candidate => [candidate.id, candidate]));
   const frontierRows = result.rows.filter(row => row.frontier).slice(0, 4);
@@ -2084,7 +2217,7 @@ function setupObjectivePanel() {
   let detail = 'Unknown mechanics and missing runtime context stay unknown instead of becoming zero.';
   if (result.recommendation.status === 'clear') {
     const chosen = candidateById.get(result.recommendation.candidateId);
-    headline = setupCandidateLabel(chosen);
+    headline = setupCandidateLabel(chosen, mode);
     detail = `Clear match for ${result.label} across ${result.eligibleCount} complete owned combination${result.eligibleCount === 1 ? '' : 's'}.`;
   } else if (result.recommendation.status === 'tradeoff') {
     headline = `${result.frontierCount} non-dominated loadout options`;
@@ -2100,7 +2233,7 @@ function setupObjectivePanel() {
         const metrics = Object.entries(row.metrics)
           .map(([key, value]) => setupObjectiveMetricText(key, value))
           .join(' · ');
-        return `<div class="hint"><strong>${esc(setupCandidateLabel(candidate))}</strong><br>${esc(metrics)}
+        return `<div class="hint"><strong>${esc(setupCandidateLabel(candidate, mode))}</strong><br>${esc(metrics)}
           <button class="ghost small" type="button" data-setup-objective-apply="${esc(row.candidateId)}">Use this loadout</button>
         </div>`;
       }).join('')}</div>`
@@ -2121,7 +2254,7 @@ function setupObjectivePanel() {
 function setupGroupTitle(group) {
   if (group !== 'Armor') return group;
   const mode = activityModeForState(state);
-  return mode === ACTIVITY_MODE.PEST_SPAWN ? 'Armor · BPC set' : 'Armor · FF set';
+  return mode === ACTIVITY_MODE.PEST_SPAWN ? 'Armor · BPC Set' : 'Armor · FF Set';
 }
 
 function petSetupSection(title, setupId, note = '') {
@@ -2237,7 +2370,12 @@ function bindSetups() {
       const objective = activeSetupObjective();
       const mode = activityModeForState(state);
       const runtimeContext = setupRuntimeContextForState(state);
-      const candidates = buildSetupCandidates(synced, { phase: mode });
+      const candidates = buildSetupCandidates(synced, {
+        phase: mode,
+        lockedWearableSetup: mode === ACTIVITY_MODE.PEST_KILL
+          ? effectiveSetup(all, FF_SETUP_ID)
+          : null,
+      });
       const analysis = evaluateSetupObjective(state, candidates, { objective, ...runtimeContext });
       const candidateId = button.dataset.setupObjectiveApply;
       const row = analysis.rows.find(entry =>
@@ -2411,44 +2549,6 @@ function farmingLevel() {
   return Number.isFinite(entered) && entered > 0 ? entered : null;
 }
 
-const BEGINNER_PLACES = Object.freeze([
-  {
-    name: 'Farm Merchant',
-    location: 'Starter farming shop',
-    detail: 'Buy the Rookie Hoe and Rookie Farming Axe here before the Garden becomes your main farming area.',
-  },
-  {
-    name: 'Sam',
-    location: 'Garden unlock',
-    detail: 'At SkyBlock Level 5, speak to Sam to unlock The Garden. From then on, treat the Garden as the main farming hub.',
-  },
-  {
-    name: 'SkyMart',
-    location: 'The Garden',
-    detail: 'Early Garden tools and utility items cost Copper here. Do not spread Copper over every tool; build the crop you actually farm.',
-  },
-  {
-    name: 'Garden Desk',
-    location: 'The Garden',
-    detail: 'Crop Upgrades live here. After the Sundial hand-in, the Desk also gives per-crop Speed settings.',
-  },
-  {
-    name: 'Beth',
-    location: 'Desert Settlement',
-    detail: 'Start her quest early and keep serving her when she visits. The quest later gates the Crop Analyzer.',
-  },
-  {
-    name: 'Jacob & Anita',
-    location: 'Farming contest progression',
-    detail: 'Jacob contests start at Farming 10. Gold results in unique crops feed Anita’s Farming level-cap upgrades later.',
-  },
-  {
-    name: 'Pesthunter Phillip',
-    location: 'Pest progression',
-    detail: 'Pests can be converted into temporary Farming Fortune before longer Pest-farming sessions.',
-  },
-]);
-
 function infoCropName(pest) {
   return CROPS.find(entry => entry.id === pest.cropId)?.name || pest.cropId;
 }
@@ -2501,7 +2601,7 @@ function infoPestGuide() {
     <div class="pest-list">
       ${GARDEN_PESTS.map(pest => {
         const cropName = infoCropName(pest);
-        return `<div class="pest-row${pest.status === 'VERIFIED' ? '' : ' pest-row-unverified'}">
+        return `<div id="${esc(searchAnchorSlug('info-pest', pest.name))}" class="pest-row${pest.status === 'VERIFIED' ? '' : ' pest-row-unverified'}">
           <span class="pest-crop-icon"><span class="pest-crop-letter">${esc(cropName.slice(0, 1))}</span></span>
           <div class="pest-main"><strong>${esc(pest.name)}</strong><span>${esc(cropName)}</span></div>
           <div class="pest-drop"><strong>${esc(guaranteedDropText(pest) || 'Guaranteed drop scaling not verified')}</strong><span>guaranteed drop</span></div>
@@ -2514,9 +2614,48 @@ function infoPestGuide() {
   </section>`;
 }
 
+function infoSourceMarkup(entry) {
+  if (!entry?.source) return '';
+  const verified = entry.lastVerified ? ` · checked ${entry.lastVerified}` : '';
+  return `<div class="info-entry-source">
+    <a href="${esc(entry.source)}" target="_blank" rel="noreferrer">Current source</a><span>${esc(verified)}</span>
+  </div>`;
+}
+
+function infoEntryCard(entry) {
+  return `<article class="info-card info-reference-card" id="${esc(entry.anchor)}">
+    <span>${esc(entry.label)}</span>
+    <strong>${esc(entry.title)}</strong>
+    <div class="info-entry-copy">
+      <p><b>What:</b> ${esc(entry.what)}</p>
+      <p><b>Why it matters:</b> ${esc(entry.why)}</p>
+      <p><b>When it matters:</b> ${esc(entry.when)}</p>
+      <p><b>Where / how:</b> ${esc(entry.where)}</p>
+    </div>
+    ${entry.sourceNote ? `<p class="info-source-note">${esc(entry.sourceNote)}</p>` : ''}
+    ${infoSourceMarkup(entry)}
+  </article>`;
+}
+
+function infoReferenceSection(section, entries) {
+  return `<section class="info-section" id="info-section-${esc(section.id)}">
+    <div class="section-row">
+      <div>
+        <div class="eyebrow">${esc(section.eyebrow)}</div>
+        <h2>${esc(section.title)}</h2>
+        <p>${esc(section.description)}</p>
+      </div>
+    </div>
+    <div class="info-upgrade-grid">${entries.map(infoEntryCard).join('')}</div>
+  </section>`;
+}
+
 function infoPage() {
   const earlyStages = STAGES.slice(0, 4);
-  return `${pageHeader('Info', 'Farming Info & Beginner Guide', 'Explanations, beginner strategy and where each system lives. Configuration and calculated values stay on their own tabs.')}
+  const cropEntries = cropStrategyInfo(CROPS);
+  const staticBySection = sectionId => INFO_ENTRIES.filter(entry => entry.section === sectionId);
+
+  return `${pageHeader('Info', 'Farming Info & Beginner Guide', 'Explanations, beginner strategy, current mechanics and where each system lives. Configuration and calculated values stay on their own tabs.')}
     <div class="info-home">
       <section class="info-section info-start">
         <div class="section-row">
@@ -2532,31 +2671,10 @@ function infoPage() {
         </div>
       </section>
 
-      <section class="info-section" id="info-item-upgrades">
-        <div class="section-row">
-          <div><div class="eyebrow">Item upgrade reference</div><h2>What generic item upgrades actually do</h2><p>These systems are not tied to one single Farming420 card, so global search routes generic questions here.</p></div>
-        </div>
-        <div class="info-upgrade-grid">
-          ${INFO_UPGRADE_TOPICS.map(topic => `<article class="info-card" id="info-upgrade-${esc(topic.id)}">
-            <span>${esc(topic.label)}</span>
-            <strong>${esc(topic.title)}</strong>
-            <p>${esc(topic.summary)}</p>
-          </article>`).join('')}
-        </div>
-      </section>
-
-      <section class="info-section" id="info-places">
-        <div class="section-row">
-          <div><div class="eyebrow">Where to go</div><h2>Important places and NPCs</h2><p>Use this as a routing sheet when a guide tells you to buy, unlock or start something.</p></div>
-        </div>
-        <div class="info-place-grid">
-          ${BEGINNER_PLACES.map(place => `<article class="info-place-card">
-            <span>${esc(place.location)}</span>
-            <strong>${esc(place.name)}</strong>
-            <p>${esc(place.detail)}</p>
-          </article>`).join('')}
-        </div>
-      </section>
+      ${INFO_SECTIONS.map(section => infoReferenceSection(
+        section,
+        section.id === 'crops' ? cropEntries : staticBySection(section.id),
+      )).join('')}
 
       ${infoPestGuide()}
 
@@ -2623,7 +2741,7 @@ function guidePage(embedded = false) {
 
     <div class="section-row"><div><h2>Enchantments by level</h2><p>Which level is reachable now, and what the next one takes.</p></div></div>
     <div class="ladder-grid">
-      ${ENCHANT_LADDERS.map(ladder => `<article class="ladder">
+      ${ENCHANT_LADDERS.map(ladder => `<article class="ladder" id="${esc(searchAnchorSlug('info-enchant', ladder.name))}">
         <div class="eyebrow">${esc(ladder.scope)}</div>
         <h3>${esc(ladder.name)}</h3>
         <p><strong>${esc(ladder.perLevel)}</strong> · max ${esc(ladder.max)}</p>
@@ -2655,7 +2773,33 @@ function bindGuide() {
   }));
 }
 
+function activeSearchFocusSnapshot() {
+  const input = document.getElementById('search');
+  if (!input || document.activeElement !== input) return null;
+  return {
+    start: input.selectionStart,
+    end: input.selectionEnd,
+    direction: input.selectionDirection,
+  };
+}
+
+function restoreActiveSearchFocus(snapshot) {
+  if (!snapshot) return;
+  const input = document.getElementById('search');
+  if (!input) return;
+  input.focus({ preventScroll: true });
+  const length = input.value.length;
+  const start = Math.min(snapshot.start ?? length, length);
+  const end = Math.min(snapshot.end ?? start, length);
+  try {
+    input.setSelectionRange(start, end, snapshot.direction || 'none');
+  } catch {
+    // Text inputs support setSelectionRange; keep focus even if a browser disagrees.
+  }
+}
+
 function render({ preserveScroll = true } = {}) {
+  const searchFocusSnapshot = preserveScroll ? activeSearchFocusSnapshot() : null;
   // Most state changes only alter a control/card. Replacing #app is still the
   // core render model, but it must not behave like navigation: keep the right
   // content pane and the navigation rail exactly where the user left them.
@@ -2685,6 +2829,7 @@ function render({ preserveScroll = true } = {}) {
   }
   document.getElementById('app').innerHTML = shell(content);
   bind();
+  restoreActiveSearchFocus(searchFocusSnapshot);
   if (state.page === 'setups') bindSetups();
   if (['setups', 'shards'].includes(state.page)) ensureItemCatalog();
   if (state.page === 'tools') bindToolPanel();
@@ -2759,17 +2904,12 @@ function bind() {
     render();
   });
 
-  document.querySelectorAll('[data-dashboard-estimate]').forEach(input => input.addEventListener('change', event => {
-    state.profile.plannerMeasured ||= {};
-    const key = `${state.selectedCrop}:${activityModeForState(state)}`;
-    state.profile.plannerMeasured[key] ||= {};
-    const field = event.target.dataset.dashboardEstimate;
-    const raw = String(event.target.value || '').trim();
-    if (raw === '') delete state.profile.plannerMeasured[key][field];
-    else state.profile.plannerMeasured[key][field] = Math.max(0, Number(raw) || 0);
+  document.querySelector('[data-dashboard-open-planner]')?.addEventListener('click', () => {
+    state.page = 'planner';
+    state.drawer = null;
     saveState();
-    render();
-  }));
+    render({ preserveScroll: false });
+  });
   const search = document.getElementById('search');
   const searchResults = document.getElementById('searchResults');
   if (search) {

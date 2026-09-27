@@ -3,7 +3,7 @@ import {
   createEmptyItem,
   ITEM_SOURCE,
   SLOT_IDS,
-  normalizeSetups,
+  prepareFfBpcSetups,
   writeLinkedSetupSlot,
 } from './setups.js';
 import {
@@ -75,9 +75,10 @@ function writeState(state) {
 
 function currentSetupRecord(state) {
   state.profile ||= {};
-  const setups = normalizeSetups(state.profile.setups);
+  const setups = prepareFfBpcSetups(state.profile.setups);
   state.profile.setups = setups;
-  const setup = setups.list.find(row => row.id === setups.activeId) || setups.list[0] || null;
+  const targetId = state.setupSlotTarget || setups.activeId;
+  const setup = setups.list.find(row => row.id === targetId) || setups.list[0] || null;
   return { setups, setup };
 }
 

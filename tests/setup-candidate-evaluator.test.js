@@ -210,16 +210,16 @@ test('missing required hand item keeps a setup comparison incomplete', () => {
   assert.ok(result.reasons.includes('no observed farming-tool is available for this phase and crop'));
 });
 
-test('an empty current phase setup prevents a fake complete before/after comparison', () => {
+test('Killing evaluation inherits the complete FF wearable setup', () => {
   const profileSnapshot = snapshot();
   const state = stateForSnapshot(profileSnapshot);
   const candidate = savedCowCandidate(profileSnapshot, ACTIVITY_MODE.PEST_KILL);
   const result = evaluateSetupCandidate(state, candidate, { phase: ACTIVITY_MODE.PEST_KILL });
 
-  assert.equal(result.before.wearableComplete, false);
+  assert.equal(result.before.wearableComplete, true);
   assert.equal(result.after.wearableComplete, true);
-  assert.equal(result.complete, false);
-  assert.ok(result.reasons.includes('current phase setup does not contain a complete armor/equipment loadout'));
+  assert.equal(result.currentSetupId, 'pest-kill');
+  assert.equal(result.candidateSetupId, 'pest-kill');
 });
 
 test('batch evaluation preserves enumeration order and does not rank by raw Fortune', () => {

@@ -161,7 +161,7 @@ test('shared physical armor is one recommendation while a separate spawning set 
     [...shared.activityModes].sort(),
     [ACTIVITY_MODE.FARM, ACTIVITY_MODE.PEST_KILL].sort(),
   );
-  assert.match(shared.setupLabel, /Farming \+ Pest Killing/);
+  assert.match(shared.setupLabel, /FF Set · Farming \+ Killing/);
   assert.match(shared.setupLabel, /shared item/);
 
   const spawning = merged.find(entry => entry.activityModes.length === 1);

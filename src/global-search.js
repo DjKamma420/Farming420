@@ -49,7 +49,7 @@ function isSubsequence(needle, haystack) {
 function tokenScore(token, word) {
   if (word === token) return 900;
   if (word.startsWith(token)) return 720;
-  if (word.includes(token)) return 560;
+  if (token.length >= 3 && word.includes(token)) return 560;
   if (token.startsWith(word) && word.length >= 3) return 420;
 
   if (token.length >= 4 && word.length >= 4) {
@@ -66,6 +66,7 @@ export function scoreSearchEntry(entry, query) {
   if (!normalizedQuery) return 0;
 
   const title = normalizeSearchText(entry?.title);
+  const titleAcronym = title.split(' ').filter(Boolean).map(word => word[0]).join('');
   const searchable = normalizeSearchText([
     entry?.title,
     entry?.subtitle,
@@ -78,12 +79,13 @@ export function scoreSearchEntry(entry, query) {
   else if (title.startsWith(normalizedQuery)) score += 5200;
   else if (title.includes(normalizedQuery)) score += 3900;
 
-  if (searchable.includes(normalizedQuery)) score += 2200;
+  if (normalizedQuery.length >= 3 && searchable.includes(normalizedQuery)) score += 2200;
 
   const words = searchable.split(' ').filter(Boolean);
   for (const token of normalizedQuery.split(' ').filter(Boolean)) {
     let best = 0;
     for (const word of words) best = Math.max(best, tokenScore(token, word));
+    if (!best && token.length >= 2 && titleAcronym.startsWith(token)) best = 680;
     if (!best) return Number.NEGATIVE_INFINITY;
     score += best;
   }
