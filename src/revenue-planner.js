@@ -418,10 +418,10 @@ function benchmarkEvaluatedRows(raw, { includeGoalFilters = false } = {}) {
     })
     .filter(row => {
       if (row.modeled && row.gain > 0) return true;
-      if (isSpawningPrimary(row) && (row.gain > 0 || item.status === 'VERIFY')) return true;
+      if (isSpawningPrimary(row) && (row.gain > 0 || row.item.status === 'VERIFY')) return true;
       return includeGoalFilters
         && recommendationGoalItem(row.item)
-        && (row.gain > 0 || item.status === 'VERIFY');
+        && (row.gain > 0 || row.item.status === 'VERIFY');
     });
 
   return rankPlannerRows(rows, context.mode);
