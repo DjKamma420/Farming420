@@ -83,7 +83,7 @@ test('unknown economics stay unknown instead of becoming zero', () => {
     costSource: {},
   }));
 
-  assert.equal(action.directCost, 0);
+  assert.equal(action.directCost, null);
   assert.equal(action.profitDeltaPerHour, null);
   assert.deepEqual(action.currentState, { level: null, known: false });
   assert.equal(action.prerequisites, null);
