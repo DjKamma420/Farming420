@@ -45,3 +45,15 @@ test('all query tokens must match somewhere in the entry', () => {
   assert.ok(Number.isFinite(scoreSearchEntry(entry, 'perfect gem')));
   assert.equal(scoreSearchEntry(entry, 'perfect mosquito'), Number.NEGATIVE_INFINITY);
 });
+
+
+test('title acronyms match short stat queries without short-substring noise', () => {
+  const results = searchEntries([
+    { id: 'bpc', title: 'Bonus Pest Chance', subtitle: 'Spawn stat' },
+    { id: 'effect', title: 'Reforge Effect', subtitle: 'Generic modifier' },
+  ], 'bpc');
+  assert.equal(results[0]?.id, 'bpc');
+
+  assert.ok(Number.isFinite(scoreSearchEntry({ title: 'Farming Fortune' }, 'ff')));
+  assert.equal(scoreSearchEntry({ title: 'Reforge Effect' }, 'ff'), Number.NEGATIVE_INFINITY);
+});
