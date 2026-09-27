@@ -197,3 +197,8 @@ test('a full storage quota does not break loading', async () => {
   assert.equal(result.items.length, 4);
   assert.equal(result.error, null);
 });
+
+
+test('catalog cache generation is refreshed for current Attribute Shard metadata', () => {
+  assert.equal(CATALOG_STORAGE_KEY, 'farming420-item-catalog-v5');
+});

@@ -8,10 +8,10 @@ export const OPTION_SOURCE = Object.freeze({
   MANUAL: 'manual',
 });
 
-// v4 preserves official gemstone slot requirements/costs instead of reducing a
-// socket to only its type. Invalidate v3 so old caches cannot silently make a
-// gated socket look always available.
-export const CATALOG_STORAGE_KEY = 'farming420-item-catalog-v4';
+// v5 invalidates pre-shard caches so the 0.27 Attribute Shard records (including
+// their exact player-head skin metadata) are fetched again after deployment.
+// v4 preserved official gemstone slot requirements/costs.
+export const CATALOG_STORAGE_KEY = 'farming420-item-catalog-v5';
 export const CATALOG_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 const SLOT_CATEGORIES = Object.freeze({
