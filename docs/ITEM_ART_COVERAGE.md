@@ -27,9 +27,10 @@ Killing then resolves shared Armor and Equipment through the effective FF setup.
 7. **Vanilla/material fallback.**
 8. **Letter badge.** The last resort, and a coverage failure.
 
-Live NBT and Hypixel metadata always outrank the static id-backed table. That is
-intentional: if Hypixel changes an item's model, live data replaces the frozen
-fallback automatically.
+Live NBT and Hypixel metadata outrank static id-backed fallbacks unless an
+explicit portrait-route override exists for a known presentation mismatch.
+That narrow exception currently applies to the Helianthus Helmet so a synced
+player-head texture cannot replace its intended 3D card portrait.
 
 ## Exact equipment head models
 
