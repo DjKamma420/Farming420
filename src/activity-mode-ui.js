@@ -17,7 +17,6 @@ import {
   BPC_SETUP_ID,
   FF_SETUP_ID,
   THIRD_SETUP_ID,
-  physicalSetupCount,
   prepareFfBpcSetups,
   setPhysicalSetupCount,
   setThirdSetupName,
@@ -149,10 +148,16 @@ function preparedPhysicalSetups(raw) {
 }
 
 function physicalSetLabel(setupId, setups) {
-  if (setupId === FF_SETUP_ID) return 'FF (Farming Fortune) Set';
-  if (setupId === BPC_SETUP_ID) return 'BPC (Bonus Pest Chance) Set';
+  if (setupId === FF_SETUP_ID) return 'FF Set';
+  if (setupId === BPC_SETUP_ID) return 'BPC Set';
   if (setupId === THIRD_SETUP_ID) return thirdSetupName(setups);
   return 'Set';
+}
+
+function physicalSetTitle(setupId, setups) {
+  if (setupId === FF_SETUP_ID) return 'FF (Farming Fortune) Set';
+  if (setupId === BPC_SETUP_ID) return 'BPC (Bonus Pest Chance) Set';
+  return physicalSetLabel(setupId, setups);
 }
 
 function persistPhysicalSetChange(mutator) {
@@ -163,13 +168,72 @@ function persistPhysicalSetChange(mutator) {
   window.dispatchEvent(new Event('farming420:state-changed'));
 }
 
+function closeAddSetDialog(dialog) {
+  if (!dialog) return;
+  if (dialog.open) dialog.close();
+  dialog.remove();
+}
+
+function openAddSetDialog() {
+  document.querySelector('[data-add-set-dialog]')?.remove();
+  const dialog = document.createElement('dialog');
+  dialog.className = 'physical-set-dialog';
+  dialog.dataset.addSetDialog = '1';
+  dialog.setAttribute('aria-labelledby', 'add-set-dialog-title');
+  dialog.innerHTML = `
+    <form method="dialog" class="physical-set-dialog-card" data-add-set-form>
+      <div class="eyebrow">Custom loadout</div>
+      <h2 id="add-set-dialog-title">Add Set</h2>
+      <p>Choose the name for your third physical set.</p>
+      <label>
+        <span>Set name</span>
+        <input type="text" maxlength="48" required autocomplete="off"
+          data-new-set-name placeholder="e.g. Mushroom Set">
+      </label>
+      <div class="physical-set-dialog-actions">
+        <button type="submit" value="cancel" class="ghost">Cancel</button>
+        <button type="submit" value="add" class="primary">Add Set</button>
+      </div>
+    </form>`;
+
+  document.body.append(dialog);
+  const form = dialog.querySelector('[data-add-set-form]');
+  const input = dialog.querySelector('[data-new-set-name]');
+
+  form?.addEventListener('submit', event => {
+    if (event.submitter?.value === 'cancel') return;
+    event.preventDefault();
+    const name = String(input?.value || '').trim();
+    if (!name) {
+      input?.setCustomValidity('Enter a set name.');
+      input?.reportValidity();
+      return;
+    }
+    input?.setCustomValidity('');
+    persistPhysicalSetChange(next => {
+      setPhysicalSetupCount(next, 3);
+      setThirdSetupName(next, name);
+      next.activeId = THIRD_SETUP_ID;
+    });
+    closeAddSetDialog(dialog);
+  });
+
+  input?.addEventListener('input', () => input.setCustomValidity(''));
+  dialog.addEventListener('close', () => dialog.remove(), { once: true });
+  dialog.addEventListener('click', event => {
+    if (event.target === dialog) closeAddSetDialog(dialog);
+  });
+  dialog.showModal();
+  input?.focus({ preventScroll: true });
+}
+
 function injectPhysicalSetHeader(raw, topbar, main, control) {
   const setups = preparedPhysicalSetups(raw);
-  const count = physicalSetupCount(setups);
   const visibleIds = visiblePhysicalSetupIds(setups);
   const activeId = visibleIds.includes(setups.activeId) ? setups.activeId : FF_SETUP_ID;
-  const name = thirdSetupName(setups);
-  const signature = [count, activeId, name].join(':');
+  const hasThirdSet = visibleIds.includes(THIRD_SETUP_ID);
+  const name = hasThirdSet ? thirdSetupName(setups) : '';
+  const signature = [hasThirdSet ? 3 : 2, activeId, name].join(':');
 
   topbar.classList.remove('activity-mode-topbar-shared');
   main?.classList.remove('activity-mode-page-shared');
@@ -187,23 +251,14 @@ function injectPhysicalSetHeader(raw, topbar, main, control) {
   control.dataset.physicalSignature = signature;
   control.innerHTML = `
     <span>Sets</span>
-    <div class="physical-set-count" aria-label="Number of physical sets">
-      <button type="button" data-physical-set-count="2" class="${count === 2 ? 'active' : ''}" aria-pressed="${count === 2}">2 Sets</button>
-      <button type="button" data-physical-set-count="3" class="${count === 3 ? 'active' : ''}" aria-pressed="${count === 3}">3 Sets</button>
-    </div>
     <div class="physical-set-tabs">
       ${visibleIds.map(setupId => `<button type="button" data-physical-setup="${esc(setupId)}"
         class="${setupId === activeId ? 'active' : ''}" aria-pressed="${setupId === activeId}"
-        title="${esc(physicalSetLabel(setupId, setups))}">${esc(physicalSetLabel(setupId, setups))}</button>`).join('')}
+        title="${esc(physicalSetTitle(setupId, setups))}">${esc(physicalSetLabel(setupId, setups))}</button>`).join('')}
     </div>
-    ${count === 3 ? `<label class="physical-set-name"><span>Set 3 name</span>
-      <input type="text" maxlength="48" data-third-setup-name value="${esc(name)}" aria-label="Set 3 name">
-    </label>` : ''}`;
-
-  control.querySelectorAll('[data-physical-set-count]').forEach(button => button.addEventListener('click', () => {
-    if (Number(button.dataset.physicalSetCount) === count) return;
-    persistPhysicalSetChange(next => setPhysicalSetupCount(next, button.dataset.physicalSetCount));
-  }));
+    ${hasThirdSet
+      ? '<button type="button" class="remove-set-button" data-remove-physical-set title="Hide the custom set">Remove Set</button>'
+      : '<button type="button" class="add-set-button" data-add-physical-set>+ Add Set</button>'}`;
 
   control.querySelectorAll('[data-physical-setup]').forEach(button => button.addEventListener('click', () => {
     if (button.dataset.physicalSetup === activeId) return;
@@ -213,8 +268,9 @@ function injectPhysicalSetHeader(raw, topbar, main, control) {
     });
   }));
 
-  control.querySelector('[data-third-setup-name]')?.addEventListener('change', event => {
-    persistPhysicalSetChange(next => setThirdSetupName(next, event.target.value));
+  control.querySelector('[data-add-physical-set]')?.addEventListener('click', openAddSetDialog);
+  control.querySelector('[data-remove-physical-set]')?.addEventListener('click', () => {
+    persistPhysicalSetChange(next => setPhysicalSetupCount(next, 2));
   });
 }
 
