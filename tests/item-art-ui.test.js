@@ -197,7 +197,7 @@ test('exact setup item-id art controls the intended portrait route before generi
   assert.ok(mappedRender > mappedLookup);
   assert.match(source, /exactSetupArtNode\(itemId, item/);
   assert.match(source, /descriptor\.kind === 'rendered'/);
-  assert.match(source, /remoteIconNode\(knownSkyblockRenderedIcon\(itemId\), item, onError\)/);
+  assert.match(source, /remoteIconNode\(descriptor\.iconUrl \|\| knownSkyblockRenderedIcon\(itemId\), item, onError\)/);
 });
 
 
@@ -242,4 +242,11 @@ test('catalog Pet Item icon fallback is below exact setup art and exact catalog 
   assert.ok(mappedRender >= 0);
   assert.ok(catalogTexture >= 0 && petItemRemote > catalogTexture);
   assert.match(source, /if \(renderedIconUrl\) return remoteIconNode\(renderedIconUrl, item, onError\)/);
+});
+
+test('Poignant Lucky Clover has deterministic rendered Pet Item art', () => {
+  assert.deepEqual(exactSetupItemArt('POIGNANT_LUCKY_CLOVER'), {
+    kind: 'rendered',
+    iconUrl: 'https://skyah.net/icons/items/poignant_lucky_clover.webp',
+  });
 });
