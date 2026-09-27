@@ -37,6 +37,15 @@ test('armor, equipment and pet items replace free-text item names with closed it
   assert.match(source, /slotId === 'petItem'/);
 });
 
+test('closed armor picker refreshes when the item catalog arrives after the editor opened', () => {
+  const source = read('src/setup-selection-ui.js');
+  assert.match(source, /const existingSelect = editor\.querySelector/);
+  assert.match(source, /closedItemPickerSignature\(options, item\)/);
+  assert.match(source, /existingSelect\?\.dataset\.catalogSignature === signature/);
+  assert.match(source, /catalogSignature: signature/);
+  assert.doesNotMatch(source, /slotHasOfficialCategory\(slotId\) \|\| editor\.querySelector/);
+});
+
 test('generic reforge typing is converted to a select before exact item capabilities refine it', () => {
   const source = read('src/setup-selection-ui.js');
   assert.match(source, /function closeReforgePicker/);
