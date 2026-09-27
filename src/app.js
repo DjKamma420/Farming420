@@ -848,9 +848,9 @@ function applyPendingSearchSpotlight(attempt = 0) {
       searchSpotlightNote(node.closest('.settings-field'), `Search result: ${target.itemName}. Select it here to update this loadout.`);
     }
   } else if (target.type === 'setup-slot' && target.slotId === 'pet') {
-    node = document.querySelector('[data-farming-pet-select]');
+    node = document.querySelector('[data-farming-pet-dropdown]');
     if (node) {
-      searchSpotlightNote(node.closest('label') || node.parentElement, `Search result: ${target.petName}. Select it here to update this loadout.`);
+      searchSpotlightNote(node.closest('.settings-field') || node.parentElement, `Search result: ${target.petName}. Select it here to update this loadout.`);
     }
   } else if (target.type === 'tool' && target.cropId) {
     node = document.querySelector(`.sb-tool-card[data-sb-tool-crop="${target.cropId}"]`);
