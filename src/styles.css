@@ -168,3 +168,8 @@
 .search-target-highlight{outline:2px solid var(--accent);outline-offset:3px;border-radius:10px;scroll-margin-top:96px}
 .search-target-note{margin:0 0 9px;padding:8px 10px;border:1px solid #3d6c51;border-radius:8px;background:#10291c;color:var(--accent2);font-size:11px;line-height:1.4}
 .search-result[aria-selected="true"]{background:var(--panel2)}
+
+
+/* Global search groups preserve relevance order while making result types scannable. */
+.search-result-group + .search-result-group{border-top:1px solid var(--line);margin-top:5px;padding-top:5px}
+.search-result-group-title{padding:6px 10px 4px;color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
