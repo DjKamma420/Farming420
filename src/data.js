@@ -2405,14 +2405,14 @@ export const HIDDEN_INTERACTIONS = [
   },
   {
     "id": "farming-attributes-are-not-all-farming-fortune",
-    "name": "Only four of the twelve farming attributes give Farming Fortune",
-    "effect": "Solar Power (Firefly, +5-50 by day), Lunar Power (Lunar Moth, +5-50 by night), Pest Fortune (Cricket, +5-50 on Pests) and Infiltration (Earthworm, +3-30 while the current plot has a Pest) grant Farming Fortune. Pest Luck, Bonus Pest Chance, Sprayonator Serendipity, Pest Cooldown, Enchanted Farmer, Visitor Bait, Fancy Visit and Garden Wisdom grant something else entirely.",
-    "why": "Every one of these is levelled the same way, shown in the same Hunting Box and described in the same wiki table, which makes it easy to read the whole set as one Fortune pool and add up +5-50 twelve times.",
-    "handling": "Each attribute is a separate scored entry carrying its own metric, so the planner can never sum them into Farming Fortune. Only the four Fortune attributes use the Crop Yield metric, and three of those four are conditional (day, night, Pest present) rather than always-on.",
+    "name": "Farming-related Attributes are independent mechanics, not one Fortune pool",
+    "effect": "Current farming-relevant Attributes include direct Farming Fortune, Overbloom, Pest Fortune, Bonus Pest Chance, Pest cooldown, Pest damage, crop growth, Composter, Visitor, Farming Wisdom and Pest-profit effects.",
+    "why": "Attributes share the same Hunting Box level system, but their effects have different conditions and economic meanings. A positive level value is not enough to make an Attribute a crop-profit recommendation.",
+    "handling": "Each direct shard entry carries an explicit planner target. Direct Fortune, Overbloom, Bonus Pest Chance and sourced cooldown effects can enter the matching objective; XP, Visitor, Composter, kill-speed and unpriced Pest-profit effects stay visible but unranked until their own economics are modeled.",
     "status": "ACTIVE",
-    "lastVerified": "2026-09-16",
+    "lastVerified": "2026-09-27",
     "source": "https://hypixelskyblock.minecraft.wiki/w/Attributes"
-  },
+  }
   {
     "id": "pest-cooldown-has-no-published-per-level-value",
     "name": "Pest Cooldown (Moth Shard) publishes no per-level scaling",
