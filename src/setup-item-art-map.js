@@ -38,7 +38,7 @@ export const EXACT_SETUP_ITEM_ART = Object.freeze({
     kind: 'voxel-head',
     textureId: '46e48a6eff318dcda57d5d76a9b2656be25973e3d472b6d2e446a8e60f60a78a',
   }),
-
+});
 
 export function exactSetupItemArt(skyblockId) {
   const id = String(skyblockId || '').trim().toUpperCase();
