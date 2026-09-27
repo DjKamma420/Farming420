@@ -141,3 +141,12 @@ test('setup art exposes an explicit render hook instead of depending only on obs
   assert.match(source, /export async function applySetupItemArt/);
   assert.match(source, /renderSetupItemArt\(\{ root, rawState, manifestValue: manifest \}\)/);
 });
+
+
+test('concurrent core renders share resource promises instead of dropping the newer portrait pass', () => {
+  const source = readFileSync(new URL('../src/item-art-ui.js', import.meta.url), 'utf8');
+  assert.match(source, /manifestPromise \|\|=/);
+  assert.match(source, /catalogPromise \|\|=/);
+  assert.doesNotMatch(source, /if \(applying/);
+  assert.match(source, /Every caller paints its own current DOM/);
+});

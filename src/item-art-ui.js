@@ -6,10 +6,9 @@ import { effectiveSetup } from './setups.js';
 import { knownSkyblockHeadTexture, knownSkyblockRenderedIcon, skullTextureUrl } from './skull-art.js?v=20260918-4';
 
 let manifest = null;
-let manifestRequested = false;
+let manifestPromise = null;
 let itemCatalog = readCachedCatalog()?.items || [];
-let catalogRequested = itemCatalog.length > 0;
-let applying = false;
+let catalogPromise = null;
 let applyQueued = false;
 
 export function setupFromStoredState(rawState, setupId = null) {
@@ -295,34 +294,34 @@ export function renderSetupItemArt({ root = document, rawState = readState(), ma
 }
 
 async function ensureManifest() {
-  if (manifestRequested) return manifest;
-  manifestRequested = true;
-  manifest = await loadItemAssetManifest();
-  return manifest;
+  if (manifest) return manifest;
+  manifestPromise ||= loadItemAssetManifest().then(value => {
+    manifest = value;
+    return manifest;
+  });
+  return manifestPromise;
 }
 
 async function ensureCatalog() {
-  if (catalogRequested) return itemCatalog;
-  catalogRequested = true;
-  const result = await loadItemCatalog();
-  itemCatalog = Array.isArray(result?.items) ? result.items : itemCatalog;
-  return itemCatalog;
+  if (itemCatalog.length) return itemCatalog;
+  catalogPromise ||= loadItemCatalog().then(result => {
+    itemCatalog = Array.isArray(result?.items) ? result.items : itemCatalog;
+    return itemCatalog;
+  });
+  return catalogPromise;
 }
 
 export async function applySetupItemArt({
   root = document,
   rawState = readState(),
 } = {}) {
-  if (applying || !root?.querySelectorAll || !rawState) return 0;
-  applying = true;
-  try {
-    let rendered = renderSetupItemArt({ root, rawState, manifestValue: manifest });
-    const [loaded] = await Promise.all([ensureManifest(), ensureCatalog()]);
-    rendered += renderSetupItemArt({ root, rawState, manifestValue: loaded });
-    return rendered;
-  } finally {
-    applying = false;
-  }
+  if (!root?.querySelectorAll || !rawState) return 0;
+  // Never suppress a newer render while resources for an older render are loading.
+  // Every caller paints its own current DOM, then awaits the shared promises.
+  let rendered = renderSetupItemArt({ root, rawState, manifestValue: manifest });
+  const [loaded] = await Promise.all([ensureManifest(), ensureCatalog()]);
+  rendered += renderSetupItemArt({ root, rawState, manifestValue: loaded });
+  return rendered;
 }
 
 function queueApply() {
