@@ -17,6 +17,7 @@ import {
 import {
   FARMING_PETS,
   farmingPetById,
+  petIconUrl,
   petLevelBounds,
   petRarities,
 } from './setup-pet-catalog.js';
@@ -41,7 +42,6 @@ const REAPPLY_CHANGE_SELECTOR = [
   '[data-gem-value]',
   '[data-gem-new]',
   '[data-closed-item-select]',
-  '[data-farming-pet-select]',
   '[data-farming-pet-rarity]',
   '[data-farming-pet-level]',
   '[data-cow-strength]',
@@ -149,6 +149,118 @@ function selectedPetId(item) {
   return byName?.id || '';
 }
 
+function petInitials(label = '') {
+  const words = String(label).replace(/[_-]+/g, ' ').trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return '?';
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return `${words[0][0] || ''}${words[1][0] || ''}`.toUpperCase();
+}
+
+function petArtNode(pet, fallbackLabel = 'Pet', className = '') {
+  const art = element('span', { className: `sb-pet-art ${className}`.trim() });
+  const label = pet?.name || fallbackLabel;
+  const fallback = element('span', { className: 'sb-pet-art-fallback', 'aria-hidden': 'true' }, petInitials(label));
+  const url = pet?.iconUrl || petIconUrl(pet?.id);
+  if (!url) {
+    art.classList.add('is-missing');
+    art.append(fallback);
+    return art;
+  }
+
+  const image = element('img', {
+    src: url,
+    alt: '',
+    loading: 'eager',
+    decoding: 'async',
+    draggable: false,
+    referrerPolicy: 'no-referrer',
+  });
+  image.addEventListener('error', () => art.classList.add('is-missing'), { once: true });
+  art.append(image, fallback);
+  return art;
+}
+
+function writePetSelection(petId) {
+  const pet = farmingPetById(petId);
+  if (!pet) return replaceSlot('pet', () => null);
+  return replaceSlot('pet', current => {
+    const oldRarity = normalizedRarity(current?.rarity);
+    const rarity = pet.rarities.includes(oldRarity)
+      ? oldRarity
+      : (pet.rarities.length === 1 ? pet.rarities[0] : null);
+    const currentLevel = Number(current?.petLevel);
+    const petLevel = Number.isFinite(currentLevel)
+      && currentLevel >= pet.levelMin && currentLevel <= pet.levelMax
+      ? Math.floor(currentLevel)
+      : null;
+    return {
+      ...createEmptyItem(),
+      skyblockId: pet.id,
+      displayName: pet.name,
+      rarity,
+      petLevel,
+      source: ITEM_SOURCE.MANUAL,
+    };
+  });
+}
+
+function buildPetDropdown(currentId, item) {
+  const currentPet = farmingPetById(currentId);
+  const displayPet = currentPet || (currentId ? { id: currentId, name: item?.displayName || currentId } : null);
+  const dropdown = element('details', {
+    className: 'sb-pet-dropdown',
+    dataset: { farmingPetDropdown: '1' },
+  });
+  const trigger = element('summary', { className: 'sb-pet-dropdown-trigger' });
+  const triggerCopy = element('span', { className: 'sb-pet-dropdown-copy' });
+  triggerCopy.append(
+    element('strong', {}, displayPet?.name || 'No pet selected'),
+    element('small', {}, currentId && !currentPet ? 'Saved pet · choose a current farming pet' : 'Choose a farming pet'),
+  );
+  trigger.append(
+    petArtNode(displayPet, 'No pet', 'sb-pet-dropdown-art'),
+    triggerCopy,
+    element('span', { className: 'sb-pet-dropdown-chevron', 'aria-hidden': 'true' }, '▾'),
+  );
+
+  const menu = element('div', {
+    className: 'sb-pet-dropdown-menu',
+    role: 'listbox',
+    'aria-label': 'Farming pet',
+  });
+
+  const addOption = (pet, petId, label, selected = false) => {
+    const option = element('button', {
+      type: 'button',
+      className: `sb-pet-dropdown-option${selected ? ' is-selected' : ''}`,
+      dataset: { farmingPetOption: petId },
+      role: 'option',
+      'aria-selected': String(selected),
+    });
+    const copy = element('span', { className: 'sb-pet-option-copy' });
+    copy.append(
+      element('strong', {}, label),
+      ...(pet ? [element('small', {}, pet.levelMax > 100 ? `Levels 1–${pet.levelMax}` : 'Levels 1–100')] : []),
+    );
+    option.append(
+      petArtNode(pet, label, 'sb-pet-option-art'),
+      copy,
+      element('span', { className: 'sb-pet-option-check', 'aria-hidden': 'true' }, selected ? '✓' : ''),
+    );
+    option.addEventListener('click', event => {
+      event.preventDefault();
+      dropdown.open = false;
+      writePetSelection(petId);
+    });
+    menu.append(option);
+  };
+
+  addOption(null, '', 'No pet', !currentId);
+  for (const pet of FARMING_PETS) addOption(pet, pet.id, pet.name, currentId === pet.id);
+  dropdown.append(trigger, menu);
+  return dropdown;
+}
+
 function buildLevelSelect(petId, currentLevel) {
   const bounds = petLevelBounds(petId);
   const select = element('select', {
@@ -176,15 +288,8 @@ function buildPetPicker(editor, item) {
     dataset: { farmingPetPicker: '1' },
   });
 
-  const petSelect = element('select', { dataset: { farmingPetSelect: '1' } });
-  petSelect.append(element('option', { value: '' }, '— no pet —'));
   const currentId = selectedPetId(item);
-  const currentKnown = farmingPetById(currentId);
-  if (currentId && !currentKnown) {
-    petSelect.append(element('option', { value: currentId }, `${item?.displayName || currentId} · current`));
-  }
-  for (const pet of FARMING_PETS) petSelect.append(element('option', { value: pet.id }, pet.name));
-  petSelect.value = currentId;
+  const petDropdown = buildPetDropdown(currentId, item);
 
   const raritySelect = element('select', { dataset: { farmingPetRarity: '1' }, disabled: !currentId });
   raritySelect.append(element('option', { value: '' }, '— choose rarity —'));
@@ -232,33 +337,6 @@ function buildPetPicker(editor, item) {
     ));
   }
 
-  petSelect.addEventListener('change', () => {
-    const pet = farmingPetById(petSelect.value);
-    if (!pet) {
-      replaceSlot('pet', () => null);
-      return;
-    }
-    replaceSlot('pet', current => {
-      const oldRarity = normalizedRarity(current?.rarity);
-      const rarity = pet.rarities.includes(oldRarity)
-        ? oldRarity
-        : (pet.rarities.length === 1 ? pet.rarities[0] : null);
-      const currentLevel = Number(current?.petLevel);
-      const petLevel = Number.isFinite(currentLevel)
-        && currentLevel >= pet.levelMin && currentLevel <= pet.levelMax
-        ? Math.floor(currentLevel)
-        : null;
-      return {
-        ...createEmptyItem(),
-        skyblockId: pet.id,
-        displayName: pet.name,
-        rarity,
-        petLevel,
-        source: ITEM_SOURCE.MANUAL,
-      };
-    });
-  });
-
   raritySelect.addEventListener('change', () => {
     replaceSlot('pet', current => current ? {
       ...current,
@@ -275,8 +353,11 @@ function buildPetPicker(editor, item) {
     } : current);
   });
 
+  const petField = element('div', { className: 'settings-field sb-pet-dropdown-field' });
+  petField.append(element('span', {}, 'Pet'), petDropdown);
+
   picker.append(
-    field('Pet', petSelect),
+    petField,
     field('Rarity', raritySelect),
     field('Level', levelSelect),
     ...(strengthField ? [strengthField] : []),
