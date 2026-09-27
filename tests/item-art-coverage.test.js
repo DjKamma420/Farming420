@@ -296,3 +296,18 @@ test('pack-backed progression cards have exactly one portrait writer', () => {
   assert.match(source, /if \(portrait\.dataset\.packAsset\) return/);
   assert.match(source, /Garden Chips/);
 });
+
+
+test('Rat Shard keeps its verified Sprayonator Serendipity head even if live skin metadata disagrees', () => {
+  const pinned = skinTextureUrl({
+    id: 'ATTRIBUTE_SHARD_SPRAYONATOR_SERENDIPITY;1',
+    skin: 'f'.repeat(64),
+  });
+  assert.ok(pinned.endsWith('a8abb471db0ab78703011979dc8b40798a941f3a4dec3ec61cbeec2af8cffe8'));
+
+  const ordinaryLive = skinTextureUrl({
+    id: 'BLOSSOM_CLOAK',
+    skin: 'e'.repeat(64),
+  });
+  assert.ok(ordinaryLive.endsWith('e'.repeat(64)));
+});
