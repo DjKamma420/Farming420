@@ -142,5 +142,5 @@ test('no seconds-per-kill figure is invented', () => {
   const source = read('src/vacuum-damage.js');
   assert.doesNotMatch(source, /secondsPerKill|killsPerHour|pullsPerSecond/);
   assert.match(source, /It is deliberately not a time estimate/);
-  assert.match(read('src/pests-page.js'), /Pulls, not seconds/);
+  assert.match(read('src/pest-analysis-ui.js'), /Pulls, not seconds/);
 });
