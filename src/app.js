@@ -2,6 +2,7 @@ import { CROPS, UPGRADES } from './data.js';
 import { FARMING_ACCESSORY_GROUPS, farmingAccessoryByItemId } from './farming-accessories.js';
 import { FARMING_PETS } from './setup-pet-catalog.js';
 import { searchEntries } from './global-search.js';
+import { canonicalPage } from './navigation-dedupe.js';
 import {
   accessoryCapabilityState,
   strengthEnrichmentCountFromSnapshot,
@@ -131,20 +132,15 @@ import { FRACTION_2, formatNumber } from './format-number.js';
 
 const NAV = [
   ['dashboard', 'Dashboard'],
-  ['accessories', 'Accessories'],
+  ['setups', 'Loadouts / Farming System'],
   ['crops', 'Garden'],
-  ['tools', 'Tools'],
-  ['setups', 'Setups'],
-  ['gear', 'Gear'],
-  ['pets', 'Pets'],
-  ['chips', 'Garden Chips'],
-  ['shards', 'Shards'],
   ['buffs', 'Effects'],
-  ['pests', 'Pests'],
+  ['tools', 'Tools'],
+  ['shards', 'Shards / Accessories'],
+  ['planner', 'Upgrades'],
   ['qol', 'QoL'],
+  ['focus', 'Focus on Next'],
   ['info', 'Info'],
-  ['focus', 'Focus on next'],
-  ['planner', 'Upgrade Planner'],
 ];
 
 const INFO_UPGRADE_TOPICS = Object.freeze([
@@ -251,7 +247,7 @@ function loadState() {
     profile: { ...structuredClone(defaultState.profile), ...(migration.state.profile || {}) }
   };
   loaded.schemaVersion = migration.schemaVersion;
-  if (loaded.page === 'guide') loaded.page = 'info';
+  loaded.page = canonicalPage(loaded.page);
   if (!NAV.some(([id]) => id === loaded.page)) loaded.page = 'dashboard';
 
   // Data written by a newer app version is kept readable but never saved over.
@@ -517,8 +513,8 @@ let cachedCatalogSearchSource = null;
 let cachedCatalogSearchEntries = [];
 
 function pageForUpgrade(item) {
-  if (item?.section === 'account') return 'crops';
-  return NAV.some(([id]) => id === item?.section) ? item.section : 'planner';
+  const page = canonicalPage(item?.section);
+  return NAV.some(([id]) => id === page) ? page : 'planner';
 }
 
 function selectableCatalogSearchEntries() {
@@ -839,6 +835,7 @@ function navigateSearchResult(entry) {
     state.page = target.page || state.page;
   }
 
+  state.page = canonicalPage(state.page);
   saveState();
   render({ preserveScroll: false });
   schedulePendingSearchSpotlight();
@@ -1342,11 +1339,11 @@ function cropsPage() {
         <div>
           <div class="eyebrow">Crop section</div>
           <strong>Only bonuses that belong to ${esc(crop().name)}</strong>
-          <p>Tool reforges, enchantments and gemstones are edited under Tools. Armor, equipment and pets are edited in Setups.</p>
+          <p>Tool reforges, enchantments and gemstones are edited under Tools. Armor, equipment and pets are edited in Loadouts / Farming System.</p>
         </div>
         <div class="crop-related-actions-addon">
           <button class="ghost" data-page="tools">Open ${esc(crop().tool)}</button>
-          <button class="ghost" data-page="setups">Open active setup</button>
+          <button class="ghost" data-page="setups">Open active loadout</button>
         </div>
       </div>
       <div class="section-row crop-progression-head-addon"><div><h2>${esc(crop().name)} progression</h2><p>Only crop-scoped sources are listed here.</p></div></div>
@@ -2150,7 +2147,7 @@ function setupsPage() {
            ${petSetupSection('Killing Pet', KILLING_SETUP_ID, 'Only the pet can differ for Killing; Armor and Equipment stay identical to the FF Set.')}`}`
     : petSetupSection('BPC Pet', BPC_SETUP_ID, 'Used with the BPC Set while preparing Pest spawns.');
 
-  return `${pageHeader('Setups', 'Your gear, item by item · FF and BPC sets', 'FF owns the Farming/Killing armor and equipment. BPC is the separate spawning set. Killing only has a separate pet choice when you want one.')}
+  return `${pageHeader('Loadouts', 'Farming System · FF and BPC sets', 'FF owns the Farming/Killing armor and equipment. BPC is the separate spawning set. Killing only has a separate pet choice when you want one.')}
     ${setupObjectivePanel()}
     <div class="setup-tabs">
       ${VISIBLE_SETUP_IDS.map(setupId =>
@@ -2695,7 +2692,7 @@ function bind() {
   });
 
   document.querySelectorAll('[data-page]').forEach(el => el.addEventListener('click', () => {
-    state.page=el.dataset.page;
+    state.page = canonicalPage(el.dataset.page);
     state.drawer=null;
     closeNavigation();
     saveState();
