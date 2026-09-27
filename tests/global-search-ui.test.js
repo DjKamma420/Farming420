@@ -53,7 +53,7 @@ test('the two baseline armor roles are named FF set and BPC set', () => {
 test('search targets selectable items without silently applying them', () => {
   const app = read('src/app.js');
   assert.match(app, /pendingSearchSpotlight = target/);
-  assert.match(app, /Search result: \$\{target\.itemName\}\. Select it here to update this setup\./);
+  assert.match(app, /Search result: \$\{target\.itemName\}\. Select it here to update this loadout\./);
   assert.match(app, /Search result: \$\{target\.vacuumName\}\. Select this model here to update your Vacuum\./);
   assert.doesNotMatch(app, /pendingSearchSpotlight[\s\S]{0,180}dispatchEvent\(new Event\('change'/);
 });

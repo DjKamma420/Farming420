@@ -144,7 +144,7 @@ test('the superseded cap is kept visible rather than dropped', () => {
   assert.equal(older.maxFortune, 200);
   assert.ok(older.source, 'a superseded figure without its source is folklore');
   assert.ok(PESTHUNTER_PHILIP.maxFortune > older.maxFortune);
-  assert.match(read('pests-page.js'), /supersededSnapshot/);
+  assert.match(read('pest-analysis-ui.js'), /supersededSnapshot/);
 });
 
 test('pest health carries its one documented exception', () => {

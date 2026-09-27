@@ -8,47 +8,58 @@ import {
   removeDuplicateNavigation,
 } from '../src/navigation-dedupe.js';
 
-test('legacy and duplicate routes canonicalize to their shared workspaces', () => {
-  assert.deepEqual(DUPLICATE_PAGE_TARGETS, { account: 'crops', gear: 'setups', pets: 'setups', guide: 'dashboard' });
-  assert.equal(canonicalPage('account'), 'crops');
-  assert.equal(canonicalPage('gear'), 'setups');
-  assert.equal(canonicalPage('pets'), 'setups');
-  assert.equal(canonicalPage('guide'), 'dashboard');
+const EXPECTED_TARGETS = {
+  account: 'crops',
+  accessories: 'shards',
+  gear: 'setups',
+  pets: 'setups',
+  chips: 'shards',
+  pests: 'info',
+  guide: 'info',
+  setup: 'info',
+  research: 'info',
+  coming: 'info',
+};
+
+test('legacy and duplicate routes canonicalize to the current workspaces', () => {
+  assert.deepEqual(DUPLICATE_PAGE_TARGETS, EXPECTED_TARGETS);
+  for (const [legacy, canonical] of Object.entries(EXPECTED_TARGETS)) {
+    assert.equal(canonicalPage(legacy), canonical);
+  }
   assert.equal(canonicalPage('tools'), 'tools');
 });
 
-test('stored legacy duplicate page is rewritten without changing profile data', () => {
-  let raw = JSON.stringify({ page: 'account', profile: { name: 'A', owned: { x: true } } });
+test('stored legacy page is rewritten without changing profile data', () => {
+  let raw = JSON.stringify({ page: 'accessories', profile: { name: 'A', owned: { x: true } } });
   const storage = {
     getItem: () => raw,
     setItem: (_key, value) => { raw = value; },
   };
   assert.equal(canonicalizeStoredPage({ storage, key: 'test' }), true);
-  assert.deepEqual(JSON.parse(raw), { page: 'crops', profile: { name: 'A', owned: { x: true } } });
+  assert.deepEqual(JSON.parse(raw), { page: 'shards', profile: { name: 'A', owned: { x: true } } });
   assert.equal(canonicalizeStoredPage({ storage, key: 'test' }), false);
 });
 
 test('duplicate sidebar destinations are removed while non-nav links are repointed', () => {
   const nav = {};
-  const navGear = { removed: false, closest: selector => selector === 'nav' ? nav : null, remove() { this.removed = true; } };
-  const navPets = { removed: false, closest: selector => selector === 'nav' ? nav : null, remove() { this.removed = true; } };
-  const navGuide = { removed: false, closest: selector => selector === 'nav' ? nav : null, remove() { this.removed = true; } };
-  const gearLink = { dataset: { page: 'gear' }, closest: () => null };
-  const petsLink = { dataset: { page: 'pets' }, closest: () => null };
-  const guideLink = { dataset: { page: 'guide' }, closest: () => null };
+  const navElements = {};
+  const contentElements = {};
+  for (const page of Object.keys(EXPECTED_TARGETS)) {
+    navElements[page] = { removed: false, closest: selector => selector === 'nav' ? nav : null, remove() { this.removed = true; } };
+    contentElements[page] = { dataset: { page }, closest: () => null };
+  }
   const root = {
     querySelectorAll(selector) {
-      if (selector === '[data-page="gear"]') return [navGear, gearLink];
-      if (selector === '[data-page="pets"]') return [navPets, petsLink];
-      if (selector === '[data-page="guide"]') return [navGuide, guideLink];
-      return [];
+      const match = selector.match(/^\[data-page="([^"]+)"\]$/);
+      if (!match) return [];
+      const page = match[1];
+      return navElements[page] ? [navElements[page], contentElements[page]] : [];
     },
   };
-  assert.equal(removeDuplicateNavigation(root), 3);
-  assert.equal(navGear.removed, true);
-  assert.equal(navPets.removed, true);
-  assert.equal(navGuide.removed, true);
-  assert.equal(gearLink.dataset.page, 'setups');
-  assert.equal(petsLink.dataset.page, 'setups');
-  assert.equal(guideLink.dataset.page, 'dashboard');
+
+  assert.equal(removeDuplicateNavigation(root), Object.keys(EXPECTED_TARGETS).length);
+  for (const [page, target] of Object.entries(EXPECTED_TARGETS)) {
+    assert.equal(navElements[page].removed, true);
+    assert.equal(contentElements[page].dataset.page, target);
+  }
 });

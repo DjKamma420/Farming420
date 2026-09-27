@@ -5,8 +5,8 @@ import { readFileSync } from 'node:fs';
 /**
  * `groupSidebar` appends its groups after everything it did not move, so a page
  * missing from GROUPS is not hidden -- it is left sitting in front of the
- * groups. That is how the rail came to open with Setups and two bare letters
- * before Dashboard.
+ * groups. The test therefore keeps the visible rail in the same order as the
+ * canonical product navigation.
  */
 const enhancements = readFileSync(new URL('../src/enhancements.js', import.meta.url), 'utf8');
 const app = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
@@ -55,10 +55,9 @@ test('no page is listed in two groups', () => {
 test('navigation follows the user workflow instead of implementation categories', () => {
   assert.deepEqual(groupedSections(), [
     ['Overview', ['dashboard']],
-    ['Profile', ['crops', 'tools', 'accessories', 'setups', 'gear', 'pets', 'buffs']],
-    ['Advanced', ['pests', 'chips', 'shards']],
-    ['Planning', ['focus', 'planner']],
-    ['Guides', ['info', 'qol']],
+    ['Farming', ['setups', 'crops', 'buffs', 'tools']],
+    ['Progression', ['shards', 'planner', 'qol', 'focus']],
+    ['Reference', ['info']],
     ['System', ['settings']],
   ]);
 });

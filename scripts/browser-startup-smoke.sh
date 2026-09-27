@@ -96,14 +96,14 @@ fi
 
 run_chrome_dump "${BASE_URL}scripts/browser-setups-smoke.html" "$SETUPS_DOM"
 
-if ! grep -q 'Your gear, item by item' "$SETUPS_DOM"; then
-  echo "The Setups smoke harness did not reach the Setups page" >&2
+if ! grep -q 'Farming System · FF and BPC sets' "$SETUPS_DOM"; then
+  echo "The Loadouts smoke harness did not reach the Loadouts / Farming System page" >&2
   sed -n '1,220p' "$SETUPS_DOM" >&2 || true
   exit 1
 fi
 
 if ! grep -q 'data-farming-pet-picker="1"' "$SETUPS_DOM"; then
-  echo "The Setups page rendered, but the closed Pet picker is missing" >&2
+  echo "The Loadouts page rendered, but the closed Pet picker is missing" >&2
   sed -n '1,260p' "$SETUPS_DOM" >&2 || true
   exit 1
 fi
@@ -115,7 +115,7 @@ if ! grep -q 'sb-docked-setup-editor' "$SETUPS_DOM"; then
 fi
 
 if grep -q 'MutationObserver' "$SETUPS_DOM"; then
-  echo "Unexpected MutationObserver text leaked into the Setups render" >&2
+  echo "Unexpected MutationObserver text leaked into the Loadouts render" >&2
   exit 1
 fi
 
@@ -131,7 +131,7 @@ if [[ "$HELMET_LINE" == *"rarity-divine"* ]]; then
   exit 1
 fi
 
-echo "Browser smoke test passed: Dashboard, Setups picker, and canonical recombobulated rarity background render in headless Chrome."
+echo "Browser smoke test passed: Dashboard, Loadouts picker, and canonical recombobulated rarity background render in headless Chrome."
 
 IDEMPOTENCE_DOM="${RUNNER_TEMP:-/tmp}/farming420-idempotence-dom.html"
 run_chrome_dump "${BASE_URL}scripts/browser-idempotence-smoke.html" "$IDEMPOTENCE_DOM" 30000
