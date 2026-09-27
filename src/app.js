@@ -9,6 +9,7 @@ import {
 import {
   ELEMENTAL_STRENGTH_SHARDS,
   FARMING_SHARD_SYNERGIES,
+  atmosphericFilterEffects,
   cowFortuneDeltaForAddedStrength,
   cowFortuneDeltaForStrengthPercentChange,
   elementalStrengthFromShardLevels,
@@ -128,6 +129,7 @@ import {
   validateBackupPayload,
 } from './backup.js';
 import { FRACTION_2, formatNumber } from './format-number.js';
+import { plannerUpgradeTargetEligible } from './planner-upgrade-objective.js';
 
 const NAV = [
   ['dashboard', 'Dashboard'],
@@ -863,8 +865,10 @@ function navigateSearchResult(entry) {
 }
 
 function plannerCandidates() {
+  const mode = activityModeForState(state);
   return UPGRADES
     .filter(item => item.status === 'ACTIVE')
+    .filter(item => plannerUpgradeTargetEligible(item, mode))
     .filter(appliesToCrop)
     .filter(item => !isMaxed(item))
     .map(item => {
@@ -1632,6 +1636,7 @@ function shardSynergyPanel() {
       })
     : null;
 
+  const filterEffects = atmosphericFilterEffects(synergyShardLevel(FARMING_SHARD_SYNERGIES.filterUpgrade.id));
   const relationRows = [
     {
       entry: FARMING_SHARD_SYNERGIES.echoOfElemental,
@@ -1653,7 +1658,9 @@ function shardSynergyPanel() {
     ...['tuningBox', 'filterUpgrade', 'echoOfWisdom', 'queenlyEcho', 'echoOfEchoes'].map(key => ({
       entry: FARMING_SHARD_SYNERGIES[key],
       level: synergyShardLevel(FARMING_SHARD_SYNERGIES[key].id),
-      detail: FARMING_SHARD_SYNERGIES[key].farmingUse,
+      detail: key === 'filterUpgrade'
+        ? `Current Filter Upgrade: +${formatNumber(filterEffects.boostPercent)}%. Spring ${formatNumber(filterEffects.springFarmingFortune)} FF · Summer ${formatNumber(filterEffects.summerFarmingWisdom)} Farming Wisdom · Autumn ${formatNumber(filterEffects.autumnPestSpawnChancePercent)}% extra Pest spawn chance · Winter ${formatNumber(filterEffects.winterVisitorCopperPercent)}% Visitor Copper. Autumn changes spawn chance after cooldown; it does not shorten the cooldown.`
+        : FARMING_SHARD_SYNERGIES[key].farmingUse,
     })),
   ].map(row => `<label class="accessory-upgrade-row">
     <span><strong>${esc(row.entry.name)} · ${esc(row.entry.attribute)}</strong><small>${esc(row.detail)} Target: ${esc(row.entry.target)}.</small></span>
