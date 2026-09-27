@@ -99,8 +99,8 @@ with a short early-game strategy, an important-places/NPC routing sheet and a
 Pest guide that explains spawning, killing, guaranteed drops and rare drops as
 separate jobs.
 
-The former **Guide 0-60** now lives inside Info instead of occupying its own
-navigation page. It still follows the player's Farming level, marks reached
+The **Farming 0-60 reference** lives inside Info. It follows the player's
+Farming level, marks reached
 armour milestones, explains pet alternatives, enchantment acquisition and the
 three-phase farming/spawning/killing loadout. Pet cards are informational here;
 actual configuration stays in Loadouts / Farming System.
