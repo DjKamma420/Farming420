@@ -1,4 +1,16 @@
 import { CROPS, UPGRADES } from './data.js';
+import {
+  GARDEN_CHIP_RARITIES,
+  gardenChipById,
+  gardenChipCopiesForRarity,
+  gardenChipEffectAtLevel,
+  gardenChipEffectPerLevel,
+  gardenChipMaxLevel,
+  gardenChipSowdustSpent,
+  gardenChipSowdustToLevel,
+  normalizeGardenChipProgress,
+  normalizeGardenChipRarity,
+} from './garden-chips.js';
 import { FARMING_ACCESSORY_GROUPS, farmingAccessoryByItemId } from './farming-accessories.js';
 import { FARMING_PETS } from './setup-pet-catalog.js';
 import { searchEntries } from './global-search.js';
@@ -230,6 +242,7 @@ const defaultState = {
     manualGain: {},
     accessoryItems: {},
     synergyShardLevels: {},
+    gardenChips: {},
     farmingContext: 'normal',
   }
 };
@@ -467,7 +480,29 @@ function itemStore(item) {
   return state.profile;
 }
 
+function gardenChipForItem(item) {
+  return item?.gardenChipId ? gardenChipById(item.gardenChipId) : null;
+}
+
+function gardenChipProgressForItem(item) {
+  const chip = gardenChipForItem(item);
+  if (!chip) return null;
+  state.profile.gardenChips ||= {};
+  return normalizeGardenChipProgress(
+    state.profile.gardenChips[chip.id],
+    Number(state.profile.levels?.[item.id] || 0),
+  );
+}
+
+function maxLevelForItem(item) {
+  const progress = gardenChipProgressForItem(item);
+  if (!progress) return Number(item.max || 1);
+  return gardenChipMaxLevel(progress.rarity) ?? Number(item.max || 20);
+}
+
 function currentLevel(item) {
+  const chipProgress = gardenChipProgressForItem(item);
+  if (chipProgress) return chipProgress.level;
   const store = itemStore(item);
   return Math.max(0, Math.min(Number(item.max || 1), Number(store.levels[item.id] || 0)));
 }
@@ -478,7 +513,7 @@ function isOwned(item) {
 }
 
 function isMaxed(item) {
-  return currentLevel(item) >= Number(item.max || 1);
+  return currentLevel(item) >= maxLevelForItem(item);
 }
 
 function appliesToCrop(item) {
@@ -490,6 +525,11 @@ function visibleUpgrades(section) {
 }
 
 function gainFor(item) {
+  const chip = gardenChipForItem(item);
+  if (chip) {
+    const progress = gardenChipProgressForItem(item);
+    return gardenChipEffectPerLevel(chip, progress?.rarity) ?? 0;
+  }
   const manual = itemStore(item).manualGain[item.id];
   if (manual !== undefined && manual !== '' && !Number.isNaN(Number(manual))) return Number(manual);
   if (item.name === 'Switch to best farming pet') return item.rawMarginal || 0;
@@ -899,7 +939,7 @@ function statusClass(item) {
 
 function card(item, compact=false) {
   const level = currentLevel(item);
-  const max = Number(item.max || 1);
+  const max = maxLevelForItem(item);
   const status = statusClass(item);
   const gain = gainFor(item);
   const cropLimited = item.cropScope !== 'Any';
@@ -930,6 +970,7 @@ function card(item, compact=false) {
       </div>
       <div class="card-meta">
         ${max > 1 ? `<span>Level ${level}/${max}</span>` : `<span>${isOwned(item) ? 'Owned' : 'Not set'}</span>`}
+        ${gardenChipForItem(item) ? `<span>${esc(gardenChipProgressForItem(item)?.rarity || 'Rarity unknown')}</span>` : ''}
         ${gain ? `<span>+${formatNumber(Number(gain))} ${esc(item.metric === 'Crop Yield' ? 'Fortune/step' : item.metric)}</span>` : '<span>dynamic</span>'}
       </div>
       <div class="progress"><i data-progress="${Math.min(100,(level/max)*100)}"></i></div>
