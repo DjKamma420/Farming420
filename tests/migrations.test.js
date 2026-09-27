@@ -204,8 +204,8 @@ test('schema 7 preserves the legacy Pest loadout as Spawning and adds an empty K
   assert.deepEqual(result.applied, [8, 9]);
   const setups = result.state.profile.setups;
   assert.equal(setups.activeId, 'pest');
-  assert.equal(setups.list.find(setup => setup.id === 'normal').name, 'Farming');
-  assert.equal(setups.list.find(setup => setup.id === 'pest').name, 'Pest Spawning');
+  assert.equal(setups.list.find(setup => setup.id === 'normal').name, 'FF (Farming Fortune) Set');
+  assert.equal(setups.list.find(setup => setup.id === 'pest').name, 'BPC (Bonus Pest Chance) Set');
   assert.equal(setups.list.find(setup => setup.id === 'pest').slots.helmet.displayName, 'Mantid Helianthus Helmet');
   assert.ok(setups.list.some(setup => setup.id === 'contest'), 'old/custom setup data is retained');
   const killing = setups.list.find(setup => setup.id === 'pest-kill');
