@@ -37,6 +37,7 @@ const REAPPLY_CLICK_SELECTOR = [
   '[data-setup-remove]',
   '[data-setup-prefill]',
   '[data-slot-clear]',
+  '[data-pet-item-option]',
 ].join(',');
 
 const REAPPLY_CHANGE_SELECTOR = [
@@ -165,14 +166,9 @@ function petInitials(label = '') {
   return `${words[0][0] || ''}${words[1][0] || ''}`.toUpperCase();
 }
 
-function petArtNode(pet, label = 'Pet') {
-  const art = element('span', { className: 'sb-pet-art', 'aria-hidden': 'true' });
-  art.append(element('span', { className: 'sb-pet-art-fallback' }, pet ? petInitials(label) : '—'));
-
-  const descriptor = exactSetupItemArt(pet?.id);
-  const textureId = descriptor?.kind === 'head' ? descriptor.textureId : null;
+function appendHeadArtLayers(art, textureId) {
   const textureUrl = skullTextureUrl(textureId);
-  if (!textureUrl) return art;
+  if (!textureUrl) return false;
 
   for (const [className, offset] of [['face', FACE_OFFSET], ['hat', HAT_OFFSET]]) {
     const geometry = headLayerGeometry(PET_ART_SIZE, offset);
@@ -183,6 +179,58 @@ function petArtNode(pet, label = 'Pet') {
     art.append(layer);
   }
   art.classList.add('has-pet-head');
+  return true;
+}
+
+function petArtNode(pet, label = 'Pet') {
+  const art = element('span', { className: 'sb-pet-art', 'aria-hidden': 'true' });
+  art.append(element('span', { className: 'sb-pet-art-fallback' }, pet ? petInitials(label) : '—'));
+
+  const descriptor = exactSetupItemArt(pet?.id);
+  const textureId = descriptor?.kind === 'head' ? descriptor.textureId : null;
+  appendHeadArtLayers(art, textureId);
+  return art;
+}
+
+function petItemRenderedIconUrl(record) {
+  const descriptor = exactSetupItemArt(record?.id);
+  if (descriptor?.kind === 'rendered' && descriptor.iconUrl) return descriptor.iconUrl;
+
+  const id = String(record?.id || '').trim().toLowerCase();
+  return /^[a-z0-9_-]+$/.test(id)
+    ? `https://skyah.net/icons/items/${id}.webp`
+    : null;
+}
+
+function petItemArtNode(record, label = 'Pet Item') {
+  const art = element('span', { className: 'sb-pet-art sb-pet-item-art', 'aria-hidden': 'true' });
+  art.append(element('span', { className: 'sb-pet-art-fallback' }, record ? petInitials(label) : '—'));
+  if (!record) return art;
+
+  const descriptor = exactSetupItemArt(record.id);
+  const catalogSkin = String(record.skin || '').trim().toLowerCase();
+  const textureId = descriptor?.kind === 'head'
+    ? descriptor.textureId
+    : (/^[0-9a-f]{32,64}$/.test(catalogSkin) ? catalogSkin : null);
+  if (appendHeadArtLayers(art, textureId)) return art;
+
+  const iconUrl = petItemRenderedIconUrl(record);
+  if (!iconUrl) return art;
+
+  const image = element('img', {
+    className: 'sb-pet-item-icon',
+    src: iconUrl,
+    alt: '',
+    loading: 'lazy',
+    decoding: 'async',
+    referrerPolicy: 'no-referrer',
+  });
+  image.addEventListener('load', () => art.classList.add('has-pet-item-icon'), { once: true });
+  image.addEventListener('error', () => {
+    image.remove();
+    art.classList.remove('has-pet-item-icon');
+  }, { once: true });
+  art.append(image);
   return art;
 }
 
@@ -381,12 +429,130 @@ function closedItemPickerSignature(options, item) {
   return [
     String(item?.skyblockId || '').trim(),
     String(item?.displayName || '').trim(),
-    ...options.map(option => `${option.id}:${option.name}:${option.tier || ''}`),
+    ...options.map(option => `${option.id}:${option.name}:${option.tier || ''}:${option.skin || ''}:${option.material || ''}`),
   ].join('|');
+}
+
+function writeClosedItemSelection(slotId, itemId) {
+  if (!itemId) return replaceSlot(slotId, () => null);
+  const chosen = currentCatalogItems(slotId).find(option => option.id === itemId);
+  if (!chosen) return false;
+
+  return replaceSlot(slotId, current => {
+    if (current?.skyblockId === chosen.id) {
+      return {
+        ...current,
+        displayName: chosen.name,
+        rarity: chosen.tier || current.rarity || null,
+        source: ITEM_SOURCE.MANUAL,
+      };
+    }
+    return {
+      ...createEmptyItem(),
+      skyblockId: chosen.id,
+      displayName: chosen.name,
+      rarity: chosen.tier || null,
+      enchantments: intrinsicEnchantmentsForCatalogItem(chosen),
+      source: ITEM_SOURCE.MANUAL,
+    };
+  });
+}
+
+function buildPetItemPicker(editor, item) {
+  const options = currentCatalogItems('petItem');
+  const signature = closedItemPickerSignature(options, item);
+  const existing = editor.querySelector('[data-pet-item-dropdown]');
+  const oldControl = existing
+    || editor.querySelector('[data-closed-item-select="petItem"]')
+    || editor.querySelector('[data-slot-item="petItem"]')
+    || editor.querySelector('[data-slot-name="petItem"]');
+  const oldField = oldControl?.closest('.settings-field');
+  if (!oldField) return;
+  if (existing?.dataset.catalogSignature === signature) return;
+
+  const currentId = String(item?.skyblockId || '').trim().toUpperCase();
+  const currentRecord = options.find(option => String(option.id || '').toUpperCase() === currentId)
+    || (currentId ? { id: currentId, name: item?.displayName || currentId } : null);
+  const currentName = currentRecord?.name || item?.displayName || 'No pet item selected';
+
+  const dropdown = element('details', {
+    className: 'sb-pet-dropdown sb-pet-item-dropdown',
+    dataset: {
+      petItemDropdown: '1',
+      catalogSignature: signature,
+    },
+  });
+  const trigger = element('summary', { className: 'sb-pet-dropdown-trigger' });
+  const triggerCopy = element('span', { className: 'sb-pet-dropdown-copy' });
+  triggerCopy.append(
+    element('strong', {}, currentName),
+    element('small', {}, currentId ? 'Choose a Pet Item' : 'No Pet Item selected'),
+  );
+  trigger.append(
+    petItemArtNode(currentRecord, currentName),
+    triggerCopy,
+    element('span', { className: 'sb-pet-dropdown-chevron', 'aria-hidden': 'true' }, '▾'),
+  );
+
+  const menu = element('div', {
+    className: 'sb-pet-dropdown-menu sb-pet-item-dropdown-menu',
+    role: 'listbox',
+    'aria-label': 'Pet Item',
+  });
+
+  const addOption = (record, selected = false) => {
+    const itemId = String(record?.id || '');
+    const label = record?.name || 'No Pet Item';
+    const option = element('button', {
+      type: 'button',
+      className: `sb-pet-dropdown-option sb-pet-item-dropdown-option${selected ? ' is-selected' : ''}`,
+      dataset: { petItemOption: itemId },
+      role: 'option',
+      'aria-selected': String(selected),
+    });
+    const copy = element('span', { className: 'sb-pet-option-copy' });
+    copy.append(
+      element('strong', {}, label),
+      ...(record?.tier ? [element('small', {}, String(record.tier).replace(/_/g, ' '))] : []),
+    );
+    option.append(
+      petItemArtNode(record, label),
+      copy,
+      element('span', { className: 'sb-pet-option-check', 'aria-hidden': 'true' }, selected ? '✓' : ''),
+    );
+    option.addEventListener('click', event => {
+      event.preventDefault();
+      dropdown.open = false;
+      writeClosedItemSelection('petItem', itemId);
+    });
+    menu.append(option);
+  };
+
+  addOption(null, !currentId);
+  for (const option of options) addOption(option, currentId === String(option.id || '').toUpperCase());
+
+  dropdown.append(trigger, menu);
+  const closedField = element('div', { className: 'settings-field sb-closed-item-field sb-pet-item-dropdown-field' });
+  closedField.append(element('span', {}, 'Which item'), dropdown);
+  if (!options.length) {
+    closedField.append(element(
+      'span',
+      { className: 'find-warn sb-picker-status' },
+      item?.displayName
+        ? 'This saved Pet Item is not in the loaded Farming item list.'
+        : 'Loading the Farming Pet Item list…',
+    ));
+  }
+  oldField.replaceWith(closedField);
+  editor.classList.add('sb-pet-item-editor');
 }
 
 function buildClosedItemPicker(editor, slotId, item) {
   if (!slotHasOfficialCategory(slotId)) return;
+  if (slotId === 'petItem') {
+    buildPetItemPicker(editor, item);
+    return;
+  }
 
   const existingSelect = editor.querySelector(`[data-closed-item-select="${slotId}"]`);
   const oldControl = existingSelect
@@ -417,30 +583,7 @@ function buildClosedItemPicker(editor, slotId, item) {
 
   select.addEventListener('change', () => {
     if (select.value === '__current__') return;
-    if (!select.value) {
-      replaceSlot(slotId, () => null);
-      return;
-    }
-    const chosen = currentCatalogItems(slotId).find(option => option.id === select.value);
-    if (!chosen) return;
-    replaceSlot(slotId, current => {
-      if (current?.skyblockId === chosen.id) {
-        return {
-          ...current,
-          displayName: chosen.name,
-          rarity: chosen.tier || current.rarity || null,
-          source: ITEM_SOURCE.MANUAL,
-        };
-      }
-      return {
-        ...createEmptyItem(),
-        skyblockId: chosen.id,
-        displayName: chosen.name,
-        rarity: chosen.tier || null,
-        enchantments: intrinsicEnchantmentsForCatalogItem(chosen),
-        source: ITEM_SOURCE.MANUAL,
-      };
-    });
+    writeClosedItemSelection(slotId, select.value);
   });
 
   const closedField = field('Which item', select, 'sb-closed-item-field');
@@ -453,7 +596,6 @@ function buildClosedItemPicker(editor, slotId, item) {
   }
   oldField.replaceWith(closedField);
 
-  if (slotId === 'petItem') editor.classList.add('sb-pet-item-editor');
 }
 
 function closeReforgePicker(editor, slotId, item) {

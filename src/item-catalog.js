@@ -105,6 +105,12 @@ const FALLBACK_EQUIPMENT_ITEMS = Object.freeze([
   Object.freeze({ id: 'ZORROS_CAPE', name: "Zorro's Cape", category: 'CLOAK', tier: 'LEGENDARY' }),
 ]);
 
+const FALLBACK_PET_ITEMS = Object.freeze([
+  Object.freeze({ id: 'GREEN_BANDANA', name: 'Green Bandana', category: 'PET_ITEM', tier: 'EPIC' }),
+  Object.freeze({ id: 'POIGNANT_LUCKY_CLOVER', name: 'Poignant Lucky Clover', category: 'PET_ITEM', tier: 'LEGENDARY' }),
+  Object.freeze({ id: 'BROWN_BANDANA', name: 'Brown Bandana', category: 'PET_ITEM', tier: 'EPIC' }),
+]);
+
 export const FARMING_SETUP_FALLBACK_ITEMS = Object.freeze([
   ...FALLBACK_ARMOR_SET_SPECS.flatMap(set => FALLBACK_ARMOR_PIECES.map(piece => Object.freeze({
     id: `${set.idPrefix}_${piece.suffix}`,
@@ -118,6 +124,7 @@ export const FARMING_SETUP_FALLBACK_ITEMS = Object.freeze([
   Object.freeze({ id: 'PUFFERFISH_HAT', name: 'Pufferfish Hat', category: 'HELMET', tier: 'COMMON' }),
   Object.freeze({ id: 'PUFFERFISH_HAT_CELEBRATION', name: 'Pufferfish Hat', category: 'HELMET', tier: 'COMMON' }),
   ...FALLBACK_EQUIPMENT_ITEMS,
+  ...FALLBACK_PET_ITEMS,
 ]);
 
 export function mergeFarmingSetupCatalog(catalog) {

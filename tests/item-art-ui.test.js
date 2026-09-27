@@ -200,7 +200,7 @@ test('exact setup item-id art controls the intended portrait route before generi
   assert.match(source, /descriptor\.kind === 'voxel-head'/);
   assert.match(source, /voxelHeadNode\(descriptor\.textureId, item, onError\)/);
   assert.match(source, /descriptor\.kind === 'rendered'/);
-  assert.match(source, /remoteIconNode\(knownSkyblockRenderedIcon\(itemId\), item, onError\)/);
+  assert.match(source, /remoteIconNode\(descriptor\.iconUrl \|\| knownSkyblockRenderedIcon\(itemId\), item, onError\)/);
 });
 
 
@@ -259,4 +259,11 @@ test('Helianthus Helmet 3D portrait is a real three-face voxel cube, not a flat 
   assert.match(css, /setup-voxel-front[^\n]*translateZ\(15px\)/);
   assert.match(css, /setup-voxel-right[^\n]*rotateY\(90deg\) translateZ\(15px\)/);
   assert.match(css, /setup-voxel-top[^\n]*rotateX\(90deg\) translateZ\(15px\)/);
+});
+
+test('Poignant Lucky Clover has deterministic rendered Pet Item art', () => {
+  assert.deepEqual(exactSetupItemArt('POIGNANT_LUCKY_CLOVER'), {
+    kind: 'rendered',
+    iconUrl: 'https://skyah.net/icons/items/poignant_lucky_clover.webp',
+  });
 });
