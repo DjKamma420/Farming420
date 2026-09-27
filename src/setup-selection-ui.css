@@ -49,3 +49,35 @@
     grid-column: 1;
   }
 }
+
+
+/* Mooshroom Cow owns the one manual Strength input used by the calculator. */
+.sb-cow-strength-field {
+  grid-column: 1 / -1;
+}
+.sb-cow-strength-field > span:first-child {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.sb-required-alert {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: #5d1118;
+  border: 1px solid #ff5b68;
+  color: #ff8790;
+  font-size: 14px;
+  line-height: 1;
+}
+.sb-cow-strength-input.is-missing {
+  border-color: #ff5b68 !important;
+  box-shadow: 0 0 0 1px rgba(255,91,104,.18);
+}
+.sb-cow-strength-hint {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
