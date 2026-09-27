@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 import {
   activeSetupFromStoredState,
   catalogItemForSetupArt,
+  catalogRenderedIconForSetupArt,
   itemForSetupSlot,
   setupItemAsset,
 } from '../src/item-art-ui.js';
@@ -93,6 +94,19 @@ test('official item catalog fallback is exact-id only', () => {
   assert.equal(catalogItemForSetupArt(catalog, 'helianthus_chestplate')?.id, 'HELIANTHUS_CHESTPLATE');
   assert.equal(catalogItemForSetupArt(catalog, 'helianthus')?.id, undefined);
   assert.equal(catalogItemForSetupArt(catalog, ''), null);
+});
+
+test('held Pet Item fallback is generated only from an exact catalog item id', () => {
+  const catalog = [
+    { id: 'POIGNANT_LUCKY_CLOVER', name: 'Poignant Lucky Clover', category: 'PET_ITEM' },
+    { id: 'HELIANTHUS_BOOTS', name: 'Poignant Lucky Clover', category: 'BOOTS' },
+  ];
+  assert.equal(
+    catalogRenderedIconForSetupArt(catalog, 'POIGNANT_LUCKY_CLOVER'),
+    'https://skyah.net/icons/items/poignant_lucky_clover.webp',
+  );
+  assert.equal(catalogRenderedIconForSetupArt(catalog, 'HELIANTHUS_BOOTS'), null);
+  assert.equal(catalogRenderedIconForSetupArt(catalog, 'Poignant Lucky Clover'), null);
 });
 
 test('manual equipment ids use their exact head model before the letter fallback', () => {
@@ -184,4 +198,48 @@ test('exact setup item-id art outranks generated SkyAH armor icon URLs', () => {
   assert.ok(mappedLookup >= 0 && remoteLookup > mappedLookup);
   assert.ok(mappedRender > mappedLookup);
   assert.match(source, /exactSetupArtNode\(itemId, item/);
+});
+
+
+test('all farming pet types have deterministic exact head portraits', () => {
+  const petIds = [
+    'BEE',
+    'CHICKEN',
+    'ELEPHANT',
+    'HEDGEHOG',
+    'MOOSHROOM_COW',
+    'MOSQUITO',
+    'ORCHID_MANTIS',
+    'PIG',
+    'RABBIT',
+    'ROSE_DRAGON',
+    'SLUG',
+  ];
+  for (const id of petIds) {
+    const art = exactSetupItemArt(id);
+    assert.equal(art?.kind, 'head', `${id} should resolve to a head`);
+    assert.match(art?.textureId || '', /^[0-9a-f]{32,64}$/);
+  }
+  assert.equal(exactSetupItemArt('PET'), null);
+});
+
+test('farming Bandanas have exact local head portraits before the catalog loads', () => {
+  assert.deepEqual(exactSetupItemArt('GREEN_BANDANA'), {
+    kind: 'head',
+    textureId: '3521cccdbb892dff183d97bbdb12f2671e0cd12b945b8fca211a7065359a03a5',
+  });
+  assert.deepEqual(exactSetupItemArt('BROWN_BANDANA'), {
+    kind: 'head',
+    textureId: '674e061e6d853822bbad56d079357c248c9a40de494f20eae0078a0a02ef0da7',
+  });
+});
+
+test('catalog Pet Item icon fallback is below exact setup art and exact catalog skins', () => {
+  const source = readFileSync(new URL('../src/item-art-ui.js', import.meta.url), 'utf8');
+  const mappedRender = source.indexOf('if (mappedArt) {');
+  const catalogTexture = source.indexOf('const catalogTexture =');
+  const petItemRemote = source.indexOf('catalogRenderedIconForSetupArt(itemCatalog, itemId)');
+  assert.ok(mappedRender >= 0);
+  assert.ok(catalogTexture >= 0 && petItemRemote > catalogTexture);
+  assert.match(source, /if \(renderedIconUrl\) return remoteIconNode\(renderedIconUrl, item, onError\)/);
 });
