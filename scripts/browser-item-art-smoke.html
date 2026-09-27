@@ -90,12 +90,12 @@
     });
     const doc = frame.contentDocument;
 
-    // Reach Accessories by clicking, the way a player does. A cold load
-    // straight onto the page places the art but leaves the containers
-    // unstamped, so seeding `page: 'accessories'` would measure a different
-    // code path from the one the bug lived in -- and report zero containers.
+    // Reach the canonical Shards / Accessories workspace by clicking, the way
+    // a player does. Accessories no longer have a standalone top-level page;
+    // keeping the retired route here made the harness report zero portraits
+    // while the merged workspace was rendering correctly.
     for (let i = 0; i < 40 && !doc.querySelector('.sidebar [data-page]'); i++) await wait(SETTLE_MS);
-    doc.querySelector('.sidebar [data-page="accessories"]')?.click();
+    doc.querySelector('.sidebar [data-page="shards"]')?.click();
 
     for (let i = 0; i < 40 && !doc.querySelector('.card-portrait'); i++) await wait(SETTLE_MS);
     // Let every texture request settle -- success or failure -- before counting.
