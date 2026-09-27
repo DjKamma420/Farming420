@@ -28,6 +28,9 @@ test('pets use an illustrated closed dropdown plus closed rarity and level selec
   assert.match(source, /buildLevelSelect/);
   assert.match(source, /FARMING_PETS/);
   assert.doesNotMatch(source, /dataset:\s*\{\s*farmingPetSelect/);
+  const app = read('src/app.js');
+  assert.match(app, /\[data-farming-pet-dropdown\]/);
+  assert.doesNotMatch(app, /\[data-farming-pet-select\]/);
   assert.doesNotMatch(source, /farmingPetLevel[^\n]*type:\s*'number'/);
   assert.match(css, /\.sb-pet-dropdown-menu/);
   assert.match(css, /\.sb-pet-head-layer/);
