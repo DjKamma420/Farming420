@@ -1,0 +1,501 @@
+.pest-analysis-addon {
+  display: grid;
+  gap: 18px;
+  margin: 0 0 20px;
+}
+
+.pest-explainer,
+.pest-bestiary,
+.pest-philip {
+  border: 1px solid rgba(125, 160, 134, .28);
+  background: rgba(10, 18, 13, .76);
+  padding: 16px;
+  border-radius: 6px;
+}
+
+.pest-sides {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.pest-side {
+  border: 1px solid #2c3d31;
+  border-left: 3px solid #4d6b56;
+  background: #0b130d;
+  padding: 10px 12px;
+  border-radius: 4px;
+  min-width: 0;
+}
+
+/* The two loot rows are the ones people get wrong, so they are the ones that
+   carry a colour: green for the stat that works, amber for the one that does
+   not despite its size. */
+.pest-side[data-pest-side="loot-rng"] { border-left-color: #7fbf96; }
+.pest-side[data-pest-side="loot-guaranteed"] { border-left-color: #c9a227; }
+
+.pest-side strong {
+  display: block;
+  font-size: 13px;
+  color: #edf7ef;
+}
+
+.pest-side p {
+  margin: 4px 0 0;
+  color: #8fa294;
+  font-size: 12px;
+}
+
+.pest-pipelines {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.pest-pipeline {
+  min-width: 0;
+}
+
+.pest-pipeline h3 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #9fb0a3;
+}
+
+.pest-pipeline ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.pest-step {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.pest-step-index {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #1c2a20;
+  color: #9fd8b1;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.pest-step strong {
+  font-size: 13px;
+  color: #edf7ef;
+}
+
+.pest-step p {
+  margin: 2px 0 0;
+  color: #8fa294;
+  font-size: 12px;
+}
+
+.pest-rule {
+  margin: 16px 0 0;
+  border: 1px solid #4a3f18;
+  background: rgba(60, 50, 16, .35);
+  color: #e8dcae;
+  padding: 10px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.pest-list {
+  display: grid;
+  gap: 6px;
+}
+
+.pest-row {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  border: 1px solid #23322a;
+  background: #0b130d;
+  padding: 8px 10px;
+  border-radius: 4px;
+}
+
+/* `isolation` keeps the icon's own layering inside this box, so a pack texture
+   cannot compete with the sticky topbar the way one already did once. */
+.pest-crop-icon {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  background: #16211a;
+}
+
+.pest-crop-letter {
+  color: #9fd8b1;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+/* The letter is the placeholder. Once the texture loads it covers it, rather
+   than the two being stacked and both readable. */
+.pest-crop-icon img {
+  position: absolute;
+  inset: 2px;
+  width: calc(100% - 4px);
+  height: calc(100% - 4px);
+  object-fit: contain;
+  image-rendering: pixelated;
+  background: #16211a;
+  z-index: 1;
+}
+
+.pest-main {
+  min-width: 0;
+}
+
+.pest-main strong,
+.pest-vinyl strong {
+  display: block;
+  font-size: 13px;
+  color: #edf7ef;
+  overflow-wrap: anywhere;
+}
+
+.pest-main span,
+.pest-vinyl span {
+  display: block;
+  color: #8fa294;
+  font-size: 11px;
+}
+
+.pest-vinyl {
+  min-width: 0;
+  text-align: right;
+}
+
+.pest-note {
+  margin: 12px 0 0;
+  color: #8fa294;
+  font-size: 12px;
+}
+
+/* Same shape as the planner's economics panel: closed, and the summary keeps
+   the heading it had. A <summary> given `display: flex` stops being the
+   disclosure summary, so the flex row lives on an inner div. */
+.pest-philip > summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.pest-philip > summary::-webkit-details-marker { display: none; }
+
+.pest-philip-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.pest-philip-head h2 { margin: 2px 0 0; }
+
+.pest-philip-head::after {
+  content: '\25b8';
+  align-self: center;
+  color: #7fbf96;
+  font-size: .8rem;
+}
+
+.pest-philip[open] > summary .pest-philip-head::after { content: '\25be'; }
+
+.pest-philip-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.pest-philip-body .pest-note { grid-column: 1 / -1; margin-top: 0; }
+
+.pest-philip-input {
+  display: grid;
+  gap: 6px;
+  color: #9fb0a3;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.pest-philip-input input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #3c5142;
+  background: #09100b;
+  color: #edf7ef;
+  padding: 10px 11px;
+  border-radius: 4px;
+  font: inherit;
+}
+
+.pest-philip-result {
+  align-self: end;
+  min-width: 0;
+}
+
+.pest-philip-result strong {
+  display: block;
+  color: #edf7ef;
+  overflow-wrap: anywhere;
+}
+
+.pest-philip-result span {
+  display: block;
+  color: #8fa294;
+  font-size: 12px;
+}
+
+@media (max-width: 980px) {
+  .pest-sides { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pest-pipelines { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 650px) {
+  .pest-sides { grid-template-columns: 1fr; }
+  .pest-row { grid-template-columns: 30px minmax(0, 1fr); }
+  .pest-vinyl { grid-column: 2; text-align: left; }
+  .pest-philip-body { grid-template-columns: 1fr; }
+  .pest-philip-head { display: block; }
+}
+
+/* A third column: the guaranteed drop, which is the one place Farming Fortune
+   does work on pest loot. It earns its place next to the vinyl because it is
+   the answer to "so what does Pest Fortune actually buy me". */
+.pest-row {
+  grid-template-columns: 34px minmax(0, 1.2fr) minmax(0, 1.1fr) minmax(0, .9fr);
+}
+
+.pest-drop {
+  min-width: 0;
+}
+
+.pest-drop strong {
+  display: block;
+  font-size: 13px;
+  color: #edf7ef;
+  overflow-wrap: anywhere;
+}
+
+.pest-drop span {
+  display: block;
+  color: #8fa294;
+  font-size: 11px;
+}
+
+/* The three Greenhouse pests have no verified scaling divisor yet. */
+.pest-row-unverified {
+  border-left: 2px solid #4a3f18;
+}
+
+@media (max-width: 980px) {
+  .pest-row { grid-template-columns: 34px minmax(0, 1fr) minmax(0, 1fr); }
+  .pest-vinyl { grid-column: 2 / -1; text-align: left; }
+}
+
+@media (max-width: 650px) {
+  .pest-row { grid-template-columns: 30px minmax(0, 1fr); }
+  .pest-drop,
+  .pest-vinyl { grid-column: 2; text-align: left; }
+}
+
+
+.pest-loadout-panel {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.pest-loadout-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.pest-loadout-stat {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid var(--line, #263c31);
+  border-radius: 8px;
+  background: rgba(6, 18, 12, .55);
+}
+
+.pest-loadout-stat span,
+.pest-loadout-stat small {
+  color: var(--muted, #9db0a6);
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.pest-loadout-stat strong {
+  font-size: 20px;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 900px) {
+  .pest-loadout-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 520px) {
+  .pest-loadout-stats { grid-template-columns: 1fr 1fr; }
+  .pest-loadout-stat { padding: 9px 10px; }
+  .pest-loadout-stat strong { font-size: 17px; }
+}
+
+/* The kill-side question the page used to state and then leave unanswered. */
+.pest-vacuum {
+  border: 1px solid rgba(125, 160, 134, .28);
+  background: rgba(10, 18, 13, .76);
+  padding: 16px;
+  border-radius: 6px;
+}
+
+.pest-vacuum > summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.pest-vacuum > summary::-webkit-details-marker { display: none; }
+
+/* The flex row lives on this inner div. A <summary> given `display: flex`
+   stops counting as the disclosure summary in Chromium. */
+.pest-vacuum-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.pest-vacuum-head h2 { margin: 2px 0 0; }
+
+.pest-vacuum-head::after {
+  content: '\25b8';
+  align-self: center;
+  color: #7fbf96;
+  font-size: .8rem;
+}
+
+.pest-vacuum[open] > summary .pest-vacuum-head::after { content: '\25be'; }
+
+.pest-vacuum-body {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.pest-vacuum-body label {
+  display: grid;
+  gap: 5px;
+  align-content: start;
+  color: #9fb0a3;
+  font-size: 12px;
+  font-weight: 800;
+  min-width: 0;
+}
+
+.pest-vacuum-body select,
+.pest-vacuum-body input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #3c5142;
+  background: #07100a;
+  color: #edf7ef;
+  padding: 9px 10px;
+  border-radius: 4px;
+  font: inherit;
+  font-weight: 400;
+}
+
+.pest-vacuum-body small {
+  color: #7d8f82;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+.pest-vacuum-out {
+  grid-column: 1 / -1;
+  padding-top: 12px;
+  border-top: 1px solid #23322a;
+  min-width: 0;
+}
+
+.pest-vacuum-out strong {
+  display: block;
+  color: #edf7ef;
+  font-size: 20px;
+  overflow-wrap: anywhere;
+}
+
+.pest-vacuum-out span {
+  display: block;
+  color: #8fa294;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.pest-vacuum-pulls {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.pest-vacuum-pull {
+  border: 1px solid #23322a;
+  border-left: 3px solid #4d6b56;
+  background: #0b130d;
+  border-radius: 4px;
+  padding: 10px 12px;
+  min-width: 0;
+}
+
+/* Reaching the threshold is the whole point, so it is the thing that changes
+   colour. */
+.pest-vacuum-pull.one-shot { border-left-color: #7fbf96; }
+
+.pest-vacuum-pull strong {
+  display: block;
+  color: #edf7ef;
+  font-size: 15px;
+}
+
+.pest-vacuum-pull span {
+  display: block;
+  color: #8fa294;
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.pest-vacuum-body .pest-note { grid-column: 1 / -1; margin-top: 0; }
+
+@media (max-width: 980px) {
+  .pest-vacuum-body { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 650px) {
+  .pest-vacuum-body { grid-template-columns: 1fr; }
+  .pest-vacuum-pulls { grid-template-columns: 1fr; }
+  .pest-vacuum-head { display: block; }
+}
