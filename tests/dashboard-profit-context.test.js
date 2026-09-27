@@ -26,10 +26,11 @@ test('Dashboard Coins per hour is source-driven instead of a fixed 20m claim', (
   assert.match(app, /Coin values are fixed rolling 90-day market averages/);
 });
 
-test('the old Fortune to Coins information card is gone from Upgrade Planner', () => {
+test('the old Fortune to Coins information card is gone from the action planner', () => {
   assert.doesNotMatch(planner, /Fortune → Coins/);
   assert.match(planner, /PLANNER_BENCHMARK_COINS_PER_HOUR/);
-  assert.match(planner, /Recommended upgrades · all sets/);
+  assert.match(planner, /Recommended actions · all sets/);
+  assert.match(planner, /generateRecommendationActions\(rows\)/);
 });
 
 test('Dashboard estimate controls collapse to phone width', () => {
