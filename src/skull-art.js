@@ -184,7 +184,7 @@ export function knownSkyblockHeadTexture(skyblockId) {
     || KNOWN_FARMING_ACCESSORY_HEAD_TEXTURES[id]
     || KNOWN_FARMING_EQUIPMENT_HEAD_TEXTURES[id]
     || null;
-  return hash && /^[0-9a-f]{64}$/.test(hash) ? hash : null;
+  return hash && /^[0-9a-f]{32,64}$/.test(hash) ? hash : null;
 }
 
 export function knownSkyblockRenderedIcon(skyblockId) {

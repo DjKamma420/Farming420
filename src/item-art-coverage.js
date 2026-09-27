@@ -67,10 +67,23 @@ export function catalogItemById(catalog, skyblockId) {
   return catalog.find(item => String(item?.id || '').toUpperCase() === id) || null;
 }
 
+const PINNED_HEAD_TEXTURE_IDS = new Set([
+  // Rat Shard: keep the verified Sprayonator Serendipity player-head texture.
+  // The live item resource has produced a mismatching skin for this one card.
+  'ATTRIBUTE_SHARD_SPRAYONATOR_SERENDIPITY;1',
+]);
+
 export function skinTextureUrl(item) {
-  // Live Hypixel metadata wins. The id-based table only fills the manual/offline
-  // gap where a setup knows the exact item id but carries no skin field.
-  const hash = String(item?.skin || knownSkyblockHeadTexture(item?.id) || '').trim().toLowerCase();
+  const itemId = String(item?.id || '').trim().toUpperCase();
+  const known = knownSkyblockHeadTexture(itemId);
+  // Live Hypixel metadata normally wins. Rat Shard is pinned to the verified
+  // item definition because a mismatching live skin makes only this shard show
+  // the wrong portrait while the rest of the shard catalogue is correct.
+  const hash = String(
+    PINNED_HEAD_TEXTURE_IDS.has(itemId)
+      ? known || item?.skin
+      : item?.skin || known || '',
+  ).trim().toLowerCase();
   return /^[0-9a-f]{32,128}$/.test(hash)
     ? `https://textures.minecraft.net/texture/${hash}`
     : null;
