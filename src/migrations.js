@@ -1,5 +1,5 @@
 import { CROPS, UPGRADES } from './data.js';
-import { createDefaultSetups, createSetup, normalizeSetups } from './setups.js';
+import { createDefaultSetups, createSetup, normalizeSetups, prepareFfBpcSetups } from './setups.js';
 import { DATA_SCHEMA_VERSION } from './config.js';
 
 const PROGRESS_FIELDS = ['levels', 'owned', 'costs', 'manualGain'];
@@ -252,6 +252,23 @@ function migrateThreeActivitySetups(state) {
   profile.setups = setups;
 }
 
+/**
+ * Schema 8 -> 9
+ *
+ * FF/BPC loadouts make Farming armor/equipment the source of truth for Pest
+ * Killing. Killing keeps its own pet unless the player explicitly enables the
+ * shared-pet switch. This is persisted state, so it must be upgraded during
+ * load/restore rather than only when the Setups page happens to render.
+ *
+ * prepareFfBpcSetups preserves an existing FF shared slot. When an older model
+ * has a Killing-only shared slot, it copies that value into FF first so the
+ * player's entered gear is not discarded before the two phases are linked.
+ */
+function migrateFfBpcLoadouts(state) {
+  const profile = ensureContainer(state, state, 'profile', 'profile', null);
+  profile.setups = prepareFfBpcSetups(profile.setups);
+}
+
 const MIGRATIONS = [
   {
     to: 2,
@@ -287,6 +304,11 @@ const MIGRATIONS = [
     to: 8,
     description: 'Split Pest Farming into separate spawning and killing loadouts.',
     run: migrateThreeActivitySetups,
+  },
+  {
+    to: 9,
+    description: 'Migrate persisted loadouts to the FF/BPC model with shared Farming/Killing gear.',
+    run: migrateFfBpcLoadouts,
   },
 ];
 
