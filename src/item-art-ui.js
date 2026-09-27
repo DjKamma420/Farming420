@@ -360,6 +360,12 @@ function boot() {
     });
   }
   window.addEventListener('farming420:state-changed', queueApply);
+  window.addEventListener('farming420:rendered', event => {
+    void applySetupItemArt({
+      root: document.getElementById('app') || document,
+      rawState: event.detail?.state || readState(),
+    });
+  });
 }
 
 if (typeof document !== 'undefined' && typeof window !== 'undefined') {

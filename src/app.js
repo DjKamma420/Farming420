@@ -130,7 +130,6 @@ import {
 } from './backup.js';
 import { FRACTION_2, formatNumber } from './format-number.js';
 import { plannerUpgradeTargetEligible } from './planner-upgrade-objective.js';
-import { applySetupItemArt } from './item-art-ui.js';
 
 const NAV = [
   ['dashboard', 'Dashboard'],
@@ -2970,15 +2969,15 @@ function render({ preserveScroll = true } = {}) {
     case 'info': content = infoPage(); break;
     default: content = dashboard();
   }
-  const appRoot = document.getElementById('app');
-  appRoot.innerHTML = shell(content);
+  document.getElementById('app').innerHTML = shell(content);
   bind();
-  // Setup portraits are part of the core render, not an optional post-render
-  // enhancement. Pass the same in-memory state that produced the cards so
-  // Farming, Spawning and Killing cannot briefly or permanently resolve art
-  // against a different persisted setup.
-  void applySetupItemArt({ root: appRoot, rawState: state });
   restoreActiveSearchFocus(searchFocusSnapshot);
+  // Announce the exact state that produced this DOM. The setup-art module
+  // listens for this explicit render hook, so it does not have to infer the
+  // phase from a later localStorage read or rely only on MutationObserver timing.
+  window.dispatchEvent(new CustomEvent('farming420:rendered', {
+    detail: { state },
+  }));
   if (state.page === 'setups') bindSetups();
   if (['setups', 'shards'].includes(state.page)) ensureItemCatalog();
   if (state.page === 'tools') bindToolPanel();
