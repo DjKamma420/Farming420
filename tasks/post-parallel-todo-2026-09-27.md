@@ -25,10 +25,10 @@ Do not create a second implementation for these areas while their parallel work 
 
 ## P0 — Merge and integration pass
 
-- [ ] Merge/reconcile all ten parallel workstreams without keeping duplicate models, duplicate state fields or duplicate UI.
-- [ ] Resolve cross-chat ownership conflicts centrally. In particular, Pricing, Planner, Loadouts, Auto-Fill, Vacuum, Dashboard and Search must consume the same canonical data/model layers.
-- [ ] Verify state migrations for every schema change introduced by the parallel work.
-- [ ] Verify service-worker/cache completeness after files are added, renamed or removed.
+- [ ] **IN PROGRESS** — Merge/reconcile all ten parallel workstreams without keeping duplicate models, duplicate state fields or duplicate UI.
+- [ ] **IN PROGRESS** — Resolve cross-chat ownership conflicts centrally. In particular, Pricing, Planner, Loadouts, Auto-Fill, Vacuum, Dashboard and Search must consume the same canonical data/model layers.
+- [ ] **IN PROGRESS** — Verify state migrations for every schema change introduced by the parallel work.
+- [ ] **wird bearbeitet** — Verify service-worker/cache completeness after files are added, renamed or removed.
 - [ ] Run the complete regression gate on the integrated result:
   - npm test
   - npm run sweep
@@ -99,8 +99,8 @@ Reference: docs/MATH_MODEL.md and docs/PROFILE_DATA_MATRIX.md.
 
 The desired navigation contains an Effects area, but the ten current chats do not own the complete effects model.
 
-- [ ] Verify and model Garden Chips and their levels.
-- [ ] Verify Hypercharge state/level and exactly which temporary sources it affects.
+- [ ] **wird bearbeitet** — Verify and model Garden Chips and their levels.
+- [ ] **wird bearbeitet** — Verify Hypercharge state/level and exactly which temporary sources it affects.
 - [ ] Verify God Potion and relevant mixin state/durations/interactions.
 - [ ] Verify current temporary Pesthunter Phillip buff handling.
 - [ ] Verify permanent consumables/account bonuses that affect farming, including whether they are API-visible, safely derivable or manual-only.
@@ -176,8 +176,8 @@ These are already recorded in the existing overnight queue and remain outside th
 
 Do not optimize without profiling.
 
-- [ ] Replace repeated number-format construction with shared cached Intl.NumberFormat instances while preserving byte-identical output.
-- [ ] Re-measure boot/render CPU after the formatter change; revert it if the measured win is not real.
+- [x] Replace repeated number-format construction with shared cached Intl.NumberFormat instances while preserving byte-identical output.
+- [x] Re-measure boot/render CPU after the formatter change; revert it if the measured win is not real.
 - [ ] Re-profile the Tools page after the parallel Tool/Vacuum work has landed.
 - [ ] Restructure Tools rendering only if the post-merge profile identifies a concrete hotspot; the current cost is diffuse and should not be chased blindly.
 - [ ] Remove stale/superseded performance TODO entries once their replacement implementation is confirmed on main.
