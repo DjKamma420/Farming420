@@ -116,8 +116,14 @@ function shardPhysicalItemId(entry) {
 
 export function catalogItemForUpgrade(catalog, entry) {
   if (!Array.isArray(catalog) || !entry) return null;
-  const exactItemId = entry.physicalItemId || CARD_ITEM_ID_OVERRIDES[entry.id] || shardPhysicalItemId(entry);
-  if (exactItemId) return catalogItemById(catalog, exactItemId);
+  const explicitItemId = entry.physicalItemId || CARD_ITEM_ID_OVERRIDES[entry.id];
+  if (explicitItemId) return catalogItemById(catalog, explicitItemId);
+
+  const inferredShardId = shardPhysicalItemId(entry);
+  if (inferredShardId) {
+    const exactShard = catalogItemById(catalog, inferredShardId);
+    if (exactShard) return exactShard;
+  }
   if (!entry.packAsset && !PHYSICAL_CARD_CATEGORIES.has(entry.category)) return null;
 
   const candidates = physicalNameCandidates(entry);
