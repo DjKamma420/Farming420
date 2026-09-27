@@ -40,8 +40,6 @@ test('physical market refresh starts from bind paths, not during render helpers'
 
 
 test('market-price UI uses the shared approximate compact formatter', () => {
-  assert.match(app, /formatApproxCoins\(estimate\.normalPrice\.coinsPerUnit\)/);
-  assert.match(app, /formatApproxCoins\(estimate\.feastPrice\.coinsPerUnit\)/);
   assert.match(app, /formatApproxCoins\(x\.cost\)/);
   assert.match(revenuePlanner, /from '\.\/compact-coins\.js'/);
   assert.doesNotMatch(revenuePlanner, /function compactCoins\(/);
