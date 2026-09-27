@@ -5,6 +5,7 @@ import {
   ELEMENTAL_STRENGTH_SHARDS,
   FARMING_SHARD_SYNERGIES,
   FARMING_SYNERGY_VERIFIED,
+  atmosphericFilterEffects,
   cowFortuneDeltaForAddedStrength,
   cowFortuneDeltaForStrengthPercentChange,
   elementalStrengthFromShardLevels,
@@ -67,5 +68,19 @@ test('next Cow threshold exposes why small Strength bonuses can need stacking', 
 });
 
 test('synergy research stays dated', () => {
-  assert.equal(FARMING_SYNERGY_VERIFIED, '2026-09-23');
+  assert.equal(FARMING_SYNERGY_VERIFIED, '2026-09-27');
+});
+
+
+test('Mite Filter Upgrade scales each seasonal Atmospheric Filter effect without changing its mechanic', () => {
+  const base = atmosphericFilterEffects(0);
+  assert.equal(base.springFarmingFortune, 25);
+  assert.equal(base.autumnPestSpawnChancePercent, 15);
+
+  const maxed = atmosphericFilterEffects(10);
+  assert.equal(maxed.boostPercent, 20);
+  assert.equal(maxed.springFarmingFortune, 30);
+  assert.equal(maxed.summerFarmingWisdom, 24);
+  assert.equal(maxed.autumnPestSpawnChancePercent, 18);
+  assert.equal(maxed.winterVisitorCopperPercent, 6);
 });
