@@ -1,6 +1,7 @@
 const VERSION_FILE = 'deploy-version.json';
 const RELOAD_ATTEMPT_KEY = 'farming420:update-reload-build';
 const BUILD_ID_PATTERN = /^[0-9a-f]{7,64}$/i;
+const UPDATE_POLL_MS = 30_000;
 
 let pendingBuild = null;
 let runningCheck = null;
@@ -118,3 +119,10 @@ document.addEventListener('focusout', () => {
     void applyPendingUpdateIfSafe();
   }, 0);
 });
+
+// A tab can stay visible and focused across a deployment. Focus/pageshow hooks
+// never fire in that case, so without polling the app can sit on old DOM and
+// modules indefinitely until the user manually reloads it.
+setInterval(() => {
+  if (document.visibilityState === 'visible') void checkForUpdate();
+}, UPDATE_POLL_MS);
