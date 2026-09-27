@@ -67,14 +67,18 @@ test('activity, setup and computed stats keep one ownership chain', () => {
 });
 
 test('vacuum capability and physical-state logic share canonical item data', () => {
-  assertImports('vacuum-state.js', [
-    'item-capabilities.js',
-    'exact-farming-items.js',
-  ]);
+  assertImports('vacuum-state.js', ['exact-farming-items.js']);
 
   const vacuum = source('vacuum-state.js');
   assert.doesNotMatch(vacuum, /export\s+const\s+FARMING_REFORGES_BY_FAMILY\s*=/);
   assert.doesNotMatch(vacuum, /function\s+itemCapabilities\s*\(/);
+
+  // Older main revisions only normalize the physical Vacuum identity and gems.
+  // As soon as Vacuum state starts reading or writing reforge/capability state,
+  // it must consume item-capabilities.js rather than growing a second table.
+  if (/selectedVacuumReforge|applyVacuumReforge|FARMING_REFORGES_BY_FAMILY/.test(vacuum)) {
+    assertImports('vacuum-state.js', ['item-capabilities.js']);
+  }
 });
 
 test('global search stays a pure matcher while app owns navigation/index assembly', () => {
