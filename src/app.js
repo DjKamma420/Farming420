@@ -2345,7 +2345,7 @@ function setupsPage() {
       ? petSetupSection('BPC Pet', BPC_SETUP_ID, 'Used with the BPC Set while preparing Pest spawns.')
       : petSetupSection('Pet', THIRD_SETUP_ID, `Used with ${visibleSetupLabel(THIRD_SETUP_ID, all)}.`);
 
-  return `${pageHeader('Loadouts', 'Farming System · 2 or 3 physical sets', 'FF and BPC keep fixed roles and names. An optional third set is fully independent and can be named freely. Killing remains a pet-only overlay on the FF set.')}
+  return `${pageHeader('Loadouts', 'Farming System · FF and BPC sets', 'FF and BPC keep fixed roles and names. An optional third set is fully independent and can be named freely. Killing remains a pet-only overlay on the FF set.')}
     ${objectivePanel}
     <div class="setup-bar">
       <label class="inline-input">Physical sets
