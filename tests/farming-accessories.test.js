@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   FARMING_ACCESSORIES,
   FARMING_ACCESSORY_GROUPS,
+  FARMING_ACCESSORY_VERIFIED,
   farmingAccessoryByItemId,
 } from '../src/farming-accessories.js';
 
@@ -32,6 +33,13 @@ test('all current farming accessory progression families are represented', () =>
     'PESTHUNTER_ARTIFACT',
     'PESTHUNTER_RELIC',
   ]);
+  assert.deepEqual(groups.get('freshly-baked').items.map(item => item.itemId), [
+    'FRESHLY_BAKED_TALISMAN',
+    'FRESHLY_BAKED_RING',
+    'FRESHLY_BAKED_ARTIFACT',
+    'FRESHLY_BAKED_RELIC',
+    'FRESHLY_BAKED_HEIRLOOM',
+  ]);
   assert.deepEqual(groups.get('greenhouse').items.map(item => item.itemId), [
     'BIOANALYSIS_TALISMAN',
     'BIOANALYSIS_RING',
@@ -42,7 +50,7 @@ test('all current farming accessory progression families are represented', () =>
     'COPPER_RING',
     'COPPER_ARTIFACT',
   ]);
-  assert.equal(FARMING_ACCESSORIES.length, 22);
+  assert.equal(FARMING_ACCESSORIES.length, 27);
 });
 
 test('Relic of Power uses the live SkyBlock id', () => {
@@ -58,4 +66,21 @@ test('calculator-backed accessory cards point at existing progression ids', () =
   assert.ok(linked.some(item => item.itemId === 'ATMOSPHERIC_FILTER'));
   assert.ok(linked.some(item => item.itemId === 'MAGIC_8_BALL'));
   assert.ok(linked.some(item => item.itemId === 'POWER_RELIC'));
+  assert.ok(linked.some(item => item.itemId === 'PESTHUNTER_RELIC'));
+  assert.ok(linked.some(item => item.itemId === 'FRESHLY_BAKED_HEIRLOOM'));
+});
+
+
+test('accessory research uses current sources and explicit recommendation targets', () => {
+  assert.equal(FARMING_ACCESSORY_VERIFIED, '2026-09-27');
+  assert.ok(FARMING_ACCESSORIES.every(item => !String(item.source || '').includes('fandom.com')));
+
+  const freshly = farmingAccessoryByItemId('FRESHLY_BAKED_HEIRLOOM');
+  assert.deepEqual([...freshly.recommendationTargets], ['overbloom']);
+
+  const pesthunter = farmingAccessoryByItemId('PESTHUNTER_RELIC');
+  assert.deepEqual([...pesthunter.recommendationTargets], ['bonus-pest-chance']);
+
+  const bioanalysis = farmingAccessoryByItemId('BIOANALYSIS_ARTIFACT');
+  assert.deepEqual([...bioanalysis.recommendationTargets], []);
 });

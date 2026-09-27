@@ -68,3 +68,36 @@ test('planner value text uses the target stat instead of relabelling everything 
   assert.equal(plannerUpgradeValueText(pestCooldown, 0), 'Pest cooldown reduction');
   assert.equal(plannerUpgradeValueText(farmingFortune, 48), '+48 FF');
 });
+
+
+test('explicit shard/accessory planner targets override generic positive metrics', () => {
+  const pestProfit = {
+    name: 'Cocoaleech Shard',
+    metric: 'Pest Profit',
+    plannerTargets: [],
+  };
+  const directOverbloom = {
+    name: 'Beetle Shard',
+    metric: 'Rare Crops',
+    plannerTargets: ['overbloom'],
+  };
+  const pestFortune = {
+    name: 'Cricket Shard',
+    metric: 'Crop Yield',
+    plannerTargets: ['farming-fortune'],
+  };
+
+  assert.equal(plannerUpgradeTarget(pestProfit), PLANNER_UPGRADE_TARGET.OTHER);
+  assert.equal(plannerUpgradeTargetEligible(pestProfit, ACTIVITY_MODE.PEST_KILL), false);
+  assert.equal(plannerUpgradeTarget(directOverbloom), PLANNER_UPGRADE_TARGET.OVERBLOOM);
+  assert.equal(plannerUpgradeTarget(pestFortune), PLANNER_UPGRADE_TARGET.FARMING_FORTUNE);
+});
+
+test('multiple explicit targets stay unranked until a combined economics model exists', () => {
+  const multi = {
+    name: 'Conditional multi-output effect',
+    metric: 'Crop Yield',
+    plannerTargets: ['farming-fortune', 'overbloom'],
+  };
+  assert.equal(plannerUpgradeTarget(multi), PLANNER_UPGRADE_TARGET.OTHER);
+});

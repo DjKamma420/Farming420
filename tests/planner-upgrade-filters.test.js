@@ -211,3 +211,22 @@ test('set-independent upgrades collapse across every loadout', () => {
   assert.equal(merged[0].setupLabel, 'Global / set-independent');
   assert.equal(merged[0].marginalCoinsHour, 110);
 });
+
+
+test('global shards and accessories collapse across activity rows instead of becoming per-set copies', () => {
+  const state = stateWithSetups();
+  for (const item of [
+    { id: 'attribute-shard-beetle-crop-bug', section: 'shards', metric: 'Rare Crops', name: 'Beetle Shard' },
+    { id: 'accessory-freshly-baked-overbloom', section: 'accessories', metric: 'Rare Crops', name: 'Freshly Baked Heirloom' },
+  ]) {
+    const merged = aggregateUpgradeRows([
+      row(item, ACTIVITY_MODE.FARM, 90),
+      row(item, ACTIVITY_MODE.PEST_SPAWN, 100),
+      row(item, ACTIVITY_MODE.PEST_KILL, 110),
+    ], state, 'melon');
+
+    assert.equal(merged.length, 1, item.id);
+    assert.equal(merged[0].setupLabel, 'Global / set-independent', item.id);
+    assert.equal(merged[0].marginalCoinsHour, 110, item.id);
+  }
+});

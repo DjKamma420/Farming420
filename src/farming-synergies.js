@@ -1,20 +1,21 @@
 import { mooshroomStrengthFortune } from './mooshroom-cow.js';
 
-export const FARMING_SYNERGY_VERIFIED = '2026-09-23';
+export const FARMING_SYNERGY_VERIFIED = '2026-09-27';
 
 export const FARMING_SYNERGY_SOURCES = Object.freeze({
   attributes: 'https://hypixelskyblock.minecraft.wiki/w/Attributes',
   enrichments: 'https://hypixelskyblock.minecraft.wiki/w/Enrichments',
   accessoryBag: 'https://hypixelskyblock.minecraft.wiki/w/Accessory_Bag',
   powerStones: 'https://hypixelskyblock.minecraft.wiki/w/Power_Stones',
+  atmosphericFilter: 'https://hypixelskyblock.minecraft.wiki/w/Atmospheric_Filter',
 });
 
 export const ELEMENTAL_STRENGTH_SHARDS = Object.freeze([
-  Object.freeze({ id: 'flash', name: 'Flash Shard', attribute: 'Light Elemental', rarity: 'COMMON', perLevelStrength: 1, maxLevel: 10 }),
-  Object.freeze({ id: 'quake', name: 'Quake Shard', attribute: 'Stone Elemental', rarity: 'UNCOMMON', perLevelStrength: 1, maxLevel: 10 }),
-  Object.freeze({ id: 'bolt', name: 'Bolt Shard', attribute: 'Lightning Elemental', rarity: 'RARE', perLevelStrength: 1, maxLevel: 10 }),
-  Object.freeze({ id: 'aero', name: 'Aero Shard', attribute: 'Wind Elemental', rarity: 'EPIC', perLevelStrength: 1, maxLevel: 10 }),
-  Object.freeze({ id: 'tempest', name: 'Tempest Shard', attribute: 'Storm Elemental', rarity: 'LEGENDARY', perLevelStrength: 1, maxLevel: 10 }),
+  Object.freeze({ id: 'flash', name: 'Flash Shard', attribute: 'Light Elemental', rarity: 'COMMON', perLevelStrength: 1, maxLevel: 10, global: true }),
+  Object.freeze({ id: 'quake', name: 'Quake Shard', attribute: 'Stone Elemental', rarity: 'UNCOMMON', perLevelStrength: 1, maxLevel: 10, global: true }),
+  Object.freeze({ id: 'bolt', name: 'Bolt Shard', attribute: 'Lightning Elemental', rarity: 'RARE', perLevelStrength: 1, maxLevel: 10, global: true }),
+  Object.freeze({ id: 'aero', name: 'Aero Shard', attribute: 'Wind Elemental', rarity: 'EPIC', perLevelStrength: 1, maxLevel: 10, global: true }),
+  Object.freeze({ id: 'tempest', name: 'Tempest Shard', attribute: 'Storm Elemental', rarity: 'LEGENDARY', perLevelStrength: 1, maxLevel: 10, global: true }),
 ]);
 
 export const FARMING_SHARD_SYNERGIES = Object.freeze({
@@ -26,6 +27,8 @@ export const FARMING_SHARD_SYNERGIES = Object.freeze({
     perLevelPercent: 2,
     target: 'other Elemental Family shard effects',
     farmingUse: 'Boosts all five Elemental Strength attributes, which can increase Legendary Mooshroom Cow Farming Fortune.',
+    global: true,
+    recommendationTargets: Object.freeze(['farming-fortune']),
   }),
   unlimitedPower: Object.freeze({
     id: 'jormung',
@@ -35,6 +38,8 @@ export const FARMING_SHARD_SYNERGIES = Object.freeze({
     perLevelPercent: 0.1,
     target: 'Strength',
     farmingUse: 'Percentage Strength can increase Legendary Mooshroom Cow Farming Fortune.',
+    global: true,
+    recommendationTargets: Object.freeze(['farming-fortune']),
   }),
   almightyEcho: Object.freeze({
     id: 'molthorn',
@@ -44,6 +49,8 @@ export const FARMING_SHARD_SYNERGIES = Object.freeze({
     perLevelPercent: 5,
     target: '"Unlimited" Attributes',
     farmingUse: 'Boosts Jormung Unlimited Power and therefore its Strength contribution.',
+    global: true,
+    recommendationTargets: Object.freeze(['farming-fortune']),
   }),
   tuningBox: Object.freeze({
     id: 'hideonbox',
@@ -53,6 +60,8 @@ export const FARMING_SHARD_SYNERGIES = Object.freeze({
     perLevelTuningPoints: 1,
     target: 'Tuning Points',
     farmingUse: 'Can become extra Strength only when those Tuning Points are assigned to Strength.',
+    global: true,
+    recommendationTargets: Object.freeze(['farming-fortune']),
   }),
   filterUpgrade: Object.freeze({
     id: 'mite',
@@ -62,6 +71,8 @@ export const FARMING_SHARD_SYNERGIES = Object.freeze({
     perLevelPercent: 2,
     target: 'Atmospheric Filter',
     farmingUse: 'Strengthens the active seasonal Atmospheric Filter effect by up to 20%.',
+    global: true,
+    recommendationTargets: Object.freeze(['farming-fortune', 'pest-spawn-chance']),
   }),
   echoOfWisdom: Object.freeze({
     id: 'wyvern',
@@ -71,6 +82,8 @@ export const FARMING_SHARD_SYNERGIES = Object.freeze({
     perLevelPercent: 2,
     target: 'Wisdom Attributes',
     farmingUse: 'Can strengthen farming Wisdom attributes such as Garden Wisdom; this affects XP rather than crop profit.',
+    global: true,
+    recommendationTargets: Object.freeze([]),
   }),
   queenlyEcho: Object.freeze({
     id: 'queen-snake',
@@ -80,6 +93,8 @@ export const FARMING_SHARD_SYNERGIES = Object.freeze({
     perLevelPercent: 5,
     target: '"Visitor" Attributes',
     farmingUse: 'Can strengthen visitor-focused attributes; keep this separate from Farming Fortune.',
+    global: true,
+    recommendationTargets: Object.freeze([]),
   }),
   echoOfEchoes: Object.freeze({
     id: 'tiamat',
@@ -89,6 +104,8 @@ export const FARMING_SHARD_SYNERGIES = Object.freeze({
     perLevelPercent: 5,
     target: '"Echo" Attributes',
     farmingUse: 'A higher-order shard booster. Farming420 records it but does not recursively guess stacking order without a verified rule.',
+    global: true,
+    recommendationTargets: Object.freeze([]),
   }),
 });
 
@@ -96,6 +113,27 @@ function level(value, cap = 10) {
   const number = Number(value);
   if (!Number.isFinite(number)) return 0;
   return Math.max(0, Math.min(cap, Math.floor(number)));
+}
+
+export const ATMOSPHERIC_FILTER_BASE_EFFECTS = Object.freeze({
+  springFarmingFortune: 25,
+  summerFarmingWisdom: 20,
+  autumnPestSpawnChancePercent: 15,
+  winterVisitorCopperPercent: 5,
+});
+
+export function atmosphericFilterEffects(miteLevel = 0) {
+  const shard = FARMING_SHARD_SYNERGIES.filterUpgrade;
+  const boostPercent = level(miteLevel, shard.maxLevel) * shard.perLevelPercent;
+  const multiplier = 1 + boostPercent / 100;
+  return Object.freeze({
+    boostPercent,
+    multiplier,
+    springFarmingFortune: ATMOSPHERIC_FILTER_BASE_EFFECTS.springFarmingFortune * multiplier,
+    summerFarmingWisdom: ATMOSPHERIC_FILTER_BASE_EFFECTS.summerFarmingWisdom * multiplier,
+    autumnPestSpawnChancePercent: ATMOSPHERIC_FILTER_BASE_EFFECTS.autumnPestSpawnChancePercent * multiplier,
+    winterVisitorCopperPercent: ATMOSPHERIC_FILTER_BASE_EFFECTS.winterVisitorCopperPercent * multiplier,
+  });
 }
 
 export function elementalStrengthFromShardLevels(levels = {}, starbornLevel = 0) {

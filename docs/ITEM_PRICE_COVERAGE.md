@@ -12,8 +12,8 @@ exists rather than a guess from comparing two names.
 | Priced from research | 12 |
 | Covered by another entry | 2 |
 | Earned, not bought (needs a time figure) | 10 |
-| No price research linked yet | 61 |
-| **Total** | **85** |
+| No price research linked yet | 75 |
+| **Total** | **99** |
 
 `unknown != 0` holds: an unpriced entry carries `coins: null` and a reason,
 never zero, because zero would make it look free and win every ranking.
@@ -70,7 +70,7 @@ as no research existing: a cost documented under a set name, a reforge
 stone or a gemstone tier needs a line in the link table in
 `scripts/build-upgrade-costs.py` before code can reach it.
 
-### Account layer (4)
+### Account layer (5)
 
 | Entry | id |
 |---|---|
@@ -78,6 +78,7 @@ stone or a gemstone tier needs a line in the link table in
 | Fermento Artifact | `accessory-fermento-artifact` |
 | Helianthus Relic | `accessory-helianthus-relic` |
 | Anita accessory crop bonus | `jacob-accessory-anita-accessory-crop-bonus` |
+| Freshly Baked accessory progression | `accessory-freshly-baked-overbloom` |
 
 ### Crop layer (1)
 
@@ -135,11 +136,24 @@ stone or a gemstone tier needs a line in the link table in
 | Rabbit/XP pet switch | `pet-rabbit-xp-pet-switch` |
 | Orchid Mantis - Intelligent Specimen | `pet-orchid-mantis-intelligent-specimen` |
 
-### Attribute Shards (12)
+### Attribute Shards (25)
 
 | Entry | id |
 |---|---|
-| Firefly or Lunar Moth shard | `attribute-shard-firefly-or-lunar-moth-shard` |
+| Fly Shard - Fortunate Farmer | `attribute-shard-fly-fortunate-farmer` |
+| Firefly Shard - Solar Power | `attribute-shard-firefly-solar-power` |
+| Lunar Moth Shard - Lunar Power | `attribute-shard-lunar-moth-lunar-power` |
+| Beetle Shard - Crop Bug | `attribute-shard-beetle-crop-bug` |
+| Praying Mantis Shard - Pest Ruler | `attribute-shard-praying-mantis-pest-ruler` |
+| Cocoaleech Shard - Groovy Radar | `attribute-shard-cocoaleech-groovy-radar` |
+| Locust Shard - Crop Speed | `attribute-shard-locust-crop-speed` |
+| Bayou Sludge Shard - Compost Speed | `attribute-shard-bayou-sludge-compost-speed` |
+| Ladybug Shard - Pretty Clothes | `attribute-shard-ladybug-pretty-clothes` |
+| Honeybug Shard - Visitor Honey | `attribute-shard-honeybug-visitor-honey` |
+| Parched Shard - Visitor Compost | `attribute-shard-parched-visitor-compost` |
+| Woodlouse Shard - Visitor Cheese | `attribute-shard-woodlouse-visitor-cheese` |
+| Red Panda Shard - Visitor Plant | `attribute-shard-red-panda-visitor-plant` |
+| Dung Beetle Shard - Visitor Dung | `attribute-shard-dung-beetle-visitor-dung` |
 | Galaxy Fish shard | `attribute-shard-galaxy-fish-shard` |
 | Earthworm Shard (formerly Termite) | `attribute-shard-earthworm-shard-formerly-termite` |
 | Field Mouse Shard - Pest Overbloom | `attribute-shard-field-mouse-shard-pest-overbloom` |

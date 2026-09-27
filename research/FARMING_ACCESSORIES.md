@@ -1,25 +1,36 @@
-# Farming accessories — current structure and exact item identity
+# Farming accessories — relevance, progression and exact item identity
 
-Verified: 2026-09-18
+Verified: 2026-09-27
 
-Purpose: source-of-truth notes for the Accessories tab. The UI must resolve art by exact SkyBlock item ID against Hypixel's `/v2/resources/skyblock/items` resource. Do not use fuzzy name matching or invented icons when an exact item ID exists.
+Purpose: source-of-truth notes for the Accessories tab and planner-facing relevance metadata. Accessories are account-global physical progression. Farming420 must not store separate copies for Farming, Pest Spawning and Pest Killing.
+
+## Recommendation rule
+
+An accessory is shown when it is farming-related, but it only enters a profit/stat recommendation when the effect can be mapped to a supported planner objective without inventing economics.
+
+Supported direct targets in this pass:
+- Farming Fortune
+- Overbloom
+- Bonus Pest Chance
+
+Greenhouse mutation, Visitor economy, Farming Wisdom and movement utility remain visible but are not auto-ranked as crop/Pest profit until those systems have their own economic model.
 
 ## Crop Fortune progression
 
-| Item | SkyBlock ID | Effect | Relationship |
+| Item | SkyBlock ID | Effect | Planner target |
 |---|---|---|---|
-| Cropie Talisman | `CROPIE_TALISMAN` | +10 Crop Fortune on Wheat, Carrot, Potato | upgrades to Squash Ring |
-| Squash Ring | `SQUASH_RING` | +20 Crop Fortune on Wheat, Potato, Carrot, Melon, Pumpkin, Cocoa Beans | upgrades from Cropie, to Fermento |
-| Fermento Artifact | `FERMENTO_ARTIFACT` | +30 Farming Fortune while breaking crops | upgrades from Squash, to Helianthus |
-| Helianthus Relic | `HELIANTHUS_RELIC` | +40 Farming Fortune while breaking crops | final tier |
+| Cropie Talisman | `CROPIE_TALISMAN` | +10 Crop Fortune on Wheat, Carrot and Potato | Farming Fortune |
+| Squash Ring | `SQUASH_RING` | +20 Crop Fortune on six crops | Farming Fortune |
+| Fermento Artifact | `FERMENTO_ARTIFACT` | +30 Farming Fortune while breaking crops | Farming Fortune |
+| Helianthus Relic | `HELIANTHUS_RELIC` | +40 Farming Fortune while breaking crops | Farming Fortune |
 
-Only the highest applicable member of this upgrade line is intended to count. Lower tiers are shown for progression and model identity, not as additive bonuses.
+Only the highest applicable member of the line counts.
 
 Sources:
-- https://hypixel-skyblock.fandom.com/wiki/Cropie_Talisman
-- https://hypixel-skyblock.fandom.com/wiki/Squash_Ring
-- https://hypixel-skyblock.fandom.com/wiki/Fermento_Artifact
-- https://hypixel-skyblock.fandom.com/wiki/Helianthus_Relic
+- https://hypixelskyblock.minecraft.wiki/w/Cropie_Talisman
+- https://hypixelskyblock.minecraft.wiki/w/Squash_Ring
+- https://hypixelskyblock.minecraft.wiki/w/Fermento_Artifact
+- https://hypixelskyblock.minecraft.wiki/w/Helianthus_Relic
 
 ## Anita contest progression
 
@@ -29,12 +40,12 @@ Sources:
 | Anita's Ring | `ANITA_RING` | +15 Farming Fortune |
 | Anita's Artifact | `ANITA_ARTIFACT` | +25 Farming Fortune |
 
-The bonus is for the crop selected by the accessory for that Jacob's Farming Contest. Higher tiers replace lower tiers.
+Higher tiers replace lower tiers. The bonus is conditional on the crop selected for the Jacob's Farming Contest.
 
 Sources:
-- https://hypixel-skyblock.fandom.com/wiki/Anita%27s_Talisman
-- https://hypixel-skyblock.fandom.com/wiki/Anita%27s_Ring
-- https://hypixel-skyblock.fandom.com/wiki/Anita%27s_Artifact
+- https://hypixelskyblock.minecraft.wiki/w/Anita%27s_Talisman
+- https://hypixelskyblock.minecraft.wiki/w/Anita%27s_Ring
+- https://hypixelskyblock.minecraft.wiki/w/Anita%27s_Artifact
 
 ## Pesthunter progression
 
@@ -45,13 +56,30 @@ Sources:
 | Pesthunter Artifact | `PESTHUNTER_ARTIFACT` | +60 |
 | Pesthunter Relic | `PESTHUNTER_RELIC` | +80 |
 
-Higher tiers replace lower tiers. Pesthunter Relic was added to the live game in 0.23.6 (2025-11-04).
+This is a Pest Spawning target. Higher tiers replace lower tiers; never sum the family.
+
+Source:
+- https://hypixelskyblock.minecraft.wiki/w/Pesthunter_Relic
+
+## Freshly Baked Overbloom progression
+
+| Item | SkyBlock ID | Normal Overbloom | Harvest/Grand Feast |
+|---|---|---:|---:|
+| Freshly Baked Talisman | `FRESHLY_BAKED_TALISMAN` | +1 | +2 |
+| Freshly Baked Ring | `FRESHLY_BAKED_RING` | +2 | +4 |
+| Freshly Baked Artifact | `FRESHLY_BAKED_ARTIFACT` | +3 | +6 |
+| Freshly Baked Relic | `FRESHLY_BAKED_RELIC` | +4 | +8 |
+| Freshly Baked Heirloom | `FRESHLY_BAKED_HEIRLOOM` | +5 | +10 |
+
+Only the highest tier counts. Feast doubles this accessory's own Overbloom; it must not double total account Overbloom.
 
 Sources:
-- https://hypixel-skyblock.fandom.com/wiki/Pesthunter_Badge
-- https://hypixel-skyblock.fandom.com/wiki/Pesthunter_Ring
-- https://hypixel-skyblock.fandom.com/wiki/Pesthunter_Artifact
-- https://hypixel-skyblock.fandom.com/wiki/Pesthunter_Relic
+- https://hypixelskyblock.minecraft.wiki/w/Overbloom
+- https://hypixelskyblock.minecraft.wiki/w/Freshly_Baked_Talisman
+- https://hypixelskyblock.minecraft.wiki/w/Freshly_Baked_Ring
+- https://hypixelskyblock.minecraft.wiki/w/Freshly_Baked_Artifact
+- https://hypixelskyblock.minecraft.wiki/w/Freshly_Baked_Relic
+- https://hypixelskyblock.minecraft.wiki/w/Freshly_Baked_Heirloom
 
 ## Greenhouse mutation progression
 
@@ -61,69 +89,54 @@ Sources:
 | Bioanalysis Ring | `BIOANALYSIS_RING` | +10% |
 | Bioanalysis Artifact | `BIOANALYSIS_ARTIFACT` | +15% |
 
-This is one accessory line; only the strongest owned tier should count.
+This line is farming-relevant but not a generic crop-profit recommendation. Only the strongest owned tier counts.
 
-Exact current head textures from the Hypixel item resource:
-- `BIOANALYSIS_TALISMAN`: `19ca2fedab02df448906b25f25f2df2c9b9c532ce48276447113dca6825e9e05`
-- `BIOANALYSIS_RING`: `80b774ffeb5878d6e34e9f244642e4ee489fd1dc9a2da52b87e2ecc0449c22f9`
-- `BIOANALYSIS_ARTIFACT`: `e5f2e8e4f040d1dbef5a5369bd09db86a79b81a249547e458b3cc5997e24c0eb`
-
-Sources:
-- https://hypixel-skyblock.fandom.com/wiki/Bioanalysis_Talisman
-- https://hypixel-skyblock.fandom.com/wiki/Bioanalysis_Ring
-- https://hypixel-skyblock.fandom.com/wiki/Bioanalysis_Artifact
-- https://hypixel-skyblock.fandom.com/wiki/Module:Item/ApiData
+Source:
+- https://hypixelskyblock.minecraft.wiki/w/Bioanalysis_Artifact
 
 ## Garden visitor progression
 
-| Item | SkyBlock ID | RARE+ visitor chance |
+| Item | SkyBlock ID | RARE+ Visitor chance |
 |---|---|---:|
 | Copper Talisman | `COPPER_TALISMAN` | +4% |
 | Copper Ring | `COPPER_RING` | +8% |
 | Copper Artifact | `COPPER_ARTIFACT` | +12% |
 
-This is one accessory line; lower tiers do not stack with higher tiers.
+This line is Visitor-economy relevance, not Farming Fortune. Lower tiers do not stack with higher tiers.
 
-Exact current head textures from the Hypixel item resource:
-- `COPPER_TALISMAN`: `856cba11ca1258258e903f2586fe19ecf20f4a99ef5870347cf32c2ba76e59cf`
-- `COPPER_RING`: `f83a812525faf3499c3294634398b5e0e967489f2ee63e14490c1440553af065`
-- `COPPER_ARTIFACT`: `2933e519fc6b29c930bf74d426a2f4888a9994fe2892c6d5585fd6a3a8e52689`
+Source:
+- https://hypixelskyblock.minecraft.wiki/w/Copper_Artifact
 
-Sources:
-- https://hypixel-skyblock.fandom.com/wiki/Copper_Talisman
-- https://hypixel-skyblock.fandom.com/wiki/Copper_Ring
-- https://hypixel-skyblock.fandom.com/wiki/Copper_Artifact
-- https://hypixel-skyblock.fandom.com/wiki/Module:Item/ApiData
+## Conditional and utility accessories
 
-## Conditional / utility
+| Item | SkyBlock ID | Farming relevance | Planner treatment |
+|---|---|---|---|
+| Atmospheric Filter | `ATMOSPHERIC_FILTER` | Spring +25 FF; Summer +20 Farming Wisdom; Autumn +15% Pest spawn chance; Winter +5% Visitor Copper | Season-specific; Mite can boost the accessory effects |
+| Magic 8 Ball | `MAGIC_8_BALL` | Farming roll: +25 FF and +1 Farming Wisdom | FF only when the Farming roll is active |
+| Relic of Power | `POWER_RELIC` | Gemstone container; Peridot contributes Farming Fortune at the accessory's reduced gemstone effectiveness | Direct FF from the installed Peridot only |
+| Agarimoo Artifact | `AGARIMOO_ARTIFACT` | +1 Farming Wisdom | XP only |
+| Farming Talisman | `FARMING_TALISMAN` | +10 Speed on farming islands / Garden | Movement utility only |
 
-| Item | SkyBlock ID | Farming relevance |
-|---|---|---|
-| Atmospheric Filter | `ATMOSPHERIC_FILTER` | Spring +25 FF; Summer +20 Farming Wisdom; Autumn +15% pest spawn chance; Winter +5% visitor Copper |
-| Magic 8 Ball | `MAGIC_8_BALL` | Farming roll: +25 FF and +1 Farming Wisdom |
-| Relic of Power | `POWER_RELIC` | gemstone container; Perfect Peridot contributes at half gemstone effect |
-| Agarimoo Artifact | `AGARIMOO_ARTIFACT` | +1 Farming Wisdom |
-| Farming Talisman | `FARMING_TALISMAN` | +10 Speed on farming islands / Garden |
-
-Important correction: the current item ID for Relic of Power is `POWER_RELIC`, not `RELIC_OF_POWER`.
+Atmospheric Filter + Mite is a real shard/accessory synergy. At Filter Upgrade X (+20%), the seasonal effects become 30 Farming Fortune, 24 Farming Wisdom, 18% extra Pest spawn chance and 6% Visitor Copper. Autumn changes the chance that a Pest spawns after the spawn cooldown; it does not shorten the cooldown.
 
 Sources:
-- https://hypixel-skyblock.fandom.com/wiki/Atmospheric_Filter
-- https://hypixel-skyblock.fandom.com/wiki/Magic_8_Ball
-- https://hypixel-skyblock.fandom.com/wiki/Relic_of_Power
-- https://hypixel-skyblock.fandom.com/wiki/Agarimoo_Artifact
-- https://hypixel-skyblock.fandom.com/wiki/Farming_Talisman
-- https://wiki.eliteskyblock.com/Farming_Fortune
-- https://wiki.eliteskyblock.com/Farming_XP
+- https://hypixelskyblock.minecraft.wiki/w/Atmospheric_Filter
+- https://hypixelskyblock.minecraft.wiki/w/Magic_8_Ball
+- https://hypixelskyblock.minecraft.wiki/w/Relic_of_Power
 
-## Model rule
+## Strength / Mooshroom Cow interaction
 
-The public Hypixel item resource carries `material`, `skin`, category and rarity. For skull-based accessories, `skin` is the exact Minecraft texture hash. The app converts that hash to `https://textures.minecraft.net/texture/<hash>`.
+Eligible accessories can receive Strength Enrichment. Strength is not itself Farming Fortune, but it can cross a Legendary Mooshroom Cow Strength breakpoint. The app therefore evaluates the actual Cow floor formula instead of pretending every +1 Strength is a fixed FF amount.
 
-The model layer must:
+Accessory Power and Tuning can also contribute Strength, but no Cow value is assigned until the selected Power and tuning allocation are known.
+
+## Exact-item model rule
+
+The public Hypixel item resource carries exact item IDs plus material/skin/category/rarity data. The model layer must:
 1. resolve exact item IDs first;
-2. use the Hypixel item resource's skin hash when present;
+2. use the resource skin hash when present;
 3. use shipped pack art only when there is no skull texture;
-4. never substitute fuzzy-name matches for a different physical item.
+4. never substitute fuzzy-name matches for a different physical item;
+5. keep progression state account-global rather than copying it into phase loadouts.
 
-Blue™ but Yellow Abicase grants +1.5 Farming Wisdom and is farming-relevant, but it is intentionally not rendered as a normal exact-ID card yet. Hypixel's public item resource exposes the base `ABICASE` item, while current live-auction metadata identifies the named variant with model key `BLUE_YELLOW`. Rendering the base `ABICASE` skull as if it were guaranteed to be the Yellow variant would violate the exact-model rule.
+Blue™ but Yellow Abicase grants farming-related Wisdom, but it remains intentionally excluded from exact accessory cards until the named variant can be identified without presenting the base `ABICASE` as the variant.

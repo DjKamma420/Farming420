@@ -127,3 +127,25 @@ test('legacy flat economics migrate only to the activity that owned them', () =>
     rareCropCoinsPerHour: 0,
   });
 });
+
+
+test('Shard and Accessory progression is global instead of duplicated per activity loadout', () => {
+  const shard = {
+    id: 'attribute-shard-beetle-crop-bug',
+    section: 'shards',
+    cropScope: 'Any',
+    modeScope: 'Any',
+  };
+  const accessory = {
+    id: 'accessory-freshly-baked-overbloom',
+    section: 'accessories',
+    cropScope: 'Any',
+    modeScope: 'Any',
+  };
+
+  for (const activeId of ['normal', 'pest', 'pest-kill']) {
+    const raw = state(activeId);
+    assert.equal(plannerProgressBucket(raw, shard, 'melon'), raw.profile);
+    assert.equal(plannerProgressBucket(raw, accessory, 'melon'), raw.profile);
+  }
+});

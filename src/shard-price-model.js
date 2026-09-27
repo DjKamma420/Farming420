@@ -7,9 +7,13 @@ export const SHARD_CUMULATIVE_BY_RARITY = Object.freeze({
 });
 
 export const FARMING_SHARD_MARKET = Object.freeze({
-  'attribute-shard-firefly-or-lunar-moth-shard': Object.freeze({
+  'attribute-shard-firefly-solar-power': Object.freeze({
     rarity: 'EPIC',
-    itemTags: Object.freeze(['SHARD_FIREFLY', 'SHARD_LUNAR_MOTH']),
+    itemTags: Object.freeze(['SHARD_FIREFLY']),
+  }),
+  'attribute-shard-lunar-moth-lunar-power': Object.freeze({
+    rarity: 'EPIC',
+    itemTags: Object.freeze(['SHARD_LUNAR_MOTH']),
   }),
   'attribute-shard-galaxy-fish-shard': Object.freeze({
     rarity: 'LEGENDARY',
