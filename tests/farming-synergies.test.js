@@ -84,3 +84,14 @@ test('Mite Filter Upgrade scales each seasonal Atmospheric Filter effect without
   assert.equal(maxed.autumnPestSpawnChancePercent, 18);
   assert.equal(maxed.winterVisitorCopperPercent, 6);
 });
+
+
+test('every modeled synergy shard carries its exact SHARD_* physical item id', () => {
+  const shards = [
+    ...ELEMENTAL_STRENGTH_SHARDS,
+    ...Object.values(FARMING_SHARD_SYNERGIES),
+  ];
+  for (const shard of shards) {
+    assert.match(shard.physicalItemId, /^SHARD_[A-Z0-9_]+$/, shard.name);
+  }
+});
