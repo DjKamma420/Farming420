@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 import {
@@ -12,6 +13,7 @@ import {
   vacuumEffectiveRarity,
   vacuumFallbackGemstoneSlotCount,
 } from '../src/exact-farming-items.js';
+import { itemAssetForSkyblockId } from '../src/item-assets.js';
 
 test('every modeled crop tool tier resolves to one concrete Hypixel item id', () => {
   assert.equal(farmingToolSkyblockId("Euclid's Wheat Sickle", 1), 'THEORETICAL_HOE_WHEAT_1');
@@ -53,9 +55,28 @@ test('official gemstone unlock costs stay structured', () => {
 
 test('Vacuum fallback capabilities belong to the physical Vacuum model', () => {
   assert.equal(GARDEN_VACUUM_ITEMS.length, 5);
+  assert.deepEqual(
+    GARDEN_VACUUM_ITEMS.map(item => [item.tier, item.baseDamage, item.baseFarmingFortune, item.range, item.peridotSlots]),
+    [
+      [1, 100, 5, 5, 0],
+      [2, 150, 10, 7.5, 0],
+      [3, 200, 15, 10, 0],
+      [4, 300, 20, 12.5, 1],
+      [5, 400, 25, 15, 2],
+    ],
+  );
   assert.equal(vacuumFallbackGemstoneSlotCount('SKYMART_VACUUM'), 0);
   assert.equal(vacuumFallbackGemstoneSlotCount('INFINI_VACUUM'), 1);
   assert.equal(vacuumFallbackGemstoneSlotCount('INFINI_VACUUM_HOOVERIUS'), 2);
   assert.equal(vacuumEffectiveRarity('INFINI_VACUUM_HOOVERIUS', false), 'LEGENDARY');
   assert.equal(vacuumEffectiveRarity('INFINI_VACUUM_HOOVERIUS', true), 'MYTHIC');
+});
+
+test('every Vacuum model resolves to an exact packaged item texture', async () => {
+  const manifest = JSON.parse(await readFile(new URL('../assets/hypixel-pack/manifest.json', import.meta.url), 'utf8'));
+  for (const vacuum of GARDEN_VACUUM_ITEMS) {
+    const asset = itemAssetForSkyblockId(manifest, vacuum.id);
+    assert.ok(asset, `${vacuum.id} must resolve through its exact SkyBlock id`);
+    assert.ok(asset.textureUrl.endsWith('.png'));
+  }
 });
