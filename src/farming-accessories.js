@@ -11,6 +11,7 @@ export const FARMING_ACCESSORY_VERIFIED = '2026-09-27';
 export const FARMING_ACCESSORY_GROUPS = Object.freeze([
   Object.freeze({
     id: 'crop-fortune',
+    upgradeLine: true,
     title: 'Crop Fortune progression',
     note: 'One upgrade line. Cropie upgrades into Squash, Fermento and finally Helianthus; treat the highest owned tier as the active member.',
     items: Object.freeze([
@@ -56,6 +57,7 @@ export const FARMING_ACCESSORY_GROUPS = Object.freeze([
   }),
   Object.freeze({
     id: 'jacob',
+    upgradeLine: true,
     title: "Anita's contest progression",
     note: "The accessory grants its bonus only to the crop selected for that Jacob's Farming Contest. Higher tiers replace lower tiers.",
     items: Object.freeze([
@@ -91,6 +93,7 @@ export const FARMING_ACCESSORY_GROUPS = Object.freeze([
   }),
   Object.freeze({
     id: 'pesthunter',
+    upgradeLine: true,
     title: 'Pesthunter progression',
     note: 'Bonus Pest Chance progression. The highest owned tier replaces the lower member of the line.',
     items: Object.freeze([
@@ -135,6 +138,7 @@ export const FARMING_ACCESSORY_GROUPS = Object.freeze([
   }),
   Object.freeze({
     id: 'freshly-baked',
+    upgradeLine: true,
     title: 'Freshly Baked Overbloom progression',
     note: 'One accessory line. Each tier grants one additional Overbloom; only the highest owned tier counts. The accessory\'s own Overbloom is doubled during Harvest Feast and Grand Feast.',
     items: Object.freeze([
@@ -188,6 +192,7 @@ export const FARMING_ACCESSORY_GROUPS = Object.freeze([
   }),
   Object.freeze({
     id: 'greenhouse',
+    upgradeLine: true,
     title: 'Greenhouse mutation progression',
     note: 'Bioanalysis is one accessory line. The highest owned tier replaces the lower tier and increases crop mutation chance inside the Greenhouse.',
     items: Object.freeze([
@@ -222,6 +227,7 @@ export const FARMING_ACCESSORY_GROUPS = Object.freeze([
   }),
   Object.freeze({
     id: 'visitors',
+    upgradeLine: true,
     title: 'Garden visitor progression',
     note: 'Copper accessories increase the chance that an incoming Garden Visitor is RARE or higher. The highest owned tier replaces the lower tier.',
     items: Object.freeze([
