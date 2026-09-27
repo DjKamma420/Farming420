@@ -2,7 +2,7 @@ import { CROPS } from './data.js';
 import { STORAGE_KEY } from './config.js';
 import { toolKeyForCropId } from './migrations.js';
 import { TOOL_TIER_CHAIN, highestChainTier } from './progression-chains.js';
-import { ITEM_ASSET_BASE_URL, loadItemAssetManifest } from './item-assets.js';
+import { ITEM_ASSET_BASE_URL, itemAssetForSkyblockId, loadItemAssetManifest } from './item-assets.js';
 import { GARDEN_VACUUM_ITEMS, vacuumRecordById } from './exact-farming-items.js';
 import {
   FARMING_REFORGES_BY_FAMILY,
@@ -449,7 +449,7 @@ function toolPicker() {
   const vacuumBucket = state?.profile?.vacuumProgress || {};
   const selectedVacuum = vacuumRecordById(vacuumBucket.skyblockId);
   const vacuumArtRecord = selectedVacuum || GARDEN_VACUUM_ITEMS[0];
-  const vacuumIconUrl = assetByCandidates([String(vacuumArtRecord?.id || '').toLowerCase()]);
+  const vacuumIconUrl = itemAssetForSkyblockId(manifest, vacuumArtRecord?.id)?.textureUrl || null;
   const section = document.createElement('section');
   section.className = 'sb-tool-picker';
   section.innerHTML = `<div class="sb-block-title"><div><span class="eyebrow">Farming Toolkit</span><h2>Choose a physical tool or Vacuum</h2></div><span class="sb-hint">Each item opens the same compact editor pattern. Crop tools define the crop context; Vacuum is independent.</span></div>
@@ -595,12 +595,19 @@ function vacuumReforgePanel() {
   if (!target) return;
 
   const state = readState();
-  const chosen = selectedVacuumReforge(state?.profile?.vacuumProgress || {});
-  const signature = chosen || 'none';
+  const bucket = state?.profile?.vacuumProgress || {};
+  const selectedVacuum = vacuumRecordById(bucket.skyblockId);
+  const chosen = selectedVacuumReforge(bucket);
+  const signature = `${selectedVacuum?.id || 'no-model'}|${chosen || 'none'}`;
   if (target.dataset.sbVacuumReforgeSignature === signature) return;
 
   target.className = 'sb-reforge-panel item-editor-section';
   target.dataset.sbVacuumReforgeSignature = signature;
+  if (!selectedVacuum) {
+    target.innerHTML = '<div class="sb-block-title"><div><span class="eyebrow">Reforge</span><h3>Choose the Vacuum model first</h3></div></div><p class="sb-research-note">Reforge choices belong to the selected physical Vacuum.</p>';
+    return;
+  }
+
   target.innerHTML = `<div class="sb-block-title"><div><span class="eyebrow">Reforge</span><h3>Pick what is actually on the Vacuum</h3></div></div>
     <div class="sb-reforge-grid" role="radiogroup" aria-label="Reforge on this Vacuum">
       <button class="sb-reforge-card sb-reforge-none ${chosen ? '' : 'selected'}" role="radio" aria-checked="${chosen ? 'false' : 'true'}" data-sb-vacuum-reforge="">
