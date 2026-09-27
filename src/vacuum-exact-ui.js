@@ -149,6 +149,7 @@ function persistVacuumEnchantments(bucket, enchantments) {
 }
 
 function enchantmentsHtml(bucket) {
+  if (!bucket?.skyblockId) return '';
   const item = { enchantments: enchantmentsForBucket(bucket) };
   const rows = enchantRowsFor('vacuum', item);
   if (!rows.length) return '';
