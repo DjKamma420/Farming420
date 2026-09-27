@@ -84,3 +84,11 @@ test('accessory research uses current sources and explicit recommendation target
   const bioanalysis = farmingAccessoryByItemId('BIOANALYSIS_ARTIFACT');
   assert.deepEqual([...bioanalysis.recommendationTargets], []);
 });
+
+
+test('multi-tier farming accessory families are explicitly marked as upgrade lines', () => {
+  const upgradeGroups = FARMING_ACCESSORY_GROUPS.filter(group => group.id !== 'conditional');
+  assert.ok(upgradeGroups.length >= 6);
+  assert.ok(upgradeGroups.every(group => group.upgradeLine === true));
+  assert.equal(FARMING_ACCESSORY_GROUPS.find(group => group.id === 'conditional')?.upgradeLine, undefined);
+});
