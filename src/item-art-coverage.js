@@ -331,6 +331,12 @@ function putProgressionCardArt(card, record, label, identity) {
     portrait.className = 'card-portrait shard-portrait coverage-card-portrait';
     card.querySelector('.card-head')?.prepend(portrait);
   }
+
+  // Pack-backed cards (notably Garden Chips) already have an exact renderer in
+  // item-art-ui.js. A second writer here produced two images in one portrait,
+  // with the material fallback leaking over the "missing" badge on mobile.
+  if (portrait.dataset.packAsset) return;
+
   const node = itemArtNode(record, label || record.name);
   if (node) putArt(portrait, node, identity, { prepend: false });
 }
