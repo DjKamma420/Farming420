@@ -1,4 +1,5 @@
 import { CROPS, UPGRADES } from './data.js';
+import { INFO_ENTRIES, INFO_SECTIONS, allInfoEntries, cropStrategyInfo } from './info-content.js';
 import { FARMING_ACCESSORY_GROUPS, farmingAccessoryByItemId } from './farming-accessories.js';
 import { FARMING_PETS } from './setup-pet-catalog.js';
 import { searchEntries } from './global-search.js';
@@ -140,44 +141,6 @@ const NAV = [
   ['focus', 'Focus on Next'],
   ['info', 'Info'],
 ];
-
-const INFO_UPGRADE_TOPICS = Object.freeze([
-  Object.freeze({
-    id: 'recombobulator',
-    label: 'Rarity upgrade',
-    title: 'Recombobulator 3000',
-    summary: 'Raises an eligible item by exactly one rarity. For farming gear the main benefit is indirect: rarity-scaled reforge and gemstone values can increase with the higher effective rarity. It is not a flat Farming Fortune bonus by itself.',
-    keywords: ['recomb', 'recombobulator', 'rarity upgrade', 'mythic rarity'],
-  }),
-  Object.freeze({
-    id: 'gemstones',
-    label: 'Item sockets',
-    title: 'Gemstones',
-    summary: 'Gemstone sockets belong to the concrete item. Farming420 only exposes official sockets that item can actually have; slot type, unlock requirements, gemstone quality and effective rarity determine what the socket can contribute.',
-    keywords: ['gem', 'gems', 'gemstone', 'gemstones', 'socket', 'slots'],
-  }),
-  Object.freeze({
-    id: 'reforges',
-    label: 'Item modifier',
-    title: 'Reforges',
-    summary: 'Reforges change the stats or role of a specific item. Their values can depend on item rarity, so a rarity change can also change the value of the reforge already installed. Farming, spawning and killing reforges are not interchangeable.',
-    keywords: ['reforge', 'reforges', 'modifier'],
-  }),
-  Object.freeze({
-    id: 'enchantments',
-    label: 'Item upgrade',
-    title: 'Enchantments',
-    summary: 'Enchantments are item-compatible upgrades with their own levels and conditions. Some add direct Fortune while others change a conditional farming or Pest effect, so Farming420 tracks the exact enchantment and level instead of treating every enchant as generic stats.',
-    keywords: ['enchant', 'enchants', 'enchantment', 'enchantments'],
-  }),
-  Object.freeze({
-    id: 'rarity',
-    label: 'Item capability',
-    title: 'Rarity and item capabilities',
-    summary: 'Base rarity and effective rarity are separate. Recombobulation raises effective rarity by one step, while the concrete item decides whether it can be recombobulated, reforged or socketed at all.',
-    keywords: ['rarity', 'item capability', 'capabilities', 'effective rarity'],
-  }),
-]);
 
 const SETTINGS_SEARCH_TOPICS = Object.freeze([
   Object.freeze({
@@ -665,15 +628,15 @@ function globalSearchEntries() {
     });
   }
 
-  for (const topic of INFO_UPGRADE_TOPICS) {
+  for (const topic of allInfoEntries(CROPS)) {
     entries.push({
       id: `info:${topic.id}`,
       kind: 'Info',
       title: topic.title,
-      subtitle: topic.summary,
+      subtitle: topic.what,
       keywords: topic.keywords,
-      priority: 1200,
-      target: { type: 'info', page: 'info', anchor: `info-upgrade-${topic.id}` },
+      priority: topic.section === 'crops' ? 1050 : 1200,
+      target: { type: 'info', page: 'info', anchor: topic.anchor },
     });
   }
 
@@ -735,18 +698,6 @@ function globalSearchEntries() {
       keywords: [cropName, pest.cropId, pest.vinyl, pest.notes, ...searchKeywordAliases(pest.name, cropName, pest.notes)],
       priority: 760,
       target: { type: 'info', page: 'info', anchor: searchAnchorSlug('info-pest', pest.name) },
-    });
-  }
-
-  for (const place of BEGINNER_PLACES) {
-    entries.push({
-      id: `info:place:${place.name}`,
-      kind: 'Info location',
-      title: place.name,
-      subtitle: `${place.location} · ${place.detail}`,
-      keywords: [place.location, place.detail],
-      priority: 720,
-      target: { type: 'info', page: 'info', anchor: searchAnchorSlug('info-place', place.name) },
     });
   }
 
@@ -2585,44 +2536,6 @@ function farmingLevel() {
   return Number.isFinite(entered) && entered > 0 ? entered : null;
 }
 
-const BEGINNER_PLACES = Object.freeze([
-  {
-    name: 'Farm Merchant',
-    location: 'Starter farming shop',
-    detail: 'Buy the Rookie Hoe and Rookie Farming Axe here before the Garden becomes your main farming area.',
-  },
-  {
-    name: 'Sam',
-    location: 'Garden unlock',
-    detail: 'At SkyBlock Level 5, speak to Sam to unlock The Garden. From then on, treat the Garden as the main farming hub.',
-  },
-  {
-    name: 'SkyMart',
-    location: 'The Garden',
-    detail: 'Early Garden tools and utility items cost Copper here. Do not spread Copper over every tool; build the crop you actually farm.',
-  },
-  {
-    name: 'Garden Desk',
-    location: 'The Garden',
-    detail: 'Crop Upgrades live here. After the Sundial hand-in, the Desk also gives per-crop Speed settings.',
-  },
-  {
-    name: 'Beth',
-    location: 'Desert Settlement',
-    detail: 'Start her quest early and keep serving her when she visits. The quest later gates the Crop Analyzer.',
-  },
-  {
-    name: 'Jacob & Anita',
-    location: 'Farming contest progression',
-    detail: 'Jacob contests start at Farming 10. Gold results in unique crops feed Anita’s Farming level-cap upgrades later.',
-  },
-  {
-    name: 'Pesthunter Phillip',
-    location: 'Pest progression',
-    detail: 'Pests can be converted into temporary Farming Fortune before longer Pest-farming sessions.',
-  },
-]);
-
 function infoCropName(pest) {
   return CROPS.find(entry => entry.id === pest.cropId)?.name || pest.cropId;
 }
@@ -2688,9 +2601,48 @@ function infoPestGuide() {
   </section>`;
 }
 
+function infoSourceMarkup(entry) {
+  if (!entry?.source) return '';
+  const verified = entry.lastVerified ? ` · checked ${entry.lastVerified}` : '';
+  return `<div class="info-entry-source">
+    <a href="${esc(entry.source)}" target="_blank" rel="noreferrer">Current source</a><span>${esc(verified)}</span>
+  </div>`;
+}
+
+function infoEntryCard(entry) {
+  return `<article class="info-card info-reference-card" id="${esc(entry.anchor)}">
+    <span>${esc(entry.label)}</span>
+    <strong>${esc(entry.title)}</strong>
+    <div class="info-entry-copy">
+      <p><b>What:</b> ${esc(entry.what)}</p>
+      <p><b>Why it matters:</b> ${esc(entry.why)}</p>
+      <p><b>When it matters:</b> ${esc(entry.when)}</p>
+      <p><b>Where / how:</b> ${esc(entry.where)}</p>
+    </div>
+    ${entry.sourceNote ? `<p class="info-source-note">${esc(entry.sourceNote)}</p>` : ''}
+    ${infoSourceMarkup(entry)}
+  </article>`;
+}
+
+function infoReferenceSection(section, entries) {
+  return `<section class="info-section" id="info-section-${esc(section.id)}">
+    <div class="section-row">
+      <div>
+        <div class="eyebrow">${esc(section.eyebrow)}</div>
+        <h2>${esc(section.title)}</h2>
+        <p>${esc(section.description)}</p>
+      </div>
+    </div>
+    <div class="info-upgrade-grid">${entries.map(infoEntryCard).join('')}</div>
+  </section>`;
+}
+
 function infoPage() {
   const earlyStages = STAGES.slice(0, 4);
-  return `${pageHeader('Info', 'Farming Info & Beginner Guide', 'Explanations, beginner strategy and where each system lives. Configuration and calculated values stay on their own tabs.')}
+  const cropEntries = cropStrategyInfo(CROPS);
+  const staticBySection = sectionId => INFO_ENTRIES.filter(entry => entry.section === sectionId);
+
+  return `${pageHeader('Info', 'Farming Info & Beginner Guide', 'Explanations, beginner strategy, current mechanics and where each system lives. Configuration and calculated values stay on their own tabs.')}
     <div class="info-home">
       <section class="info-section info-start">
         <div class="section-row">
@@ -2706,31 +2658,10 @@ function infoPage() {
         </div>
       </section>
 
-      <section class="info-section" id="info-item-upgrades">
-        <div class="section-row">
-          <div><div class="eyebrow">Item upgrade reference</div><h2>What generic item upgrades actually do</h2><p>These systems are not tied to one single Farming420 card, so global search routes generic questions here.</p></div>
-        </div>
-        <div class="info-upgrade-grid">
-          ${INFO_UPGRADE_TOPICS.map(topic => `<article class="info-card" id="info-upgrade-${esc(topic.id)}">
-            <span>${esc(topic.label)}</span>
-            <strong>${esc(topic.title)}</strong>
-            <p>${esc(topic.summary)}</p>
-          </article>`).join('')}
-        </div>
-      </section>
-
-      <section class="info-section" id="info-places">
-        <div class="section-row">
-          <div><div class="eyebrow">Where to go</div><h2>Important places and NPCs</h2><p>Use this as a routing sheet when a guide tells you to buy, unlock or start something.</p></div>
-        </div>
-        <div class="info-place-grid">
-          ${BEGINNER_PLACES.map(place => `<article class="info-place-card" id="${esc(searchAnchorSlug('info-place', place.name))}">
-            <span>${esc(place.location)}</span>
-            <strong>${esc(place.name)}</strong>
-            <p>${esc(place.detail)}</p>
-          </article>`).join('')}
-        </div>
-      </section>
+      ${INFO_SECTIONS.map(section => infoReferenceSection(
+        section,
+        section.id === 'crops' ? cropEntries : staticBySection(section.id),
+      )).join('')}
 
       ${infoPestGuide()}
 
