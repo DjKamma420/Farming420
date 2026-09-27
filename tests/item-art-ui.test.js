@@ -100,3 +100,15 @@ test('invalid or missing setup state degrades to no asset', () => {
   assert.equal(itemForSetupSlot({}, 'helmet'), null);
   assert.equal(setupItemAsset(manifest, {}, 'helmet'), null);
 });
+
+
+test('pack fallback is replaced after the async manifest becomes available', () => {
+  const source = readFileSync(new URL('../src/item-art-ui.js', import.meta.url), 'utf8');
+  assert.match(source, /sameKey && card\.classList\.contains\('has-official-item-art'\)/);
+  assert.match(source, /if \(!asset\)[\s\S]*?has-item-art-fallback/);
+  assert.match(source, /removeRenderedArt\(card\);[\s\S]*?const img = imageNode\(asset/);
+  assert.doesNotMatch(
+    source,
+    /\(card\.classList\.contains\('has-official-item-art'\) \|\| card\.classList\.contains\('has-item-art-fallback'\)\)[\s\S]{0,120}renderedPackAsset/,
+  );
+});
