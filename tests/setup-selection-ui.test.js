@@ -174,3 +174,12 @@ test('setup rerenders keep the selected armor slot at the same viewport position
   assert.match(app, /queueMicrotask\(restoreAnchor\)/);
   assert.match(app, /requestAnimationFrame\(restoreAnchor\)/);
 });
+
+
+test('setup editor controls use the physical slot card as the global scroll anchor', () => {
+  const app = read('src/app.js');
+  assert.match(app, /if \(state\.page === 'setups'\)/);
+  assert.match(app, /target\.closest\('\[data-item-editor\]'\)/);
+  assert.match(app, /candidate\.dataset\.slot === slotId/);
+  assert.match(app, /if \(card\) return card/);
+});
