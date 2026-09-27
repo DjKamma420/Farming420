@@ -166,7 +166,7 @@ Reference: docs/MATH_MODEL.md setup value section.
 
 These are already recorded in the existing overnight queue and remain outside the ten feature chats.
 
-- [ ] Audit the remaining Number(null) === 0 / empty-string-to-zero coercion family across calculation and strategy code.
+- [ ] **wird bearbeitet** — Audit the remaining Number(null) === 0 / empty-string-to-zero coercion family across calculation and strategy code.
 - [ ] Preserve explicit numeric zero while keeping absent/unknown values as unknown.
 - [ ] Perform the observer idempotence sweep required by docs/RENDER_FREEZE_SAFETY.md.
 - [ ] Verify in a real browser that applying the same UI state twice converges to a no-op.
