@@ -1,13 +1,9 @@
 import { CROPS, UPGRADES } from './data.js';
 import { INFO_ENTRIES, INFO_SECTIONS, allInfoEntries, cropStrategyInfo } from './info-content.js';
-import { FARMING_ACCESSORY_GROUPS, farmingAccessoryByItemId } from './farming-accessories.js';
+import { FARMING_ACCESSORY_GROUPS } from './farming-accessories.js';
 import { FARMING_PETS } from './setup-pet-catalog.js';
 import { searchEntries } from './global-search.js';
 import { canonicalPage } from './navigation-routes.js';
-import {
-  accessoryCapabilityState,
-  strengthEnrichmentCountFromSnapshot,
-} from './accessory-capabilities.js';
 import {
   ELEMENTAL_STRENGTH_SHARDS,
   FARMING_SHARD_SYNERGIES,
@@ -483,6 +479,7 @@ function relativeGainPct(item) {
 let activeSearchResults = [];
 let activeSearchResultIndex = -1;
 let pendingSearchSpotlight = null;
+let cowStrengthPlannerOpen = false;
 let cachedCatalogSearchSource = null;
 let cachedCatalogSearchEntries = [];
 
@@ -1421,37 +1418,34 @@ function effectsPage() {
     </div>`;
 }
 
-function accessoryItemState(accessory) {
-  return state.profile.accessoryItems?.[accessory.itemId] || {};
+function accessorySnapshotRecord(accessory) {
+  const wanted = String(accessory?.itemId || '').trim().toUpperCase();
+  if (!wanted) return null;
+  const items = Array.isArray(state.profile?.normalizedSnapshot?.items)
+    ? state.profile.normalizedSnapshot.items
+    : [];
+  return items.find(item => String(item?.skyblockId || '').trim().toUpperCase() === wanted) || null;
 }
 
-function accessoryCatalogRecord(accessory) {
-  return itemCatalog.find(item => String(item?.id || '').toUpperCase() === accessory.itemId) || null;
-}
-
-function accessoryCatalogCard(accessory) {
+function accessoryCatalogCard(accessory, tierIndex = 0, tierCount = 1, upgradeLine = false) {
   const upgrade = accessory.upgradeId
     ? UPGRADES.find(item => item.id === accessory.upgradeId)
     : null;
   const status = upgrade ? statusClass(upgrade) : '';
-  const itemState = accessoryItemState(accessory);
-  const capability = accessoryCapabilityState(accessory, itemState, accessoryCatalogRecord(accessory));
-  const synced = itemState.source === 'hypixel-sync';
-  const rarityText = itemState.recombobulated && capability.baseRarity !== capability.effectiveRarity
-    ? `${capability.baseRarity} → ${capability.effectiveRarity}`
-    : capability.effectiveRarity;
+  const synced = Boolean(accessorySnapshotRecord(accessory));
+  const owned = Boolean(upgrade && currentLevel(upgrade) > 0);
   const stateBadge = synced
     ? badge('profile sync', 'synced')
-    : upgrade
-      ? badge(isMaxed(upgrade) ? 'owned' : 'not set', isMaxed(upgrade) ? 'maxed' : 'missing')
-      : badge('manual state', 'soft');
+    : owned
+      ? badge('owned', 'owned')
+      : '';
 
-  return `<article class="item-card accessory-catalog-card ${status}" data-accessory-item-id="${esc(accessory.itemId)}">
+  return `<article class="item-card accessory-catalog-card ${upgradeLine ? 'accessory-chain-card' : ''} ${status}" data-accessory-item-id="${esc(accessory.itemId)}">
     <div class="card-layer"></div>
     <div class="card-head">
       <span class="card-portrait accessory-portrait" aria-hidden="true"></span>
       <div>
-        <div class="eyebrow">${esc(rarityText)} · ${esc(accessory.itemId)}</div>
+        <div class="eyebrow">${esc(accessory.rarity)} · ${esc(accessory.itemId)}</div>
         <div class="item-title">${esc(accessory.name)}</div>
       </div>
       ${stateBadge}
@@ -1459,41 +1453,29 @@ function accessoryCatalogCard(accessory) {
     <p class="accessory-effect">${esc(accessory.effect)}</p>
     <div class="chips">
       ${badge(accessory.condition, 'soft')}
-      ${badge(itemState.recombobulated ? 'recombobulated' : 'base rarity', itemState.recombobulated ? 'owned' : 'soft')}
-      ${capability.strengthBonus ? badge('+1 Strength enrichment', 'owned') : ''}
+      ${upgradeLine ? badge(`Tier ${tierIndex + 1}/${tierCount}`, 'soft') : ''}
+      ${upgradeLine && tierIndex > 0 ? badge('upgrades previous tier', 'soft') : ''}
+      ${upgradeLine && tierIndex === tierCount - 1 ? badge('final tier', 'owned') : ''}
     </div>
-    <div class="accessory-upgrades">
-      <label class="accessory-upgrade-row">
-        <span><strong>Recombobulator 3000</strong><small>Raises this accessory by exactly one rarity.</small></span>
-        <input type="checkbox" data-accessory-recomb="${esc(accessory.itemId)}" ${itemState.recombobulated ? 'checked' : ''} ${capability.canRecombobulate ? '' : 'disabled'}>
-      </label>
-      ${capability.canEnrich ? `<label class="accessory-upgrade-row">
-        <span><strong>Strength Enrichment</strong><small>+1 Strength. This can increase Farming Fortune through a Legendary Mooshroom Cow when the next Strength breakpoint is crossed.</small></span>
-        <input type="checkbox" data-accessory-strength-enrichment="${esc(accessory.itemId)}" ${capability.enrichment === 'strength' ? 'checked' : ''}>
-      </label>` : ''}
-      ${upgrade ? `<button class="ghost small accessory-progression-btn" type="button" data-open="${esc(upgrade.id)}">Open calculator progression</button>` : ''}
-    </div>
+    ${upgrade ? `<div class="accessory-upgrades">
+      <button class="ghost small accessory-progression-btn" type="button" data-open="${esc(upgrade.id)}">Open calculator progression</button>
+    </div>` : ''}
   </article>`;
 }
 
 function accessorySections() {
-  const groups = FARMING_ACCESSORY_GROUPS.map(group => ({
-    ...group,
-    items: group.items,
-  })).filter(group => group.items.length);
-  const syncedStrengthEnrichments = strengthEnrichmentCountFromSnapshot(state.profile?.normalizedSnapshot);
-  const { cow, strength } = cowSynergyContext();
-  const cowReady = cow?.active && cow?.rarity === 'LEGENDARY' && Number.isFinite(strength);
-  const nextCowStrength = cowReady ? strengthUntilNextCowFortune(strength, cow.level, cow.rarity) : null;
+  const groups = FARMING_ACCESSORY_GROUPS.filter(group => group.items.length);
 
   return `<div class="accessory-model-note">
-      <strong>Accessory power, enrichment and Cow interaction</strong>
-      <span>Synced Strength Enrichments in the full Accessory Bag: ${syncedStrengthEnrichments}. Strength Enrichment gives +1 Strength on eligible accessories. ${cowReady ? `At ${formatNumber(strength)} current Strength, the next displayed Cow FF needs about ${formatNumber(nextCowStrength)} more Strength.` : 'Set an active Legendary Mooshroom Cow and current Strength to show its breakpoint.'} Accessory Power and Tuning can also change Strength, but Farming420 does not assign them a Cow value until the selected Power and tuning allocation are known.</span>
+      <strong>Accessory upgrade lines</strong>
+      <span>Cards marked as tiers are one physical upgrade chain: each later tier replaces the previous item instead of stacking with it. Recombobulators and Enrichments are intentionally not configured here.</span>
     </div>
     ${groups.length ? groups.map(group => `
-      <section class="accessory-group" data-accessory-group="${esc(group.id)}">
+      <section class="accessory-group ${group.upgradeLine ? 'accessory-upgrade-group' : ''}" data-accessory-group="${esc(group.id)}">
         <div class="section-row"><div><h2>${esc(group.title)}</h2><p>${esc(group.note)}</p></div></div>
-        <div class="card-grid accessory-grid">${group.items.map(accessoryCatalogCard).join('')}</div>
+        <div class="card-grid accessory-grid ${group.upgradeLine ? 'accessory-upgrade-line' : ''}">
+          ${group.items.map((accessory, index) => accessoryCatalogCard(accessory, index, group.items.length, Boolean(group.upgradeLine))).join('')}
+        </div>
       </section>
     `).join('') : '<div class="empty">No farming accessories match the current search.</div>'}`;
 }
@@ -1793,7 +1775,24 @@ function cowDeltaText(delta) {
   return `+${formatNumber(delta.addedStrength)} Strength → +${formatNumber(delta.deltaFortune)} Cow FF`;
 }
 
-function shardSynergyPanel() {
+function indirectShardSynergyPanel() {
+  const filterEffects = atmosphericFilterEffects(synergyShardLevel(FARMING_SHARD_SYNERGIES.filterUpgrade.id));
+  const rows = ['filterUpgrade', 'echoOfWisdom', 'queenlyEcho', 'echoOfEchoes'].map(key => {
+    const entry = FARMING_SHARD_SYNERGIES[key];
+    const detail = key === 'filterUpgrade'
+      ? `Current Filter Upgrade: +${formatNumber(filterEffects.boostPercent)}%. Spring ${formatNumber(filterEffects.springFarmingFortune)} FF · Summer ${formatNumber(filterEffects.summerFarmingWisdom)} Farming Wisdom · Autumn ${formatNumber(filterEffects.autumnPestSpawnChancePercent)}% extra Pest spawn chance · Winter ${formatNumber(filterEffects.winterVisitorCopperPercent)}% Visitor Copper. Autumn changes spawn chance after cooldown; it does not shorten the cooldown.`
+      : entry.farmingUse;
+    return synergyShardCard(entry, synergyShardLevel(entry.id), `${detail} Target: ${entry.target}.`);
+  }).join('');
+
+  return `<section class="accessory-model-note shard-synergy-panel">
+    <strong>Indirect shard synergies</strong>
+    <span>Non-Strength shard-to-shard effects stay separate from direct Farming Fortune.</span>
+  </section>
+  <div class="card-grid shard-gallery shard-synergy-gallery">${rows}</div>`;
+}
+
+function cowStrengthShardPlanner() {
   const levels = state.profile.synergyShardLevels || {};
   const starbornLevel = synergyShardLevel(FARMING_SHARD_SYNERGIES.echoOfElemental.id);
   const elemental = elementalStrengthFromShardLevels(levels, starbornLevel);
@@ -1835,7 +1834,7 @@ function shardSynergyPanel() {
           rarity: cow.rarity,
         })
       : null;
-    const detail = `+1 Strength per level; Echo of Elemental currently makes the next level +${formatNumber(nextStrength || (1 + elemental.boostPercent / 100))} Strength. ${current < shard.maxLevel ? cowDeltaText(cowDelta) : 'Max level.'}`;
+    const detail = `Planning only: +1 Strength per level; Echo of Elemental makes the next level +${formatNumber(nextStrength || (1 + elemental.boostPercent / 100))} planned Strength. ${current < shard.maxLevel ? cowDeltaText(cowDelta) : 'Max level.'}`;
     return synergyShardCard(shard, current, detail);
   }).join('');
 
@@ -1850,53 +1849,60 @@ function shardSynergyPanel() {
       })
     : null;
 
-  const filterEffects = atmosphericFilterEffects(synergyShardLevel(FARMING_SHARD_SYNERGIES.filterUpgrade.id));
-  const relationRows = [
+  const planningRows = [
     {
       entry: FARMING_SHARD_SYNERGIES.echoOfElemental,
       level: starbornCurrent,
-      detail: `Current Elemental Strength: ${formatNumber(elemental.effectiveStrength)} (${formatNumber(elemental.baseStrength)} base, +${formatNumber(elemental.boostPercent)}%). Next level: ${starbornCurrent < 10 ? cowDeltaText(starbornCow) : 'maxed'}.`,
+      detail: `Planned Elemental shard Strength: ${formatNumber(elemental.effectiveStrength)} (${formatNumber(elemental.baseStrength)} base, +${formatNumber(elemental.boostPercent)}%). Next level: ${starbornCurrent < 10 ? cowDeltaText(starbornCow) : 'maxed'}.`,
     },
     {
       entry: FARMING_SHARD_SYNERGIES.unlimitedPower,
       level: jormungLevel,
-      detail: `Current Strength multiplier: +${formatNumber(currentJormungPercent)}%. Next level: ${jormungLevel < 10 ? cowDeltaText(jormungCow) : 'maxed'}.`,
+      detail: `Planned Strength multiplier: +${formatNumber(currentJormungPercent)}%. Next level: ${jormungLevel < 10 ? cowDeltaText(jormungCow) : 'maxed'}.`,
     },
     {
       entry: FARMING_SHARD_SYNERGIES.almightyEcho,
       level: molthornLevel,
       detail: jormungLevel > 0
-        ? `Jormung is currently boosted to +${formatNumber(currentJormungPercent)}% Strength. Next level: ${molthornLevel < 10 ? cowDeltaText(molthornCow) : 'maxed'}.`
-        : 'No Cow value until Unlimited Power/Jormung is present.',
+        ? `Jormung is planned at +${formatNumber(currentJormungPercent)}% Strength. Next level: ${molthornLevel < 10 ? cowDeltaText(molthornCow) : 'maxed'}.`
+        : 'No Cow estimate until Unlimited Power/Jormung is planned.',
     },
-    ...['tuningBox', 'filterUpgrade', 'echoOfWisdom', 'queenlyEcho', 'echoOfEchoes'].map(key => ({
-      entry: FARMING_SHARD_SYNERGIES[key],
-      level: synergyShardLevel(FARMING_SHARD_SYNERGIES[key].id),
-      detail: key === 'filterUpgrade'
-        ? `Current Filter Upgrade: +${formatNumber(filterEffects.boostPercent)}%. Spring ${formatNumber(filterEffects.springFarmingFortune)} FF · Summer ${formatNumber(filterEffects.summerFarmingWisdom)} Farming Wisdom · Autumn ${formatNumber(filterEffects.autumnPestSpawnChancePercent)}% extra Pest spawn chance · Winter ${formatNumber(filterEffects.winterVisitorCopperPercent)}% Visitor Copper. Autumn changes spawn chance after cooldown; it does not shorten the cooldown.`
-        : FARMING_SHARD_SYNERGIES[key].farmingUse,
-    })),
+    {
+      entry: FARMING_SHARD_SYNERGIES.tuningBox,
+      level: synergyShardLevel(FARMING_SHARD_SYNERGIES.tuningBox.id),
+      detail: 'Planning only. Tuning Points can be assigned to Strength in game, but this planner never adds them to your entered Strength automatically.',
+    },
   ].map(row => synergyShardCard(
     row.entry,
     row.level,
     `${row.detail} Target: ${row.entry.target}.`,
   )).join('');
 
-  return `<section class="accessory-model-note shard-synergy-panel">
-    <strong>Indirect shard synergies</strong>
-    <span>These effects stay separate from flat Farming Fortune. ${cowReady
-      ? `Current Strength: ${formatNumber(strength)} · next displayed Cow FF needs about ${formatNumber(nextThreshold)} more Strength.`
-      : 'Set an active Legendary Mooshroom Cow and current Strength to calculate Cow breakpoints.'}</span>
-  </section>
-  <div class="card-grid shard-gallery shard-synergy-gallery">${elementalRows}${relationRows}</div>`;
+  const context = cowReady
+    ? `Entered Strength: ${formatNumber(strength)} · next displayed Cow FF needs about ${formatNumber(nextThreshold)} more Strength.`
+    : cow?.active
+      ? 'Mooshroom Cow is selected, but Strength is missing. Enter it in the Cow pet menu.'
+      : 'Select Mooshroom Cow and enter Strength in its pet menu to calculate Cow breakpoints.';
+
+  return `<details class="cow-strength-shard-planner"${cowStrengthPlannerOpen ? ' open' : ''} data-cow-strength-planner>
+    <summary><span>Mooshroom Cow Strength shard planner</span><small>Optional · open only when planning Cow Strength upgrades</small></summary>
+    <div class="cow-strength-shard-planner-body">
+      <section class="accessory-model-note shard-synergy-panel">
+        <strong>Planning only</strong>
+        <span>${context} Changing shard levels here never changes the Strength value you entered for the Cow.</span>
+      </section>
+      <div class="card-grid shard-gallery shard-synergy-gallery">${elementalRows}${planningRows}</div>
+    </div>
+  </details>`;
 }
 
 function shardsPage() {
   const shards = visibleUpgrades('shards');
   const chips = visibleUpgrades('chips');
-  return `${pageHeader('Progression', 'Accessories / Chips / Shards', 'Farming accessories, Garden Chips and Attribute Shards share one progression workspace. Their direct and indirect effects remain calculated separately.')}
+  const showSynergies = !state.search.trim();
+  return `${pageHeader('Progression', 'Accessories / Chips / Shards', 'Farming accessories, Garden Chips and Attribute Shards share one progression workspace. Upgrade families replace their previous tiers; Cow Strength planning stays optional and separate.')}
     <div class="group">
-      <div class="section-row"><div><h2>Accessories</h2><p>Accessory progression, recombobulation, enrichments and Strength interactions.</p></div></div>
+      <div class="section-row"><div><h2>Accessories</h2><p>Physical accessory progression and upgrade families. Higher tiers replace lower tiers.</p></div></div>
       ${accessorySections()}
     </div>
     <div class="group">
@@ -1905,10 +1911,11 @@ function shardsPage() {
       <div class="card-grid">${chips.map(x=>card(x)).join('') || '<div class="empty">No matches.</div>'}</div>
     </div>
     <div class="group">
-      <div class="section-row"><div><h2>Attribute Shards</h2><p>Direct Farming stats and indirect shard-to-shard / Strength interactions are evaluated separately so one effect is never counted twice.</p></div></div>
-      ${!state.search.trim() ? shardSynergyPanel() : ''}
+      <div class="section-row"><div><h2>Attribute Shards</h2><p>Direct Farming effects stay separate from optional Cow Strength planning.</p></div></div>
       <div class="filter-line">${badge(`${shards.length} direct entries`,'soft')}</div>
       <div class="card-grid shard-gallery">${shards.map(x=>card(x)).join('') || '<div class="empty">No matches.</div>'}</div>
+      ${showSynergies ? indirectShardSynergyPanel() : ''}
+      ${showSynergies ? cowStrengthShardPlanner() : ''}
     </div>`;
 }
 function qolPage() {
@@ -3125,29 +3132,10 @@ function bind() {
   const cf = document.getElementById('cropFortune');
   if (cf) cf.addEventListener('change', e => { state.profile.cropFortune[state.selectedCrop]=Number(e.target.value||0); saveState(); render(); });
 
-  document.querySelectorAll('[data-accessory-recomb]').forEach(el => el.addEventListener('change', event => {
-    const accessory = farmingAccessoryByItemId(event.target.dataset.accessoryRecomb);
-    if (!accessory) return;
-    state.profile.accessoryItems ||= {};
-    const next = { ...(state.profile.accessoryItems[accessory.itemId] || {}) };
-    next.recombobulated = Boolean(event.target.checked);
-    next.source = 'manual';
-    state.profile.accessoryItems[accessory.itemId] = next;
-    saveState();
-    render();
-  }));
-
-  document.querySelectorAll('[data-accessory-strength-enrichment]').forEach(el => el.addEventListener('change', event => {
-    const accessory = farmingAccessoryByItemId(event.target.dataset.accessoryStrengthEnrichment);
-    if (!accessory) return;
-    state.profile.accessoryItems ||= {};
-    const next = { ...(state.profile.accessoryItems[accessory.itemId] || {}) };
-    next.enrichment = event.target.checked ? 'strength' : null;
-    next.source = 'manual';
-    state.profile.accessoryItems[accessory.itemId] = next;
-    saveState();
-    render();
-  }));
+  const cowStrengthPlanner = document.querySelector('[data-cow-strength-planner]');
+  if (cowStrengthPlanner) cowStrengthPlanner.addEventListener('toggle', () => {
+    cowStrengthPlannerOpen = cowStrengthPlanner.open;
+  });
 
   document.querySelectorAll('[data-synergy-shard-value]').forEach(el => el.addEventListener('click', event => {
     state.profile.synergyShardLevels ||= {};

@@ -148,3 +148,74 @@
 /* Global search groups preserve relevance order while making result types scannable. */
 .search-result-group + .search-result-group{border-top:1px solid var(--line);margin-top:5px;padding-top:5px}
 .search-result-group-title{padding:6px 10px 4px;color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+
+
+/* Accessory families are physical upgrade chains, not stackable copies. */
+.accessory-upgrade-line {
+  align-items: stretch;
+}
+.accessory-chain-card {
+  position: relative;
+  border-top-color: #315d43;
+}
+.accessory-chain-card .badge.owned {
+  border-color: #3f7956;
+}
+.accessory-upgrade-group + .accessory-upgrade-group {
+  margin-top: 28px;
+}
+
+/* Optional Cow-only Strength planning stays collapsed below the normal shards. */
+.cow-strength-shard-planner {
+  margin-top: 28px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #09150e;
+  overflow: hidden;
+}
+.cow-strength-shard-planner > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 18px;
+  cursor: pointer;
+  list-style: none;
+  color: var(--text);
+  font-weight: 760;
+}
+.cow-strength-shard-planner > summary::-webkit-details-marker {
+  display: none;
+}
+.cow-strength-shard-planner > summary::after {
+  content: '＋';
+  color: var(--accent2);
+  font-size: 20px;
+  line-height: 1;
+}
+.cow-strength-shard-planner[open] > summary::after {
+  content: '−';
+}
+.cow-strength-shard-planner > summary small {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+}
+.cow-strength-shard-planner-body {
+  padding: 0 16px 18px;
+  border-top: 1px solid var(--line);
+}
+.cow-strength-shard-planner-body .accessory-model-note {
+  margin-top: 16px;
+}
+@media (max-width:780px) {
+  .cow-strength-shard-planner > summary {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .cow-strength-shard-planner > summary small {
+    width: calc(100% - 32px);
+    margin-left: 0;
+  }
+}

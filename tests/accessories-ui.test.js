@@ -43,20 +43,21 @@ test('conditional physical accessories stay in the accessories section', () => {
 });
 
 
-test('accessory cards expose Recombobulator and farming-relevant Strength Enrichment controls', () => {
+test('accessory cards no longer expose Recombobulator or Enrichment configuration', () => {
   const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
-  assert.match(source, /data-accessory-recomb=/);
-  assert.match(source, /data-accessory-strength-enrichment=/);
-  assert.match(source, /Strength Enrichment/);
-  assert.match(source, /baseRarity.*effectiveRarity/);
-  assert.match(source, /farmingAccessoryByItemId/);
+  assert.doesNotMatch(source, /data-accessory-recomb=/);
+  assert.doesNotMatch(source, /data-accessory-strength-enrichment=/);
+  assert.doesNotMatch(source, /Recombobulator 3000/);
+  assert.doesNotMatch(source, /Strength Enrichment/);
+  assert.match(source, /Accessory upgrade lines/);
+  assert.match(source, /accessory-upgrade-line/);
   assert.equal(ACCESSORY_CAPABILITIES_VERIFIED, '2026-09-23');
 });
 
-test('accessory state is persistent and the consolidated workspace loads the official item catalog', () => {
+test('accessory workspace reads synced ownership from the normalized profile and loads the official item catalog', () => {
   const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
-  assert.match(source, /accessoryItems: \{\}/);
-  assert.match(source, /state\.profile\.accessoryItems/);
+  assert.match(source, /state\.profile\?\.normalizedSnapshot\?\.items/);
+  assert.match(source, /function accessorySnapshotRecord/);
   assert.match(source, /\['setups', 'shards'\]\.includes\(state\.page\)/);
 });
 
@@ -71,28 +72,32 @@ test('accessory cards are articles so nested controls remain valid interactive H
 
 
 
-test('Accessories section explains Strength Enrichment and Cow interaction without inventing Accessory Power value', () => {
+test('Accessories section presents real upgrade families without Cow Strength controls', () => {
   const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const start = source.indexOf('function accessoryCatalogCard');
   const end = source.indexOf('function cropFocusCard', start);
   const block = source.slice(start, end);
-  assert.match(block, /Strength Enrichment/);
-  assert.match(block, /Mooshroom Cow/);
-  assert.match(block, /Accessory Power/);
-  assert.match(block, /data-accessory-strength-enrichment/);
-  assert.match(block, /Recombobulator 3000/);
+  assert.match(block, /Tier \$\{tierIndex \+ 1\}\/\$\{tierCount\}/);
+  assert.match(block, /upgrades previous tier/);
+  assert.match(block, /each later tier replaces the previous item/);
+  assert.doesNotMatch(block, /Mooshroom Cow/);
+  assert.doesNotMatch(block, /data-accessory-strength-enrichment/);
+  assert.doesNotMatch(block, /data-accessory-recomb/);
 });
 
 
-test('Shards page exposes verified indirect shard-to-shard and Cow synergy controls', () => {
+test('Shards page keeps Cow Strength shard planning optional and collapsible at the bottom', () => {
   const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
-  assert.match(source, /function shardSynergyPanel/);
+  assert.match(source, /function indirectShardSynergyPanel/);
+  assert.match(source, /function cowStrengthShardPlanner/);
+  assert.match(source, /<details class="cow-strength-shard-planner"/);
+  assert.match(source, /Changing shard levels here never changes the Strength value you entered for the Cow/);
   assert.match(source, /Echo of Elemental/);
   assert.match(source, /Unlimited Power/);
   assert.match(source, /data-synergy-shard-level/);
   assert.match(source, /data-synergy-shard-value/);
   assert.match(source, /function synergyShardLevelControl/);
-  assert.doesNotMatch(source.slice(source.indexOf('function shardSynergyPanel'), source.indexOf('function shardsPage')), /input type="number"/);
+  assert.doesNotMatch(source.slice(source.indexOf('function cowStrengthShardPlanner'), source.indexOf('function shardsPage')), /input type="number"/);
   assert.match(source, /case 'shards': content = shardsPage\(\);/);
 });
 
@@ -104,5 +109,12 @@ test('indirect shards use the same full card surface as direct Attribute Shards'
   assert.match(source, /card-portrait shard-portrait/);
   assert.match(source, /card-meta/);
   assert.match(source, /card-grid shard-gallery shard-synergy-gallery/);
-  assert.doesNotMatch(source.slice(source.indexOf('function shardSynergyPanel'), source.indexOf('function shardsPage')), /accessory-upgrade-row shard-synergy-row/);
+  assert.doesNotMatch(source.slice(source.indexOf('function cowStrengthShardPlanner'), source.indexOf('function shardsPage')), /accessory-upgrade-row shard-synergy-row/);
+});
+
+
+test('Cow Strength shard planner renders after direct Attribute Shards', () => {
+  const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const page = source.slice(source.indexOf('function shardsPage'), source.indexOf('function drawer'));
+  assert.ok(page.indexOf('shards.map(x=>card(x))') < page.indexOf('cowStrengthShardPlanner()'));
 });
