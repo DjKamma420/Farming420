@@ -6,8 +6,8 @@ const read = name => readFileSync(new URL(`../src/${name}`, import.meta.url), 'u
 
 test('the Pest analysis UI is wired into Info', () => {
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-  assert.match(html, /src\/pests-page\.js/);
-  assert.match(html, /src\/pests-page\.css/);
+  assert.match(html, /src\/pest-analysis-ui\.js/);
+  assert.match(html, /src\/pest-ui\.css/);
 });
 
 test('Pest explanations and analysis share the Info workspace', () => {
