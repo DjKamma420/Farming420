@@ -16,13 +16,13 @@ test('every calculator-linked accessory resolves to the same exact physical item
   }
 });
 
-test('the main navigation exposes accessories as its own page', () => {
+test('the main navigation folds accessories into Shards / Accessories', () => {
   const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
-  assert.match(source, /\['accessories', 'Accessories'\]/);
-  assert.match(source, /case 'accessories': content = accessoriesPage\(\);/);
-  assert.match(source, /function accessoriesPage\(\)/);
+  assert.match(source, /\['shards', 'Shards \/ Accessories'\]/);
+  assert.doesNotMatch(source, /\['accessories', 'Accessories'\]/);
+  assert.doesNotMatch(source, /case 'accessories':/);
+  assert.match(source, /function accessorySections\(\)/);
   assert.match(source, /data-accessory-item-id=/);
-  assert.doesNotMatch(source, /Accessories & permanent items/);
 });
 
 test('all generic drawer activation paths enforce exclusive accessory families', () => {
@@ -53,17 +53,17 @@ test('accessory cards expose Recombobulator and farming-relevant Strength Enrich
   assert.equal(ACCESSORY_CAPABILITIES_VERIFIED, '2026-09-23');
 });
 
-test('accessory state is persistent and the Accessories page loads the official item catalog', () => {
+test('accessory state is persistent and the Shards / Accessories workspace loads the official item catalog', () => {
   const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   assert.match(source, /accessoryItems: \{\}/);
   assert.match(source, /state\.profile\.accessoryItems/);
-  assert.match(source, /\['setups', 'accessories'\]\.includes\(state\.page\)/);
+  assert.match(source, /\['setups', 'shards'\]\.includes\(state\.page\)/);
 });
 
 test('accessory cards are articles so nested controls remain valid interactive HTML', () => {
   const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const start = source.indexOf('function accessoryCatalogCard');
-  const end = source.indexOf('function accessoriesPage', start);
+  const end = source.indexOf('function accessorySections', start);
   const block = source.slice(start, end);
   assert.match(block, /<article class="item-card accessory-catalog-card/);
   assert.doesNotMatch(block, /const tag = upgrade/);
@@ -71,7 +71,7 @@ test('accessory cards are articles so nested controls remain valid interactive H
 
 
 
-test('Accessories page explains Strength Enrichment and Cow interaction without inventing Accessory Power value', () => {
+test('Shards / Accessories explains Strength Enrichment and Cow interaction without inventing Accessory Power value', () => {
   const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const start = source.indexOf('function accessoryCatalogCard');
   const end = source.indexOf('function cropFocusCard', start);
