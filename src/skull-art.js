@@ -150,7 +150,6 @@ export function knownSkyblockRenderedIcon(skyblockId) {
   if (explicit) {
     return /^https:\/\/skyah\.net\/icons\/items\/[a-z0-9_]+\.webp$/.test(explicit) ? explicit : null;
   }
-  if (id.startsWith('SHARD_')) return skyAhRenderedIconUrl(id);
   return isKnownFarmingArmorRenderedIconId(id) ? skyAhRenderedIconUrl(id) : null;
 }
 
