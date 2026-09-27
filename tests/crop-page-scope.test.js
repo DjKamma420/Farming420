@@ -46,7 +46,7 @@ test('navigation replaces Account, Crops and Buffs with Garden and Effects', () 
 
 test('Effects combines permanent account effects with temporary buffs', () => {
   const start = app.indexOf('function effectsPage() {');
-  const end = app.indexOf('\nfunction accessoryItemState', start);
+  const end = app.indexOf('\nfunction accessorySnapshotRecord', start);
   assert.ok(start >= 0 && end > start, 'effectsPage source not found');
   const source = app.slice(start, end);
   assert.match(source, /visibleUpgrades\('account'\)/);
