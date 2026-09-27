@@ -142,11 +142,6 @@ export const UPGRADE_COSTS = Object.freeze({
     "reason": "no price research is linked to this entry yet",
     "unit": null
   },
-  "attribute-shard-firefly-or-lunar-moth-shard": {
-    "coins": null,
-    "reason": "no price research is linked to this entry yet",
-    "unit": null
-  },
   "attribute-shard-galaxy-fish-shard": {
     "coins": null,
     "reason": "no price research is linked to this entry yet",
@@ -178,6 +173,81 @@ export const UPGRADE_COSTS = Object.freeze({
     "unit": null
   },
   "attribute-shard-rat-sprayonator-serendipity": {
+    "coins": null,
+    "reason": "no price research is linked to this entry yet",
+    "unit": null
+  },
+  "attribute-shard-fly-fortunate-farmer": {
+    "coins": null,
+    "reason": "no price research is linked to this entry yet",
+    "unit": null
+  },
+  "attribute-shard-firefly-solar-power": {
+    "coins": null,
+    "reason": "no price research is linked to this entry yet",
+    "unit": null
+  },
+  "attribute-shard-lunar-moth-lunar-power": {
+    "coins": null,
+    "reason": "no price research is linked to this entry yet",
+    "unit": null
+  },
+  "attribute-shard-beetle-crop-bug": {
+    "coins": null,
+    "reason": "no price research is linked to this entry yet",
+    "unit": null
+  },
+  "attribute-shard-praying-mantis-pest-ruler": {
+    "coins": null,
+    "reason": "no price research is linked to this entry yet",
+    "unit": null
+  },
+  "attribute-shard-cocoaleech-groovy-radar": {
+    "coins": null,
+    "reason": "no price research is linked to this entry yet",
+    "unit": null
+  },
+  "attribute-shard-locust-crop-speed": {
+    "coins": null,
+    "reason": "no price research is linked to this entry yet",
+    "unit": null
+  },
+  "attribute-shard-bayou-sludge-compost-speed": {
+    "coins": null,
+    "reason": "no price research is linked to this entry yet",
+    "unit": null
+  },
+  "attribute-shard-ladybug-pretty-clothes": {
+    "coins": null,
+    "reason": "no price research is linked to this entry yet",
+    "unit": null
+  },
+  "attribute-shard-honeybug-visitor-honey": {
+    "coins": null,
+    "reason": "no price research is linked to this entry yet",
+    "unit": null
+  },
+  "attribute-shard-parched-visitor-compost": {
+    "coins": null,
+    "reason": "no price research is linked to this entry yet",
+    "unit": null
+  },
+  "attribute-shard-woodlouse-visitor-cheese": {
+    "coins": null,
+    "reason": "no price research is linked to this entry yet",
+    "unit": null
+  },
+  "attribute-shard-red-panda-visitor-plant": {
+    "coins": null,
+    "reason": "no price research is linked to this entry yet",
+    "unit": null
+  },
+  "attribute-shard-dung-beetle-visitor-dung": {
+    "coins": null,
+    "reason": "no price research is linked to this entry yet",
+    "unit": null
+  },
+  "accessory-freshly-baked-overbloom": {
     "coins": null,
     "reason": "no price research is linked to this entry yet",
     "unit": null
