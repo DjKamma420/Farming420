@@ -131,3 +131,25 @@ test('Beady is counted once while still combining with the Vacuum base Fortune',
   assert.equal(totals.derived.vacuumPhysicalStats.farmingFortune, 125);
   assert.equal(totals.derived.vacuumPhysicalStats.damage, 425);
 });
+
+
+test('orphaned Vacuum modifier flags do not produce Pest Fortune without a selected physical Vacuum', () => {
+  const state = stateWithVacuum({
+    skyblockId: null,
+    levels: {
+      [VACUUM_FARMING_FOR_DUMMIES.id]: 5,
+      [VACUUM_BUG_BLENDER.id]: 5,
+      'vacuum-reforge-beady-pest-only-farming-fortune': 1,
+    },
+    owned: {
+      [VACUUM_FARMING_FOR_DUMMIES.id]: true,
+      [VACUUM_BUG_BLENDER.id]: true,
+      'vacuum-reforge-beady-pest-only-farming-fortune': true,
+    },
+  });
+
+  const totals = computeStatTotals(state, 'melon', 'pest-kill');
+  assert.equal(totals.pestFortune, 0);
+  assert.equal(totals.effectiveFortune, 0);
+  assert.equal(totals.derived.vacuumPhysicalStats.selected, false);
+});
