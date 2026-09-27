@@ -176,8 +176,8 @@ These are already recorded in the existing overnight queue and remain outside th
 
 Do not optimize without profiling.
 
-- [ ] **IN PROGRESS** — Replace repeated number-format construction with shared cached Intl.NumberFormat instances while preserving byte-identical output.
-- [ ] Re-measure boot/render CPU after the formatter change; revert it if the measured win is not real.
+- [x] Replace repeated number-format construction with shared cached Intl.NumberFormat instances while preserving byte-identical output.
+- [x] Re-measure boot/render CPU after the formatter change; revert it if the measured win is not real.
 - [ ] Re-profile the Tools page after the parallel Tool/Vacuum work has landed.
 - [ ] Restructure Tools rendering only if the post-merge profile identifies a concrete hotspot; the current cost is diffuse and should not be chased blindly.
 - [ ] Remove stale/superseded performance TODO entries once their replacement implementation is confirmed on main.
