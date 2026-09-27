@@ -288,14 +288,23 @@ function decorateProgressionCards(catalog) {
     const entry = UPGRADES.find(item => item.id === card.dataset.open);
     if (!entry) return;
     const record = catalogItemForUpgrade(catalog, entry);
+    let portrait = card.querySelector('.card-head > .card-portrait');
     if (!record) {
       delete card.dataset.physicalItemId;
+      if (!portrait?.classList.contains('shard-portrait')) return;
+      const packNode = packArtNodeFor(entry, entry.name);
+      const node = packNode || letterArtNode(entry, entry.name);
+      putArt(
+        portrait,
+        node,
+        `${packNode ? 'shard-pack' : 'shard-fallback'}:${entry.id}`,
+        { prepend: false },
+      );
       return;
     }
     if (card.dataset.physicalItemId !== record.id) card.dataset.physicalItemId = record.id;
     const node = itemArtNode(record, record.name || entry.name);
     if (!node) return;
-    let portrait = card.querySelector('.card-head > .card-portrait');
     if (!portrait) {
       portrait = document.createElement('span');
       portrait.className = 'card-portrait coverage-card-portrait';
