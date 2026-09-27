@@ -211,3 +211,30 @@ test('candidate freshness carries snapshot provenance instead of treating stale 
   const candidate = buildSetupCandidates(snapshot)[0];
   assert.deepEqual(candidate.sourceStatus, { items: 'HIDDEN', pets: 'UNKNOWN' });
 });
+
+
+test('Killing candidates keep FF wearable gear fixed and enumerate only pet choices', () => {
+  const snapshot = freshSnapshot();
+  snapshot.items = [
+    ...completeArmorSet('farm'),
+    ...completeArmorSet('spawn'),
+    ...completeEquipmentSet('farm'),
+    ...completeEquipmentSet('spawn'),
+  ];
+  snapshot.pets = [
+    { uuid: 'cow', type: 'MOOSHROOM_COW', rarity: 'LEGENDARY', experience: 1_000_000_000 },
+    { uuid: 'rose', type: 'ROSE_DRAGON', rarity: 'LEGENDARY', level: 200 },
+  ];
+
+  const ff = buildSetupCandidates(snapshot, { phase: ACTIVITY_MODE.FARM })[0].setup;
+  const killing = buildSetupCandidates(snapshot, {
+    phase: ACTIVITY_MODE.PEST_KILL,
+    lockedWearableSetup: ff,
+  });
+
+  assert.equal(killing.length, 2);
+  assert.ok(killing.every(candidate => candidate.components.armorSetId === 'ff-set'));
+  assert.ok(killing.every(candidate => candidate.components.equipmentSetId === 'ff-set'));
+  assert.ok(killing.every(candidate => candidate.setup.slots.helmet.physicalItemId === ff.slots.helmet.physicalItemId));
+  assert.deepEqual(new Set(killing.map(candidate => candidate.components.petId)), new Set(['pet:cow', 'pet:rose']));
+});
