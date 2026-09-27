@@ -98,6 +98,31 @@ export function calculateDashboardEconomics({
 } = {}) {
   const throughput = sanitizedMeasurements(measured);
 
+  if (mode === ACTIVITY_MODE.PEST_SPAWN) {
+    const streams = [revenueStream(
+      DASHBOARD_REVENUE_STREAM.PEST_SYSTEM,
+      'Pest spawning',
+      DASHBOARD_STREAM_STATUS.UNMODELLED,
+      null,
+      'Pest spawning needs a verified spawn-frequency, handling-time and Pest-EV model. Crop Coins/h is intentionally not substituted into the BPC Set dashboard.',
+    )];
+    return Object.freeze({
+      version: DASHBOARD_ECONOMICS_VERSION,
+      complete: false,
+      cropId: null,
+      mode,
+      context,
+      stats,
+      throughput: Object.freeze({ ...throughput, validBreaksPerHour: null }),
+      streams: Object.freeze(streams),
+      missing: Object.freeze([]),
+      warnings: Object.freeze([]),
+      knownCoinsPerHour: null,
+      netCoinsPerHour: null,
+      engineResult: null,
+    });
+  }
+
   if (mode === ACTIVITY_MODE.PEST_KILL) {
     const streams = [revenueStream(
       DASHBOARD_REVENUE_STREAM.PEST_SYSTEM,
