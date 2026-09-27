@@ -112,6 +112,50 @@ function skullNode(textureId, item, onError = null) {
   return node;
 }
 
+function voxelHeadNode(textureId, item, onError = null) {
+  const url = skullTextureUrl(textureId);
+  if (!url) return null;
+
+  const node = document.createElement('span');
+  node.className = 'official-item-art setup-voxel-head-art exact-setup-item-art';
+  node.dataset.skullTexture = textureId;
+  node.setAttribute('role', 'img');
+  node.setAttribute('aria-label', item?.displayName
+    ? `${item.displayName} 3D item model`
+    : 'SkyBlock 3D head model');
+
+  const cube = document.createElement('span');
+  cube.className = 'setup-voxel-head-cube';
+
+  let failed = false;
+  const fail = () => {
+    if (failed) return;
+    failed = true;
+    node.remove();
+    if (typeof onError === 'function') onError();
+  };
+
+  for (const faceName of ['front', 'right', 'top']) {
+    const face = document.createElement('span');
+    face.className = `setup-voxel-face setup-voxel-${faceName}`;
+
+    for (const layerName of ['base', 'hat']) {
+      const image = document.createElement('img');
+      image.className = `setup-voxel-layer setup-voxel-${layerName}`;
+      image.src = url;
+      image.alt = '';
+      image.decoding = 'async';
+      image.draggable = false;
+      image.addEventListener('error', fail, { once: true });
+      face.append(image);
+    }
+    cube.append(face);
+  }
+
+  node.append(cube);
+  return node;
+}
+
 function remoteIconNode(url, item, onError = null) {
   if (!url) return null;
   const img = document.createElement('img');
@@ -169,6 +213,10 @@ function exactSetupArtNode(itemId, item, onError = null) {
 
   if (descriptor.kind === 'head') {
     return skullNode(descriptor.textureId, item, onError);
+  }
+
+  if (descriptor.kind === 'voxel-head') {
+    return voxelHeadNode(descriptor.textureId, item, onError);
   }
 
   if (descriptor.kind === 'rendered') {
