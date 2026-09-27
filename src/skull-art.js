@@ -205,7 +205,8 @@ export function knownSkyblockHeadTexture(skyblockId) {
 export function knownSkyblockRenderedIcon(skyblockId) {
   const raw = String(skyblockId || '').trim().toUpperCase();
   if (!raw) return null;
-  const id = KNOWN_HEAD_ID_ALIASES[raw] || raw;
+  const aliased = KNOWN_HEAD_ID_ALIASES[raw] || raw;
+  const id = renderedArmorItemId(aliased);
   const explicit = KNOWN_FARMING_EQUIPMENT_RENDERED_ICONS[id] || null;
   if (explicit) {
     return /^https:\/\/skyah\.net\/icons\/items\/[a-z0-9_]+\.webp$/.test(explicit) ? explicit : null;
