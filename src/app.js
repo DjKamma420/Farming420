@@ -1825,9 +1825,9 @@ function setups() {
 }
 
 /**
- * Re-derives the progression cards from the current setup.
+ * Re-derives the progression cards from the current loadout.
  *
- * The active setup is what the gear rules read, so a setup edit has to flow
+ * The active loadout is what the gear rules read, so a loadout edit has to flow
  * through to the cards immediately rather than waiting for the next sync.
  */
 function reapplyGear() {
@@ -2360,10 +2360,10 @@ async function ensureItemCatalog() {
   // setup/accessory page can repaint after the search loses focus or another
   // explicit state change happens.
   const searchHasFocus = document.activeElement?.id === 'search';
-  if (!searchHasFocus && ['setups', 'accessories'].includes(state.page) && (result.items.length || result.error)) render();
+  if (!searchHasFocus && ['setups', 'shards'].includes(state.page) && (result.items.length || result.error)) render();
 }
 
-// --- Guide 0-60 -------------------------------------------------------------
+// --- Farming 0-60 reference -------------------------------------------------
 // A staged walkthrough driven by the player's own synced Farming level, with
 // selectable alternatives where the source names more than one good answer.
 
