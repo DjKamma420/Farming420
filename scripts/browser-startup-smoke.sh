@@ -96,7 +96,7 @@ fi
 
 run_chrome_dump "${BASE_URL}scripts/browser-setups-smoke.html" "$SETUPS_DOM"
 
-if ! grep -q 'Your gear, item by item' "$SETUPS_DOM"; then
+if ! grep -q 'Farming System · FF and BPC sets' "$SETUPS_DOM"; then
   echo "The Setups smoke harness did not reach the Setups page" >&2
   sed -n '1,220p' "$SETUPS_DOM" >&2 || true
   exit 1
