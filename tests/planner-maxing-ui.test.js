@@ -6,16 +6,19 @@ const planner = readFileSync(new URL('../src/revenue-planner.js', import.meta.ur
 
 test('planner maxing panel exposes freshness, section breakdown and concrete price gaps', () => {
   assert.match(planner, /marketAverageTimestampLabel/);
-  assert.match(planner, /Show maxing breakdown and missing price data/);
+  assert.match(planner, /Show maxing breakdown, shard values and missing price data/);
   assert.match(planner, /Price gaps blocking an exact total/);
   assert.match(planner, /summary\.breakdown\.map/);
   assert.match(planner, /summary\.unknownPriceTargets\.slice/);
+  assert.match(planner, /summary\.shardTargets\.map/);
+  assert.match(planner, /Shard value breakdown/);
+  assert.match(planner, /owned value/);
   assert.match(planner, /remainingUnknownPriceSteps/);
   assert.match(planner, /knownCostComputedAtMs/);
 });
 
 test('planner keeps unknown maxing prices explicit instead of presenting a false exact total', () => {
   assert.match(planner, /Price incomplete/);
-  assert.match(planner, /≥ \$\{compactCoins\(summary\.knownCostCoins\)\} Coins/);
+  assert.match(planner, /≥ \$\{formatApproxCoins\(summary\.knownCostCoins\)\}/);
   assert.match(planner, /Unknown market routes stay visibly incomplete instead of being treated as free/);
 });

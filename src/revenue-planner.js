@@ -26,6 +26,7 @@ import {
   plannerProgressBucket,
 } from './planner-activity-context.js';
 import { formatNumber } from './format-number.js';
+import { compactCoinNumber, formatApproxCoins } from './compact-coins.js';
 import { applySnapshotToProgress } from './snapshot-apply.js';
 import {
   UPGRADE_FILTER,
@@ -476,12 +477,7 @@ function upgradeFilterMarkup(rows, activeFilter) {
 }
 
 function compactCoins(value) {
-  if (!Number.isFinite(value)) return '—';
-  const abs = Math.abs(value);
-  if (abs >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(2)}b`;
-  if (abs >= 1_000_000) return `${(value / 1_000_000).toFixed(2)}m`;
-  if (abs >= 1_000) return `${(value / 1_000).toFixed(1)}k`;
-  return formatNumber(Math.round(value));
+  return compactCoinNumber(value) ?? '—';
 }
 
 function formatPayback(hours) {
@@ -818,9 +814,9 @@ function benchmarkPanel(raw) {
 function maxingPanel(raw) {
   const summary = plannerMaxSummary(raw);
   const costText = summary.costComplete
-    ? `${compactCoins(summary.knownCostCoins)} Coins`
+    ? formatApproxCoins(summary.knownCostCoins)
     : summary.knownCostCoins > 0
-      ? `≥ ${compactCoins(summary.knownCostCoins)} Coins`
+      ? `≥ ${formatApproxCoins(summary.knownCostCoins)}`
       : 'Price incomplete';
   const progressText = `${summary.completionPercent.toFixed(1)}%`;
   const earnedText = summary.remainingEarnedSteps > 0
@@ -837,9 +833,9 @@ function maxingPanel(raw) {
 
   const breakdownMarkup = summary.breakdown.map(section => {
     const sectionCost = section.costComplete
-      ? `${compactCoins(section.knownCostCoins)} Coins left`
+      ? `${formatApproxCoins(section.knownCostCoins)} left`
       : section.knownCostCoins > 0
-        ? `≥ ${compactCoins(section.knownCostCoins)} Coins left`
+        ? `≥ ${formatApproxCoins(section.knownCostCoins)} left`
         : 'Price incomplete';
     const sectionUnknown = section.remainingUnknownPriceSteps > 0
       ? ` · ${formatNumber(section.remainingUnknownPriceSteps)} price gap${section.remainingUnknownPriceSteps === 1 ? '' : 's'}`
@@ -864,6 +860,34 @@ function maxingPanel(raw) {
       ${hiddenUnknownTargets > 0 ? `<p class="revenue-help">+${formatNumber(hiddenUnknownTargets)} more incomplete price target${hiddenUnknownTargets === 1 ? '' : 's'}.</p>` : ''}`
     : '<p class="revenue-help">No remaining price gaps in the tracked maxing target.</p>';
 
+  const shardMarkup = summary.shardTargets.length
+    ? `<div class="earned-route-list">
+        ${summary.shardTargets.map(target => {
+          const unitValue = target.unitShardCoins != null ? formatApproxCoins(target.unitShardCoins) : '—';
+          const ownedValue = target.shardCountOwned === 0
+            ? '~0 Coins'
+            : target.currentShardValueCoins != null
+              ? formatApproxCoins(target.currentShardValueCoins)
+              : '—';
+          const toMaxValue = target.currentLevel >= target.maxLevel
+            ? 'Maxed'
+            : target.costToMaxCoins != null
+              ? `${target.costToMaxComplete ? '' : '≥ '}${formatApproxCoins(target.costToMaxCoins)}`
+              : 'Price incomplete';
+          const ownedCount = target.shardCountOwned == null
+            ? 'owned shard count unavailable'
+            : `${formatNumber(target.shardCountOwned)} shard${target.shardCountOwned === 1 ? '' : 's'} owned`;
+          const remainingCount = target.shardCountToMax == null
+            ? 'remaining shard count unavailable'
+            : `${formatNumber(target.shardCountToMax)} shard${target.shardCountToMax === 1 ? '' : 's'} to level ${formatNumber(target.maxLevel)}`;
+          return `<div class="earned-route-row shard-maxing-row">
+            <span><strong>${esc(target.itemName)}</strong><small>Level ${formatNumber(target.currentLevel)}/${formatNumber(target.maxLevel)} · ${esc(ownedCount)}</small></span>
+            <span class="revenue-note">1 shard ${esc(unitValue)} · owned value ${esc(ownedValue)} · to max ${esc(toMaxValue)}<small>${esc(remainingCount)}</small></span>
+          </div>`;
+        }).join('')}
+      </div>`
+    : '<p class="revenue-help">No Farming shard targets are tracked.</p>';
+
   return `<section class="revenue-panel revenue-maxing">
     <div class="revenue-panel-head">
       <div><div class="eyebrow">Permanent farming progression</div><h2>Maxing progress</h2></div>
@@ -875,8 +899,10 @@ function maxingPanel(raw) {
       <div><span>Earned progress remaining</span><strong>${esc(earnedText)}</strong><small>counts toward the percentage, not direct coin cost</small></div>
     </div>
     <details class="revenue-maxing-details">
-      <summary class="revenue-help">Show maxing breakdown and missing price data</summary>
+      <summary class="revenue-help">Show maxing breakdown, shard values and missing price data</summary>
       <div class="qol-summary-grid">${breakdownMarkup}</div>
+      <div class="eyebrow">Shard value breakdown</div>
+      ${shardMarkup}
       <div class="eyebrow">Price gaps blocking an exact total</div>
       ${unknownMarkup}
     </details>

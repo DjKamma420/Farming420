@@ -5,11 +5,14 @@ import { compactCoinNumber, formatApproxCoins } from '../src/compact-coins.js';
 test('coin values use compact k/m/b suffixes', () => {
   assert.equal(compactCoinNumber(999), '999');
   assert.equal(compactCoinNumber(1_000), '1k');
+  assert.equal(compactCoinNumber(1_200), '1.2k');
   assert.equal(compactCoinNumber(12_500), '12.5k');
-  assert.equal(compactCoinNumber(1_250_000), '1.25m');
+  assert.equal(compactCoinNumber(1_250_000), '1.3m');
+  assert.equal(compactCoinNumber(4_500_000), '4.5m');
   assert.equal(compactCoinNumber(125_000_000), '125m');
-  assert.equal(compactCoinNumber(1_250_000_000), '1.25b');
-  assert.equal(formatApproxCoins(1_250_000), '~1.25m Coins');
+  assert.equal(compactCoinNumber(1_100_000_000), '1.1b');
+  assert.equal(compactCoinNumber(1_250_000_000), '1.3b');
+  assert.equal(formatApproxCoins(1_250_000), '~1.3m Coins');
 });
 
 test('invalid values remain unavailable instead of becoming zero coins', () => {

@@ -4,7 +4,7 @@ const SUFFIXES = Object.freeze([
   { value: 1_000, suffix: 'k' },
 ]);
 
-function trimFixed(value, digits = 2) {
+function trimFixed(value, digits = 1) {
   return Number(value.toFixed(digits)).toString();
 }
 
@@ -17,8 +17,7 @@ export function compactCoinNumber(value) {
   for (const row of SUFFIXES) {
     if (absolute < row.value) continue;
     const scaled = absolute / row.value;
-    const digits = scaled >= 100 ? 0 : scaled >= 10 ? 1 : 2;
-    return `${sign}${trimFixed(scaled, digits)}${row.suffix}`;
+    return `${sign}${trimFixed(scaled, 1)}${row.suffix}`;
   }
   return `${sign}${Math.round(absolute)}`;
 }
