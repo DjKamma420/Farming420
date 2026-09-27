@@ -83,3 +83,17 @@ test('setup picker writes to the explicitly opened FF or Killing pet target', ()
   assert.match(source, /const \{ setups, setup \} = currentSetupRecord\(state\)/);
   assert.match(source, /writeLinkedSetupSlot\(setups, setup\.id, slotId, nextItem\)/);
 });
+
+
+test('Mooshroom Cow pet menu owns the manual Strength input and missing-value warning', () => {
+  const source = read('src/setup-selection-ui.js');
+  const css = read('src/setup-selection-ui.css');
+  assert.match(source, /currentId === 'MOOSHROOM_COW'/);
+  assert.match(source, /dataset: \{ cowStrength: '1' \}/);
+  assert.match(source, /writeProfileStrength/);
+  assert.match(source, /profile\.inputs\.strength/);
+  assert.match(source, /sb-required-alert/);
+  assert.match(source, /Shard planning never changes this value automatically/);
+  assert.match(css, /\.sb-required-alert/);
+  assert.match(css, /#ff5b68/);
+});
