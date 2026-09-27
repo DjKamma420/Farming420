@@ -154,7 +154,7 @@ function catalogFallbackNode(itemId, item, onError = null) {
   if (!record) return null;
 
   const catalogTexture = String(record.skin || '').trim().toLowerCase();
-  if (/^[0-9a-f]{32,128}$/.test(catalogTexture)) {
+  if (/^[0-9a-f]{32,64}$/.test(catalogTexture)) {
     return skullNode(catalogTexture, item, onError);
   }
 
@@ -231,7 +231,7 @@ export function renderSetupItemArt({ root = document, rawState = readState(), ma
 
     const exactStoredTexture = storedItemId === itemId ? storedItem?.skullTexture : null;
     const textureId = exactStoredTexture || knownSkyblockHeadTexture(itemId);
-    const renderedIconUrl = item.skullTexture ? null : knownSkyblockRenderedIcon(itemId);
+    const renderedIconUrl = exactStoredTexture ? null : knownSkyblockRenderedIcon(itemId);
     const identity = renderedIconUrl
       ? `rendered:${itemId}`
       : textureId

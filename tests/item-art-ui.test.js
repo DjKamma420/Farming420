@@ -107,7 +107,7 @@ test('manual equipment ids use their exact head model before the letter fallback
 test('head art renders before the optional pack manifest finishes loading', () => {
   const source = readFileSync(new URL('../src/item-art-ui.js', import.meta.url), 'utf8');
   const firstRender = source.indexOf('renderSetupItemArt({ manifestValue: manifest })');
-  const manifestLoad = source.indexOf('const loaded = await ensureManifest()');
+  const manifestLoad = source.indexOf('const [loaded] = await Promise.all([ensureManifest(), ensureCatalog()])');
   assert.ok(firstRender >= 0 && manifestLoad > firstRender);
 });
 
