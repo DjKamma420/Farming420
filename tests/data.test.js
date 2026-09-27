@@ -183,9 +183,9 @@ test('a farming attribute without a sourced per-level value never scores', () =>
   }
 });
 
-test('only the four Fortune attributes use the Crop Yield metric', () => {
-  // The trap this pins: twelve identically-levelled attributes read as one
-  // Fortune pool. Summing them would roughly triple a player's real Fortune.
+test('only direct Farming Fortune shard attributes use the Crop Yield metric', () => {
+  // The trap this pins: unrelated farming Attributes must not be treated as one
+  // Fortune pool. Only shards whose sourced effect is Farming Fortune use Crop Yield.
   const yieldShards = UPGRADES
     .filter(item => item.section === 'shards' && item.metric === 'Crop Yield')
     .map(item => item.id)
@@ -193,7 +193,9 @@ test('only the four Fortune attributes use the Crop Yield metric', () => {
   assert.deepEqual(yieldShards, [
     'attribute-shard-cricket-pest-fortune',
     'attribute-shard-earthworm-shard-formerly-termite',
-    'attribute-shard-firefly-or-lunar-moth-shard',
+    'attribute-shard-firefly-solar-power',
+    'attribute-shard-fly-fortunate-farmer',
     'attribute-shard-galaxy-fish-shard',
+    'attribute-shard-lunar-moth-lunar-power',
   ]);
 });
