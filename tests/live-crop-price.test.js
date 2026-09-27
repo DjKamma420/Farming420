@@ -110,7 +110,8 @@ test('the note fits under a form field and stays actionable', () => {
   const noQuote = liveCropUnitPrice('melon', { snapshot: null, nowMs: NOW });
   const note = liveCropPriceNote(noQuote);
   assert.ok(note.length < 60, `"${note}" is too long for a field hint`);
-  assert.match(note, /enter your sell price/);
+  assert.match(note, /stays unknown/);
+  assert.doesNotMatch(note, /enter|manual/i);
   // The full engine reason is still carried, just not shown here.
   assert.ok(noQuote.reason.length > note.length);
 });
