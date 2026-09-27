@@ -56,7 +56,7 @@ test('modifier coverage exposes unresolved mechanics instead of hiding them', ()
   const coverage = farmingModifierCoverage();
   assert.equal(coverage.chips, 10);
   assert.deepEqual(coverage.chipsNeedLiveVerification, ['cropshot']);
-  assert.ok(coverage.temporaryNeedVerification.includes('magic-8-ball'));
+  assert.ok(!coverage.temporaryNeedVerification.includes('magic-8-ball'));
   assert.ok(coverage.shardInteractionVerification.includes('mudworm'));
   assert.ok(coverage.shardInteractionVerification.includes('timestalk-clone'));
 });
