@@ -26,8 +26,9 @@ import {
   FACE_OFFSET,
   HAT_OFFSET,
   headLayerGeometry,
+  knownSkyblockRenderedIcon,
   skullTextureUrl,
-} from './skull-art.js?v=20260918-4';
+} from './skull-art.js?v=20260928-1';
 
 const REAPPLY_CLICK_SELECTOR = [
   '[data-page="setups"]',
@@ -38,7 +39,10 @@ const REAPPLY_CLICK_SELECTOR = [
   '[data-setup-prefill]',
   '[data-slot-clear]',
   '[data-pet-item-option]',
+  '[data-armor-item-option]',
 ].join(',');
+
+const ARMOR_SLOT_IDS = new Set(['helmet', 'chestplate', 'leggings', 'boots']);
 
 const REAPPLY_CHANGE_SELECTOR = [
   '#setupName',
@@ -547,10 +551,188 @@ function buildPetItemPicker(editor, item) {
   editor.classList.add('sb-pet-item-editor');
 }
 
+
+function armorSlotLabel(slotId) {
+  return {
+    helmet: 'Helmet',
+    chestplate: 'Chestplate',
+    leggings: 'Leggings',
+    boots: 'Boots',
+  }[slotId] || 'Armor';
+}
+
+function armorVoxelHeadNode(textureId, label = 'Helmet') {
+  const textureUrl = skullTextureUrl(textureId);
+  if (!textureUrl) return null;
+
+  const model = element('span', {
+    className: 'setup-voxel-head-art sb-gear-voxel-head',
+    role: 'img',
+    ariaLabel: label + ' 3D item model',
+  });
+  const cube = element('span', { className: 'setup-voxel-head-cube' });
+
+  for (const faceName of ['front', 'right', 'top']) {
+    const face = element('span', { className: 'setup-voxel-face setup-voxel-' + faceName });
+    for (const layerName of ['base', 'hat']) {
+      face.append(element('img', {
+        className: 'setup-voxel-layer setup-voxel-' + layerName,
+        src: textureUrl,
+        alt: '',
+        loading: 'lazy',
+        decoding: 'async',
+        draggable: false,
+      }));
+    }
+    cube.append(face);
+  }
+  model.append(cube);
+  return model;
+}
+
+function armorItemArtNode(record, label = 'Armor') {
+  const art = element('span', { className: 'sb-gear-art', 'aria-hidden': 'true' });
+  art.append(element('span', { className: 'sb-gear-art-fallback' }, record ? petInitials(label) : '—'));
+  if (!record) return art;
+
+  const descriptor = exactSetupItemArt(record.id);
+  const catalogSkin = String(record.skin || '').trim().toLowerCase();
+  const voxelTextureId = descriptor?.kind === 'voxel-head'
+    ? descriptor.textureId
+    : (String(record.category || '').toUpperCase() === 'HELMET' && /^[0-9a-f]{32,64}$/.test(catalogSkin)
+      ? catalogSkin
+      : null);
+  const voxel = armorVoxelHeadNode(voxelTextureId, label);
+  if (voxel) {
+    art.append(voxel);
+    art.classList.add('has-gear-art');
+    return art;
+  }
+
+  const iconUrl = knownSkyblockRenderedIcon(record.id);
+  if (!iconUrl) return art;
+
+  const image = element('img', {
+    className: 'sb-gear-item-icon',
+    src: iconUrl,
+    alt: '',
+    loading: 'lazy',
+    decoding: 'async',
+    referrerPolicy: 'no-referrer',
+  });
+  image.addEventListener('load', () => art.classList.add('has-gear-art'), { once: true });
+  image.addEventListener('error', () => {
+    image.remove();
+    art.classList.remove('has-gear-art');
+  }, { once: true });
+  art.append(image);
+  return art;
+}
+
+function buildArmorItemPicker(editor, slotId, item) {
+  const options = currentCatalogItems(slotId);
+  const signature = closedItemPickerSignature(options, item);
+  const existing = editor.querySelector('[data-closed-item-dropdown="' + slotId + '"]');
+  const oldControl = existing
+    || editor.querySelector('[data-closed-item-select="' + slotId + '"]')
+    || editor.querySelector('[data-slot-item="' + slotId + '"]')
+    || editor.querySelector('[data-slot-name="' + slotId + '"]');
+  const oldField = oldControl?.closest('.settings-field');
+  if (!oldField) return;
+  if (existing?.dataset.catalogSignature === signature) return;
+
+  const currentId = String(item?.skyblockId || '').trim().toUpperCase();
+  const currentRecord = options.find(option => String(option.id || '').trim().toUpperCase() === currentId)
+    || (currentId ? {
+      id: currentId,
+      name: item?.displayName || currentId,
+      category: armorSlotLabel(slotId).toUpperCase(),
+    } : null);
+  const currentName = currentRecord?.name || item?.displayName || ('No ' + armorSlotLabel(slotId).toLowerCase() + ' selected');
+
+  const dropdown = element('details', {
+    className: 'sb-pet-dropdown sb-gear-dropdown',
+    dataset: {
+      closedItemDropdown: slotId,
+      catalogSignature: signature,
+    },
+  });
+  const trigger = element('summary', { className: 'sb-pet-dropdown-trigger sb-gear-dropdown-trigger' });
+  const triggerCopy = element('span', { className: 'sb-pet-dropdown-copy' });
+  triggerCopy.append(
+    element('strong', {}, currentName),
+    element('small', {}, 'Choose ' + armorSlotLabel(slotId)),
+  );
+  trigger.append(
+    armorItemArtNode(currentRecord, currentName),
+    triggerCopy,
+    element('span', { className: 'sb-pet-dropdown-chevron', 'aria-hidden': 'true' }, '▾'),
+  );
+
+  const menu = element('div', {
+    className: 'sb-pet-dropdown-menu sb-gear-dropdown-menu',
+    role: 'listbox',
+    'aria-label': armorSlotLabel(slotId),
+  });
+
+  const addOption = (record, selected = false) => {
+    const itemId = String(record?.id || '');
+    const label = record?.name || ('No ' + armorSlotLabel(slotId).toLowerCase());
+    const option = element('button', {
+      type: 'button',
+      className: 'sb-pet-dropdown-option sb-gear-dropdown-option' + (selected ? ' is-selected' : ''),
+      dataset: { armorItemOption: itemId },
+      role: 'option',
+      'aria-selected': String(selected),
+    });
+    const copy = element('span', { className: 'sb-pet-option-copy' });
+    copy.append(
+      element('strong', {}, label),
+      ...(record ? [element('small', {}, [record.tier, record.id].filter(Boolean).join(' · ').replace(/_/g, ' '))] : []),
+    );
+    option.append(
+      armorItemArtNode(record, label),
+      copy,
+      element('span', { className: 'sb-pet-option-check', 'aria-hidden': 'true' }, selected ? '✓' : ''),
+    );
+    option.addEventListener('click', event => {
+      event.preventDefault();
+      dropdown.open = false;
+      writeClosedItemSelection(slotId, itemId);
+    });
+    menu.append(option);
+  };
+
+  addOption(null, !currentId);
+  for (const option of options) {
+    addOption(option, currentId === String(option.id || '').trim().toUpperCase());
+  }
+
+  dropdown.append(trigger, menu);
+  const closedField = element('div', {
+    className: 'settings-field sb-closed-item-field sb-gear-dropdown-field',
+  });
+  closedField.append(element('span', {}, 'Which item'), dropdown);
+  if (!options.length) {
+    closedField.append(element(
+      'span',
+      { className: 'find-warn sb-picker-status' },
+      item?.displayName
+        ? 'This saved armor item is not in the loaded Farming armor list.'
+        : 'Loading the Farming armor list…',
+    ));
+  }
+  oldField.replaceWith(closedField);
+}
+
 function buildClosedItemPicker(editor, slotId, item) {
   if (!slotHasOfficialCategory(slotId)) return;
   if (slotId === 'petItem') {
     buildPetItemPicker(editor, item);
+    return;
+  }
+  if (ARMOR_SLOT_IDS.has(slotId)) {
+    buildArmorItemPicker(editor, slotId, item);
     return;
   }
 

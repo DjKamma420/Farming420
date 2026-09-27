@@ -39,11 +39,16 @@ test('pets use an illustrated closed dropdown plus closed rarity and level selec
   assert.match(css, /display:\s*none/);
 });
 
-test('armor and equipment use closed selects while Pet Items use an illustrated closed dropdown', () => {
+test('armor and Pet Items use illustrated closed dropdowns while equipment keeps a closed select', () => {
   const source = read('src/setup-selection-ui.js');
   const css = read('src/setup-selection-ui.css');
   assert.match(source, /buildClosedItemPicker/);
-  assert.match(source, /buildPetItemPicker/);
+  assert.match(source, /buildArmorItemPicker/);
+  assert.match(source, /armorItemArtNode/);
+  assert.match(source, /closedItemDropdown/);
+  assert.match(source, /armorItemOption/);
+  assert.match(source, /knownSkyblockRenderedIcon/);
+  assert.match(source, /armorVoxelHeadNode/);
   assert.match(source, /petItemDropdown/);
   assert.match(source, /petItemOption/);
   assert.match(source, /petItemArtNode/);
@@ -65,12 +70,13 @@ test('setup picker keeps fetched catalog data in memory when storage persistence
   assert.match(source, /mergeFarmingSetupCatalog\(pickerCatalogItems\)/);
 });
 
-test('closed armor picker refreshes when the item catalog arrives after the editor opened', () => {
+test('illustrated armor picker refreshes when the item catalog arrives after the editor opened', () => {
   const source = read('src/setup-selection-ui.js');
-  assert.match(source, /const existingSelect = editor\.querySelector/);
+  assert.match(source, /const existing = editor\.querySelector\('\[data-closed-item-dropdown=/);
   assert.match(source, /closedItemPickerSignature\(options, item\)/);
-  assert.match(source, /existingSelect\?\.dataset\.catalogSignature === signature/);
+  assert.match(source, /existing\?\.dataset\.catalogSignature === signature/);
   assert.match(source, /catalogSignature: signature/);
+  assert.match(source, /ARMOR_SLOT_IDS\.has\(slotId\)/);
   assert.doesNotMatch(source, /slotHasOfficialCategory\(slotId\) \|\| editor\.querySelector/);
 });
 
@@ -157,4 +163,23 @@ test('Pet Item picker refreshes only when its exact catalog signature changes', 
   assert.match(source, /skin \|\| ''/);
   assert.match(source, /material \|\| ''/);
   assert.match(source, /data-pet-item-dropdown/);
+});
+
+
+test('setup rerenders keep the selected armor slot at the same viewport position', () => {
+  const app = read('src/app.js');
+  assert.match(app, /function currentSetupSlotViewportAnchor/);
+  assert.match(app, /setupSlotAnchor: currentSetupSlotViewportAnchor\(\)/);
+  assert.match(app, /restoreSetupSlotViewportAnchor\(interaction\.setupSlotAnchor\)/);
+  assert.match(app, /queueMicrotask\(restoreAnchor\)/);
+  assert.match(app, /requestAnimationFrame\(restoreAnchor\)/);
+});
+
+
+test('setup editor controls use the physical slot card as the global scroll anchor', () => {
+  const app = read('src/app.js');
+  assert.match(app, /if \(state\.page === 'setups'\)/);
+  assert.match(app, /target\.closest\('\[data-item-editor\]'\)/);
+  assert.match(app, /candidate\.dataset\.slot === slotId/);
+  assert.match(app, /if \(card\) return card/);
 });

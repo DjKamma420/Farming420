@@ -174,7 +174,22 @@ const KNOWN_HEAD_ID_ALIASES = Object.freeze({
   PESTHUNTER_GLOVES: 'PESTHUNTERS_GLOVES',
   ZORRO_CAPE: 'ZORROS_CAPE',
   PUFFERFISH_HELMET: 'PUFFERFISH_HAT',
+  PUFFERFISH_HAT_CELEBRATION: 'PUFFERFISH_HAT',
 });
+
+const FARMING_ARMOR_RENDERED_PREFIX_ALIASES = Object.freeze([
+  ['FARMHAND_', 'FARM_SUIT_'],
+  ['HAYMAKER_', 'FARM_ARMOR_'],
+  ['SPROUT_', 'PUMPKIN_'],
+  ['TATER_', 'MELON_'],
+]);
+
+function renderedArmorItemId(id) {
+  for (const [currentPrefix, assetPrefix] of FARMING_ARMOR_RENDERED_PREFIX_ALIASES) {
+    if (id.startsWith(currentPrefix)) return assetPrefix + id.slice(currentPrefix.length);
+  }
+  return id;
+}
 
 export function knownSkyblockHeadTexture(skyblockId) {
   const raw = String(skyblockId || '').trim().toUpperCase();
@@ -190,7 +205,8 @@ export function knownSkyblockHeadTexture(skyblockId) {
 export function knownSkyblockRenderedIcon(skyblockId) {
   const raw = String(skyblockId || '').trim().toUpperCase();
   if (!raw) return null;
-  const id = KNOWN_HEAD_ID_ALIASES[raw] || raw;
+  const aliased = KNOWN_HEAD_ID_ALIASES[raw] || raw;
+  const id = renderedArmorItemId(aliased);
   const explicit = KNOWN_FARMING_EQUIPMENT_RENDERED_ICONS[id] || null;
   if (explicit) {
     return /^https:\/\/skyah\.net\/icons\/items\/[a-z0-9_]+\.webp$/.test(explicit) ? explicit : null;

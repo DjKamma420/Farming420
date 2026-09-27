@@ -181,3 +181,58 @@
   font-size: 11px;
   line-height: 1.4;
 }
+
+
+/* Armor uses the same closed dropdown pattern as Pets, but every choice carries
+   the real item portrait. No generated armor silhouettes are used here. */
+.sb-gear-dropdown-field { position: relative; }
+.sb-gear-dropdown-menu { max-height: 390px; }
+.sb-gear-art {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  overflow: visible;
+  flex: 0 0 44px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--panel2);
+  image-rendering: pixelated;
+}
+.sb-gear-art-fallback {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .03em;
+}
+.sb-gear-art.has-gear-art > .sb-gear-art-fallback { visibility: hidden; }
+.sb-gear-item-icon {
+  position: absolute;
+  inset: 3px;
+  width: calc(100% - 6px);
+  height: calc(100% - 6px);
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 4px 7px rgba(0,0,0,.3));
+}
+.sb-gear-art > .setup-voxel-head-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  perspective: 150px;
+  pointer-events: none;
+}
+.sb-gear-art .setup-voxel-head-cube {
+  width: 27px;
+  height: 27px;
+}
+.sb-gear-art .setup-voxel-front { transform: translateZ(13.5px); }
+.sb-gear-art .setup-voxel-right { transform: rotateY(90deg) translateZ(13.5px); }
+.sb-gear-art .setup-voxel-top { transform: rotateX(90deg) translateZ(13.5px); }
+.sb-gear-dropdown-option {
+  grid-template-columns: 44px minmax(0, 1fr) 18px;
+}

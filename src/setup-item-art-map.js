@@ -38,37 +38,6 @@ export const EXACT_SETUP_ITEM_ART = Object.freeze({
     kind: 'voxel-head',
     textureId: '46e48a6eff318dcda57d5d76a9b2656be25973e3d472b6d2e446a8e60f60a78a',
   }),
-  HELIANTHUS_CHESTPLATE: Object.freeze({
-    kind: 'armor',
-    item: Object.freeze({
-      id: 'HELIANTHUS_CHESTPLATE',
-      name: 'Helianthus Chestplate',
-      category: 'CHESTPLATE',
-      material: 'IRON_CHESTPLATE',
-      color: null,
-    }),
-  }),
-  HELIANTHUS_LEGGINGS: Object.freeze({
-    kind: 'armor',
-    item: Object.freeze({
-      id: 'HELIANTHUS_LEGGINGS',
-      name: 'Helianthus Leggings',
-      category: 'LEGGINGS',
-      material: 'LEATHER_LEGGINGS',
-      // NEU dyed_color 16770305 = RGB 255,229,1.
-      color: '255,229,1',
-    }),
-  }),
-  HELIANTHUS_BOOTS: Object.freeze({
-    kind: 'armor',
-    item: Object.freeze({
-      id: 'HELIANTHUS_BOOTS',
-      name: 'Helianthus Boots',
-      category: 'BOOTS',
-      material: 'IRON_BOOTS',
-      color: null,
-    }),
-  }),
 });
 
 export function exactSetupItemArt(skyblockId) {

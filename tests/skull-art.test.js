@@ -117,8 +117,12 @@ test('Pesthunter necklace has an exact rendered item icon fallback', () => {
 test('farming armor uses the same exact rendered-icon path as equipment', () => {
   const cases = {
     FARM_SUIT_LEGGINGS: 'https://skyah.net/icons/items/farm_suit_leggings.webp',
+    FARMHAND_LEGGINGS: 'https://skyah.net/icons/items/farm_suit_leggings.webp',
     FARM_ARMOR_CHESTPLATE: 'https://skyah.net/icons/items/farm_armor_chestplate.webp',
+    HAYMAKER_CHESTPLATE: 'https://skyah.net/icons/items/farm_armor_chestplate.webp',
+    SPROUT_HELMET: 'https://skyah.net/icons/items/pumpkin_helmet.webp',
     MELON_BOOTS: 'https://skyah.net/icons/items/melon_boots.webp',
+    TATER_BOOTS: 'https://skyah.net/icons/items/melon_boots.webp',
     CROPIE_HELMET: 'https://skyah.net/icons/items/cropie_helmet.webp',
     SQUASH_LEGGINGS: 'https://skyah.net/icons/items/squash_leggings.webp',
     FERMENTO_HELMET: 'https://skyah.net/icons/items/fermento_helmet.webp',
@@ -136,6 +140,11 @@ test('farming armor uses the same exact rendered-icon path as equipment', () => 
     knownSkyblockRenderedIcon('PUFFERFISH_HELMET'),
     'https://skyah.net/icons/items/pufferfish_hat.webp',
     'legacy pufferfish id uses the current item id',
+  );
+  assert.equal(
+    knownSkyblockRenderedIcon('PUFFERFISH_HAT_CELEBRATION'),
+    'https://skyah.net/icons/items/pufferfish_hat.webp',
+    'the Thorns V celebration variant uses the same physical hat portrait',
   );
   assert.equal(knownSkyblockRenderedIcon('PUMPKIN_DICER'), null, 'only armor slot suffixes are accepted');
   assert.equal(knownSkyblockRenderedIcon('FERMENTO_ARTIFACT'), null, 'accessories stay on their own head-model path');
