@@ -62,16 +62,20 @@ test('earned progress becomes a grind action and keeps active time separate from
   assert.equal(action.activeTimeSeconds, 9_000);
 });
 
-test('tool tier crafts and explicit unlock gates are not mislabeled as purchases', () => {
+test('crafts, unlock gates and installed upgrades get distinct action types', () => {
   const craft = recommendationActionFromRow(row({
     item: { ...row().item, id: 'tool-mk-ii', name: 'Tool Mk. II', category: 'Tool Tier' },
   }));
   const unlock = recommendationActionFromRow(row({
     item: { ...row().item, id: 'tool-overclocker-3000', name: 'Tool level gate', category: 'Tool Level Gate' },
   }));
+  const reforge = recommendationActionFromRow(row({
+    item: { ...row().item, id: 'tool-reforge', name: 'Tool Reforge', category: 'Tool Reforge' },
+  }));
 
   assert.equal(craft.type, RECOMMENDATION_ACTION_TYPE.CRAFT);
   assert.equal(unlock.type, RECOMMENDATION_ACTION_TYPE.UNLOCK);
+  assert.equal(reforge.type, RECOMMENDATION_ACTION_TYPE.UPGRADE);
 });
 
 test('unknown economics stay unknown instead of becoming zero', () => {
@@ -100,4 +104,12 @@ test('batch generation returns action records rather than raw upgrade rows', () 
   assert.match(actions[0].id, /^action:/);
   assert.equal(actions[1].type, RECOMMENDATION_ACTION_TYPE.GRIND);
   assert.equal(actions[0].evaluation.item.id, 'tool-example');
+});
+
+
+test('action ids describe the target and do not depend on list position', () => {
+  const first = recommendationActionFromRow(row());
+  const second = recommendationActionFromRow(row());
+  assert.equal(first.id, second.id);
+  assert.equal(first.id, 'action:tool-example:farm:default:level-2');
 });
