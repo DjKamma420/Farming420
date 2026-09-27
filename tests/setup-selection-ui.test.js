@@ -14,15 +14,21 @@ test('setup editor docks directly after the selected slot and spans the grid row
   assert.match(css, /\.slot-grid > \.sb-docked-setup-editor\s*\{[^}]*grid-column:\s*1 \/ -1/s);
 });
 
-test('pets use closed pet, rarity and level selects instead of a typed pet name', () => {
+test('pets use an illustrated closed dropdown plus closed rarity and level selects', () => {
   const source = read('src/setup-selection-ui.js');
   const css = read('src/setup-selection-ui.css');
-  assert.match(source, /farmingPetSelect/);
+  assert.match(source, /farmingPetDropdown/);
+  assert.match(source, /farmingPetOption/);
+  assert.match(source, /petIconUrl/);
   assert.match(source, /farmingPetRarity/);
   assert.match(source, /farmingPetLevel/);
   assert.match(source, /buildLevelSelect/);
   assert.match(source, /FARMING_PETS/);
+  assert.doesNotMatch(source, /dataset:\s*\{\s*farmingPetSelect/);
   assert.doesNotMatch(source, /farmingPetLevel[^\n]*type:\s*'number'/);
+  assert.match(css, /\.sb-pet-dropdown-menu/);
+  assert.match(css, /\.sb-pet-art img/);
+  assert.match(css, /image-rendering:\s*pixelated/);
   assert.match(css, /\.sb-pet-editor > \.item-editor-grid:not\(\.sb-pet-picker\)/);
   assert.match(css, /display:\s*none/);
 });
