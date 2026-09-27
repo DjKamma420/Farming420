@@ -78,6 +78,34 @@ test('non-positive gain has no fabricated payback', () => {
   }), null);
 });
 
+test('economic helpers preserve absent values instead of treating them as zero', () => {
+  assert.equal(buyableNetCost({ purchasePriceCoins: null }), null);
+  assert.equal(buyableNetCost({ purchasePriceCoins: '', applicationFeesCoins: 1 }), null);
+  assert.equal(earnedNetCost({ activeGrindHours: null }), null);
+  assert.equal(recurringGainCoinsPerHour({
+    beforeNetCoinsPerHour: null,
+    afterNetCoinsPerHour: 21_000_000,
+  }), null);
+  assert.equal(paybackHoursFromCost({
+    acquisitionCostCoins: null,
+    recurringGainCoinsPerHour: 500_000,
+  }), null);
+  assert.equal(gainPerMillionCost({
+    acquisitionCostCoins: 10_000_000,
+    recurringGainCoinsPerHour: '',
+  }), null);
+
+  const unknown = evaluateBuyableUpgrade({
+    beforeNetCoinsPerHour: 20_000_000,
+    afterNetCoinsPerHour: 21_000_000,
+    purchasePriceCoins: null,
+  });
+  assert.equal(unknown.acquisitionCostCoins, null);
+  assert.equal(unknown.paybackHours, null);
+
+  assert.equal(buyableNetCost({ purchasePriceCoins: 0 }), 0);
+});
+
 test('capital-releasing positive upgrade has immediate economic payback', () => {
   assert.equal(paybackHoursFromCost({
     acquisitionCostCoins: -5_000_000,
