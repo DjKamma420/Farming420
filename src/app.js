@@ -1687,6 +1687,30 @@ function synergyShardLevelControl(id, current, label) {
   ).join('')}</span>`;
 }
 
+function synergyShardCard(entry, current, detail) {
+  const max = Number(entry.maxLevel || 10);
+  const status = current >= max ? 'maxed' : current > 0 ? 'owned' : 'missing';
+  return `<article class="item-card shard-card shard-synergy-card ${status}" data-direct-ready="1" data-synergy-shard-art="${esc(entry.physicalItemId)}">
+    <div class="card-layer"></div>
+    <div class="card-head">
+      <span class="card-portrait shard-portrait"></span>
+      <div>
+        <div class="eyebrow">Attribute Shard</div>
+        <div class="item-title">${esc(entry.name)}</div>
+      </div>
+      ${badge(current >= max ? 'max' : current > 0 ? 'owned' : 'missing', status)}
+    </div>
+    <div class="card-meta">
+      <span>Level ${current}/${max}</span>
+      <span>Indirect synergy</span>
+    </div>
+    <div class="progress"><i data-progress="${Math.min(100, (current / max) * 100)}"></i></div>
+    <div class="chips">${badge(entry.attribute, 'soft')}</div>
+    <p class="shard-synergy-detail">${esc(detail)}</p>
+    <span class="sb-card-controls">${synergyShardLevelControl(entry.id, current, entry.name)}</span>
+  </article>`;
+}
+
 function cowSynergyContext() {
   const stats = computeStatTotals(state, state.selectedCrop || 'melon');
   const cow = stats.derived?.mooshroomCow || null;
@@ -1744,10 +1768,8 @@ function shardSynergyPanel() {
           rarity: cow.rarity,
         })
       : null;
-    return `<div class="accessory-upgrade-row shard-synergy-row">
-      <span><strong>${esc(shard.name)} · ${esc(shard.attribute)}</strong><small>+1 Strength per level; Echo of Elemental currently makes the next level +${formatNumber(nextStrength || (1 + elemental.boostPercent / 100))} Strength. ${current < shard.maxLevel ? cowDeltaText(cowDelta) : 'Max level.'}</small></span>
-      ${synergyShardLevelControl(shard.id, current, shard.name)}
-    </div>`;
+    const detail = `+1 Strength per level; Echo of Elemental currently makes the next level +${formatNumber(nextStrength || (1 + elemental.boostPercent / 100))} Strength. ${current < shard.maxLevel ? cowDeltaText(cowDelta) : 'Max level.'}`;
+    return synergyShardCard(shard, current, detail);
   }).join('');
 
   const starbornCurrent = synergyShardLevel(FARMING_SHARD_SYNERGIES.echoOfElemental.id);
@@ -1787,18 +1809,19 @@ function shardSynergyPanel() {
         ? `Current Filter Upgrade: +${formatNumber(filterEffects.boostPercent)}%. Spring ${formatNumber(filterEffects.springFarmingFortune)} FF · Summer ${formatNumber(filterEffects.summerFarmingWisdom)} Farming Wisdom · Autumn ${formatNumber(filterEffects.autumnPestSpawnChancePercent)}% extra Pest spawn chance · Winter ${formatNumber(filterEffects.winterVisitorCopperPercent)}% Visitor Copper. Autumn changes spawn chance after cooldown; it does not shorten the cooldown.`
         : FARMING_SHARD_SYNERGIES[key].farmingUse,
     })),
-  ].map(row => `<div class="accessory-upgrade-row shard-synergy-row">
-    <span><strong>${esc(row.entry.name)} · ${esc(row.entry.attribute)}</strong><small>${esc(row.detail)} Target: ${esc(row.entry.target)}.</small></span>
-    ${synergyShardLevelControl(row.entry.id, row.level, row.entry.name)}
-  </div>`).join('');
+  ].map(row => synergyShardCard(
+    row.entry,
+    row.level,
+    `${row.detail} Target: ${row.entry.target}.`,
+  )).join('');
 
   return `<section class="accessory-model-note shard-synergy-panel">
     <strong>Indirect shard synergies</strong>
     <span>These effects stay separate from flat Farming Fortune. ${cowReady
       ? `Current Strength: ${formatNumber(strength)} · next displayed Cow FF needs about ${formatNumber(nextThreshold)} more Strength.`
       : 'Set an active Legendary Mooshroom Cow and current Strength to calculate Cow breakpoints.'}</span>
-    <div class="accessory-upgrades">${elementalRows}${relationRows}</div>
-  </section>`;
+  </section>
+  <div class="card-grid shard-gallery shard-synergy-gallery">${elementalRows}${relationRows}</div>`;
 }
 
 function shardsPage() {
