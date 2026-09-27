@@ -77,3 +77,33 @@
     height: 46px;
   }
 }
+
+
+/* Setup portraits own their own 46px box. Keep both real item art and the
+   last-resort letter inside that box instead of using the legacy card-level
+   absolute positioning rules above. */
+.slot-portrait > .item-art-fallback,
+.slot-portrait > .official-item-art {
+  position: static;
+  left: auto;
+  top: auto;
+  transform: none;
+  width: 78%;
+  height: 78%;
+}
+
+.slot-portrait.has-item-art-fallback > .item-portrait-fallback,
+.slot-portrait.has-official-item-art > .item-portrait-fallback {
+  display: none;
+}
+
+.slot-portrait > .setup-armor-item-art {
+  display: grid;
+  place-items: center;
+}
+
+.slot-portrait > .setup-armor-item-art svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}

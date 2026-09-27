@@ -1,10 +1,14 @@
 import { STORAGE_KEY } from './config.js';
 import { itemAssetForSkyblockId, loadItemAssetManifest } from './item-assets.js';
+import { armorItemSvgMarkup } from './armor-item-art.js';
+import { loadItemCatalog, readCachedCatalog } from './item-catalog.js';
 import { effectiveSetup } from './setups.js';
 import { knownSkyblockHeadTexture, knownSkyblockRenderedIcon, skullTextureUrl } from './skull-art.js?v=20260918-4';
 
 let manifest = null;
 let manifestRequested = false;
+let itemCatalog = readCachedCatalog()?.items || [];
+let catalogRequested = itemCatalog.length > 0;
 let applying = false;
 let applyQueued = false;
 
@@ -139,6 +143,42 @@ function imageNode(asset, item, onError = null) {
   return img;
 }
 
+export function catalogItemForSetupArt(catalogValue, skyblockId) {
+  const id = String(skyblockId || '').trim().toUpperCase();
+  if (!id || !Array.isArray(catalogValue)) return null;
+  return catalogValue.find(item => String(item?.id || '').trim().toUpperCase() === id) || null;
+}
+
+function catalogFallbackNode(itemId, item, onError = null) {
+  const record = catalogItemForSetupArt(itemCatalog, itemId);
+  if (!record) return null;
+
+  const catalogTexture = String(record.skin || '').trim().toLowerCase();
+  if (/^[0-9a-f]{32,128}$/.test(catalogTexture)) {
+    return skullNode(catalogTexture, item, onError);
+  }
+
+  const markup = armorItemSvgMarkup(record);
+  if (!markup) return null;
+  const node = document.createElement('span');
+  node.className = 'official-item-art setup-armor-item-art';
+  node.setAttribute('role', 'img');
+  node.setAttribute('aria-label', `${item?.displayName || record.name || itemId} item model`);
+  node.innerHTML = markup;
+  return node;
+}
+
+function showCatalogOrLetterFallback(container, item, itemId, slotId, identity) {
+  const node = catalogFallbackNode(itemId, item, () => showFallback(container, item?.displayName || slotId, identity));
+  if (!node) return showFallback(container, item?.displayName || slotId, identity);
+
+  removeRenderedArt(container);
+  container.prepend(node);
+  container.classList.add('has-official-item-art');
+  container.dataset.renderedItemArt = `catalog:${itemId}`;
+  return node;
+}
+
 export function renderSetupItemArt({ root = document, rawState = readState(), manifestValue = manifest } = {}) {
   if (!root?.querySelectorAll || !rawState) return 0;
   let rendered = 0;
@@ -173,18 +213,24 @@ export function renderSetupItemArt({ root = document, rawState = readState(), ma
     if (!slotId) return;
 
     const setupId = slotCard?.dataset.setupTarget || null;
-    const item = itemForSetupSlot(rawState, slotId, setupId);
-    const itemId = String(item?.skyblockId || '').trim().toUpperCase();
-    if (!item) {
+    const storedItem = itemForSetupSlot(rawState, slotId, setupId);
+    const storedItemId = String(storedItem?.skyblockId || '').trim().toUpperCase();
+    const domItemId = String(card.dataset.skyblockItemId || slotCard?.dataset.skyblockItemId || '').trim().toUpperCase();
+    const itemId = domItemId || storedItemId;
+    const item = storedItem || (itemId ? {
+      skyblockId: itemId,
+      displayName: slotCard?.querySelector('.slot-text strong')?.textContent?.trim() || itemId,
+    } : null);
+    if (!item || !itemId) {
       if (card.querySelector(':scope > .official-item-art, :scope > .skull-art, :scope > .item-art-fallback')) removeRenderedArt(card);
       delete card.dataset.skyblockItemId;
       return;
     }
 
-    if (itemId) card.dataset.skyblockItemId = itemId;
-    else delete card.dataset.skyblockItemId;
+    if (card.dataset.skyblockItemId !== itemId) card.dataset.skyblockItemId = itemId;
 
-    const textureId = item.skullTexture || knownSkyblockHeadTexture(itemId);
+    const exactStoredTexture = storedItemId === itemId ? storedItem?.skullTexture : null;
+    const textureId = exactStoredTexture || knownSkyblockHeadTexture(itemId);
     const renderedIconUrl = item.skullTexture ? null : knownSkyblockRenderedIcon(itemId);
     const identity = renderedIconUrl
       ? `rendered:${itemId}`
@@ -198,13 +244,13 @@ export function renderSetupItemArt({ root = document, rawState = readState(), ma
 
     if (renderedIconUrl) {
       const exact = remoteIconNode(renderedIconUrl, item, () => {
-        const skullFallback = skullNode(textureId, item, () => showFallback(card, item.displayName || slotId, identity));
+        const skullFallback = skullNode(textureId, item, () => showCatalogOrLetterFallback(card, item, itemId, slotId, identity));
         if (skullFallback) {
           card.prepend(skullFallback);
           card.classList.add('has-official-item-art');
           card.dataset.renderedItemArt = `skull:${textureId}`;
         } else {
-          showFallback(card, item.displayName || slotId, identity);
+          showCatalogOrLetterFallback(card, item, itemId, slotId, identity);
         }
       });
       if (exact) {
@@ -216,7 +262,7 @@ export function renderSetupItemArt({ root = document, rawState = readState(), ma
       }
     }
 
-    const skull = skullNode(textureId, item, () => showFallback(card, item.displayName || slotId, identity));
+    const skull = skullNode(textureId, item, () => showCatalogOrLetterFallback(card, item, itemId, slotId, identity));
     if (skull) {
       card.prepend(skull);
       card.classList.add('has-official-item-art');
@@ -225,14 +271,14 @@ export function renderSetupItemArt({ root = document, rawState = readState(), ma
       return;
     }
     if (asset) {
-      const img = imageNode(asset, item, () => showFallback(card, item.displayName || slotId, identity));
+      const img = imageNode(asset, item, () => showCatalogOrLetterFallback(card, item, itemId, slotId, identity));
       card.prepend(img);
       card.classList.add('has-official-item-art');
       card.dataset.renderedItemArt = identity;
       rendered += 1;
       return;
     }
-    showFallback(card, item.displayName || slotId, identity);
+    showCatalogOrLetterFallback(card, item, itemId, slotId, identity);
   });
   return rendered;
 }
@@ -244,12 +290,20 @@ async function ensureManifest() {
   return manifest;
 }
 
+async function ensureCatalog() {
+  if (catalogRequested) return itemCatalog;
+  catalogRequested = true;
+  const result = await loadItemCatalog();
+  itemCatalog = Array.isArray(result?.items) ? result.items : itemCatalog;
+  return itemCatalog;
+}
+
 async function apply() {
   if (applying) return;
   applying = true;
   try {
     renderSetupItemArt({ manifestValue: manifest });
-    const loaded = await ensureManifest();
+    const [loaded] = await Promise.all([ensureManifest(), ensureCatalog()]);
     renderSetupItemArt({ manifestValue: loaded });
   } finally {
     applying = false;

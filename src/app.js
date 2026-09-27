@@ -2011,8 +2011,8 @@ function visibleSetupLabel(setupId) {
 
 function slotItem(slotId, setupId = null) {
   const all = setups();
-  const target = setupById(all, setupId || all.activeId) || activeSetup(all);
-  return target.slots[slotId] || null;
+  const target = effectiveSetup(all, setupId || all.activeId) || activeSetup(all);
+  return target?.slots?.[slotId] || null;
 }
 
 function writeSlot(slotId, item, setupId = null) {
@@ -2031,9 +2031,11 @@ function slotCard(slot, setupId = null, roleLabel = null) {
   const targetId = setupId || setups().activeId;
   const item = slotItem(slot.id, targetId);
   const open = state.setupSlot === slot.id && state.setupSlotTarget === targetId;
+  const itemId = String(item?.skyblockId || '').trim().toUpperCase();
+  const itemIdAttr = itemId ? ` data-skyblock-item-id="${esc(itemId)}"` : '';
 
-  return `<button class="slot-card ${item ? 'filled' : ''} ${open ? 'open' : ''} ${esc(rarityClass(item?.rarity))}" data-slot="${esc(slot.id)}" data-setup-target="${esc(targetId)}">
-      <span class="slot-portrait"><span class="item-portrait-fallback" aria-hidden="true">${esc(slot.label.slice(0, 2).toUpperCase())}</span></span>
+  return `<button class="slot-card ${item ? 'filled' : ''} ${open ? 'open' : ''} ${esc(rarityClass(item?.rarity))}" data-slot="${esc(slot.id)}" data-setup-target="${esc(targetId)}"${itemIdAttr}>
+      <span class="slot-portrait"${itemIdAttr}><span class="item-portrait-fallback" aria-hidden="true">${esc(slot.label.slice(0, 2).toUpperCase())}</span></span>
       <span class="slot-text">
         <span class="eyebrow">${esc(roleLabel || slot.label)}</span>
         <strong>${esc(item?.displayName || 'Choose an item')}</strong>
