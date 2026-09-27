@@ -86,6 +86,24 @@ export function buildVersionDocument(buildId) {
   return `${JSON.stringify({ format: 1, build: assertBuildId(buildId) }, null, 2)}\n`;
 }
 
+export function listJavaScriptFiles(directoryUrl) {
+  const files = [];
+
+  function visit(currentUrl) {
+    for (const entry of readdirSync(currentUrl, { withFileTypes: true })) {
+      const entryUrl = new URL(entry.name + (entry.isDirectory() ? '/' : ''), currentUrl);
+      if (entry.isDirectory()) {
+        visit(entryUrl);
+      } else if (entry.isFile() && entry.name.endsWith('.js')) {
+        files.push(entryUrl);
+      }
+    }
+  }
+
+  visit(directoryUrl);
+  return files;
+}
+
 export function preparePagesDeploy(buildId = process.env.BUILD_ID || process.env.GITHUB_SHA) {
   const build = assertBuildId(buildId);
   const indexUrl = new URL('../index.html', import.meta.url);
@@ -94,8 +112,7 @@ export function preparePagesDeploy(buildId = process.env.BUILD_ID || process.env
   const source = readFileSync(indexUrl, 'utf8');
 
   writeFileSync(indexUrl, stampIndexHtml(source, build));
-  for (const name of readdirSync(srcUrl).filter(entry => entry.endsWith('.js'))) {
-    const moduleUrl = new URL(name, srcUrl);
+  for (const moduleUrl of listJavaScriptFiles(srcUrl)) {
     const moduleSource = readFileSync(moduleUrl, 'utf8');
     writeFileSync(moduleUrl, stampModuleImports(moduleSource, build));
   }
