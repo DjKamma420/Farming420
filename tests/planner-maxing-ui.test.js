@@ -16,6 +16,6 @@ test('planner maxing panel exposes freshness, section breakdown and concrete pri
 
 test('planner keeps unknown maxing prices explicit instead of presenting a false exact total', () => {
   assert.match(planner, /Price incomplete/);
-  assert.match(planner, /≥ \$\{compactCoins\(summary\.knownCostCoins\)\} Coins/);
+  assert.match(planner, /≥ \$\{formatApproxCoins\(summary\.knownCostCoins\)\}/);
   assert.match(planner, /Unknown market routes stay visibly incomplete instead of being treated as free/);
 });
