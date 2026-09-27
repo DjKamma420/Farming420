@@ -39,15 +39,23 @@ test('pets use an illustrated closed dropdown plus closed rarity and level selec
   assert.match(css, /display:\s*none/);
 });
 
-test('armor, equipment and pet items replace free-text item names with closed item selects', () => {
+test('armor and equipment use closed selects while Pet Items use an illustrated closed dropdown', () => {
   const source = read('src/setup-selection-ui.js');
+  const css = read('src/setup-selection-ui.css');
   assert.match(source, /buildClosedItemPicker/);
+  assert.match(source, /buildPetItemPicker/);
+  assert.match(source, /petItemDropdown/);
+  assert.match(source, /petItemOption/);
+  assert.match(source, /petItemArtNode/);
+  assert.match(source, /exactSetupItemArt\(record\.id\)/);
+  assert.match(source, /record\.skin/);
+  assert.match(source, /skyah\.net\/icons\/items/);
   assert.match(source, /let pickerCatalogItems = readCachedCatalog\(\)\?\.items \|\| \[\]/);
   assert.match(source, /itemsForSlot\(mergeFarmingSetupCatalog\(pickerCatalogItems\), slotId\)/);
-  assert.match(source, /dataSet|dataset/);
   assert.match(source, /closedItemSelect/);
   assert.match(source, /oldField\.replaceWith\(closedField\)/);
-  assert.match(source, /slotId === 'petItem'/);
+  assert.match(css, /\.sb-pet-item-icon/);
+  assert.match(css, /\.sb-pet-art\.has-pet-item-icon/);
 });
 
 test('setup picker keeps fetched catalog data in memory when storage persistence is unavailable', () => {
@@ -141,4 +149,12 @@ test('loadout capability edits preserve the exact item identity of inherited Kil
   assert.match(source, /effectiveSetup\(raw\?\.profile\?\.setups, targetId\)/);
   assert.match(source, /raw\?\.setupSlotTarget \|\| raw\?\.profile\?\.setups\?\.activeId/);
   assert.match(source, /writeLinkedSetupSlot\(raw\.profile\?\.setups, targetId, slotId, item\)/);
+});
+
+test('Pet Item picker refreshes only when its exact catalog signature changes', () => {
+  const source = read('src/setup-selection-ui.js');
+  assert.match(source, /existing\?\.dataset\.catalogSignature === signature/);
+  assert.match(source, /skin \|\| ''/);
+  assert.match(source, /material \|\| ''/);
+  assert.match(source, /data-pet-item-dropdown/);
 });
