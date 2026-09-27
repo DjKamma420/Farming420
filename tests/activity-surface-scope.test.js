@@ -7,8 +7,15 @@ const loadoutUi = readFileSync(new URL('../src/loadout-capabilities-ui.js', impo
 const activityCss = readFileSync(new URL('../src/activity-mode-ui.css', import.meta.url), 'utf8');
 const indexHtml = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 
-test('phase selector is limited to contexts where the selected loadout matters', () => {
-  assert.match(activityUi, /const MODE_SWITCH_PAGES = new Set\(\['dashboard', 'setups', 'focus', 'planner'\]\)/);
+test('phase selector is limited to calculation contexts and Loadouts gets physical set controls', () => {
+  assert.match(activityUi, /const MODE_SWITCH_PAGES = new Set\(\['dashboard', 'focus', 'planner'\]\)/);
+  assert.match(activityUi, /const PHYSICAL_SET_SWITCH_PAGE = 'setups'/);
+  assert.match(activityUi, /if \(page === PHYSICAL_SET_SWITCH_PAGE\) \{[\s\S]*injectPhysicalSetHeader\(raw, topbar, main, control\);[\s\S]*return;/);
+  assert.match(activityUi, /data-physical-set-count="2"/);
+  assert.match(activityUi, /data-physical-set-count="3"/);
+  assert.match(activityUi, /FF \(Farming Fortune\) Set/);
+  assert.match(activityUi, /BPC \(Bonus Pest Chance\) Set/);
+  assert.match(activityUi, /data-third-setup-name/);
   assert.match(activityUi, /if \(!MODE_SWITCH_PAGES\.has\(page\)\) \{[\s\S]*control\?\.remove\(\);[\s\S]*return;/);
   for (const sharedPage of ['tools', 'shards', 'account', 'crops', 'buffs', 'pests']) {
     assert.doesNotMatch(activityUi, new RegExp(`MODE_SWITCH_PAGES[^\\n]*['"]${sharedPage}['"]`));
