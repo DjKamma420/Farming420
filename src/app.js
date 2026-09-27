@@ -1162,6 +1162,12 @@ function dashboard() {
         <small>${sourceNote(stats, 'globalFortune')}</small>
       </article>
       <article class="stat-card">
+        <span>${esc(selectedCrop.name)} Crop Fortune</span>
+        <strong>${number(stats.cropFortune)}${marker(stats.incomplete.cropFortune.length)}</strong>
+        <small>Crop-specific Fortune from the selected tool and matching sources</small>
+        <small>${sourceNote(stats, 'cropFortune')}</small>
+      </article>
+      <article class="stat-card">
         <span>Pest Fortune</span>
         <strong>${number(stats.pestFortune)}${marker(stats.incomplete.pestFortune.length)}</strong>
         <small>Pest/Vacuum Fortune in the active context</small>
@@ -1178,6 +1184,12 @@ function dashboard() {
         <strong>${number(stats.bonusPestChance)}${marker(stats.incomplete.bonusPestChance.length)}</strong>
         <small>Calculated BPC for the active set</small>
         <small>${sourceNote(stats, 'bonusPestChance')}</small>
+      </article>
+      <article class="stat-card">
+        <span>Pest cooldown reduction</span>
+        <strong>${number(stats.pestCooldownReductionPct)}%${marker(stats.incomplete.pestCooldownReductionPct.length)}</strong>
+        <small>Calculated cooldown reduction for the active spawning set</small>
+        <small>${sourceNote(stats, 'pestCooldownReductionPct')}</small>
       </article>
     </div>
 
