@@ -287,8 +287,8 @@ function injectHeaderSwitch(raw) {
   }
 
   // The logical phase selector belongs only where Farming/Spawning/Killing
-  // changes calculations. The Loadouts page instead shows the real 2/3
-  // physical-set controls above.
+  // changes calculations. Loadouts instead shows physical set tabs plus the
+  // Add Set naming flow above.
   if (!MODE_SWITCH_PAGES.has(page)) {
     control?.remove();
     topbar.classList.add('activity-mode-topbar-shared');
