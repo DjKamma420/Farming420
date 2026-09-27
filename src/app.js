@@ -2316,6 +2316,12 @@ function setupsPage() {
   const sharedPet = farmingKillingPetShared(all);
   const physicalCount = physicalSetupCount(all);
   const visibleIds = visiblePhysicalSetupIds(all);
+  const objectivePanel = selectedId === THIRD_SETUP_ID
+    ? `<div class="setup-bar setup-objective-panel">
+        <div><div class="eyebrow">Custom physical set</div><strong>${esc(visibleSetupLabel(THIRD_SETUP_ID, all))}</strong>
+        <div class="hint">Set 3 has no automatic FF, BPC or Killing role. Configure it manually; objective recommendations stay attached to the two fixed-role sets.</div></div>
+      </div>`
+    : setupObjectivePanel();
 
   const gearGroups = ['Armor', 'Equipment'].map(group => `
     <div class="section-row"><div><h2>${group}</h2></div></div>
@@ -2340,7 +2346,7 @@ function setupsPage() {
       : petSetupSection('Pet', THIRD_SETUP_ID, `Used with ${visibleSetupLabel(THIRD_SETUP_ID, all)}.`);
 
   return `${pageHeader('Loadouts', 'Farming System · 2 or 3 physical sets', 'FF and BPC keep fixed roles and names. An optional third set is fully independent and can be named freely. Killing remains a pet-only overlay on the FF set.')}
-    ${setupObjectivePanel()}
+    ${objectivePanel}
     <div class="setup-bar">
       <label class="inline-input">Physical sets
         <select data-physical-set-count>
