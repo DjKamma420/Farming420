@@ -1,22 +1,7 @@
 import { STORAGE_KEY } from './config.js';
 
-export const DUPLICATE_PAGE_TARGETS = Object.freeze({
-  account: 'crops',
-  accessories: 'shards',
-  gear: 'setups',
-  pets: 'setups',
-  chips: 'shards',
-  pests: 'info',
-  guide: 'info',
-  setup: 'info',
-  research: 'info',
-  coming: 'info',
-});
-
-export function canonicalPage(page) {
-  return DUPLICATE_PAGE_TARGETS[page] || page;
-}
-
+import { DUPLICATE_PAGE_TARGETS, canonicalPage } from './navigation-routes.js';
+export { DUPLICATE_PAGE_TARGETS, canonicalPage } from './navigation-routes.js';
 export function canonicalizeStoredPage({ storage = globalThis.localStorage, key = STORAGE_KEY } = {}) {
   if (!storage?.getItem || !storage?.setItem) return false;
   let state;
