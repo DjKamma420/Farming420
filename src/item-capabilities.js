@@ -35,7 +35,7 @@ export const FARMING_REFORGES_BY_FAMILY = Object.freeze({
   none: Object.freeze([]),
 });
 
-/** Only Beady has a scored calculator entry; Buzzing is a real exclusive state with no FF contribution. */
+/** Beady uses its static scored entry; Buzzing's rarity-scaled Fortune is derived from the physical Vacuum state. */
 export const VACUUM_REFORGE_EFFECT_ENTRY_IDS = Object.freeze({
   beady: 'vacuum-reforge-beady-pest-only-farming-fortune',
   buzzing: null,
