@@ -97,7 +97,7 @@
     for (let i = 0; i < 40 && !doc.querySelector('.sidebar [data-page]'); i++) await wait(SETTLE_MS);
     doc.querySelector('.sidebar [data-page="shards"]')?.click();
 
-    for (let i = 0; i < 40 && !doc.querySelector('.card-portrait'); i++) await wait(SETTLE_MS);
+    for (let i = 0; i < 40 && !doc.querySelector('.accessory-catalog-card .card-portrait'); i++) await wait(SETTLE_MS);
     // Let every texture request settle -- success or failure -- before counting.
     await wait(SETTLE_MS * 20);
 
@@ -105,7 +105,7 @@
     // defect. `data-coverage-art` looked like the natural unit and is not: a
     // cold load places art through a path that never stamps, so counting stamps
     // reported zero containers on a page showing twenty-two icons.
-    const portraits = [...doc.querySelectorAll('.card-portrait')];
+    const portraits = [...doc.querySelectorAll('.accessory-catalog-card .card-portrait')];
     const empty = portraits.filter(node => !node.querySelector('.coverage-item-art, .official-item-art, .skull-art, .item-art-fallback'));
 
     out.textContent = empty.length
