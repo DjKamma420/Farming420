@@ -9,15 +9,15 @@ This backlog assumes the ten parallel workstreams started on 2026-09-27 are comp
 Do not create a second implementation for areas whose parallel work is still active. Completed entries remain here as the coordination record:
 
 1. [x] Farming / Spawning / Killing loadout model — completed and merged via PR #222
-2. Upgrade Planner and Cost Until Maxed
-3. Pricing, Bazaar/AH routing and 90-day averages
-4. Global search
-5. Farming-relevant Shards and Accessories
-6. Vacuum integration into the Tool system
-7. Auto-Fill and item capability logic
-8. Dashboard, Coins/hour and farming/pest events
-9. Info tab and early-/midgame explanations
-10. Repository-wide English/navigation/dead-code/UI consistency audit
+2. [x] Upgrade Planner and Cost Until Maxed
+3. [x] Pricing, Bazaar/AH routing and 90-day averages
+4. [x] Global search
+5. [x] Farming-relevant Shards and Accessories
+6. [x] Vacuum integration into the Tool system
+7. [x] Auto-Fill and item capability logic
+8. [x] Dashboard, Coins/hour and farming/pest events
+9. [x] Info tab and early-/midgame explanations
+10. [x] Repository-wide English/navigation/dead-code/UI consistency audit
 
 ---
 
@@ -25,15 +25,15 @@ Do not create a second implementation for areas whose parallel work is still act
 
 ## P0 — Merge and integration pass
 
-- [ ] **IN PROGRESS** — Merge/reconcile all ten parallel workstreams without keeping duplicate models, duplicate state fields or duplicate UI.
-- [ ] **IN PROGRESS** — Resolve cross-chat ownership conflicts centrally. In particular, Pricing, Planner, Loadouts, Auto-Fill, Vacuum, Dashboard and Search must consume the same canonical data/model layers. Canonical ownership is now guarded by `tests/canonical-model-ownership.test.js` (PR #238); final closure waits for the remaining parallel branches to land on the integrated `main`.
+- [x] Merge/reconcile all ten parallel workstreams without keeping duplicate models, duplicate state fields or duplicate UI. Completed on integrated `main` via PR #252.
+- [x] Resolve cross-chat ownership conflicts centrally. Pricing, Planner, Loadouts, Auto-Fill, Vacuum, Dashboard and Search now consume the reconciled canonical model layers on `main`; stale parallel PRs were closed after PR #252 merged.
 - [x] Verify state migrations for every schema change introduced by the parallel work.
 - [x] Verify service-worker/cache completeness after files are added, renamed or removed. CI now audits local runtime references automatically, and deployment build stamping covers nested JavaScript modules.
 - [ ] Run the complete regression gate on the integrated result:
-  - npm test
-  - npm run sweep
-  - npm run audit:overlay
-  - scripts/browser-startup-smoke.sh
+  - [x] npm test — passed in PR #252 and on merged `main`
+  - [ ] npm run sweep — not part of the current CI workflow
+  - [ ] npm run audit:overlay — not part of the current CI workflow
+  - [x] scripts/browser-startup-smoke.sh — passed in PR #252 and on merged `main`
 - [ ] Re-run representative browser flows on desktop and phone widths after all branches are combined.
 - [ ] Update architecture/docs only after the integrated import graph and final navigation are known.
 
