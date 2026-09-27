@@ -19,7 +19,7 @@ import { petLevelFromExperience } from './mooshroom-cow.js';
 import { clampPetLevel, petLevelBounds } from './setup-pet-catalog.js';
 import { snapshotSectionCanAutoFill } from './profile-trust.js';
 
-export const SETUPS_MODEL_VERSION = 5;
+export const SETUPS_MODEL_VERSION = 6;
 
 /** The slots a setup has, in the order the editor shows them. */
 export const SETUP_SLOTS = Object.freeze([
@@ -40,7 +40,9 @@ export const SLOT_IDS = Object.freeze(SETUP_SLOTS.map(slot => slot.id));
 export const FF_SETUP_ID = 'normal';
 export const BPC_SETUP_ID = 'pest';
 export const KILLING_SETUP_ID = 'pest-kill';
+export const THIRD_SETUP_ID = 'third-set';
 export const VISIBLE_SETUP_IDS = Object.freeze([FF_SETUP_ID, BPC_SETUP_ID]);
+export const DEFAULT_THIRD_SETUP_NAME = 'Set 3';
 export const FARMING_KILLING_SHARED_GEAR_SLOTS = Object.freeze([
   'helmet', 'chestplate', 'leggings', 'boots',
   'equipment1', 'equipment2', 'equipment3', 'equipment4',
@@ -56,8 +58,8 @@ const PET_SLOT_SET = new Set(PET_SETUP_SLOTS);
  * while killing switches to Vacuum/loot/Overbloom mechanics.
  */
 export const DEFAULT_SETUP_TEMPLATES = Object.freeze([
-  { id: FF_SETUP_ID, name: 'Farming' },
-  { id: BPC_SETUP_ID, name: 'Pest Spawning' },
+  { id: FF_SETUP_ID, name: 'FF (Farming Fortune) Set' },
+  { id: BPC_SETUP_ID, name: 'BPC (Bonus Pest Chance) Set' },
   { id: KILLING_SETUP_ID, name: 'Pest Killing' },
 ]);
 
@@ -95,6 +97,7 @@ export function createDefaultSetups() {
   return {
     modelVersion: SETUPS_MODEL_VERSION,
     activeId: FF_SETUP_ID,
+    physicalSetCount: 2,
     shareFarmingKillingPet: false,
     list: DEFAULT_SETUP_TEMPLATES.map(template => createSetup(template.id, template.name)),
   };
@@ -131,6 +134,7 @@ export function normalizeSetups(raw) {
   const result = {
     modelVersion: SETUPS_MODEL_VERSION,
     activeId: source.activeId,
+    physicalSetCount: Number(source.physicalSetCount) === 3 ? 3 : 2,
     shareFarmingKillingPet: source.shareFarmingKillingPet === true,
     list: normalized.length ? normalized : createDefaultSetups().list,
   };
@@ -347,13 +351,62 @@ export function prepareFfBpcSetups(raw) {
   const prepared = normalizeSetups(source);
 
   for (const template of DEFAULT_SETUP_TEMPLATES) {
-    if (!prepared.list.some(setup => setup.id === template.id)) {
-      prepared.list.push(createSetup(template.id, template.name));
-    }
+    const existing = prepared.list.find(setup => setup.id === template.id);
+    if (existing) existing.name = template.name;
+    else prepared.list.push(createSetup(template.id, template.name));
+  }
+
+  if (prepared.physicalSetCount === 3 && !prepared.list.some(setup => setup.id === THIRD_SETUP_ID)) {
+    prepared.list.push(createSetup(THIRD_SETUP_ID, DEFAULT_THIRD_SETUP_NAME));
+  }
+  if (prepared.physicalSetCount !== 3 && prepared.activeId === THIRD_SETUP_ID) {
+    prepared.activeId = FF_SETUP_ID;
   }
 
   synchronizeFarmingKillingLoadouts(prepared);
   return prepared;
+}
+
+export function physicalSetupCount(setups) {
+  return Number(setups?.physicalSetCount) === 3 ? 3 : 2;
+}
+
+export function visiblePhysicalSetupIds(setups) {
+  return physicalSetupCount(setups) === 3
+    ? [FF_SETUP_ID, BPC_SETUP_ID, THIRD_SETUP_ID]
+    : [...VISIBLE_SETUP_IDS];
+}
+
+function ensureThirdPhysicalSetup(setups) {
+  if (!setups || !Array.isArray(setups.list)) return null;
+  let third = setupById(setups, THIRD_SETUP_ID);
+  if (!third) {
+    third = createSetup(THIRD_SETUP_ID, DEFAULT_THIRD_SETUP_NAME);
+    setups.list.push(third);
+  }
+  return third;
+}
+
+export function setPhysicalSetupCount(setups, count) {
+  if (!setups || typeof setups !== 'object') return 2;
+  setups.physicalSetCount = Number(count) === 3 ? 3 : 2;
+  if (setups.physicalSetCount === 3) ensureThirdPhysicalSetup(setups);
+  if (setups.physicalSetCount === 2 && setups.activeId === THIRD_SETUP_ID) {
+    setups.activeId = FF_SETUP_ID;
+  }
+  return setups.physicalSetCount;
+}
+
+export function thirdSetupName(setups) {
+  const name = String(setupById(setups, THIRD_SETUP_ID)?.name || '').trim();
+  return name || DEFAULT_THIRD_SETUP_NAME;
+}
+
+export function setThirdSetupName(setups, name) {
+  const third = ensureThirdPhysicalSetup(setups);
+  if (!third) return DEFAULT_THIRD_SETUP_NAME;
+  third.name = String(name || '').trim() || DEFAULT_THIRD_SETUP_NAME;
+  return third.name;
 }
 
 export function farmingKillingPetShared(setups) {
