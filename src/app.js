@@ -76,6 +76,7 @@ import {
   activeSetup,
   applyCandidateSetupSafely,
   createEmptyItem,
+  effectiveSetup,
   farmingKillingPetShared,
   prefillSetupFromSnapshot,
   prepareFfBpcSetups,
@@ -2144,9 +2145,10 @@ function activeSetupObjective() {
   return setupObjectiveForActivity(mode);
 }
 
-function setupCandidateLabel(candidate) {
+function setupCandidateLabel(candidate, mode = activityModeForState(state)) {
   if (!candidate) return 'Unknown loadout';
   const pet = candidate.setup?.slots?.pet?.displayName || 'No pet';
+  if (mode === ACTIVITY_MODE.PEST_KILL) return `FF Set · ${pet}`;
   const armor = candidate.components?.armorSetId || 'no armor set';
   const equipment = candidate.components?.equipmentSetId || 'no equipment set';
   return `${armor} · ${equipment} · ${pet}`;
@@ -2175,7 +2177,13 @@ function setupObjectivePanel() {
   const objective = activeSetupObjective();
   const mode = activityModeForState(state);
   const runtimeContext = setupRuntimeContextForState(state);
-  const candidates = buildSetupCandidates(synced, { phase: mode });
+  const all = setups();
+  const candidates = buildSetupCandidates(synced, {
+    phase: mode,
+    lockedWearableSetup: mode === ACTIVITY_MODE.PEST_KILL
+      ? effectiveSetup(all, FF_SETUP_ID)
+      : null,
+  });
   const result = evaluateSetupObjective(state, candidates, { objective, ...runtimeContext });
   const candidateById = new Map(candidates.map(candidate => [candidate.id, candidate]));
   const frontierRows = result.rows.filter(row => row.frontier).slice(0, 4);
@@ -2209,7 +2217,7 @@ function setupObjectivePanel() {
   let detail = 'Unknown mechanics and missing runtime context stay unknown instead of becoming zero.';
   if (result.recommendation.status === 'clear') {
     const chosen = candidateById.get(result.recommendation.candidateId);
-    headline = setupCandidateLabel(chosen);
+    headline = setupCandidateLabel(chosen, mode);
     detail = `Clear match for ${result.label} across ${result.eligibleCount} complete owned combination${result.eligibleCount === 1 ? '' : 's'}.`;
   } else if (result.recommendation.status === 'tradeoff') {
     headline = `${result.frontierCount} non-dominated loadout options`;
@@ -2225,7 +2233,7 @@ function setupObjectivePanel() {
         const metrics = Object.entries(row.metrics)
           .map(([key, value]) => setupObjectiveMetricText(key, value))
           .join(' · ');
-        return `<div class="hint"><strong>${esc(setupCandidateLabel(candidate))}</strong><br>${esc(metrics)}
+        return `<div class="hint"><strong>${esc(setupCandidateLabel(candidate, mode))}</strong><br>${esc(metrics)}
           <button class="ghost small" type="button" data-setup-objective-apply="${esc(row.candidateId)}">Use this loadout</button>
         </div>`;
       }).join('')}</div>`
@@ -2246,7 +2254,7 @@ function setupObjectivePanel() {
 function setupGroupTitle(group) {
   if (group !== 'Armor') return group;
   const mode = activityModeForState(state);
-  return mode === ACTIVITY_MODE.PEST_SPAWN ? 'Armor · BPC set' : 'Armor · FF set';
+  return mode === ACTIVITY_MODE.PEST_SPAWN ? 'Armor · BPC Set' : 'Armor · FF Set';
 }
 
 function petSetupSection(title, setupId, note = '') {
@@ -2362,7 +2370,12 @@ function bindSetups() {
       const objective = activeSetupObjective();
       const mode = activityModeForState(state);
       const runtimeContext = setupRuntimeContextForState(state);
-      const candidates = buildSetupCandidates(synced, { phase: mode });
+      const candidates = buildSetupCandidates(synced, {
+        phase: mode,
+        lockedWearableSetup: mode === ACTIVITY_MODE.PEST_KILL
+          ? effectiveSetup(all, FF_SETUP_ID)
+          : null,
+      });
       const analysis = evaluateSetupObjective(state, candidates, { objective, ...runtimeContext });
       const candidateId = button.dataset.setupObjectiveApply;
       const row = analysis.rows.find(entry =>
