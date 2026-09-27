@@ -118,6 +118,9 @@
 
 .physical-set-switch .physical-set-tabs button {
   min-width: 0;
+  max-width: min(220px, 45vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
