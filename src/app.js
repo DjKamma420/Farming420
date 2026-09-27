@@ -2,7 +2,7 @@ import { CROPS, UPGRADES } from './data.js';
 import { FARMING_ACCESSORY_GROUPS, farmingAccessoryByItemId } from './farming-accessories.js';
 import { FARMING_PETS } from './setup-pet-catalog.js';
 import { searchEntries } from './global-search.js';
-import { canonicalPage } from './navigation-dedupe.js';
+import { canonicalPage } from './navigation-routes.js';
 import {
   accessoryCapabilityState,
   strengthEnrichmentCountFromSnapshot,
