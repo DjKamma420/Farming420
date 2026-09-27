@@ -20,11 +20,11 @@ export const FARMING_TOOL_ITEM_IDS = Object.freeze({
 // Peridot counts are verified offline fallbacks. The live UI prefers the exact
 // `gemstone_slots` array from Hypixel's item resource whenever it is available.
 export const GARDEN_VACUUM_ITEMS = Object.freeze([
-  Object.freeze({ id: 'SKYMART_VACUUM', name: 'SkyMart Vacuum', rarity: 'COMMON', peridotSlots: 0 }),
-  Object.freeze({ id: 'SKYMART_TURBO_VACUUM', name: 'SkyMart Turbo Vacuum', rarity: 'UNCOMMON', peridotSlots: 0 }),
-  Object.freeze({ id: 'SKYMART_HYPER_VACUUM', name: 'SkyMart Hyper Vacuum', rarity: 'RARE', peridotSlots: 0 }),
-  Object.freeze({ id: 'INFINI_VACUUM', name: 'InfiniVacuum™', rarity: 'EPIC', peridotSlots: 1 }),
-  Object.freeze({ id: 'INFINI_VACUUM_HOOVERIUS', name: 'InfiniVacuum™ Hooverius', rarity: 'LEGENDARY', peridotSlots: 2 }),
+  Object.freeze({ id: 'SKYMART_VACUUM', name: 'SkyMart Vacuum', tier: 1, rarity: 'COMMON', baseDamage: 100, baseFarmingFortune: 5, range: 5, peridotSlots: 0 }),
+  Object.freeze({ id: 'SKYMART_TURBO_VACUUM', name: 'SkyMart Turbo Vacuum', tier: 2, rarity: 'UNCOMMON', baseDamage: 150, baseFarmingFortune: 10, range: 7.5, peridotSlots: 0 }),
+  Object.freeze({ id: 'SKYMART_HYPER_VACUUM', name: 'SkyMart Hyper Vacuum', tier: 3, rarity: 'RARE', baseDamage: 200, baseFarmingFortune: 15, range: 10, peridotSlots: 0 }),
+  Object.freeze({ id: 'INFINI_VACUUM', name: 'InfiniVacuum™', tier: 4, rarity: 'EPIC', baseDamage: 300, baseFarmingFortune: 20, range: 12.5, peridotSlots: 1 }),
+  Object.freeze({ id: 'INFINI_VACUUM_HOOVERIUS', name: 'InfiniVacuum™ Hooverius', tier: 5, rarity: 'LEGENDARY', baseDamage: 400, baseFarmingFortune: 25, range: 15, peridotSlots: 2 }),
 ]);
 
 /**
