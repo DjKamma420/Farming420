@@ -2380,7 +2380,6 @@ function setupsPage() {
   const ffSelected = selectedId === FF_SETUP_ID;
   const bpcSelected = selectedId === BPC_SETUP_ID;
   const sharedPet = farmingKillingPetShared(all);
-  const physicalCount = physicalSetupCount(all);
   const visibleIds = visiblePhysicalSetupIds(all);
   const objectivePanel = selectedId === THIRD_SETUP_ID
     ? `<div class="setup-bar setup-objective-panel">
