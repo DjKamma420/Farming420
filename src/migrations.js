@@ -1,6 +1,7 @@
 import { CROPS, UPGRADES } from './data.js';
 import { createDefaultSetups, createSetup, normalizeSetups, prepareFfBpcSetups } from './setups.js';
 import { DATA_SCHEMA_VERSION } from './config.js';
+import { GARDEN_CHIPS } from './garden-chips.js';
 
 const PROGRESS_FIELDS = ['levels', 'owned', 'costs', 'manualGain'];
 const DEFAULT_CROP_ID = 'melon';
@@ -269,6 +270,38 @@ function migrateFfBpcLoadouts(state) {
   profile.setups = prepareFfBpcSetups(profile.setups);
 }
 
+
+/**
+ * Schema 9 -> 10
+ *
+ * Garden Chips have rarity-dependent level caps and effect scaling. Older
+ * builds only stored a generic level for the two chip rows they knew about,
+ * with no rarity. Preserve that level, but keep rarity unknown instead of
+ * inventing Rare/Epic/Legendary and silently applying the wrong effect.
+ */
+function migrateGardenChipProgress(state) {
+  const profile = ensureContainer(state, state, 'profile', 'profile', null);
+  const chips = ensureContainer(state, profile, 'gardenChips', 'profile.gardenChips', null);
+  const legacyLevels = isContainer(profile.levels) ? profile.levels : {};
+  const legacyOwned = isContainer(profile.owned) ? profile.owned : {};
+
+  for (const chip of GARDEN_CHIPS) {
+    if (isContainer(chips[chip.id])) continue;
+    const rawLevel = legacyLevels[chip.upgradeId];
+    const owned = Boolean(legacyOwned[chip.upgradeId]);
+    const numeric = Number(rawLevel);
+    const level = Number.isFinite(numeric) && numeric > 0
+      ? Math.max(0, Math.min(20, Math.floor(numeric)))
+      : owned ? 1 : 0;
+    if (level <= 0) continue;
+    chips[chip.id] = {
+      rarity: null,
+      level,
+      source: 'legacy',
+    };
+  }
+}
+
 const MIGRATIONS = [
   {
     to: 2,
@@ -309,6 +342,11 @@ const MIGRATIONS = [
     to: 9,
     description: 'Migrate persisted loadouts to the FF/BPC model with shared Farming/Killing gear.',
     run: migrateFfBpcLoadouts,
+  },
+  {
+    to: 10,
+    description: 'Add rarity-aware Garden Chip progress without inventing legacy rarity.',
+    run: migrateGardenChipProgress,
   },
 ];
 
