@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 const app = read('src/app.js');
 const planner = read('src/revenue-planner.js');
+const dashboardEconomics = read('src/dashboard-economics.js');
 const resolver = read('src/upgrade-cost-resolution.js');
 const index = read('index.html');
 
@@ -18,8 +19,11 @@ test('no visible UI accepts a manual coin price or Coins per hour value', () => 
 });
 
 test('legacy stored coin fields are ignored instead of deleted from backups', () => {
-  assert.match(app, /delete values\.coinsPerUnit/);
-  assert.match(app, /delete values\.feastMaterialCoins/);
+  assert.match(dashboardEconomics, /function sanitizedMeasurements/);
+  assert.match(dashboardEconomics, /breaksPerSecond: measured\.breaksPerSecond/);
+  assert.match(dashboardEconomics, /uptimePercent: measured\.uptimePercent/);
+  assert.doesNotMatch(dashboardEconomics, /coinsPerUnit: measured\.coinsPerUnit/);
+  assert.doesNotMatch(dashboardEconomics, /feastMaterialCoins: measured\.feastMaterialCoins/);
   assert.match(planner, /delete priced\.coinsPerUnit/);
   assert.match(planner, /delete priced\.feastMaterialCoins/);
   assert.doesNotMatch(resolver, /store\?\.costs/);
