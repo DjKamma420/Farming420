@@ -171,23 +171,14 @@ test('concurrent core renders share resource promises instead of dropping the ne
 });
 
 
-test('Helianthus setup art is assigned directly by exact SkyBlock item id', () => {
-  const helmet = exactSetupItemArt('HELIANTHUS_HELMET');
-  const chest = exactSetupItemArt('HELIANTHUS_CHESTPLATE');
-  const legs = exactSetupItemArt('HELIANTHUS_LEGGINGS');
-  const boots = exactSetupItemArt('HELIANTHUS_BOOTS');
-
-  assert.deepEqual(helmet, {
+test('Helianthus keeps only the exact 3D helmet override; body pieces use real rendered item icons', () => {
+  assert.deepEqual(exactSetupItemArt('HELIANTHUS_HELMET'), {
     kind: 'voxel-head',
     textureId: '46e48a6eff318dcda57d5d76a9b2656be25973e3d472b6d2e446a8e60f60a78a',
   });
-  assert.equal(chest?.kind, 'armor');
-  assert.equal(chest?.item?.material, 'IRON_CHESTPLATE');
-  assert.equal(legs?.kind, 'armor');
-  assert.equal(legs?.item?.material, 'LEATHER_LEGGINGS');
-  assert.equal(legs?.item?.color, '255,229,1');
-  assert.equal(boots?.kind, 'armor');
-  assert.equal(boots?.item?.material, 'IRON_BOOTS');
+  assert.equal(exactSetupItemArt('HELIANTHUS_CHESTPLATE'), null);
+  assert.equal(exactSetupItemArt('HELIANTHUS_LEGGINGS'), null);
+  assert.equal(exactSetupItemArt('HELIANTHUS_BOOTS'), null);
 });
 
 test('exact setup item-id art controls the intended portrait route before generic fallbacks', () => {
@@ -266,4 +257,20 @@ test('Poignant Lucky Clover has deterministic rendered Pet Item art', () => {
     kind: 'rendered',
     iconUrl: 'https://skyah.net/icons/items/poignant_lucky_clover.webp',
   });
+});
+
+
+test('setup armor art never falls back to generated SVG silhouettes', () => {
+  const source = readFileSync(new URL('../src/item-art-ui.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(source, /armorItemSvgMarkup/);
+  assert.match(source, /knownSkyblockRenderedIcon\(itemId\)/);
+  assert.match(source, /Do not invent a hand-drawn armor silhouette/);
+});
+
+test('any catalog-backed player-head helmet uses the 3D voxel renderer', () => {
+  const source = readFileSync(new URL('../src/item-art-ui.js', import.meta.url), 'utf8');
+  assert.match(source, /const helmetTextureId = slotId === 'helmet'/);
+  assert.match(source, /validCatalogTexture/);
+  assert.match(source, /if \(helmetTextureId && !mappedArt\)/);
+  assert.match(source, /voxelHeadNode\(helmetTextureId, item/);
 });
