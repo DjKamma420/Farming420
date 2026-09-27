@@ -92,6 +92,7 @@ test('the local setup fallback keeps farming armor and equipment selectable with
   const helmetIds = new Set(itemsForSlot(catalog, 'helmet').map(item => item.id));
   const bootsIds = new Set(itemsForSlot(catalog, 'boots').map(item => item.id));
   const cloakIds = new Set(itemsForSlot(catalog, 'equipment2').map(item => item.id));
+  const petItemIds = new Set(itemsForSlot(catalog, 'petItem').map(item => item.id));
 
   for (const id of ['FARM_SUIT_HELMET', 'CROPIE_HELMET', 'SQUASH_HELMET', 'FERMENTO_HELMET', 'HELIANTHUS_HELMET']) {
     assert.equal(helmetIds.has(id), true, `${id} should remain selectable offline`);
@@ -103,6 +104,9 @@ test('the local setup fallback keeps farming armor and equipment selectable with
   assert.equal(cloakIds.has('PESTHUNTERS_CLOAK'), true);
   assert.equal(cloakIds.has('PEST_VEST'), true);
   assert.equal(cloakIds.has('ZORROS_CAPE'), true);
+  for (const id of ['GREEN_BANDANA', 'POIGNANT_LUCKY_CLOVER', 'BROWN_BANDANA']) {
+    assert.equal(petItemIds.has(id), true, `${id} should remain selectable offline`);
+  }
 
   const helianthus = itemsForSlot(catalog, 'helmet').find(item => item.id === 'HELIANTHUS_HELMET');
   assert.equal(helianthus.name, 'Helianthus Helmet');
