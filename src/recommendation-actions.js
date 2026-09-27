@@ -104,6 +104,8 @@ export function recommendationActionFromRow(row) {
   const activeHours = finiteOrNull(row.activeGrindHours);
   const profitDelta = finiteOrNull(row.marginalCoinsHour);
   const status = String(row.item.status || 'VERIFY');
+  const sources = sourceList(row.item);
+  const hasEvidenceMetadata = sources.length > 0 && Boolean(row.item.lastVerified);
 
   return Object.freeze({
     id: actionIdFor(row),
@@ -134,8 +136,10 @@ export function recommendationActionFromRow(row) {
     profitDeltaPerHour: profitDelta,
     unlocks: null,
     unlocksModeled: false,
-    confidence: status === 'ACTIVE' ? 'verified-mechanic' : 'needs-verification',
-    sources: sourceList(row.item),
+    confidence: status === 'ACTIVE'
+      ? (hasEvidenceMetadata ? 'sourced-active' : 'incomplete-evidence')
+      : 'needs-verification',
+    sources,
     lastVerified: row.item.lastVerified || null,
     sourceUpgrade: row.item,
     evaluation: row,
