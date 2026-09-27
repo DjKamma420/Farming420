@@ -1,6 +1,11 @@
 import './runtime-data-patches.js';
 import './vacuum-data-patches.js';
 import { CROPS, UPGRADES } from './data.js';
+import {
+  gardenChipById,
+  gardenChipEffectAtLevel,
+  normalizeGardenChipProgress,
+} from './garden-chips.js';
 import { toolKeyForCropId } from './migrations.js';
 import { mooshroomCowContribution } from './mooshroom-cow.js';
 import { roseDragonContribution } from './rose-dragon.js';
@@ -108,6 +113,7 @@ function appliesToCrop(item, cropId) {
 }
 
 export function statAxisFor(item) {
+  if (Object.values(STAT_AXIS).includes(item?.statAxis)) return item.statAxis;
   const metric = String(item?.metric || '').toLowerCase();
   if (metric.includes('overbloom') || metric === 'rare crops') return STAT_AXIS.OVERBLOOM;
   if (metric.includes('pest spawn') || metric.includes('bonus pest chance')) return STAT_AXIS.BONUS_PEST_CHANCE;
@@ -139,6 +145,24 @@ function contributionFor(state, item, cropId, mode = null, activeContextScope = 
   // account-global toggles.
   if (SETUP_LOCAL_PET_ITEM_ENTRY_IDS.has(item.id)) return null;
   if (SETUP_LOCAL_GEAR_ENTRY_IDS.has(item.id)) return null;
+
+  if (item.gardenChipId) {
+    const chip = gardenChipById(item.gardenChipId);
+    const legacyLevel = Number(profile.levels?.[item.id] || 0);
+    const progress = normalizeGardenChipProgress(profile.gardenChips?.[item.gardenChipId], legacyLevel);
+    if (progress.level <= 0) return null;
+    if (item.status !== 'ACTIVE') {
+      return { axis, value: 0, incomplete: true, id: item.id, reason: 'not verified' };
+    }
+    if (!progress.rarity) {
+      return { axis, value: 0, incomplete: true, id: item.id, reason: 'Garden Chip rarity is unknown' };
+    }
+    const value = gardenChipEffectAtLevel(chip, progress.rarity, progress.level);
+    if (!Number.isFinite(value)) {
+      return { axis, value: 0, incomplete: true, id: item.id, reason: 'Garden Chip effect is unavailable' };
+    }
+    return { axis, value, incomplete: false, id: item.id };
+  }
 
   const level = configuredLevel(profile, item, cropId);
   if (level <= 0) return null;
