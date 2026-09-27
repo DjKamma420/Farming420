@@ -26,7 +26,7 @@ Do not create a second implementation for areas whose parallel work is still act
 ## P0 — Merge and integration pass
 
 - [ ] **IN PROGRESS** — Merge/reconcile all ten parallel workstreams without keeping duplicate models, duplicate state fields or duplicate UI.
-- [ ] **IN PROGRESS** — Resolve cross-chat ownership conflicts centrally. In particular, Pricing, Planner, Loadouts, Auto-Fill, Vacuum, Dashboard and Search must consume the same canonical data/model layers.
+- [ ] **IN PROGRESS** — Resolve cross-chat ownership conflicts centrally. In particular, Pricing, Planner, Loadouts, Auto-Fill, Vacuum, Dashboard and Search must consume the same canonical data/model layers. Canonical ownership is now guarded by `tests/canonical-model-ownership.test.js` (PR #238); final closure waits for the remaining parallel branches to land on the integrated `main`.
 - [x] Verify state migrations for every schema change introduced by the parallel work.
 - [x] Verify service-worker/cache completeness after files are added, renamed or removed. CI now audits local runtime references automatically, and deployment build stamping covers nested JavaScript modules.
 - [ ] Run the complete regression gate on the integrated result:
