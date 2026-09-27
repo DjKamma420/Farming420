@@ -25,7 +25,7 @@ test('top-level navigation matches the canonical Farming420 structure', () => {
     ['crops', 'Garden'],
     ['buffs', 'Effects'],
     ['tools', 'Tools'],
-    ['shards', 'Shards / Accessories'],
+    ['shards', 'Accessories / Chips / Shards'],
     ['planner', 'Upgrades'],
     ['qol', 'QoL'],
     ['focus', 'Focus on Next'],
