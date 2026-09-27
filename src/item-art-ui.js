@@ -4,6 +4,7 @@ import { armorItemSvgMarkup } from './armor-item-art.js';
 import { loadItemCatalog, readCachedCatalog } from './item-catalog.js';
 import { effectiveSetup } from './setups.js';
 import { exactSetupItemArt } from './setup-item-art-map.js';
+import { petIconUrl } from './setup-pet-catalog.js';
 import { knownSkyblockHeadTexture, knownSkyblockRenderedIcon, skullTextureUrl } from './skull-art.js?v=20260918-4';
 
 let manifest = null;
@@ -270,7 +271,7 @@ export function renderSetupItemArt({ root = document, rawState = readState(), ma
     // icon URL. Only use SkyAH when no exact local/head mapping exists.
     const renderedIconUrl = exactStoredTexture || mappedArt
       ? null
-      : knownSkyblockRenderedIcon(itemId);
+      : (petIconUrl(itemId) || knownSkyblockRenderedIcon(itemId));
     const identity = mappedArt
       ? `mapped:${itemId}`
       : renderedIconUrl
