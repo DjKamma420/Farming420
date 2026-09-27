@@ -3,6 +3,7 @@ import { itemAssetForSkyblockId, loadItemAssetManifest } from './item-assets.js'
 import { armorItemSvgMarkup } from './armor-item-art.js';
 import { loadItemCatalog, readCachedCatalog } from './item-catalog.js';
 import { effectiveSetup } from './setups.js';
+import { petIconUrl } from './setup-pet-catalog.js';
 import { knownSkyblockHeadTexture, knownSkyblockRenderedIcon, skullTextureUrl } from './skull-art.js?v=20260918-4';
 
 let manifest = null;
@@ -241,7 +242,7 @@ export function renderSetupItemArt({ root = document, rawState = readState(), ma
 
     const exactStoredTexture = storedItemId === itemId ? storedItem?.skullTexture : null;
     const textureId = exactStoredTexture || knownSkyblockHeadTexture(itemId);
-    const renderedIconUrl = exactStoredTexture ? null : knownSkyblockRenderedIcon(itemId);
+    const renderedIconUrl = exactStoredTexture ? null : (petIconUrl(itemId) || knownSkyblockRenderedIcon(itemId));
     const identity = renderedIconUrl
       ? `rendered:${itemId}`
       : textureId
