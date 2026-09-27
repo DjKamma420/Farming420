@@ -3,6 +3,7 @@ import {
   createEmptyItem,
   ITEM_SOURCE,
   SLOT_IDS,
+  effectiveSetup,
   prepareFfBpcSetups,
   writeLinkedSetupSlot,
 } from './setups.js';
@@ -79,8 +80,8 @@ function currentSetupRecord(state) {
   const setups = prepareFfBpcSetups(state.profile.setups);
   state.profile.setups = setups;
   const targetId = state.setupSlotTarget || setups.activeId;
-  const setup = setups.list.find(row => row.id === targetId) || setups.list[0] || null;
-  return { setups, setup };
+  const setup = effectiveSetup(setups, targetId);
+  return { setups, setup, targetId };
 }
 
 function activeSetupFromStorage() {
@@ -92,11 +93,10 @@ function activeSetupFromStorage() {
 function replaceSlot(slotId, mutator) {
   const state = readState();
   if (!state) return false;
-  const { setups, setup } = currentSetupRecord(state);
-  if (!setup) return false;
-  setup.slots ||= {};
-  const nextItem = mutator(setup.slots[slotId] || null);
-  writeLinkedSetupSlot(setups, setup.id, slotId, nextItem);
+  const { setups, setup, targetId } = currentSetupRecord(state);
+  if (!setup || !targetId) return false;
+  const nextItem = mutator(setup.slots?.[slotId] || null);
+  writeLinkedSetupSlot(setups, targetId, slotId, nextItem);
   return writeState(state);
 }
 
@@ -374,12 +374,13 @@ function closeReforgePicker(editor, slotId, item) {
 }
 
 /** Move the existing bound editor; never clone it, so its event handlers survive. */
-export function dockSetupEditor(root = document) {
+export function dockSetupEditor(root = document, setupTargetId = null) {
   const editor = root.querySelector('[data-item-editor]');
   const slotId = editor?.dataset.itemEditor;
   if (!editor || !slotId) return false;
   const selected = [...root.querySelectorAll('.slot-card[data-slot]')]
-    .find(card => card.dataset.slot === slotId);
+    .find(card => card.dataset.slot === slotId
+      && (!setupTargetId || card.dataset.setupTarget === setupTargetId));
   const grid = selected?.closest('.slot-grid');
   if (!selected || !grid) return false;
   editor.classList.add('sb-docked-setup-editor');
@@ -400,11 +401,13 @@ export function applySetupSelectionUi(root = document) {
   const editor = app.querySelector('[data-item-editor]');
   if (!editor) return;
 
-  const setup = activeSetupFromStorage();
+  const state = readState();
+  if (!state) return;
+  const { setup, targetId } = currentSetupRecord(state);
   const slotId = editor.dataset.itemEditor;
   const item = setup?.slots?.[slotId] || null;
 
-  dockSetupEditor(app);
+  dockSetupEditor(app, targetId);
   if (slotId === 'pet') {
     buildPetPicker(editor, item);
   } else {

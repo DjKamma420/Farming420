@@ -2946,6 +2946,12 @@ function render({ preserveScroll = true } = {}) {
   document.getElementById('app').innerHTML = shell(content);
   bind();
   restoreActiveSearchFocus(searchFocusSnapshot);
+  // Announce the exact state that produced this DOM. The setup-art module
+  // listens for this explicit render hook, so it does not have to infer the
+  // phase from a later localStorage read or rely only on MutationObserver timing.
+  window.dispatchEvent(new CustomEvent('farming420:rendered', {
+    detail: { state },
+  }));
   if (state.page === 'setups') bindSetups();
   if (['setups', 'shards'].includes(state.page)) ensureItemCatalog();
   if (state.page === 'tools') bindToolPanel();

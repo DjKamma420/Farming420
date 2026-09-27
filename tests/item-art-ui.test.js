@@ -106,7 +106,7 @@ test('manual equipment ids use their exact head model before the letter fallback
 
 test('head art renders before the optional pack manifest finishes loading', () => {
   const source = readFileSync(new URL('../src/item-art-ui.js', import.meta.url), 'utf8');
-  const firstRender = source.indexOf('renderSetupItemArt({ manifestValue: manifest })');
+  const firstRender = source.indexOf('renderSetupItemArt({ root, rawState, manifestValue: manifest })');
   const manifestLoad = source.indexOf('const [loaded] = await Promise.all([ensureManifest(), ensureCatalog()])');
   assert.ok(firstRender >= 0 && manifestLoad > firstRender);
 });
@@ -127,4 +127,30 @@ test('pack fallback is replaced after the async manifest becomes available', () 
     source,
     /\(card\.classList\.contains\('has-official-item-art'\) \|\| card\.classList\.contains\('has-item-art-fallback'\)\)[\s\S]{0,120}renderedPackAsset/,
   );
+});
+
+
+test('core render explicitly announces the same in-memory state to setup art', () => {
+  const app = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(app, /import \{ applySetupItemArt \}/);
+  assert.match(app, /new CustomEvent\('farming420:rendered'/);
+  assert.match(app, /detail: \{ state \}/);
+  const source = readFileSync(new URL('../src/item-art-ui.js', import.meta.url), 'utf8');
+  assert.match(source, /addEventListener\('farming420:rendered'/);
+  assert.match(source, /rawState: event\.detail\?\.state \|\| readState\(\)/);
+});
+
+test('setup art exposes an explicit render hook instead of depending only on observers', () => {
+  const source = readFileSync(new URL('../src/item-art-ui.js', import.meta.url), 'utf8');
+  assert.match(source, /export async function applySetupItemArt/);
+  assert.match(source, /renderSetupItemArt\(\{ root, rawState, manifestValue: manifest \}\)/);
+});
+
+
+test('concurrent core renders share resource promises instead of dropping the newer portrait pass', () => {
+  const source = readFileSync(new URL('../src/item-art-ui.js', import.meta.url), 'utf8');
+  assert.match(source, /manifestPromise \|\|=/);
+  assert.match(source, /catalogPromise \|\|=/);
+  assert.doesNotMatch(source, /if \(applying/);
+  assert.match(source, /Every caller paints its own current DOM/);
 });

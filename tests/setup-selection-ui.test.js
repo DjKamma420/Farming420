@@ -72,16 +72,16 @@ test('production loads the safe setup selection module and stylesheet', () => {
 test('setup picker writes to the explicitly opened FF or Killing pet target', () => {
   const source = read('src/setup-selection-ui.js');
   assert.match(source, /state\.setupSlotTarget \|\| setups\.activeId/);
-  assert.match(source, /const \{ setups, setup \} = currentSetupRecord\(state\)/);
-  assert.match(source, /writeLinkedSetupSlot\(setups, setup\.id, slotId, nextItem\)/);
+  assert.match(source, /const \{ setups, setup, targetId \} = currentSetupRecord\(state\)/);
+  assert.match(source, /writeLinkedSetupSlot\(setups, targetId, slotId, nextItem\)/);
 });
 
 
 test('setup picker writes to the explicitly opened FF or Killing pet target', () => {
   const source = read('src/setup-selection-ui.js');
   assert.match(source, /state\.setupSlotTarget \|\| setups\.activeId/);
-  assert.match(source, /const \{ setups, setup \} = currentSetupRecord\(state\)/);
-  assert.match(source, /writeLinkedSetupSlot\(setups, setup\.id, slotId, nextItem\)/);
+  assert.match(source, /const \{ setups, setup, targetId \} = currentSetupRecord\(state\)/);
+  assert.match(source, /writeLinkedSetupSlot\(setups, targetId, slotId, nextItem\)/);
 });
 
 
@@ -96,4 +96,20 @@ test('Mooshroom Cow pet menu owns the manual Strength input and missing-value wa
   assert.match(source, /Shard planning never changes this value automatically/);
   assert.match(css, /\.sb-required-alert/);
   assert.match(css, /#ff5b68/);
+});
+
+
+test('setup picker reads effective Killing gear and docks the editor to the exact setup target', () => {
+  const source = read('src/setup-selection-ui.js');
+  assert.match(source, /effectiveSetup\(setups, targetId\)/);
+  assert.match(source, /writeLinkedSetupSlot\(setups, targetId, slotId, nextItem\)/);
+  assert.match(source, /dockSetupEditor\(app, targetId\)/);
+  assert.match(source, /card\.dataset\.setupTarget === setupTargetId/);
+});
+
+test('loadout capability edits preserve the exact item identity of inherited Killing gear', () => {
+  const source = read('src/loadout-capabilities-ui.js');
+  assert.match(source, /effectiveSetup\(raw\?\.profile\?\.setups, targetId\)/);
+  assert.match(source, /raw\?\.setupSlotTarget \|\| raw\?\.profile\?\.setups\?\.activeId/);
+  assert.match(source, /writeLinkedSetupSlot\(raw\.profile\?\.setups, targetId, slotId, item\)/);
 });

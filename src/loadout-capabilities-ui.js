@@ -9,7 +9,7 @@ import {
   selectedVacuumReforge,
 } from './item-capabilities.js';
 import { petLevelFromExperience } from './mooshroom-cow.js';
-import { writeLinkedSetupSlot } from './setups.js';
+import { effectiveSetup, writeLinkedSetupSlot } from './setups.js';
 import { formatNumber } from './format-number.js';
 import { isVacuumDirectUpgrade, vacuumPhysicalStats } from './vacuum-state.js';
 
@@ -31,19 +31,22 @@ function esc(value = '') {
   }[character]));
 }
 
+function setupTargetId(raw) {
+  return raw?.setupSlotTarget || raw?.profile?.setups?.activeId || null;
+}
+
 function activeSetup(raw) {
-  const setups = raw?.profile?.setups;
-  const list = Array.isArray(setups?.list) ? setups.list : [];
-  return list.find(entry => entry?.id === setups?.activeId) || list[0] || null;
+  const targetId = setupTargetId(raw);
+  return targetId ? effectiveSetup(raw?.profile?.setups, targetId) : null;
 }
 
 function patchSlot(slotId, changes) {
   const raw = load();
+  const targetId = setupTargetId(raw);
   const setup = activeSetup(raw);
-  if (!setup) return;
-  setup.slots ||= {};
-  const item = { ...(setup.slots[slotId] || {}), ...changes, source: 'manual' };
-  writeLinkedSetupSlot(raw.profile?.setups, setup.id, slotId, item);
+  if (!setup || !targetId) return;
+  const item = { ...(setup.slots?.[slotId] || {}), ...changes, source: 'manual' };
+  writeLinkedSetupSlot(raw.profile?.setups, targetId, slotId, item);
   save(raw);
   window.dispatchEvent(new Event('farming420:state-changed'));
 }
