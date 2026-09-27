@@ -104,7 +104,7 @@ test('search results are categorized and index existing Info mechanics data', ()
     'SPAWN_PIPELINE.forEach',
     'LOOT_PIPELINE.forEach',
     'Object.entries(PEST_STAT_SIDES)',
-    'for (const place of BEGINNER_PLACES)',
+    'for (const topic of allInfoEntries(CROPS))',
     'for (const stage of STAGES)',
     'for (const ladder of ENCHANT_LADDERS)',
   ]) assert.ok(app.includes(marker), marker);
