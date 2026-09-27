@@ -2439,22 +2439,71 @@ function interactionSelector(element) {
   return `${String(element.tagName || '').toLowerCase()}${attributes.map(attribute => `[${attribute.name}="${escape(attribute.value)}"]`).join('')}`;
 }
 
+function currentSetupSlotViewportAnchor() {
+  if (state.page !== 'setups' || !state.setupSlot) return null;
+  const card = [...document.querySelectorAll('.slot-card[data-slot]')].find(candidate =>
+    candidate.dataset.slot === state.setupSlot
+    && (!state.setupSlotTarget || candidate.dataset.setupTarget === state.setupSlotTarget));
+  if (!card) return null;
+  return {
+    slotId: card.dataset.slot,
+    setupTarget: card.dataset.setupTarget || '',
+    viewportTop: card.getBoundingClientRect().top,
+  };
+}
+
+function restoreSetupSlotViewportAnchor(anchor) {
+  if (!anchor || state.page !== 'setups') return false;
+  const card = [...document.querySelectorAll('.slot-card[data-slot]')].find(candidate =>
+    candidate.dataset.slot === anchor.slotId
+    && candidate.dataset.setupTarget === anchor.setupTarget);
+  if (!card) return false;
+
+  const delta = card.getBoundingClientRect().top - anchor.viewportTop;
+  if (Math.abs(delta) < 0.5) return true;
+
+  const main = document.querySelector('#app .main');
+  const overflowY = main ? getComputedStyle(main).overflowY : '';
+  const mainScrolls = Boolean(
+    main
+    && main.scrollHeight > main.clientHeight + 1
+    && /auto|scroll|overlay/.test(overflowY),
+  );
+  if (mainScrolls) main.scrollTop += delta;
+  else window.scrollBy(0, delta);
+  return true;
+}
+
 function captureInteraction() {
   return {
     x: Number(window.scrollX || 0),
     y: Number(window.scrollY || 0),
     selector: interactionSelector(document.activeElement),
+    setupSlotAnchor: currentSetupSlotViewportAnchor(),
   };
 }
 
 function restoreInteraction(interaction) {
   if (!interaction) return;
-  const restore = () => {
+  const restoreBase = () => {
     window.scrollTo(interaction.x, interaction.y);
     if (interaction.selector) document.querySelector(interaction.selector)?.focus({ preventScroll: true });
   };
-  restore();
-  if (typeof requestAnimationFrame === 'function') requestAnimationFrame(restore);
+  const restoreAnchor = () => restoreSetupSlotViewportAnchor(interaction.setupSlotAnchor);
+
+  restoreBase();
+  restoreAnchor();
+
+  // Setup-selection-ui docks/replaces controls in a microtask after the core
+  // render. Re-apply the stable slot-card anchor after those DOM changes and on
+  // two animation frames so choosing armor never moves the user's viewport.
+  queueMicrotask(restoreAnchor);
+  if (typeof requestAnimationFrame === 'function') {
+    requestAnimationFrame(() => {
+      restoreAnchor();
+      requestAnimationFrame(restoreAnchor);
+    });
+  }
 }
 
 function bindSetups() {
