@@ -149,6 +149,7 @@ export function plannerMaxSummary(state, {
   let remainingUnknownPriceSteps = 0;
   const sections = new Map();
   const unknownPriceTargets = [];
+  const shardTargets = [];
 
   for (const item of items.filter(farmingMaxItemEligible)) {
     for (const scope of targetScopes(state, item, crops)) {
@@ -196,6 +197,23 @@ export function plannerMaxSummary(state, {
         }));
       }
 
+      if (item.section === 'shards' || item.category === 'Attribute Shard') {
+        shardTargets.push(Object.freeze({
+          itemId: item.id,
+          itemName: item.name,
+          scopeLabel: scope.scopeLabel,
+          currentLevel,
+          maxLevel,
+          unitShardCoins: summary.unitShardCoins ?? null,
+          shardCountOwned: summary.shardCountOwned ?? null,
+          currentShardValueCoins: summary.currentShardValueCoins ?? null,
+          shardCountToMax: summary.shardCountToMax ?? null,
+          costToMaxCoins: summary.costToMaxCoins ?? null,
+          costToMaxComplete: summary.costToMaxComplete === true && fallback.unknown === 0,
+          costToMaxComputedAtMs: summary.costToMaxComputedAtMs ?? null,
+        }));
+      }
+
       sections.set(item.section, section);
     }
   }
@@ -223,5 +241,6 @@ export function plannerMaxSummary(state, {
     remainingUnknownPriceSteps,
     breakdown: Object.freeze(breakdown),
     unknownPriceTargets: Object.freeze(unknownPriceTargets),
+    shardTargets: Object.freeze(shardTargets),
   });
 }

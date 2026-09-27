@@ -213,3 +213,58 @@ test('unknown price targets keep crop scope so repeated crop progress is diagnos
   );
   assert.equal(summary.breakdown[0].remainingUnknownPriceSteps, 4);
 });
+
+
+test('shard maxing summary keeps unit value, owned shard value and remaining max cost together', () => {
+  const item = {
+    id: 'attribute-shard-cricket-pest-fortune',
+    name: 'Cricket Shard - Pest Fortune',
+    status: 'ACTIVE',
+    section: 'shards',
+    category: 'Attribute Shard',
+    max: 10,
+  };
+  const state = {
+    selectedCrop: 'melon',
+    profile: {
+      levels: { [item.id]: 7 },
+      owned: { [item.id]: true },
+    },
+  };
+
+  const summary = plannerMaxSummary(state, {
+    items: [item],
+    summarizePrice: () => ({
+      currentLevel: 7,
+      maxLevel: 10,
+      costToMaxCoins: 3_600_000,
+      costToMaxComputedAtMs: 4_000,
+      costToMaxComplete: true,
+      remainingEarnedSteps: 0,
+      remainingUnknownSteps: 0,
+      unitShardCoins: 100_000,
+      shardCountOwned: 28,
+      currentShardValueCoins: 2_800_000,
+      shardCountToMax: 36,
+    }),
+  });
+
+  assert.equal(summary.shardTargets.length, 1);
+  assert.deepEqual(
+    summary.shardTargets[0],
+    {
+      itemId: item.id,
+      itemName: item.name,
+      scopeLabel: null,
+      currentLevel: 7,
+      maxLevel: 10,
+      unitShardCoins: 100_000,
+      shardCountOwned: 28,
+      currentShardValueCoins: 2_800_000,
+      shardCountToMax: 36,
+      costToMaxCoins: 3_600_000,
+      costToMaxComplete: true,
+      costToMaxComputedAtMs: 4_000,
+    },
+  );
+});
