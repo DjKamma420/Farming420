@@ -51,12 +51,12 @@ function visibleMode(raw) {
 }
 
 function armorSetPurpose(mode) {
-  if (mode === ACTIVITY_MODE.PEST_SPAWN) return 'BPC set';
-  return 'FF set';
+  if (mode === ACTIVITY_MODE.PEST_SPAWN) return 'BPC Set';
+  return 'FF Set';
 }
 
 function armorSetSummary() {
-  return 'FF set + BPC set';
+  return 'FF Set + BPC Set';
 }
 
 function guidanceMarkup(raw) {
