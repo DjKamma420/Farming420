@@ -45,25 +45,15 @@ const GOALS = Object.freeze([
  */
 const NAV_ART = Object.freeze({
   dashboard: ['garden_scythe'],
-  account: ['super_jacob_system', 'visitors_gratitude'],
-  accessories: ['honeycomb_talisman'],
-  crops: ['basket_of_seeds', 'box_of_seeds'],
-  tools: ['theoretical_hoe_wheat_3', 'melon_dicer_3'],
   setups: ['fermento'],
-  gear: ['squash'],
-  pets: ['jolly_pink_rock'],
-  chips: ['cropshot_chip', 'hypercharge_chip'],
-  shards: ['earth_shard'],
+  crops: ['basket_of_seeds', 'box_of_seeds'],
   buffs: ['pest_repellent_max', 'pest_repellent'],
-  pests: ['pest_trap', 'sprayonator'],
-  qol: ['builders_ruler'],
-  info: ['plant_diagnostics_tool'],
-  focus: ['super_jacob_system'],
+  tools: ['theoretical_hoe_wheat_3', 'melon_dicer_3'],
+  shards: ['earth_shard'],
   planner: ['wishing_compass'],
-  guide: ['box_of_seeds'],
-  setup: ['builders_ruler'],
-  research: ['plant_diagnostics_tool'],
-  coming: ['greenhouse_blueprint'],
+  qol: ['builders_ruler'],
+  focus: ['super_jacob_system'],
+  info: ['plant_diagnostics_tool'],
 });
 
 /**

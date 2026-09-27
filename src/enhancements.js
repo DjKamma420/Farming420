@@ -3,16 +3,15 @@
  *
  * Pages left out of this table are not dropped -- they stay in the nav, ahead
  * of the groups, because `groupSidebar` appends groups after whatever it did
- * not move. The table stays in lockstep with the actual navigation, and
- * `tests/nav-groups.test.js` fails if a page is missing or a retired page is
- * left behind here.
+ * not move. The table stays in lockstep with the canonical navigation, and
+ * `tests/nav-groups.test.js` fails if a page is missing, duplicated or listed
+ * in a retired group.
  */
 const GROUPS = [
   ['Overview', ['dashboard']],
-  ['Profile', ['crops', 'tools', 'accessories', 'setups', 'gear', 'pets', 'buffs']],
-  ['Advanced', ['pests', 'chips', 'shards']],
-  ['Planning', ['focus', 'planner']],
-  ['Guides', ['info', 'qol']],
+  ['Farming', ['setups', 'crops', 'buffs', 'tools']],
+  ['Progression', ['shards', 'planner', 'qol', 'focus']],
+  ['Reference', ['info']],
   ['System', ['settings']],
 ];
 

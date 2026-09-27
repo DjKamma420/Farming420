@@ -20,12 +20,12 @@ test('Garden page combines account-wide Garden progression with crop-scoped prog
   assert.doesNotMatch(source, /layer-tabs/);
 });
 
-test('tool and setup are explicit navigation actions, not fake tabs', () => {
+test('Tools and Loadouts are explicit navigation actions, not fake tabs', () => {
   const source = cropPageSource();
   assert.match(source, /data-page="tools"/);
   assert.match(source, /data-page="setups"/);
   assert.match(source, /Tool reforges, enchantments and gemstones are edited under Tools/);
-  assert.match(source, /Armor, equipment and pets are edited in Setups/);
+  assert.match(source, /Armor, equipment and pets are edited in Loadouts \/ Farming System/);
 });
 
 test('crop workspace enhancer does not inject Tool or Items & Setup tabs', () => {

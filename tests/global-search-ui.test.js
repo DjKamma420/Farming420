@@ -74,3 +74,44 @@ test('global search supports full keyboard movement', () => {
   assert.match(app, /event\.key === 'Escape'/);
   assert.match(app, /aria-selected="false"/);
 });
+
+
+test('every repaint preserves active search focus and caret centrally', () => {
+  const app = read('src/app.js');
+  assert.match(app, /function activeSearchFocusSnapshot\(\)/);
+  assert.match(app, /function restoreActiveSearchFocus\(snapshot\)/);
+  assert.match(app, /const searchFocusSnapshot = preserveScroll \? activeSearchFocusSnapshot\(\) : null/);
+  assert.match(app, /document\.getElementById\('app'\)\.innerHTML = shell\(content\);[\s\S]*?restoreActiveSearchFocus\(searchFocusSnapshot\)/);
+  assert.match(app, /input\.setSelectionRange\(start, end, snapshot\.direction \|\| 'none'\)/);
+});
+
+test('keyboard result movement keeps typing focus in the search input', () => {
+  const app = read('src/app.js');
+  const focusFunction = app.match(/function focusSearchResult\(index\) \{[\s\S]*?return true;\n\}/)[0];
+  assert.match(focusFunction, /input\?\.focus\(\{ preventScroll: true \}\)/);
+  assert.doesNotMatch(focusFunction, /target\.focus\(/);
+});
+
+test('search results are categorized and index existing Info mechanics data', () => {
+  const app = read('src/app.js');
+  for (const marker of [
+    "return 'Settings'",
+    "return 'Info & mechanics'",
+    "return 'Upgrades'",
+    "return 'Navigation'",
+    "kind: 'Mechanic'",
+    'SPAWN_PIPELINE.forEach',
+    'LOOT_PIPELINE.forEach',
+    'Object.entries(PEST_STAT_SIDES)',
+    'for (const place of BEGINNER_PLACES)',
+    'for (const stage of STAGES)',
+    'for (const ladder of ENCHANT_LADDERS)',
+  ]) assert.ok(app.includes(marker), marker);
+  assert.match(app, /class="search-result-group-title"/);
+});
+
+test('armor catalog search exposes FF and BPC set context', () => {
+  const app = read('src/app.js');
+  assert.match(app, /FF set \/ BPC set/);
+  assert.match(app, /'ff set', 'bpc set', 'farming set', 'pest spawning set'/);
+});

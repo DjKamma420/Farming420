@@ -5,12 +5,13 @@ import { readFileSync } from 'node:fs';
 const app = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
 const enhancements = readFileSync(new URL('../src/enhancements.js', import.meta.url), 'utf8');
 const art = readFileSync(new URL('../src/skyblock-redesign.js', import.meta.url), 'utf8');
+const navigation = readFileSync(new URL('../src/navigation-dedupe.js', import.meta.url), 'utf8');
 
 test('Info replaces the standalone Guide navigation entry', () => {
   assert.match(app, /\['info', 'Info'\]/);
   assert.doesNotMatch(app, /\['guide', 'Guide 0-60'\]/);
-  assert.match(app, /loaded\.page === 'guide'\) loaded\.page = 'info'/);
-  assert.match(enhancements, /\['Guides', \['info', 'qol'\]\]/);
+  assert.match(navigation, /guide: 'info'/);
+  assert.match(enhancements, /\['Reference', \['info'\]\]/);
   assert.match(art, /info: \['plant_diagnostics_tool'\]/);
 });
 

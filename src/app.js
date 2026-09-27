@@ -2,6 +2,7 @@ import { CROPS, UPGRADES } from './data.js';
 import { FARMING_ACCESSORY_GROUPS, farmingAccessoryByItemId } from './farming-accessories.js';
 import { FARMING_PETS } from './setup-pet-catalog.js';
 import { searchEntries } from './global-search.js';
+import { canonicalPage } from './navigation-dedupe.js';
 import {
   accessoryCapabilityState,
   strengthEnrichmentCountFromSnapshot,
@@ -131,20 +132,15 @@ import { FRACTION_2, formatNumber } from './format-number.js';
 
 const NAV = [
   ['dashboard', 'Dashboard'],
-  ['accessories', 'Accessories'],
+  ['setups', 'Loadouts / Farming System'],
   ['crops', 'Garden'],
-  ['tools', 'Tools'],
-  ['setups', 'Setups'],
-  ['gear', 'Gear'],
-  ['pets', 'Pets'],
-  ['chips', 'Garden Chips'],
-  ['shards', 'Shards'],
   ['buffs', 'Effects'],
-  ['pests', 'Pests'],
+  ['tools', 'Tools'],
+  ['shards', 'Shards / Accessories'],
+  ['planner', 'Upgrades'],
   ['qol', 'QoL'],
+  ['focus', 'Focus on Next'],
   ['info', 'Info'],
-  ['focus', 'Focus on next'],
-  ['planner', 'Upgrade Planner'],
 ];
 
 const INFO_UPGRADE_TOPICS = Object.freeze([
@@ -251,7 +247,7 @@ function loadState() {
     profile: { ...structuredClone(defaultState.profile), ...(migration.state.profile || {}) }
   };
   loaded.schemaVersion = migration.schemaVersion;
-  if (loaded.page === 'guide') loaded.page = 'info';
+  loaded.page = canonicalPage(loaded.page);
   if (!NAV.some(([id]) => id === loaded.page)) loaded.page = 'dashboard';
 
   // Data written by a newer app version is kept readable but never saved over.
@@ -517,8 +513,8 @@ let cachedCatalogSearchSource = null;
 let cachedCatalogSearchEntries = [];
 
 function pageForUpgrade(item) {
-  if (item?.section === 'account') return 'crops';
-  return NAV.some(([id]) => id === item?.section) ? item.section : 'planner';
+  const page = canonicalPage(item?.section);
+  return NAV.some(([id]) => id === page) ? page : 'planner';
 }
 
 function selectableCatalogSearchEntries() {
@@ -538,21 +534,47 @@ function selectableCatalogSearchEntries() {
     }
   }
 
-  cachedCatalogSearchEntries = [...byItem.values()].map(({ item, slots }) => ({
-    id: `catalog:${item.id}`,
-    kind: 'Selectable item',
-    title: item.name,
-    subtitle: `Can be selected for ${slots.map(slot => slot.label).join(', ')}`,
-    keywords: [item.id, item.category, item.tier, ...slots.map(slot => slot.label)],
-    target: {
-      type: 'catalog-item',
-      page: 'setups',
-      itemId: item.id,
-      itemName: item.name,
-      slotId: slots[0]?.id || null,
-    },
-  }));
+  cachedCatalogSearchEntries = [...byItem.values()].map(({ item, slots }) => {
+    const groups = [...new Set(slots.map(slot => slot.group).filter(Boolean))];
+    const armorRoles = groups.includes('Armor') ? ['ff set', 'bpc set', 'farming set', 'pest spawning set'] : [];
+    const roleLabel = groups.includes('Armor') ? ' · FF set / BPC set' : '';
+    return {
+      id: `catalog:${item.id}`,
+      kind: groups.length === 1 ? groups[0] : 'Selectable item',
+      title: item.name,
+      subtitle: `${groups.join(' / ') || 'Selectable item'}${roleLabel} · ${slots.map(slot => slot.label).join(', ')}`,
+      keywords: [item.id, item.category, item.tier, ...groups, ...armorRoles, ...slots.map(slot => slot.label)],
+      target: {
+        type: 'catalog-item',
+        page: 'setups',
+        itemId: item.id,
+        itemName: item.name,
+        slotId: slots[0]?.id || null,
+      },
+    };
+  });
   return cachedCatalogSearchEntries;
+}
+
+function searchAnchorSlug(prefix, value) {
+  const slug = String(value || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return `${prefix}-${slug || 'entry'}`;
+}
+
+function searchKeywordAliases(...values) {
+  const haystack = values.flat().filter(Boolean).join(' ').toLowerCase();
+  const aliases = [];
+  if (haystack.includes('farming fortune')) aliases.push('ff');
+  if (haystack.includes('bonus pest chance')) aliases.push('bpc');
+  if (haystack.includes('pest fortune')) aliases.push('pf');
+  if (haystack.includes('pest overbloom')) aliases.push('pest rng');
+  if (haystack.includes('overbloom')) aliases.push('rare drop chance', 'rng');
+  if (haystack.includes('vacuum')) aliases.push('vacuum damage', 'pest killing');
+  if (haystack.includes('cooldown')) aliases.push('pest cooldown');
+  return aliases;
 }
 
 function globalSearchEntries() {
@@ -613,7 +635,7 @@ function globalSearchEntries() {
       id: `pet:${pet.id}`,
       kind: 'Selectable pet',
       title: pet.name,
-      subtitle: `Setups pet picker · level ${pet.levelMin}-${pet.levelMax}`,
+      subtitle: `Loadout pet picker · level ${pet.levelMin}-${pet.levelMax}`,
       keywords: [pet.id, ...(pet.rarities || [])],
       priority: 150,
       target: { type: 'setup-slot', page: 'setups', slotId: 'pet', petId: pet.id, petName: pet.name },
@@ -669,24 +691,133 @@ function globalSearchEntries() {
     });
   }
 
+  SPAWN_PIPELINE.forEach((topic, index) => {
+    entries.push({
+      id: `info:pest-spawn:${index}`,
+      kind: 'Mechanic',
+      title: topic.step,
+      subtitle: topic.detail,
+      keywords: ['pest', 'spawn', 'spawning', ...searchKeywordAliases(topic.step, topic.detail)],
+      priority: 980,
+      target: { type: 'info', page: 'info', anchor: 'info-pests' },
+    });
+  });
+
+  LOOT_PIPELINE.forEach((topic, index) => {
+    entries.push({
+      id: `info:pest-loot:${index}`,
+      kind: 'Mechanic',
+      title: topic.step,
+      subtitle: topic.detail,
+      keywords: ['pest', 'loot', 'drops', ...searchKeywordAliases(topic.step, topic.detail)],
+      priority: 980,
+      target: { type: 'info', page: 'info', anchor: 'info-pests' },
+    });
+  });
+
+  for (const [sideId, side] of Object.entries(PEST_STAT_SIDES)) {
+    entries.push({
+      id: `info:pest-side:${sideId}`,
+      kind: 'Mechanic',
+      title: side.label,
+      subtitle: side.note,
+      keywords: [sideId, 'pest stats', ...searchKeywordAliases(side.label, side.note)],
+      priority: 940,
+      target: { type: 'info', page: 'info', anchor: 'info-pests' },
+    });
+  }
+
+  for (const pest of GARDEN_PESTS) {
+    const cropName = infoCropName(pest);
+    entries.push({
+      id: `info:pest:${pest.name}`,
+      kind: 'Pest',
+      title: pest.name,
+      subtitle: `${cropName} · ${guaranteedDropText(pest) || 'Pest crop mapping'}`,
+      keywords: [cropName, pest.cropId, pest.vinyl, pest.notes, ...searchKeywordAliases(pest.name, cropName, pest.notes)],
+      priority: 760,
+      target: { type: 'info', page: 'info', anchor: searchAnchorSlug('info-pest', pest.name) },
+    });
+  }
+
+  for (const place of BEGINNER_PLACES) {
+    entries.push({
+      id: `info:place:${place.name}`,
+      kind: 'Info location',
+      title: place.name,
+      subtitle: `${place.location} · ${place.detail}`,
+      keywords: [place.location, place.detail],
+      priority: 720,
+      target: { type: 'info', page: 'info', anchor: searchAnchorSlug('info-place', place.name) },
+    });
+  }
+
+  for (const stage of STAGES) {
+    entries.push({
+      id: `info:stage:${stage.id}`,
+      kind: 'Progression',
+      title: stage.name,
+      subtitle: `Farming ${stage.levelFrom}-${stage.levelTo} · ${stage.summary}`,
+      keywords: [stage.id, `farming ${stage.levelFrom}`, `farming ${stage.levelTo}`, ...stage.steps],
+      priority: 700,
+      target: { type: 'info', page: 'info', anchor: 'info-progression', guideStage: stage.id },
+    });
+  }
+
+  for (const ladder of ENCHANT_LADDERS) {
+    entries.push({
+      id: `info:enchant:${ladder.name}`,
+      kind: 'Info',
+      title: ladder.name,
+      subtitle: `${ladder.scope} · ${ladder.perLevel}`,
+      keywords: [ladder.scope, ladder.max, ladder.gate, ...ladder.steps.flatMap(step => [step.levels, step.from])],
+      priority: 760,
+      target: { type: 'info', page: 'info', anchor: searchAnchorSlug('info-enchant', ladder.name) },
+    });
+  }
+
   return [...entries, ...selectableCatalogSearchEntries()];
 }
 
+function searchResultGroup(entry) {
+  const kind = String(entry?.kind || '').toLowerCase();
+  if (kind.includes('setting')) return 'Settings';
+  if (/info|mechanic|progression|pest/.test(kind)) return 'Info & mechanics';
+  if (/upgrade|shard/.test(kind)) return 'Upgrades';
+  if (/page|crop/.test(kind)) return 'Navigation';
+  return 'Items';
+}
+
+function searchResultButtonMarkup(entry, index) {
+  return `<button id="search-result-${index}" class="search-result" type="button" role="option" aria-selected="false" data-search-result="${index}">
+    <span class="search-result-kind">${esc(entry.kind)}</span>
+    <span class="search-result-copy">
+      <strong>${esc(entry.title)}</strong>
+      <small>${esc(entry.subtitle || '')}</small>
+    </span>
+  </button>`;
+}
+
 function searchResultsMarkup(query) {
-  activeSearchResults = searchEntries(globalSearchEntries(), query, 12);
+  activeSearchResults = searchEntries(globalSearchEntries(), query, 16);
   activeSearchResultIndex = -1;
   if (!String(query || '').trim()) return '';
   if (!activeSearchResults.length) {
-    return '<div class="search-no-results">No direct match. Try an item, shard, setting, stat or upgrade name.</div>';
+    return '<div class="search-no-results">No direct match. Try an item, shard, setting, stat, mechanic or upgrade name.</div>';
   }
-  return activeSearchResults.map((entry, index) => `
-    <button id="search-result-${index}" class="search-result" type="button" role="option" aria-selected="false" data-search-result="${index}">
-      <span class="search-result-kind">${esc(entry.kind)}</span>
-      <span class="search-result-copy">
-        <strong>${esc(entry.title)}</strong>
-        <small>${esc(entry.subtitle || '')}</small>
-      </span>
-    </button>`).join('');
+
+  const groups = new Map();
+  activeSearchResults.forEach((entry, index) => {
+    const group = searchResultGroup(entry);
+    if (!groups.has(group)) groups.set(group, []);
+    groups.get(group).push({ entry, index });
+  });
+
+  return [...groups.entries()].map(([group, rows]) => `
+    <div class="search-result-group" role="group" aria-label="${esc(group)}">
+      <div class="search-result-group-title">${esc(group)}</div>
+      ${rows.map(({ entry, index }) => searchResultButtonMarkup(entry, index)).join('')}
+    </div>`).join('');
 }
 
 function updateSearchResults(query) {
@@ -731,7 +862,7 @@ function focusSearchResult(index) {
   });
   const target = buttons[nextIndex];
   input?.setAttribute('aria-activedescendant', target.id);
-  target.focus();
+  input?.focus({ preventScroll: true });
   target.scrollIntoView({ block: 'nearest' });
   return true;
 }
@@ -758,12 +889,12 @@ function applyPendingSearchSpotlight(attempt = 0) {
   if (target.type === 'catalog-item' && target.slotId) {
     node = document.querySelector(`[data-slot-item="${target.slotId}"]`);
     if (node) {
-      searchSpotlightNote(node.closest('.settings-field'), `Search result: ${target.itemName}. Select it here to update this setup.`);
+      searchSpotlightNote(node.closest('.settings-field'), `Search result: ${target.itemName}. Select it here to update this loadout.`);
     }
   } else if (target.type === 'setup-slot' && target.slotId === 'pet') {
     node = document.querySelector('[data-farming-pet-select]');
     if (node) {
-      searchSpotlightNote(node.closest('label') || node.parentElement, `Search result: ${target.petName}. Select it here to update this setup.`);
+      searchSpotlightNote(node.closest('label') || node.parentElement, `Search result: ${target.petName}. Select it here to update this loadout.`);
     }
   } else if (target.type === 'tool' && target.cropId) {
     node = document.querySelector(`.sb-tool-card[data-sb-tool-crop="${target.cropId}"]`);
@@ -835,10 +966,14 @@ function navigateSearchResult(entry) {
   } else if (target.type === 'vacuum') {
     state.page = target.page;
     pendingSearchSpotlight = target;
+  } else if (target.type === 'info') {
+    state.page = target.page;
+    if (target.guideStage) state.guideStage = target.guideStage;
   } else {
     state.page = target.page || state.page;
   }
 
+  state.page = canonicalPage(state.page);
   saveState();
   render({ preserveScroll: false });
   schedulePendingSearchSpotlight();
@@ -1285,7 +1420,7 @@ function accessoryCatalogCard(accessory) {
   </article>`;
 }
 
-function accessoriesPage() {
+function accessorySections() {
   const groups = FARMING_ACCESSORY_GROUPS.map(group => ({
     ...group,
     items: group.items,
@@ -1295,8 +1430,7 @@ function accessoriesPage() {
   const cowReady = cow?.active && cow?.rarity === 'LEGENDARY' && Number.isFinite(strength);
   const nextCowStrength = cowReady ? strengthUntilNextCowFortune(strength, cow.level, cow.rarity) : null;
 
-  return `${pageHeader('Accessories', 'Farming Accessories', 'Accessory progression includes direct farming effects and indirect Strength paths that can feed Legendary Mooshroom Cow.')}
-    <div class="accessory-model-note">
+  return `<div class="accessory-model-note">
       <strong>Accessory power, enrichment and Cow interaction</strong>
       <span>Synced Strength Enrichments in the full Accessory Bag: ${syncedStrengthEnrichments}. Strength Enrichment gives +1 Strength on eligible accessories. ${cowReady ? `At ${formatNumber(strength)} current Strength, the next displayed Cow FF needs about ${formatNumber(nextCowStrength)} more Strength.` : 'Set an active Legendary Mooshroom Cow and current Strength to show its breakpoint.'} Accessory Power and Tuning can also change Strength, but Farming420 does not assign them a Cow value until the selected Power and tuning allocation are known.</span>
     </div>
@@ -1342,11 +1476,11 @@ function cropsPage() {
         <div>
           <div class="eyebrow">Crop section</div>
           <strong>Only bonuses that belong to ${esc(crop().name)}</strong>
-          <p>Tool reforges, enchantments and gemstones are edited under Tools. Armor, equipment and pets are edited in Setups.</p>
+          <p>Tool reforges, enchantments and gemstones are edited under Tools. Armor, equipment and pets are edited in Loadouts / Farming System.</p>
         </div>
         <div class="crop-related-actions-addon">
           <button class="ghost" data-page="tools">Open ${esc(crop().tool)}</button>
-          <button class="ghost" data-page="setups">Open active setup</button>
+          <button class="ghost" data-page="setups">Open active loadout</button>
         </div>
       </div>
       <div class="section-row crop-progression-head-addon"><div><h2>${esc(crop().name)} progression</h2><p>Only crop-scoped sources are listed here.</p></div></div>
@@ -1670,15 +1804,27 @@ function shardSynergyPanel() {
 }
 
 function shardsPage() {
-  const items = visibleUpgrades('shards');
-  return `${pageHeader('Attribute Shards','Shards','Direct Farming stats and indirect shard-to-shard / Strength interactions are evaluated separately so one effect is never counted twice.')}
-    ${!state.search.trim() ? shardSynergyPanel() : ''}
-    <div class="filter-line">${badge(`${items.length} direct entries`,'soft')}</div>
-    <div class="card-grid shard-gallery">${items.map(x=>card(x)).join('') || '<div class="empty">No matches.</div>'}</div>`;
+  const shards = visibleUpgrades('shards');
+  const chips = visibleUpgrades('chips');
+  return `${pageHeader('Progression', 'Shards / Accessories', 'Farming accessories, Garden Chips and Attribute Shards share one progression workspace. Their direct and indirect effects remain calculated separately.')}
+    <div class="group">
+      <div class="section-row"><div><h2>Accessories</h2><p>Accessory progression, recombobulation, enrichments and Strength interactions.</p></div></div>
+      ${accessorySections()}
+    </div>
+    <div class="group">
+      <div class="section-row"><div><h2>Garden Chips</h2><p>Chip levels and activation conditions stay here instead of using a separate top-level page.</p></div></div>
+      <div class="filter-line">${badge(`${chips.length} entries`,'soft')}</div>
+      <div class="card-grid">${chips.map(x=>card(x)).join('') || '<div class="empty">No matches.</div>'}</div>
+    </div>
+    <div class="group">
+      <div class="section-row"><div><h2>Attribute Shards</h2><p>Direct Farming stats and indirect shard-to-shard / Strength interactions are evaluated separately so one effect is never counted twice.</p></div></div>
+      ${!state.search.trim() ? shardSynergyPanel() : ''}
+      <div class="filter-line">${badge(`${shards.length} direct entries`,'soft')}</div>
+      <div class="card-grid shard-gallery">${shards.map(x=>card(x)).join('') || '<div class="empty">No matches.</div>'}</div>
+    </div>`;
 }
-
 function qolPage() {
-  return `${pageHeader('QoL', 'Quality of Life', 'Convenience, farm-building and setup tools live here. They are tracked separately from Farming Fortune and profit because their value is saved setup time and easier operation rather than a comparable stat gain.')}
+  return `${pageHeader('QoL', 'Quality of Life', 'Convenience, farm-building and loadout tools live here. They are tracked separately from Farming Fortune and profit because their value is saved configuration time and easier operation rather than a comparable stat gain.')}
     <div class="qol-list"><div class="empty">Loading QoL items…</div></div>`;
 }
 
@@ -1738,7 +1884,7 @@ function drawer() {
   return `<div class="drawer-backdrop" data-close-drawer><aside class="drawer">
     <div class="drawer-top"><div><div class="eyebrow">${esc(item.category)}</div><h2>${esc(item.name)}</h2></div><button class="close" data-close-drawer>×</button></div>
     <div class="drawer-badges">${badge(item.status,item.status==='VERIFY'?'verify':'soft')} ${isCropScopedItem(item)?badge(crop().name,'soft'):(item.cropScope!=='Any'?badge(item.cropScope,'soft'):'')} ${item.modeScope!=='Any'?badge(item.modeScope,'soft'):''}</div>
-    ${isSynced(item) ? '<div class="drawer-synced">Farming420 worked this value out for you, from your profile sync and your active setup. Editing it here overrides it until the next sync or setup change.</div>' : ''}
+    ${isSynced(item) ? '<div class="drawer-synced">Farming420 worked this value out for you, from your profile sync and your active loadout. Editing it here overrides it until the next sync or loadout change.</div>' : ''}
     <div class="drawer-section"><h3>Ownership & Level</h3>
       ${max>1 ? `<div class="stepper"><button data-step="-1" data-id="${item.id}">−</button><strong>${level}/${max}</strong><button data-step="1" data-id="${item.id}">+</button><button class="ghost small" data-max="${item.id}">Max</button></div>` : `<label class="switch-row"><span>Owned</span><input type="checkbox" data-owned="${item.id}" ${isOwned(item)?'checked':''}></label>`}
     </div>
@@ -2009,7 +2155,7 @@ function activeSetupObjective() {
 }
 
 function setupCandidateLabel(candidate) {
-  if (!candidate) return 'Unknown setup';
+  if (!candidate) return 'Unknown loadout';
   const pet = candidate.setup?.slots?.pet?.displayName || 'No pet';
   const armor = candidate.components?.armorSetId || 'no armor set';
   const equipment = candidate.components?.equipmentSetId || 'no equipment set';
@@ -2031,8 +2177,8 @@ function setupObjectivePanel() {
   const synced = snapshot();
   if (!synced) {
     return `<div class="setup-bar setup-objective-panel">
-      <div><div class="eyebrow">Owned setup objective</div><strong>Sync a profile to evaluate owned combinations</strong>
-      <div class="hint">No setup is guessed from missing ownership data.</div></div>
+      <div><div class="eyebrow">Owned loadout objective</div><strong>Sync a profile to evaluate owned combinations</strong>
+      <div class="hint">No loadout is guessed from missing ownership data.</div></div>
     </div>`;
   }
 
@@ -2076,10 +2222,10 @@ function setupObjectivePanel() {
     headline = setupCandidateLabel(chosen);
     detail = `Clear match for ${result.label} across ${result.eligibleCount} complete owned combination${result.eligibleCount === 1 ? '' : 's'}.`;
   } else if (result.recommendation.status === 'tradeoff') {
-    headline = `${result.frontierCount} non-dominated setup options`;
-    detail = 'No single setup is better on every primary objective, so Farming420 does not invent a weighted winner.';
+    headline = `${result.frontierCount} non-dominated loadout options`;
+    detail = 'No single loadout is better on every primary objective, so Farming420 does not invent a weighted winner.';
   } else if (result.recommendation.status === 'tie') {
-    headline = `${result.frontierCount} tied setup options`;
+    headline = `${result.frontierCount} tied loadout options`;
     detail = 'The modeled objective values are identical; no arbitrary winner is selected.';
   }
 
@@ -2090,14 +2236,14 @@ function setupObjectivePanel() {
           .map(([key, value]) => setupObjectiveMetricText(key, value))
           .join(' · ');
         return `<div class="hint"><strong>${esc(setupCandidateLabel(candidate))}</strong><br>${esc(metrics)}
-          <button class="ghost small" type="button" data-setup-objective-apply="${esc(row.candidateId)}">Use this setup</button>
+          <button class="ghost small" type="button" data-setup-objective-apply="${esc(row.candidateId)}">Use this loadout</button>
         </div>`;
       }).join('')}</div>`
     : '';
 
   return `<div class="setup-bar setup-objective-panel" data-setup-objective-panel>
     <div>
-      <div class="eyebrow">Owned setup objective · ${esc(result.label)}</div>
+      <div class="eyebrow">Owned loadout objective · ${esc(result.label)}</div>
       <strong>${esc(headline)}</strong>
       <div class="hint">${esc(detail)}</div>
       ${state.setupRecommendationNotice ? `<div class="hint"><strong>${esc(state.setupRecommendationNotice)}</strong></div>` : ''}
@@ -2150,7 +2296,7 @@ function setupsPage() {
            ${petSetupSection('Killing Pet', KILLING_SETUP_ID, 'Only the pet can differ for Killing; Armor and Equipment stay identical to the FF Set.')}`}`
     : petSetupSection('BPC Pet', BPC_SETUP_ID, 'Used with the BPC Set while preparing Pest spawns.');
 
-  return `${pageHeader('Setups', 'Your gear, item by item · FF and BPC sets', 'FF owns the Farming/Killing armor and equipment. BPC is the separate spawning set. Killing only has a separate pet choice when you want one.')}
+  return `${pageHeader('Loadouts', 'Farming System · FF and BPC sets', 'FF owns the Farming/Killing armor and equipment. BPC is the separate spawning set. Killing only has a separate pet choice when you want one.')}
     ${setupObjectivePanel()}
     <div class="setup-tabs">
       ${VISIBLE_SETUP_IDS.map(setupId =>
@@ -2458,7 +2604,7 @@ function infoPestGuide() {
     <div class="pest-list">
       ${GARDEN_PESTS.map(pest => {
         const cropName = infoCropName(pest);
-        return `<div class="pest-row${pest.status === 'VERIFIED' ? '' : ' pest-row-unverified'}">
+        return `<div id="${esc(searchAnchorSlug('info-pest', pest.name))}" class="pest-row${pest.status === 'VERIFIED' ? '' : ' pest-row-unverified'}">
           <span class="pest-crop-icon"><span class="pest-crop-letter">${esc(cropName.slice(0, 1))}</span></span>
           <div class="pest-main"><strong>${esc(pest.name)}</strong><span>${esc(cropName)}</span></div>
           <div class="pest-drop"><strong>${esc(guaranteedDropText(pest) || 'Guaranteed drop scaling not verified')}</strong><span>guaranteed drop</span></div>
@@ -2507,7 +2653,7 @@ function infoPage() {
           <div><div class="eyebrow">Where to go</div><h2>Important places and NPCs</h2><p>Use this as a routing sheet when a guide tells you to buy, unlock or start something.</p></div>
         </div>
         <div class="info-place-grid">
-          ${BEGINNER_PLACES.map(place => `<article class="info-place-card">
+          ${BEGINNER_PLACES.map(place => `<article class="info-place-card" id="${esc(searchAnchorSlug('info-place', place.name))}">
             <span>${esc(place.location)}</span>
             <strong>${esc(place.name)}</strong>
             <p>${esc(place.detail)}</p>
@@ -2580,7 +2726,7 @@ function guidePage(embedded = false) {
 
     <div class="section-row"><div><h2>Enchantments by level</h2><p>Which level is reachable now, and what the next one takes.</p></div></div>
     <div class="ladder-grid">
-      ${ENCHANT_LADDERS.map(ladder => `<article class="ladder">
+      ${ENCHANT_LADDERS.map(ladder => `<article class="ladder" id="${esc(searchAnchorSlug('info-enchant', ladder.name))}">
         <div class="eyebrow">${esc(ladder.scope)}</div>
         <h3>${esc(ladder.name)}</h3>
         <p><strong>${esc(ladder.perLevel)}</strong> · max ${esc(ladder.max)}</p>
@@ -2612,7 +2758,33 @@ function bindGuide() {
   }));
 }
 
+function activeSearchFocusSnapshot() {
+  const input = document.getElementById('search');
+  if (!input || document.activeElement !== input) return null;
+  return {
+    start: input.selectionStart,
+    end: input.selectionEnd,
+    direction: input.selectionDirection,
+  };
+}
+
+function restoreActiveSearchFocus(snapshot) {
+  if (!snapshot) return;
+  const input = document.getElementById('search');
+  if (!input) return;
+  input.focus({ preventScroll: true });
+  const length = input.value.length;
+  const start = Math.min(snapshot.start ?? length, length);
+  const end = Math.min(snapshot.end ?? start, length);
+  try {
+    input.setSelectionRange(start, end, snapshot.direction || 'none');
+  } catch {
+    // Text inputs support setSelectionRange; keep focus even if a browser disagrees.
+  }
+}
+
 function render({ preserveScroll = true } = {}) {
+  const searchFocusSnapshot = preserveScroll ? activeSearchFocusSnapshot() : null;
   // Most state changes only alter a control/card. Replacing #app is still the
   // core render model, but it must not behave like navigation: keep the right
   // content pane and the navigation rail exactly where the user left them.
@@ -2627,28 +2799,24 @@ function render({ preserveScroll = true } = {}) {
   let content = '';
   switch(state.page) {
     case 'dashboard': content = dashboard(); break;
-    case 'accessories': content = accessoriesPage(); break;
+    case 'setups': content = setupsPage(); break;
     case 'crops': content = cropsPage(); break;
+    case 'buffs': content = effectsPage(); break;
     // The heading says what the page is; the picker and the editor below both
     // name the selected tool, so repeating it a third time here added nothing.
     case 'tools': content = genericSectionPage('tools','Tools','Farming tools','Pick the tool, then set what is actually on it: reforge, enchantments, gemstones, counters and tier.'); break;
-    case 'gear': content = genericSectionPage('gear','Gear','Armor & Equipment','Armor, equipment, reforges, gemstones and enchantments remain a separate setup layer.'); break;
-    case 'pets': content = genericSectionPage('pets','Pets','Pets & Pet Items','Pets are mutually exclusive setup choices and are never added together.'); break;
-    case 'chips': content = genericSectionPage('chips','Garden Chips','Garden Chips','Each chip has its own level path and activation conditions.'); break;
     case 'shards': content = shardsPage(); break;
-    case 'buffs': content = effectsPage(); break;
-    case 'pests': content = genericSectionPage('pests','Pests','Pest Analysis','Vacuum kill thresholds and Pesthunter Phillip calculations live here. Explanations and strategy are in Info.'); break;
-    case 'qol': content = qolPage(); break;
-    case 'info': content = infoPage(); break;
-    case 'setups': content = setupsPage(); break;
-    case 'focus': content = focusNextPage(); break;
     case 'planner': content = plannerPage(); break;
+    case 'qol': content = qolPage(); break;
+    case 'focus': content = focusNextPage(); break;
+    case 'info': content = infoPage(); break;
     default: content = dashboard();
   }
   document.getElementById('app').innerHTML = shell(content);
   bind();
+  restoreActiveSearchFocus(searchFocusSnapshot);
   if (state.page === 'setups') bindSetups();
-  if (['setups', 'accessories'].includes(state.page)) ensureItemCatalog();
+  if (['setups', 'shards'].includes(state.page)) ensureItemCatalog();
   if (state.page === 'tools') bindToolPanel();
   if (state.page === 'info') bindGuide();
 
@@ -2695,7 +2863,7 @@ function bind() {
   });
 
   document.querySelectorAll('[data-page]').forEach(el => el.addEventListener('click', () => {
-    state.page=el.dataset.page;
+    state.page = canonicalPage(el.dataset.page);
     state.drawer=null;
     closeNavigation();
     saveState();
