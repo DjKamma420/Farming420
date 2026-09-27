@@ -241,3 +241,11 @@ test('unresolved shard portraits fall back without leaving empty art containers'
   assert.match(source, /packArtNodeFor\(entry, entry\.name\)/);
   assert.match(source, /packNode \|\| letterArtNode\(entry, entry\.name\)/);
 });
+
+test('shard fallbacks still run when the official item catalogue is empty', () => {
+  const source = readFileSync(new URL('../src/item-art-coverage.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(source, /if \(!items\.length\) return 0/);
+  const progression = source.indexOf('decorateProgressionCards(items)');
+  const accessory = source.indexOf('decorateAccessoryCatalog(items)');
+  assert.ok(progression >= 0 && accessory > progression);
+});
