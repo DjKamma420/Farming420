@@ -2,6 +2,8 @@ import './runtime-data-patches.js';
 import { CROPS, UPGRADES } from './data.js';
 import { ensureProgressBucket, toolKeyForCropId } from './migrations.js';
 import { activeSetup } from './setups.js';
+import { autoFillPhysicalItems } from './item-auto-fill.js';
+import { snapshotSectionCanAutoFill } from './profile-trust.js';
 import { exclusiveGroupForEntry } from './exclusivity.js';
 import { FARMING_ACCESSORIES } from './farming-accessories.js';
 import { accessoryStateFromSnapshot } from './accessory-capabilities.js';
@@ -134,7 +136,9 @@ export function gearPiecesFor(state, snapshot, slotIds, containerPredicate) {
   const setup = state?.profile?.setups ? activeSetup(state.profile.setups) : null;
   const fromSetup = slotIds.map(id => setup?.slots?.[id]).filter(Boolean);
   if (fromSetup.length) return { pieces: fromSetup, source: 'setup' };
-  const items = Array.isArray(snapshot?.items) ? snapshot.items : [];
+  const items = snapshotSectionCanAutoFill(snapshot, 'items') && Array.isArray(snapshot?.items)
+    ? snapshot.items
+    : [];
   return { pieces: itemsInContainers(items, containerPredicate), source: 'sync' };
 }
 
@@ -354,8 +358,11 @@ export function applySnapshotToProgress(state, snapshot) {
     applyValue(store, scope, 'crop-progression-crop-upgrade-selected-crop', level, applied);
   }
 
-  const items = Array.isArray(snapshot?.items) ? snapshot.items : [];
-  syncAccessoryItemStates(state, snapshot);
+  const itemsReliable = snapshotSectionCanAutoFill(snapshot, 'items');
+  const items = itemsReliable && Array.isArray(snapshot?.items) ? snapshot.items : [];
+  if (itemsReliable) syncAccessoryItemStates(state, snapshot);
+  const physicalAutoFill = autoFillPhysicalItems(state, snapshot);
+  skipped.push(...physicalAutoFill.skipped);
   const unmatchedTools = [];
   for (const item of items) {
     const cropIds = cropsForToolItem(item);
@@ -369,13 +376,14 @@ export function applySnapshotToProgress(state, snapshot) {
   const equipmentSource = gearPiecesFor(state, snapshot, SETUP_EQUIPMENT_SLOTS, isEquipmentContainer);
   applyEquipmentDerived(equipmentSource.pieces, armorSource.pieces, state, snapshot, autoApplied, applied, skipped);
 
-  if (items.length && !applied.some(entry => entry.id.startsWith('tool-'))) {
+  if (itemsReliable && items.length && !applied.some(entry => entry.id.startsWith('tool-'))) {
     unmatchedTools.push('No decoded item matched a known farming tool name, so no tool progress was filled in.');
   }
 
   return {
     applied,
     skipped: [...skipped, ...unmatchedTools],
+    physicalAutoFill: physicalAutoFill.applied,
     unmapped: unmappedEntryIds(applied),
   };
 }

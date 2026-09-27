@@ -312,7 +312,9 @@ export function itemSummary(slotId, item) {
     item.reforge ? `${item.reforge} reforge` : null,
     rows.length ? `${rows.length} enchant${rows.length === 1 ? '' : 's'}${maxed ? ` (${maxed} maxed)` : ''}` : null,
     item.recombobulated ? 'recombobulated' : null,
-    item.gems?.length ? `${item.gems.length} gem${item.gems.length === 1 ? '' : 's'}` : null,
+    item.gems?.filter(Boolean).length
+      ? `${item.gems.filter(Boolean).length} gem${item.gems.filter(Boolean).length === 1 ? '' : 's'}`
+      : null,
   ].filter(Boolean).join(' · ') || 'No upgrades yet';
 }
 

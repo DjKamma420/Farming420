@@ -21,6 +21,7 @@ import {
   vacuumPeridotFortune,
   vacuumRarity,
 } from './vacuum-state.js';
+import { markPhysicalItemManual } from './item-auto-fill.js';
 
 let applying = false;
 let queued = false;
@@ -56,6 +57,7 @@ function bucketOf(raw) {
 function write(mutator) {
   const raw = load();
   const bucket = bucketOf(raw);
+  markPhysicalItemManual(bucket);
   mutator(bucket, raw);
   save(raw);
   window.dispatchEvent(new Event('farming420:state-changed'));

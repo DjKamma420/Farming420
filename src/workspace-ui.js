@@ -6,6 +6,7 @@ import { FARMING_TOOL_REFORGES, cropReforgeRecommendations, reforgeById } from '
 import { TOOL_TIER_CHAIN, applyChainTier, highestChainTier } from './progression-chains.js';
 import { loadItemCatalog, readCachedCatalog } from './item-catalog.js';
 import { canRecombobulateItem } from './item-capabilities.js';
+import { markPhysicalItemManual } from './item-auto-fill.js';
 import {
   availableOfficialGemstoneSlots,
   catalogItemByExactId,
@@ -169,6 +170,7 @@ function gemstoneSection(bucket, catalogItem) {
 function writeTool(mutator) {
   const state = readState(); if (!state) return;
   const crop = cropForState(state); const bucket = toolBucket(state, crop.id);
+  markPhysicalItemManual(bucket);
   mutator(bucket, state, crop); writeState(state); announceStateChange();
 }
 function enhanceTools(root) {

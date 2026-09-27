@@ -1,4 +1,4 @@
-import { GEM_QUALITIES, GEM_TYPES } from './item-editor.js';
+import { GEM_QUALITIES, GEM_TYPES, enchantRowsFor } from './item-editor.js';
 
 export const ITEM_CAPABILITIES_VERIFIED = '2026-09-17';
 
@@ -176,19 +176,25 @@ export function gemValuesForSlotType(slotType) {
 export function itemCapabilities(slotId, item, catalog) {
   const catalogItem = catalogItemForSetupItem(catalog, item);
   const family = capabilityFamilyForSlot(slotId);
+  const allEnchantments = enchantRowsFor(slotId, item);
   if (!catalogItem) {
     return {
       known: false,
+      applicable: false,
       catalogItem: null,
       family,
       reforges: [],
       canReforge: false,
       canRecombobulate: false,
+      canEnchant: false,
+      enchantmentRows: allEnchantments.filter(row => row.active),
       gemstoneSlots: [],
+      gemstoneSlotCount: 0,
     };
   }
   const applicable = catalogItemMatchesFamily(slotId, catalogItem);
   const reforges = applicable ? reforgeOptionsForItem(slotId, catalogItem, item?.reforge) : [];
+  const gemstoneSlots = applicable ? gemstoneSlotsForItem(catalogItem) : [];
   return {
     known: true,
     applicable,
@@ -197,6 +203,9 @@ export function itemCapabilities(slotId, item, catalog) {
     reforges,
     canReforge: applicable && reforges.length > 0 && catalogItem.cannotReforge !== true,
     canRecombobulate: applicable && canRecombobulateItem(slotId, catalogItem),
-    gemstoneSlots: applicable ? gemstoneSlotsForItem(catalogItem) : [],
+    canEnchant: applicable && allEnchantments.some(row => row.known),
+    enchantmentRows: applicable ? allEnchantments : allEnchantments.filter(row => row.active),
+    gemstoneSlots,
+    gemstoneSlotCount: gemstoneSlots.length,
   };
 }

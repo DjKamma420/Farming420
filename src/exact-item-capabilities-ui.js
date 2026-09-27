@@ -109,10 +109,6 @@ function configureRecomb(raw, slotId, editor, item, capabilities) {
   if (!row) return false;
   const allowed = capabilities.known && capabilities.canRecombobulate;
   setHidden(row, !allowed);
-  if (!allowed && item?.recombobulated) {
-    patchSlot(raw, slotId, { recombobulated: false });
-    return true;
-  }
   return false;
 }
 
@@ -123,9 +119,8 @@ function replaceGemstoneControls(raw, slotId, editor, item, capabilities) {
   setHidden(section, slots.length === 0);
 
   const sanitized = sanitizeGems(item, slots);
-  const changed = !sameArray(Array.isArray(item?.gems) ? item.gems : [], sanitized);
-  if (changed) patchSlot(raw, slotId, { gems: sanitized });
-  if (!slots.length) return changed;
+  const changed = false;
+  if (!slots.length) return false;
 
   section.dataset.exactGemstones = '1';
   const heading = section.querySelector('h3');
