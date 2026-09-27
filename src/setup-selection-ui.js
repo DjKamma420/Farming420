@@ -28,7 +28,7 @@ import {
   headLayerGeometry,
   knownSkyblockRenderedIcon,
   skullTextureUrl,
-} from './skull-art.js?v=20260918-4';
+} from './skull-art.js?v=20260928-1';
 
 const REAPPLY_CLICK_SELECTOR = [
   '[data-page="setups"]',
