@@ -110,6 +110,21 @@
   image-rendering: pixelated;
 }
 
+.sb-pet-art.has-pet-head > .sb-pet-art-fallback,
+.sb-pet-art.has-pet-item-icon > .sb-pet-art-fallback {
+  visibility: hidden;
+}
+
+.sb-pet-item-icon {
+  position: absolute;
+  inset: 3px;
+  width: calc(100% - 6px);
+  height: calc(100% - 6px);
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 4px 7px rgba(0, 0, 0, .28));
+}
+
 /* Pets and pet items are closed choices, not generic reforgable/gemmed gear.
    Their dedicated selectors own the whole slot configuration. */
 .sb-pet-editor > .item-editor-grid:not(.sb-pet-picker),
