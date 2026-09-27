@@ -1,7 +1,5 @@
 import { activeSetup } from './setups.js';
 
-import { activeSetup } from './setups.js';
-
 // Mooshroom Cow mechanics used by the computed-stat coverage check.
 // Current post-0.26.1 base Farming Fortune is 1 -> 100 by pet level.
 // LEGENDARY Farming Strength grants +0.7 Farming Fortune per X Strength,
