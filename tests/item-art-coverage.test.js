@@ -236,11 +236,13 @@ test('the Shards page reserves a large portrait surface for physical shard art',
 });
 
 
-test('Attribute Shards keep a non-empty portrait fallback without the live item catalog', () => {
+test('Attribute Shards keep exact physical art without depending on live catalog availability', () => {
   const source = readFileSync(new URL('../src/item-art-coverage.js', import.meta.url), 'utf8');
   assert.doesNotMatch(source, /if \(!items\.length\) return 0/);
-  assert.match(source, /entry\.category === 'Attribute Shard'/);
-  assert.match(source, /packArtNodeFor\(entry, entry\.name\) \|\| letterArtNode\(entry, entry\.name\)/);
+  assert.match(source, /function shardPhysicalItemId/);
+  assert.match(source, /function progressionCardArtRecord/);
+  assert.match(source, /physicalItemId = entry\?\.physicalItemId \|\| shardPhysicalItemId\(entry\)/);
+  assert.match(source, /knownSkyblockRenderedIcon/);
 });
 
 
