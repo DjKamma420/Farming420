@@ -66,6 +66,8 @@ test('calculator-backed accessory cards point at existing progression ids', () =
   assert.ok(linked.some(item => item.itemId === 'ATMOSPHERIC_FILTER'));
   assert.ok(linked.some(item => item.itemId === 'MAGIC_8_BALL'));
   assert.ok(linked.some(item => item.itemId === 'POWER_RELIC'));
+  assert.ok(linked.some(item => item.itemId === 'PESTHUNTER_RELIC'));
+  assert.ok(linked.some(item => item.itemId === 'FRESHLY_BAKED_HEIRLOOM'));
 });
 
 
