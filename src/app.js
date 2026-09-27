@@ -74,12 +74,9 @@ import {
   createEmptyItem,
   effectiveSetup,
   farmingKillingPetShared,
-  physicalSetupCount,
   prefillSetupFromSnapshot,
   prepareFfBpcSetups,
   setFarmingKillingPetShared,
-  setPhysicalSetupCount,
-  setThirdSetupName,
   setupSummary,
   synchronizeFarmingKillingLoadouts,
   thirdSetupName,
@@ -2383,7 +2380,6 @@ function setupsPage() {
   const ffSelected = selectedId === FF_SETUP_ID;
   const bpcSelected = selectedId === BPC_SETUP_ID;
   const sharedPet = farmingKillingPetShared(all);
-  const physicalCount = physicalSetupCount(all);
   const visibleIds = visiblePhysicalSetupIds(all);
   const objectivePanel = selectedId === THIRD_SETUP_ID
     ? `<div class="setup-bar setup-objective-panel">
@@ -2416,18 +2412,6 @@ function setupsPage() {
 
   return `${pageHeader('Loadouts', 'Farming System · FF and BPC sets', 'FF and BPC keep fixed roles and names. An optional third set is fully independent and can be named freely. Killing remains a pet-only overlay on the FF set.')}
     ${objectivePanel}
-    <div class="setup-bar">
-      <label class="inline-input">Physical sets
-        <select data-physical-set-count>
-          <option value="2" ${physicalCount === 2 ? 'selected' : ''}>2 sets</option>
-          <option value="3" ${physicalCount === 3 ? 'selected' : ''}>3 sets</option>
-        </select>
-      </label>
-      ${physicalCount === 3 ? `<label class="inline-input">Set 3 name
-        <input type="text" maxlength="48" data-third-setup-name value="${esc(thirdSetupName(all))}" placeholder="Set 3">
-      </label>` : ''}
-      <div class="hint">Fixed: FF (Farming Fortune) Set and BPC (Bonus Pest Chance) Set. Switching back to 2 sets only hides Set 3; its items and name stay saved.</div>
-    </div>
     <div class="setup-tabs">
       ${visibleIds.map(setupId =>
         `<button class="setup-tab ${setupId === selectedId ? 'active' : ''}" data-setup="${esc(setupId)}">${esc(visibleSetupLabel(setupId, all))}</button>`
@@ -2489,16 +2473,6 @@ function bindSetups() {
     state.setupSlotTarget = null;
     rerender();
   }));
-  document.querySelector('[data-physical-set-count]')?.addEventListener('change', event => {
-    setPhysicalSetupCount(all, event.target.value);
-    state.setupSlot = null;
-    state.setupSlotTarget = null;
-    rerender();
-  });
-  document.querySelector('[data-third-setup-name]')?.addEventListener('change', event => {
-    setThirdSetupName(all, event.target.value);
-    rerender();
-  });
   document.querySelector('[data-share-farming-killing-pet]')?.addEventListener('change', event => {
     setFarmingKillingPetShared(all, event.target.checked);
     state.setupSlot = null;

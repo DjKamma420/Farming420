@@ -131,14 +131,17 @@ test('Farming and Killing pets can be separate or resolved from one shared confi
   assert.equal(activeSetup(setups).slots.pet.skyblockId, 'HEDGEHOG');
 });
 
-test('the Setups UI exposes a 2/3-set switch, fixed FF/BPC names and a custom third name', () => {
+test('the Setups UI keeps physical setup tabs while the header owns the 2/3-set configuration', () => {
   const app = read('src/app.js');
-  assert.match(app, /data-physical-set-count/);
-  assert.match(app, /data-third-setup-name/);
+  const activityUi = read('src/activity-mode-ui.js');
+  assert.doesNotMatch(app, /data-physical-set-count/);
+  assert.doesNotMatch(app, /data-third-setup-name/);
+  assert.match(activityUi, /data-physical-set-count="2"/);
+  assert.match(activityUi, /data-physical-set-count="3"/);
+  assert.match(activityUi, /data-third-setup-name/);
+  assert.match(activityUi, /FF \(Farming Fortune\) Set/);
+  assert.match(activityUi, /BPC \(Bonus Pest Chance\) Set/);
   assert.match(app, /visiblePhysicalSetupIds\(all\)/);
-  assert.match(app, /FF \(Farming Fortune\) Set/);
-  assert.match(app, /BPC \(Bonus Pest Chance\) Set/);
-  assert.match(app, /Switching back to 2 sets only hides Set 3; its items and name stay saved\./);
   assert.match(app, /Set 3 has no automatic FF, BPC or Killing role\./);
   assert.match(app, /Use one pet for Farming \+ Killing/);
   assert.match(app, /Farming Pet/);

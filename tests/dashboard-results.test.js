@@ -51,10 +51,10 @@ test('topbar does not duplicate the dashboard stat results', () => {
   assert.match(computedStatsUi, /querySelector\('\.fortune-pill'\)\?\.remove\(\)/);
 });
 
-test('activity switch exposes three fully named phases', () => {
-  assert.match(activityModeUi, />Farming<\/button>/);
-  assert.match(activityModeUi, />Spawning<\/button>/);
-  assert.match(activityModeUi, />Killing<\/button>/);
+test('activity switch exposes three fully named phase roles', () => {
+  assert.match(activityModeUi, />FF Set · Farming<\/button>/);
+  assert.match(activityModeUi, />BPC Set · Spawning<\/button>/);
+  assert.match(activityModeUi, />FF Set · Killing<\/button>/);
   assert.doesNotMatch(activityModeUi, />Farm<\/button>|>Spawn<\/button>|>Kill<\/button>|>Pest<\/button>/);
   assert.match(activityModeUi, /data-activity-mode="pest-spawn"/);
   assert.match(activityModeUi, /data-activity-mode="pest-kill"/);

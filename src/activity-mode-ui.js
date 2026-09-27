@@ -13,11 +13,23 @@ import {
   setActivityModeOnState,
 } from './activity-mode.js';
 import { formatNumber } from './format-number.js';
+import {
+  BPC_SETUP_ID,
+  FF_SETUP_ID,
+  THIRD_SETUP_ID,
+  physicalSetupCount,
+  prepareFfBpcSetups,
+  setPhysicalSetupCount,
+  setThirdSetupName,
+  thirdSetupName,
+  visiblePhysicalSetupIds,
+} from './setups.js';
 
 let scheduled = false;
 let applying = false;
 
-const MODE_SWITCH_PAGES = new Set(['dashboard', 'setups', 'focus', 'planner']);
+const MODE_SWITCH_PAGES = new Set(['dashboard', 'focus', 'planner']);
+const PHYSICAL_SET_SWITCH_PAGE = 'setups';
 
 function load() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
@@ -130,6 +142,82 @@ function setMode(mode) {
   window.dispatchEvent(new Event('farming420:state-changed'));
 }
 
+function preparedPhysicalSetups(raw) {
+  raw.profile ||= {};
+  raw.profile.setups = prepareFfBpcSetups(raw.profile.setups);
+  return raw.profile.setups;
+}
+
+function physicalSetLabel(setupId, setups) {
+  if (setupId === FF_SETUP_ID) return 'FF (Farming Fortune) Set';
+  if (setupId === BPC_SETUP_ID) return 'BPC (Bonus Pest Chance) Set';
+  if (setupId === THIRD_SETUP_ID) return thirdSetupName(setups);
+  return 'Set';
+}
+
+function persistPhysicalSetChange(mutator) {
+  const raw = load();
+  const setups = preparedPhysicalSetups(raw);
+  mutator(setups);
+  save(raw);
+  window.dispatchEvent(new Event('farming420:state-changed'));
+}
+
+function injectPhysicalSetHeader(raw, topbar, main, control) {
+  const setups = preparedPhysicalSetups(raw);
+  const count = physicalSetupCount(setups);
+  const visibleIds = visiblePhysicalSetupIds(setups);
+  const activeId = visibleIds.includes(setups.activeId) ? setups.activeId : FF_SETUP_ID;
+  const name = thirdSetupName(setups);
+  const signature = [count, activeId, name].join(':');
+
+  topbar.classList.remove('activity-mode-topbar-shared');
+  main?.classList.remove('activity-mode-page-shared');
+
+  if (!control) {
+    control = document.createElement('div');
+    const anchor = topbar.querySelector('.search-wrap');
+    topbar.insertBefore(control, anchor || null);
+  }
+  control.className = 'activity-mode-switch physical-set-switch';
+  control.setAttribute('aria-label', 'Physical farming sets');
+  if (control.dataset.physicalSignature === signature) return;
+
+  delete control.dataset.mode;
+  control.dataset.physicalSignature = signature;
+  control.innerHTML = `
+    <span>Sets</span>
+    <div class="physical-set-count" aria-label="Number of physical sets">
+      <button type="button" data-physical-set-count="2" class="${count === 2 ? 'active' : ''}" aria-pressed="${count === 2}">2 Sets</button>
+      <button type="button" data-physical-set-count="3" class="${count === 3 ? 'active' : ''}" aria-pressed="${count === 3}">3 Sets</button>
+    </div>
+    <div class="physical-set-tabs">
+      ${visibleIds.map(setupId => `<button type="button" data-physical-setup="${esc(setupId)}"
+        class="${setupId === activeId ? 'active' : ''}" aria-pressed="${setupId === activeId}"
+        title="${esc(physicalSetLabel(setupId, setups))}">${esc(physicalSetLabel(setupId, setups))}</button>`).join('')}
+    </div>
+    ${count === 3 ? `<label class="physical-set-name"><span>Set 3 name</span>
+      <input type="text" maxlength="48" data-third-setup-name value="${esc(name)}" aria-label="Set 3 name">
+    </label>` : ''}`;
+
+  control.querySelectorAll('[data-physical-set-count]').forEach(button => button.addEventListener('click', () => {
+    if (Number(button.dataset.physicalSetCount) === count) return;
+    persistPhysicalSetChange(next => setPhysicalSetupCount(next, button.dataset.physicalSetCount));
+  }));
+
+  control.querySelectorAll('[data-physical-setup]').forEach(button => button.addEventListener('click', () => {
+    if (button.dataset.physicalSetup === activeId) return;
+    persistPhysicalSetChange(next => {
+      const allowed = visiblePhysicalSetupIds(next);
+      if (allowed.includes(button.dataset.physicalSetup)) next.activeId = button.dataset.physicalSetup;
+    });
+  }));
+
+  control.querySelector('[data-third-setup-name]')?.addEventListener('change', event => {
+    persistPhysicalSetChange(next => setThirdSetupName(next, event.target.value));
+  });
+}
+
 function injectHeaderSwitch(raw) {
   const topbar = document.querySelector('.topbar');
   if (!topbar) return;
@@ -137,9 +225,14 @@ function injectHeaderSwitch(raw) {
   const page = String(raw?.page || '');
   let control = topbar.querySelector('.activity-mode-switch');
 
-  // The phase selector belongs only where the selected loadout changes what is
-  // being edited or calculated. Shared pages keep the compact mobile app bar,
-  // but only as a branded header; the phase selector itself is removed.
+  if (page === PHYSICAL_SET_SWITCH_PAGE) {
+    injectPhysicalSetHeader(raw, topbar, main, control);
+    return;
+  }
+
+  // The logical phase selector belongs only where Farming/Spawning/Killing
+  // changes calculations. The Loadouts page instead shows the real 2/3
+  // physical-set controls above.
   if (!MODE_SWITCH_PAGES.has(page)) {
     control?.remove();
     topbar.classList.add('activity-mode-topbar-shared');
@@ -151,6 +244,10 @@ function injectHeaderSwitch(raw) {
   main?.classList.remove('activity-mode-page-shared');
 
   const mode = activityModeForState(raw);
+  if (control?.classList.contains('physical-set-switch')) {
+    control.remove();
+    control = null;
+  }
   if (!control) {
     control = document.createElement('div');
     control.className = 'activity-mode-switch';
@@ -159,13 +256,15 @@ function injectHeaderSwitch(raw) {
   }
   if (control.dataset.mode === mode) return;
 
+  control.className = 'activity-mode-switch';
+  delete control.dataset.physicalSignature;
   control.dataset.mode = mode;
   control.setAttribute('aria-label', 'Active farming phase');
   control.innerHTML = `
-    <span>Set</span>
-    <button type="button" data-activity-mode="farm" class="${mode === ACTIVITY_MODE.FARM ? 'active' : ''}" aria-pressed="${mode === ACTIVITY_MODE.FARM}">Farming</button>
-    <button type="button" data-activity-mode="pest-spawn" class="${mode === ACTIVITY_MODE.PEST_SPAWN ? 'active' : ''}" aria-pressed="${mode === ACTIVITY_MODE.PEST_SPAWN}">Spawning</button>
-    <button type="button" data-activity-mode="pest-kill" class="${mode === ACTIVITY_MODE.PEST_KILL ? 'active' : ''}" aria-pressed="${mode === ACTIVITY_MODE.PEST_KILL}">Killing</button>`;
+    <span>Phase</span>
+    <button type="button" data-activity-mode="farm" class="${mode === ACTIVITY_MODE.FARM ? 'active' : ''}" aria-pressed="${mode === ACTIVITY_MODE.FARM}">FF Set · Farming</button>
+    <button type="button" data-activity-mode="pest-spawn" class="${mode === ACTIVITY_MODE.PEST_SPAWN ? 'active' : ''}" aria-pressed="${mode === ACTIVITY_MODE.PEST_SPAWN}">BPC Set · Spawning</button>
+    <button type="button" data-activity-mode="pest-kill" class="${mode === ACTIVITY_MODE.PEST_KILL ? 'active' : ''}" aria-pressed="${mode === ACTIVITY_MODE.PEST_KILL}">FF Set · Killing</button>`;
   control.querySelectorAll('[data-activity-mode]').forEach(button => button.addEventListener('click', () => {
     if (button.dataset.activityMode === mode) return;
     setMode(button.dataset.activityMode);

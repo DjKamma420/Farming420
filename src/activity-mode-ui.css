@@ -97,3 +97,86 @@
     padding-top: 10px;
   }
 }
+
+
+/* Loadouts use the header for the real physical-set configuration. */
+.physical-set-switch {
+  gap: 8px;
+  max-width: min(100%, 980px);
+  overflow-x: auto;
+}
+
+.physical-set-switch .physical-set-count,
+.physical-set-switch .physical-set-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.physical-set-switch .physical-set-count {
+  padding-right: 8px;
+  border-right: 1px solid var(--line, #263c31);
+}
+
+.physical-set-switch .physical-set-tabs button {
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.physical-set-switch .physical-set-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-left: 8px;
+  border-left: 1px solid var(--line, #263c31);
+}
+
+.physical-set-switch .physical-set-name > span {
+  color: var(--muted, #8fa69a);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.physical-set-switch .physical-set-name input {
+  width: 150px;
+  min-width: 110px;
+  border: 1px solid var(--line, #263c31);
+  border-radius: 8px;
+  padding: 7px 9px;
+  background: rgba(6, 18, 12, .78);
+  color: var(--text, #f3fff8);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+@media (max-width: 980px) {
+  .physical-set-switch {
+    flex: 1 1 auto;
+  }
+
+  .physical-set-switch .physical-set-tabs button {
+    max-width: 190px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+@media (max-width: 760px) {
+  .physical-set-switch {
+    max-width: none;
+    overflow-x: auto;
+    flex: 1 1 100%;
+  }
+
+  .physical-set-switch .physical-set-count,
+  .physical-set-switch .physical-set-tabs,
+  .physical-set-switch .physical-set-name {
+    flex: 0 0 auto;
+  }
+
+  .physical-set-switch button {
+    flex: 0 0 auto;
+  }
+}
