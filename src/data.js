@@ -1510,7 +1510,6 @@ export const UPGRADES = [
     "lastVerified": "2026-09-23",
     "workbookRank": null
   },
-,
   {
     "id": "attribute-shard-fly-fortunate-farmer",
     "attribute": "Fortunate Farmer",
