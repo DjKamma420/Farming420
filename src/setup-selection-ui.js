@@ -288,16 +288,34 @@ function currentCatalogItems(slotId) {
   return itemsForSlot(readCachedCatalog()?.items || [], slotId);
 }
 
-function buildClosedItemPicker(editor, slotId, item) {
-  if (!slotHasOfficialCategory(slotId) || editor.querySelector(`[data-closed-item-select="${slotId}"]`)) return;
+function closedItemPickerSignature(options, item) {
+  return [
+    String(item?.skyblockId || '').trim(),
+    String(item?.displayName || '').trim(),
+    ...options.map(option => `${option.id}:${option.name}:${option.tier || ''}`),
+  ].join('|');
+}
 
-  const oldControl = editor.querySelector(`[data-slot-item="${slotId}"]`)
+function buildClosedItemPicker(editor, slotId, item) {
+  if (!slotHasOfficialCategory(slotId)) return;
+
+  const existingSelect = editor.querySelector(`[data-closed-item-select="${slotId}"]`);
+  const oldControl = existingSelect
+    || editor.querySelector(`[data-slot-item="${slotId}"]`)
     || editor.querySelector(`[data-slot-name="${slotId}"]`);
   const oldField = oldControl?.closest('.settings-field');
   if (!oldField) return;
 
   const options = currentCatalogItems(slotId);
-  const select = element('select', { dataset: { closedItemSelect: slotId } });
+  const signature = closedItemPickerSignature(options, item);
+  if (existingSelect?.dataset.catalogSignature === signature) return;
+
+  const select = element('select', {
+    dataset: {
+      closedItemSelect: slotId,
+      catalogSignature: signature,
+    },
+  });
   select.append(element('option', { value: '' }, '— none —'));
 
   const currentId = String(item?.skyblockId || '').trim();
@@ -336,7 +354,7 @@ function buildClosedItemPicker(editor, slotId, item) {
     });
   });
 
-  const closedField = field(`Which item`, select, 'sb-closed-item-field');
+  const closedField = field('Which item', select, 'sb-closed-item-field');
   if (!options.length) {
     const warning = element('span', { className: 'find-warn sb-picker-status' },
       item?.displayName
