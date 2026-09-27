@@ -55,10 +55,8 @@
   background:linear-gradient(180deg,var(--panel2),var(--panel));
   box-shadow:var(--shadow);
 }
-.dashboard-context-panel label,
-.dashboard-estimate-grid label{display:grid;gap:6px;color:var(--muted);font-size:12px}
-.dashboard-context-panel select,
-.dashboard-estimate-grid input{
+.dashboard-context-panel label{display:grid;gap:6px;color:var(--muted);font-size:12px}
+.dashboard-context-panel select{
   width:100%;
   min-width:0;
   padding:10px 11px;
@@ -68,67 +66,36 @@
   color:var(--text);
 }
 .dashboard-context-panel>div{display:grid;gap:4px}
-.dashboard-context-panel small,
-.dashboard-estimate-inputs>small{color:var(--muted);line-height:1.45}
-.dashboard-results-grid{margin-bottom:12px}
-.dashboard-profit-card strong{font-variant-numeric:tabular-nums}
-.dashboard-estimate-inputs{
-  margin:0 0 18px;
-  padding:0;
+.dashboard-context-panel small{color:var(--muted);line-height:1.45}
+.dashboard-results-grid{margin-bottom:18px}
+.dashboard-profit-card strong,.dashboard-revenue-card strong{font-variant-numeric:tabular-nums}
+.dashboard-account-summary{margin:8px 0 20px}
+.dashboard-account-summary>.section-row{margin-bottom:10px}
+.dashboard-economics-panel{
+  margin:0 0 20px;
+  padding:16px 18px;
   border:1px solid var(--line);
-  border-radius:12px;
-  background:var(--panel);
+  border-radius:14px;
+  background:linear-gradient(180deg,var(--panel2),var(--panel));
+  box-shadow:var(--shadow);
 }
-.dashboard-estimate-inputs>summary{
-  padding:12px 15px;
-  cursor:pointer;
-  color:var(--muted);
-  font-size:12px;
-  font-weight:700;
-}
-.dashboard-estimate-inputs[open]>summary{border-bottom:1px solid var(--line)}
-.dashboard-estimate-grid{
+.dashboard-economics-panel>.section-row{align-items:flex-start;margin-bottom:12px}
+.dashboard-revenue-streams{margin-bottom:12px}
+.dashboard-revenue-card.incomplete strong,
+.dashboard-revenue-card.unmodelled strong{color:var(--muted)}
+.dashboard-economics-meta{
   display:grid;
-  grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:10px;
-  padding:14px 15px 10px;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+  align-items:start;
 }
-.dashboard-estimate-inputs>small{display:block;padding:0 15px 14px}
+.dashboard-economics-meta>div{display:grid;gap:3px;min-width:0}
+.dashboard-economics-meta strong{font-variant-numeric:tabular-nums}
 @media (max-width:780px){
   .dashboard-context-panel{grid-template-columns:1fr;padding:14px}
-  .dashboard-estimate-grid{grid-template-columns:1fr 1fr}
+  .dashboard-economics-panel{padding:14px}
+  .dashboard-economics-meta{grid-template-columns:1fr}
 }
-@media (max-width:480px){
-  .dashboard-estimate-grid{grid-template-columns:1fr}
-}
-
-
-/* Automatic 90-day market values sit beside the measurable throughput inputs,
-   but are deliberately not editable. */
-.dashboard-estimate-readonly {
-  display: grid;
-  gap: 5px;
-  align-content: start;
-  padding: 10px 11px;
-  border: 1px solid rgba(125, 160, 134, .22);
-  border-radius: 4px;
-  background: rgba(9, 16, 11, .72);
-}
-.dashboard-estimate-readonly > span {
-  color: #9fb0a3;
-  font-size: 12px;
-  font-weight: 800;
-}
-.dashboard-estimate-readonly > strong {
-  color: #edf7ef;
-  font-size: 14px;
-}
-.dashboard-estimate-readonly > small {
-  color: #7d8f82;
-  font-size: 11px;
-  line-height: 1.35;
-}
-
 
 /* Compact automatic price/value surfaces. */
 .card-head{flex-wrap:wrap;align-items:flex-start}
