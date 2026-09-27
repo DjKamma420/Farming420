@@ -9,7 +9,16 @@ const SOURCE = Object.freeze({
   bonusPestChance: 'https://hypixel-skyblock.fandom.com/wiki/Bonus_Pest_Chance',
   current027Report: 'https://hypixel.net/threads/random-farming-nerfs-not-mentioned-in-patch-notes.6128320/',
   current027ShardReport: 'https://hypixel.net/threads/outdated-more-farming-nerfs-on-alpha-including-math.6132043/',
+  hypercharge: 'https://hypixelskyblock.minecraft.wiki/w/Garden_Chips',
+  farmingFortuneCurrent: 'https://hypixelskyblock.minecraft.wiki/w/Farming_Fortune',
+  celestialMasonJar: 'https://hypixelskyblock.minecraft.wiki/w/Celestial_Mason_Jar',
+  slugPet: 'https://hypixelskyblock.minecraft.wiki/w/Slug_Pet',
+  melonJuiceMixin: 'https://hypixelskyblock.minecraft.wiki/w/Melon_Juice_Mixin',
+  harvestHarbingerPotion: 'https://hypixelskyblock.minecraft.wiki/w/Harvest_Harbinger_Potion',
+  darkCacaoTruffle: 'https://hypixelskyblock.minecraft.wiki/w/Refined_Dark_Cacao_Truffle',
 });
+
+const HYPERCHARGE_VERIFIED_ON = '2026-09-27';
 
 export const CHIP_LEVEL_CAP = Object.freeze({ RARE: 10, EPIC: 15, LEGENDARY: 20 });
 
@@ -48,7 +57,8 @@ export const GARDEN_CHIPS = Object.freeze({
   hypercharge: Object.freeze({
     id: 'hypercharge', itemId: 'HYPERCHARGE_GARDEN_CHIP', name: 'Hypercharge Chip',
     status: 'ACTIVE', effect: effect('temporaryFarmingFortuneStrengthPercent', { RARE: 3, EPIC: 4, LEGENDARY: 5 }),
-    source: SOURCE.gardenChips,
+    source: SOURCE.hypercharge,
+    lastVerified: HYPERCHARGE_VERIFIED_ON,
   }),
   evergreen: Object.freeze({
     id: 'evergreen', itemId: 'EVERGREEN_GARDEN_CHIP', name: 'Evergreen Chip',
@@ -100,44 +110,107 @@ export function maxGardenChipEffect(chipId, rarity = 'LEGENDARY') {
 }
 
 /**
+ * Current Hypercharge interaction contract.
+ *
+ * This list deliberately names effects rather than treating every temporary
+ * Farming Fortune source as eligible. The live Garden Chips reference provides
+ * an explicit allow/deny list.
+ */
+export const HYPERCHARGE_ELIGIBLE_MODIFIER_IDS = Object.freeze([
+  'atmospheric-filter',
+  'celestial-mason-jar',
+  'chocolate-century-cake',
+  'crop-fever',
+  'magic-8-ball',
+  'pesthunter-phillip',
+  'slug-repugnant-aroma',
+]);
+
+export const HYPERCHARGE_EXCLUDED_MODIFIER_IDS = Object.freeze([
+  'anita-talisman',
+  'anita-ring',
+  'anita-artifact',
+  'refined-dark-cacao-truffle',
+  'harvest-harbinger-potion',
+  'melon-juice-mixin',
+  'overdrive-chip',
+]);
+
+const HYPERCHARGE_ELIGIBLE_MODIFIER_SET = new Set(HYPERCHARGE_ELIGIBLE_MODIFIER_IDS);
+
+export function isHyperchargeEligibleModifier(modifierId) {
+  return HYPERCHARGE_ELIGIBLE_MODIFIER_SET.has(String(modifierId || ''));
+}
+
+/**
  * Temporary farming modifiers that can materially affect active profit.
  * Hypercharge only amplifies rows explicitly marked hyperchargeEligible=true.
  * A null value means the current live magnitude/interaction remains unresolved.
  */
 export const TEMPORARY_FARMING_MODIFIERS = Object.freeze({
   cropFever: Object.freeze({
-    id: 'crop-fever', name: 'Crop Fever', status: 'ACTIVE', source: SOURCE.cropFever,
+    id: 'crop-fever', name: 'Crop Fever', status: 'ACTIVE', source: SOURCE.hypercharge,
     triggerProbabilityPerBreakPerEnchantLevel: 0.00001,
     maxEnchantLevel: 5,
     durationSeconds: 60,
     effects: Object.freeze({ farmingFortune: 100, overbloom: 15 }),
     hyperchargeEligible: true,
+    lastVerified: HYPERCHARGE_VERIFIED_ON,
   }),
   chocolateCenturyCake: Object.freeze({
-    id: 'chocolate-century-cake', name: 'Chocolate Century Cake', status: 'ACTIVE', source: SOURCE.farmingFortune,
+    id: 'chocolate-century-cake', name: 'Chocolate Century Cake', status: 'ACTIVE', source: SOURCE.hypercharge,
     effects: Object.freeze({ farmingFortune: 5 }), hyperchargeEligible: true,
+    lastVerified: HYPERCHARGE_VERIFIED_ON,
   }),
   pesthunterPhillip: Object.freeze({
-    id: 'pesthunter-phillip', name: 'Pesthunter Phillip', status: 'ACTIVE_REPORTED_0_27', source: SOURCE.current027Report,
+    id: 'pesthunter-phillip', name: 'Pesthunter Phillip', status: 'ACTIVE', source: SOURCE.hypercharge,
     durationSeconds: 1800,
     currentPestCostForFullBuff: 80,
     effects: Object.freeze({ farmingFortune: 200 }),
     hyperchargeEligible: true,
+    lastVerified: HYPERCHARGE_VERIFIED_ON,
   }),
   atmosphericFilter: Object.freeze({
-    id: 'atmospheric-filter', name: 'Atmospheric Filter', status: 'ACTIVE', source: SOURCE.farmingFortune,
+    id: 'atmospheric-filter', name: 'Atmospheric Filter', status: 'ACTIVE', source: SOURCE.hypercharge,
     condition: 'spring', effects: Object.freeze({ farmingFortune: 25 }), hyperchargeEligible: true,
+    lastVerified: HYPERCHARGE_VERIFIED_ON,
   }),
   magic8Ball: Object.freeze({
-    id: 'magic-8-ball', name: 'Magic 8 Ball', status: 'VERIFY', source: SOURCE.farmingFortune,
-    condition: 'selected-season', effects: Object.freeze({ farmingFortune: 25 }), hyperchargeEligible: true,
-    reason: 'Community wiki still flags the Hypercharge interaction as requiring confirmation.',
+    id: 'magic-8-ball', name: 'Magic 8 Ball', status: 'ACTIVE', source: SOURCE.hypercharge,
+    condition: 'farming-fortune-roll', effects: Object.freeze({ farmingFortune: 25 }), hyperchargeEligible: true,
+    lastVerified: HYPERCHARGE_VERIFIED_ON,
+  }),
+  celestialMasonJar: Object.freeze({
+    id: 'celestial-mason-jar', name: 'Celestial Mason Jar', status: 'ACTIVE', source: SOURCE.celestialMasonJar,
+    effects: Object.freeze({ farmingFortune: 15 }), hyperchargeEligible: true,
+    lastVerified: HYPERCHARGE_VERIFIED_ON,
+  }),
+  slugRepugnantAroma: Object.freeze({
+    id: 'slug-repugnant-aroma', name: 'Slug Pet — Repugnant Aroma', status: 'ACTIVE', source: SOURCE.slugPet,
+    condition: 'legendary-slug-pet-in-sprayonator-affected-plot',
+    effects: Object.freeze({ farmingFortunePerPetLevel: 1 }),
+    maxPetLevel: 100,
+    hyperchargeEligible: true,
+    lastVerified: HYPERCHARGE_VERIFIED_ON,
+  }),
+  melonJuiceMixin: Object.freeze({
+    id: 'melon-juice-mixin', name: 'Melon Juice Mixin', status: 'ACTIVE', source: SOURCE.melonJuiceMixin,
+    effects: Object.freeze({ farmingFortune: 15 }), hyperchargeEligible: false,
+    lastVerified: HYPERCHARGE_VERIFIED_ON,
+  }),
+  harvestHarbingerPotion: Object.freeze({
+    id: 'harvest-harbinger-potion', name: 'Harvest Harbinger Potion V', status: 'ACTIVE', source: SOURCE.harvestHarbingerPotion,
+    durationSeconds: 1500,
+    effects: Object.freeze({ farmingFortune: 50 }), hyperchargeEligible: false,
+    lastVerified: HYPERCHARGE_VERIFIED_ON,
   }),
   refinedDarkCacaoTruffle: Object.freeze({
-    id: 'refined-dark-cacao-truffle', name: 'Refined Dark Cacao Truffle', status: 'ACTIVE_REPORTED_0_27', source: SOURCE.current027Report,
+    id: 'refined-dark-cacao-truffle', name: 'Refined Dark Cacao Truffle', status: 'ACTIVE', source: SOURCE.darkCacaoTruffle,
+    durationSeconds: 3600,
     effects: Object.freeze({ cocoaBeansFortune: 30 }),
     hyperchargeEligible: false,
-    notes: '0.27 reports changed the truffle from global Farming Fortune to Cocoa Beans Fortune; do not feed it into global FF.',
+    notes: 'Since 0.27 the temporary bonus is Cocoa Beans Fortune, not global Farming Fortune; Hypercharge explicitly does not affect it.',
+    lastVerified: HYPERCHARGE_VERIFIED_ON,
   }),
 });
 
@@ -152,7 +225,7 @@ export function temporaryModifierEffect(modifierId, { hyperchargePercent = 0 } =
   const row = Object.values(TEMPORARY_FARMING_MODIFIERS).find(entry => entry.id === modifierId);
   if (!row) return null;
   const effects = { ...row.effects };
-  if (row.hyperchargeEligible && Number.isFinite(effects.farmingFortune)) {
+  if (isHyperchargeEligibleModifier(row.id) && Number.isFinite(effects.farmingFortune)) {
     effects.farmingFortune = hyperchargedFarmingFortune(effects.farmingFortune, hyperchargePercent);
   }
   return Object.freeze(effects);

@@ -37,10 +37,22 @@ Modeled explicitly:
 - Chocolate Century Cake: +5 Farming Fortune.
 - Pesthunter Phillip: current reported requirement 80 Pests for the full +200 Farming Fortune / 30 minute buff.
 - Atmospheric Filter: +25 Farming Fortune in Spring.
-- Magic 8 Ball: +25 Farming Fortune in its selected season, but its Hypercharge interaction remains `VERIFY` because the community reference still marks it for confirmation.
-- Refined Dark Cacao Truffle: in the 0.27 line it is crop-specific rather than global; the runtime model stores the refined +30 as Cocoa Beans Fortune and does not add it to global Farming Fortune.
+- Magic 8 Ball: +25 Farming Fortune on the Farming Fortune roll; current Garden Chips documentation explicitly includes this roll in Hypercharge.
+- Celestial Mason Jar: +15 Farming Fortune for the God Potion/direct-Mixin duration; Hypercharge-eligible.
+- Slug Pet — Repugnant Aroma: Legendary Slug grants +1 Farming Fortune per pet level, up to +100 at level 100, while farming in a Sprayonator-affected plot; Hypercharge-eligible.
+- Harvest Harbinger V: +50 Farming Fortune for 25 minutes; explicitly excluded from Hypercharge.
+- Melon Juice Mixin: +15 Farming Fortune for the God Potion/direct-Mixin duration; explicitly excluded from Hypercharge.
+- Refined Dark Cacao Truffle: the temporary bonus is +30 Cocoa Beans Fortune, not global Farming Fortune; it is explicitly excluded from Hypercharge.
 
-Hypercharge is applied only to rows explicitly marked `hyperchargeEligible`. The calculator must never multiply all temporary/crop-specific stats indiscriminately.
+### Hypercharge verification — 2026-09-27
+
+Hypercharge scales eligible temporary Farming Fortune by +3%/+4%/+5% per chip level at Rare/Epic/Legendary rarity, for maxima of +30%/+60%/+100%.
+
+Explicit allowlist: Atmospheric Filter (Spring), Celestial Mason Jar, Chocolate Century Cake, Crop Fever, Magic 8 Ball (Farming Fortune roll), Pesthunter Phillip's pest turn-in buff, and Slug Pet's Repugnant Aroma.
+
+Explicit denylist: Anita's Talisman/Ring/Artifact, Refined Dark Cacao Truffle, Harvest Harbinger Potion, Melon Juice Mixin, and Overdrive Chip. Runtime code uses the allowlist instead of treating every temporary Farming Fortune source as eligible.
+
+Redeemed Hypercharge rarity/level is not auto-detected. No verified current Garden API mapping is present in the profile adapter, and physical chip ownership is not treated as evidence of redemption. Missing state remains unknown/manual.
 
 ## Farming-relevant 0.27 shards
 
@@ -58,10 +70,12 @@ Mudworm and Timestalk Clone stacking behavior remains unresolved and is tagged `
 Primary references:
 
 - https://hypixel.net/threads/hypixel-skyblock-0-24-the-greenhouse.6027542/
-- https://hypixel-skyblock.fandom.com/wiki/Garden_Chips
-- https://hypixel-skyblock.fandom.com/wiki/Farming_Fortune
-- https://hypixel-skyblock.fandom.com/wiki/Crop_Fever
-- https://hypixel-skyblock.fandom.com/wiki/Overbloom
+- https://hypixelskyblock.minecraft.wiki/w/Garden_Chips
+- https://hypixelskyblock.minecraft.wiki/w/Celestial_Mason_Jar
+- https://hypixelskyblock.minecraft.wiki/w/Slug_Pet
+- https://hypixelskyblock.minecraft.wiki/w/Harvest_Harbinger_Potion
+- https://hypixelskyblock.minecraft.wiki/w/Melon_Juice_Mixin
+- https://hypixelskyblock.minecraft.wiki/w/Refined_Dark_Cacao_Truffle
 - https://hypixel.net/threads/random-farming-nerfs-not-mentioned-in-patch-notes.6128320/
 - https://hypixel.net/threads/outdated-more-farming-nerfs-on-alpha-including-math.6132043/
 
