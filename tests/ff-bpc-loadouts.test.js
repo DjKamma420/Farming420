@@ -131,16 +131,24 @@ test('Farming and Killing pets can be separate or resolved from one shared confi
   assert.equal(activeSetup(setups).slots.pet.skyblockId, 'HEDGEHOG');
 });
 
-test('the Setups UI keeps physical setup tabs while the header owns the 2/3-set configuration', () => {
+test('the Setups UI adds the optional third set from a name dialog instead of a 2/3 header switch', () => {
   const app = read('src/app.js');
   const activityUi = read('src/activity-mode-ui.js');
+  const activityCss = read('src/activity-mode-ui.css');
   assert.doesNotMatch(app, /data-physical-set-count/);
   assert.doesNotMatch(app, /data-third-setup-name/);
-  assert.match(activityUi, /data-physical-set-count="2"/);
-  assert.match(activityUi, /data-physical-set-count="3"/);
-  assert.match(activityUi, /data-third-setup-name/);
+  assert.doesNotMatch(activityUi, /data-physical-set-count=/);
+  assert.doesNotMatch(activityUi, /data-third-setup-name/);
+  assert.match(activityUi, /data-add-physical-set/);
+  assert.match(activityUi, /data-add-set-dialog/);
+  assert.match(activityUi, /data-new-set-name/);
+  assert.match(activityUi, /setPhysicalSetupCount\(next, 3\)/);
+  assert.match(activityUi, /setThirdSetupName\(next, name\)/);
+  assert.match(activityUi, /next\.activeId = THIRD_SETUP_ID/);
+  assert.match(activityUi, /setPhysicalSetupCount\(next, 2\)/);
   assert.match(activityUi, /FF \(Farming Fortune\) Set/);
   assert.match(activityUi, /BPC \(Bonus Pest Chance\) Set/);
+  assert.doesNotMatch(activityCss, /\.physical-set-switch\s*\{[^}]*overflow-x:\s*auto/);
   assert.match(app, /visiblePhysicalSetupIds\(all\)/);
   assert.match(app, /Set 3 has no automatic FF, BPC or Killing role\./);
   assert.match(app, /Use one pet for Farming \+ Killing/);
