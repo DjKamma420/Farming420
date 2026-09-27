@@ -86,6 +86,8 @@ test('runtime update path is versionless and retires the old service worker', ()
   assert.match(manager, /deploy-version\.json/);
   assert.match(manager, /getRegistrations\(\)/);
   assert.match(manager, /location\.replace/);
+  assert.match(manager, /const UPDATE_POLL_MS = 30_000/);
+  assert.match(manager, /setInterval\(\(\) => \{[\s\S]*?visibilityState === 'visible'[\s\S]*?checkForUpdate\(\)[\s\S]*?UPDATE_POLL_MS\)/);
   assert.doesNotMatch(sw, /\b(?:const|let|var)\s+VERSION\b/);
   assert.doesNotMatch(sw, /addEventListener\(['"]fetch['"]/);
   assert.match(sw, /self\.registration\.unregister\(\)/);
