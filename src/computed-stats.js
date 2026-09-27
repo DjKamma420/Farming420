@@ -113,6 +113,13 @@ function appliesToCrop(item, cropId) {
   return item.cropScope === 'Any' || item.cropScope === cropName(cropId);
 }
 
+function requiresCropContext(item) {
+  if (isPestVacuumEntry(item)) return false;
+  return item.section === 'crops'
+    || item.section === 'tools'
+    || item.cropScope !== 'Any';
+}
+
 export function statAxisFor(item) {
   const metric = String(item?.metric || '').toLowerCase();
   if (metric.includes('overbloom') || metric === 'rare crops') return STAT_AXIS.OVERBLOOM;
@@ -125,6 +132,7 @@ export function statAxisFor(item) {
 
 function contributionFor(state, item, cropId, mode = null, activeContextScope = null) {
   const profile = state?.profile || {};
+  if (cropId == null && requiresCropContext(item)) return null;
   if (!appliesToCrop(item, cropId)) return null;
   const axis = statAxisFor(item);
   if (!axis) return null;
@@ -374,9 +382,10 @@ function pestSetupGearContribution(state, mode, derivedContext = {}) {
 }
 
 function applyDerivedMechanics(state, totals, mode, cropId, derivedContext = {}) {
+  const cropSpecific = cropId != null;
   const cow = mooshroomCowContribution(state);
   const roseDragon = roseDragonContribution(state);
-  const pestSpawnPet = pestSpawnPetContribution(state, cropId, derivedContext);
+  const pestSpawnPet = pestSpawnPetContribution(state, cropSpecific ? cropId : null, derivedContext);
   const setupPetItem = setupPetItemForState(state, mode, derivedContext);
   const pestSetupGear = pestSetupGearContribution(state, mode, derivedContext);
   const vacuumBucket = state?.profile?.vacuumProgress || {};
@@ -392,7 +401,7 @@ function applyDerivedMechanics(state, totals, mode, cropId, derivedContext = {})
   const vacuumStats = mode === ACTIVITY_MODE.PEST_KILL
     ? vacuumPhysicalStats(vacuumBucket)
     : null;
-  const toolPeridot = (mode === ACTIVITY_MODE.FARM || mode === ACTIVITY_MODE.PEST_SPAWN)
+  const toolPeridot = cropSpecific && (mode === ACTIVITY_MODE.FARM || mode === ACTIVITY_MODE.PEST_SPAWN)
     ? toolGemstoneContribution(state, cropId)
     : { active: false, value: 0, incomplete: false, filled: 0, available: 0 };
   totals.derived = {
@@ -444,7 +453,7 @@ function applyDerivedMechanics(state, totals, mode, cropId, derivedContext = {})
       totals.globalFortune += pestSpawnPet.globalFortune;
       totals.sourceCount.globalFortune += 1;
     }
-    if (pestSpawnPet.cropFortune) {
+    if (cropSpecific && pestSpawnPet.cropFortune) {
       totals.cropFortune += pestSpawnPet.cropFortune;
       totals.sourceCount.cropFortune += 1;
     }
@@ -458,11 +467,13 @@ function applyDerivedMechanics(state, totals, mode, cropId, derivedContext = {})
         reason,
       });
     }
-    for (const reason of pestSpawnPet.cropFortuneReasons || []) {
-      totals.incomplete.cropFortune.push({
-        id: `derived-${String(pestSpawnPet.id || 'pest-pet').toLowerCase()}`,
-        reason,
-      });
+    if (cropSpecific) {
+      for (const reason of pestSpawnPet.cropFortuneReasons || []) {
+        totals.incomplete.cropFortune.push({
+          id: `derived-${String(pestSpawnPet.id || 'pest-pet').toLowerCase()}`,
+          reason,
+        });
+      }
     }
     if (mode === ACTIVITY_MODE.PEST_SPAWN) {
       for (const reason of pestSpawnPet.bpcReasons || []) {
