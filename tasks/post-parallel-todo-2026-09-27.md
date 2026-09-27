@@ -100,7 +100,7 @@ Reference: docs/MATH_MODEL.md and docs/PROFILE_DATA_MATRIX.md.
 The desired navigation contains an Effects area, but the ten current chats do not own the complete effects model.
 
 - [ ] **wird bearbeitet** — Verify and model Garden Chips and their levels.
-- [ ] Verify Hypercharge state/level and exactly which temporary sources it affects.
+- [ ] **wird bearbeitet** — Verify Hypercharge state/level and exactly which temporary sources it affects.
 - [ ] Verify God Potion and relevant mixin state/durations/interactions.
 - [ ] Verify current temporary Pesthunter Phillip buff handling.
 - [ ] Verify permanent consumables/account bonuses that affect farming, including whether they are API-visible, safely derivable or manual-only.
