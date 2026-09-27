@@ -60,7 +60,7 @@ test('v1 account-scoped crop and tool entries move onto the selected setup', () 
   assert.equal(profile.levels[FARMING_LEVEL_ID], 50);
   assert.equal(profile.levels[CROP_UPGRADE_ID], undefined);
   assert.equal(profile.levels[TOOL_LEVEL_ID], undefined);
-  assert.deepEqual(result.applied, [2, 3, 4, 5, 6, 7, 8, 9]);
+  assert.deepEqual(result.applied, [2, 3, 4, 5, 6, 7, 8, 9, 10]);
 });
 
 test('v1 tool entries stored inside a crop bucket move to the physical tool bucket', () => {
@@ -105,7 +105,7 @@ test('schema 2 gains a null normalized snapshot without changing existing profil
     },
   };
   const result = migrateState(state);
-  assert.deepEqual(result.applied, [3, 4, 5, 6, 7, 8, 9]);
+  assert.deepEqual(result.applied, [3, 4, 5, 6, 7, 8, 9, 10]);
   assert.equal(result.state.profile.normalizedSnapshot, null);
   assert.equal(result.state.profile.name, 'Existing profile');
   assert.equal(result.state.profile.levels[FARMING_LEVEL_ID], 52);
@@ -117,7 +117,7 @@ test('schema 3 keeps an existing normalized snapshot untouched', () => {
     schemaVersion: 3,
     profile: { normalizedSnapshot: snapshot },
   });
-  assert.deepEqual(result.applied, [4, 5, 6, 7, 8, 9]);
+  assert.deepEqual(result.applied, [4, 5, 6, 7, 8, 9, 10]);
   assert.deepEqual(result.state.profile.normalizedSnapshot, snapshot, 'the snapshot survives the setup migration');
 });
 
@@ -130,7 +130,7 @@ test('schema 4 adds setups without touching existing progression', () => {
       normalizedSnapshot: null,
     },
   });
-  assert.deepEqual(result.applied, [4, 5, 6, 7, 8, 9]);
+  assert.deepEqual(result.applied, [4, 5, 6, 7, 8, 9, 10]);
   assert.equal(result.state.profile.name, 'Existing profile');
   assert.equal(result.state.profile.levels[FARMING_LEVEL_ID], 52);
   assert.equal(result.state.profile.setups.list.length, 3);
@@ -162,7 +162,7 @@ test('custom setups are preserved while the three activity loadouts are added', 
 
 test('schema 5 adds empty accessory item state without inventing upgrades', () => {
   const result = migrateState({ schemaVersion: 5, profile: { name: 'Existing profile' } });
-  assert.deepEqual(result.applied, [6, 7, 8, 9]);
+  assert.deepEqual(result.applied, [6, 7, 8, 9, 10]);
   assert.deepEqual(result.state.profile.accessoryItems, {});
   assert.equal(result.state.profile.name, 'Existing profile');
 });
@@ -178,7 +178,7 @@ test('schema 6 removes obsolete enrichment state but preserves Recombobulators',
       },
     },
   });
-  assert.deepEqual(result.applied, [7, 8, 9]);
+  assert.deepEqual(result.applied, [7, 8, 9, 10]);
   assert.equal(result.state.profile.enrichmentSpeedOverride, undefined);
   assert.deepEqual(result.state.profile.accessoryItems.HELIANTHUS_RELIC, { recombobulated: true, source: 'manual' });
   assert.deepEqual(result.state.profile.accessoryItems.MAGIC_8_BALL, { recombobulated: false, source: 'hypixel-sync' });
@@ -200,7 +200,7 @@ test('schema 7 preserves the legacy Pest loadout as Spawning and adds an empty K
     },
   });
 
-  assert.deepEqual(result.applied, [8, 9]);
+  assert.deepEqual(result.applied, [8, 9, 10]);
   const setups = result.state.profile.setups;
   assert.equal(setups.activeId, 'pest');
   assert.equal(setups.list.find(setup => setup.id === 'normal').name, 'Farming');
@@ -248,7 +248,7 @@ test('schema 8 migrates persisted Killing gear into the FF/BPC source-of-truth m
     },
   });
 
-  assert.deepEqual(result.applied, [9]);
+  assert.deepEqual(result.applied, [9, 10]);
   const setups = result.state.profile.setups;
   const farming = setups.list.find(setup => setup.id === 'normal');
   const spawning = setups.list.find(setup => setup.id === 'pest');
@@ -264,6 +264,35 @@ test('schema 8 migrates persisted Killing gear into the FF/BPC source-of-truth m
   assert.equal(killing.slots.pet.skyblockId, 'HEDGEHOG', 'pets stay separate by default');
   assert.equal(spawning.slots.helmet.displayName, 'BPC Helmet', 'BPC gear remains independent');
   assert.equal(setups.activeId, 'pest-kill');
+});
+
+test('schema 9 preserves legacy Garden Chip level while leaving rarity unknown', () => {
+  const result = migrateState({
+    schemaVersion: 9,
+    profile: {
+      levels: {
+        'garden-chip-cropshot-chip': 12,
+        'garden-chip-hypercharge-chip-next-level': 7,
+      },
+      owned: {
+        'garden-chip-cropshot-chip': true,
+        'garden-chip-hypercharge-chip-next-level': true,
+      },
+    },
+  });
+
+  assert.deepEqual(result.applied, [10]);
+  assert.deepEqual(result.state.profile.gardenChips.cropshot, {
+    rarity: null,
+    level: 12,
+    source: 'legacy',
+  });
+  assert.deepEqual(result.state.profile.gardenChips.hypercharge, {
+    rarity: null,
+    level: 7,
+    source: 'legacy',
+  });
+  assert.equal(result.state.profile.levels['garden-chip-cropshot-chip'], 12, 'legacy input is preserved for backup compatibility');
 });
 
 test('migration is idempotent', () => {
@@ -305,7 +334,7 @@ test('an unknown crop bucket is kept and reported instead of dropped', () => {
 
 test('a state without a schema version is treated as the oldest schema', () => {
   const result = migrateState({ profile: { levels: { [CROP_UPGRADE_ID]: 4 } } });
-  assert.deepEqual(result.applied, [2, 3, 4, 5, 6, 7, 8, 9]);
+  assert.deepEqual(result.applied, [2, 3, 4, 5, 6, 7, 8, 9, 10]);
   assert.equal(result.state.profile.cropProgress.melon.levels[CROP_UPGRADE_ID], 4);
   assert.equal(result.state.profile.normalizedSnapshot, null);
 });
