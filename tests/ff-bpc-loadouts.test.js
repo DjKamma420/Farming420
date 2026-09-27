@@ -6,14 +6,20 @@ import {
   BPC_SETUP_ID,
   FF_SETUP_ID,
   KILLING_SETUP_ID,
+  THIRD_SETUP_ID,
   VISIBLE_SETUP_IDS,
   activeSetup,
   createDefaultSetups,
   createEmptyItem,
   effectiveSetup,
   farmingKillingPetShared,
+  physicalSetupCount,
   prepareFfBpcSetups,
   setFarmingKillingPetShared,
+  setPhysicalSetupCount,
+  setThirdSetupName,
+  thirdSetupName,
+  visiblePhysicalSetupIds,
   writeLinkedSetupSlot,
 } from '../src/setups.js';
 
@@ -24,10 +30,34 @@ function item(name, id = name.toUpperCase().replace(/\s+/g, '_')) {
   return { ...createEmptyItem(), displayName: name, skyblockId: id };
 }
 
-test('only FF and BPC are visible physical sets', () => {
+test('two physical sets are the default and an optional third set stays independent', () => {
+  const setups = createDefaultSetups();
   assert.deepEqual(VISIBLE_SETUP_IDS, [FF_SETUP_ID, BPC_SETUP_ID]);
+  assert.deepEqual(visiblePhysicalSetupIds(setups), [FF_SETUP_ID, BPC_SETUP_ID]);
+  assert.equal(physicalSetupCount(setups), 2);
   assert.equal(VISIBLE_SETUP_IDS.includes(KILLING_SETUP_ID), false);
-  assert.equal(createDefaultSetups().list.length, 3, 'Killing keeps an internal pet overlay');
+  assert.equal(setups.list.length, 3, 'Killing keeps an internal pet overlay');
+
+  setPhysicalSetupCount(setups, 3);
+  assert.equal(physicalSetupCount(setups), 3);
+  assert.deepEqual(visiblePhysicalSetupIds(setups), [FF_SETUP_ID, BPC_SETUP_ID, THIRD_SETUP_ID]);
+  assert.equal(thirdSetupName(setups), 'Set 3');
+
+  setThirdSetupName(setups, 'Mushroom Set');
+  writeLinkedSetupSlot(setups, THIRD_SETUP_ID, 'helmet', item('Third Helmet'));
+  assert.equal(thirdSetupName(setups), 'Mushroom Set');
+  assert.equal(setups.list.find(setup => setup.id === THIRD_SETUP_ID).slots.helmet.displayName, 'Third Helmet');
+
+  setups.activeId = THIRD_SETUP_ID;
+  setPhysicalSetupCount(setups, 2);
+  assert.equal(setups.activeId, FF_SETUP_ID);
+  assert.deepEqual(visiblePhysicalSetupIds(setups), [FF_SETUP_ID, BPC_SETUP_ID]);
+  assert.equal(thirdSetupName(setups), 'Mushroom Set', 'hiding Set 3 keeps its custom name');
+  assert.equal(setups.list.find(setup => setup.id === THIRD_SETUP_ID).slots.helmet.displayName, 'Third Helmet');
+
+  setPhysicalSetupCount(setups, 3);
+  assert.equal(thirdSetupName(setups), 'Mushroom Set');
+  assert.equal(setups.list.find(setup => setup.id === THIRD_SETUP_ID).slots.helmet.displayName, 'Third Helmet');
 });
 
 test('legacy Killing gear migrates to FF and is no longer duplicated in storage', () => {
@@ -101,15 +131,19 @@ test('Farming and Killing pets can be separate or resolved from one shared confi
   assert.equal(activeSetup(setups).slots.pet.skyblockId, 'HEDGEHOG');
 });
 
-test('the Setups UI exposes FF/BPC physical sets and Killing only as a pet role', () => {
+test('the Setups UI exposes a 2/3-set switch, fixed FF/BPC names and a custom third name', () => {
   const app = read('src/app.js');
-  assert.match(app, /VISIBLE_SETUP_IDS\.map/);
+  assert.match(app, /data-physical-set-count/);
+  assert.match(app, /data-third-setup-name/);
+  assert.match(app, /visiblePhysicalSetupIds\(all\)/);
+  assert.match(app, /FF \(Farming Fortune\) Set/);
+  assert.match(app, /BPC \(Bonus Pest Chance\) Set/);
+  assert.match(app, /Switching back to 2 sets only hides Set 3; its items and name stay saved\./);
   assert.match(app, /Use one pet for Farming \+ Killing/);
   assert.match(app, /Farming Pet/);
   assert.match(app, /Killing Pet/);
   assert.match(app, /Only the pet can differ for Killing; Armor and Equipment stay identical to the FF Set\./);
   assert.doesNotMatch(app, /data-setup-add|data-setup-remove|id="setupName"/);
-  assert.match(app, /return setupId === BPC_SETUP_ID \? 'BPC Set' : 'FF Set'/);
   assert.match(app, /effectiveSetup\(all, setupId \|\| all\.activeId\)/);
   assert.match(app, /data-skyblock-item-id/);
 });
