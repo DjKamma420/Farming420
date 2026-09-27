@@ -22,7 +22,6 @@ export const TOOL_PROGRESS_ITEM_IDS = Object.freeze({
 });
 
 const RECOMBOBULATOR_CONTROL_SELECTOR = [
-  '[data-accessory-recomb]',
   '[data-slot-recomb]',
   '[data-vacuum-recomb]',
   '[data-tool-recomb]',
@@ -68,9 +67,10 @@ export function catalogItemById(catalog, skyblockId) {
 }
 
 const PINNED_HEAD_TEXTURE_IDS = new Set([
-  // Rat Shard: keep the verified Sprayonator Serendipity player-head texture.
-  // The live item resource has produced a mismatching skin for this one card.
+  // These exact player-head definitions are verified and must not be displaced
+  // by stale/mismatching live skin metadata.
   'ATTRIBUTE_SHARD_SPRAYONATOR_SERENDIPITY;1',
+  'PESTHUNTER_BADGE',
 ]);
 
 export function skinTextureUrl(item) {
