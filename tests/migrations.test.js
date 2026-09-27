@@ -370,3 +370,23 @@ test('a state with no tool progress survives the rename migration', () => {
   assert.doesNotThrow(() => migrateState({ schemaVersion: 4, profile: {} }));
   assert.doesNotThrow(() => migrateState({ schemaVersion: 4 }));
 });
+
+
+test('schema 9 gives Dashboard Farming its own crop selection without changing the global crop', () => {
+  const migrated = migrateState({
+    schemaVersion: 9,
+    selectedCrop: 'wheat',
+    profile: {},
+  });
+  assert.equal(migrated.state.selectedCrop, 'wheat');
+  assert.equal(migrated.state.dashboardCrop, 'wheat');
+
+  const existing = migrateState({
+    schemaVersion: 9,
+    selectedCrop: 'wheat',
+    dashboardCrop: 'melon',
+    profile: {},
+  });
+  assert.equal(existing.state.selectedCrop, 'wheat');
+  assert.equal(existing.state.dashboardCrop, 'melon');
+});
