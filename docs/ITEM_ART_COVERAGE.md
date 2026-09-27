@@ -5,6 +5,13 @@ What the app can picture, what it cannot, and why. Kept honest by
 `tests/item-art-coverage.test.js` and
 `tests/item-model-coverage-audit.test.js`.
 
+## Setup item identity
+
+Setup portraits are keyed by the exact SkyBlock item id stored on the slot.
+The display name is only a label and must never choose the image. When a card
+represents another phase, its explicit setup target selects the loadout first;
+Killing then resolves shared Armor and Equipment through the effective FF setup.
+
 ## The precedence, strongest first
 
 1. **Player-head NBT texture** from the synced item's own tag. The item's real picture.
