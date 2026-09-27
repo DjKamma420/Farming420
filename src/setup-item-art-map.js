@@ -27,6 +27,10 @@ export const EXACT_SETUP_ITEM_ART = Object.freeze({
   // render immediately even before the async Hypixel item catalog is available.
   GREEN_BANDANA: Object.freeze({ kind: 'head', textureId: '3521cccdbb892dff183d97bbdb12f2671e0cd12b945b8fca211a7065359a03a5' }),
   BROWN_BANDANA: Object.freeze({ kind: 'head', textureId: '674e061e6d853822bbad56d079357c248c9a40de494f20eae0078a0a02ef0da7' }),
+  POIGNANT_LUCKY_CLOVER: Object.freeze({
+    kind: 'rendered',
+    iconUrl: 'https://skyah.net/icons/items/poignant_lucky_clover.webp',
+  }),
 
   HELIANTHUS_HELMET: Object.freeze({
     // A cropped player-head skin only shows a flat face. The setup card is
