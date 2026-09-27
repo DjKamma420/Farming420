@@ -90,7 +90,7 @@ function activeSetupFromStorage() {
 function replaceSlot(slotId, mutator) {
   const state = readState();
   if (!state) return false;
-  const { setup } = currentSetupRecord(state);
+  const { setups, setup } = currentSetupRecord(state);
   if (!setup) return false;
   setup.slots ||= {};
   const nextItem = mutator(setup.slots[slotId] || null);

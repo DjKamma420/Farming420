@@ -57,12 +57,9 @@ import { EXCLUSIVE_ENTRY_GROUPS } from './exclusivity.js';
 import {
   TOOL_PANEL,
   assertToolPanelEntries,
-  enchantRowsFor,
-  gemOptionValues,
   itemSummary,
   levelControlFor,
   toolPanelEntryIds,
-  parseGem,
   rarityClass,
   withEnchantLevel,
   withEnchantToggled,
@@ -103,7 +100,7 @@ import {
   readCachedCatalog,
   slotHasOfficialCategory,
 } from './item-catalog.js';
-import { itemCapabilities } from './item-capabilities.js';
+import { gemValuesForSlotType, itemCapabilities } from './item-capabilities.js';
 import { FARMING_TOOL_REFORGES } from './farming-reforges.js';
 import { FARMING_TOOL_ITEM_IDS, GARDEN_VACUUM_ITEMS, farmingToolSkyblockId } from './exact-farming-items.js';
 import {
@@ -1929,8 +1926,8 @@ function slotEditor(slotId) {
   const catalogItems = itemsForSlot(itemCatalog, slotId);
   const capabilities = itemCapabilities(slotId, item, itemCatalog);
   const reforges = capabilities.reforges.map(option => ({ value: option.id, source: 'official' }));
-  const rows = enchantRowsFor(slotId, item);
-  const gems = item.gems || [];
+  const rows = capabilities.enchantmentRows;
+  const gems = Array.isArray(item.gems) ? item.gems : [];
   const filled = Boolean(item.displayName);
   const buildValue = filled ? physicalItemBuildValue(slotId, item) : null;
   const buildValueNote = buildValue
@@ -1977,22 +1974,21 @@ function slotEditor(slotId) {
     </section>` : `<p class="hint">A ${esc(slot.label.toLowerCase())} takes no farming enchantments.</p>`}
 
     ${capabilities.gemstoneSlots.length ? `<section class="item-editor-section">
-      <div class="section-row"><div><h3>Gemstones</h3><p>${capabilities.gemstoneSlots.length} official socket${capabilities.gemstoneSlots.length === 1 ? '' : 's'} on this item.</p></div></div>
+      <div class="section-row"><div><h3>Gemstones</h3><p>${capabilities.gemstoneSlots.length} official socket${capabilities.gemstoneSlots.length === 1 ? '' : 's'} on this item. Each socket only offers legal gemstone types.</p></div></div>
       <div class="gem-grid">
-        ${gems.map((gem, index) => `<div class="gem-line">
-          <select data-gem-value="${esc(slotId)}" data-gem-index="${index}">
-            ${gemOptionValues().map(value => `<option value="${esc(value)}" ${value === String(gem).toUpperCase() ? 'selected' : ''}>${esc(value)}</option>`).join('')}
-            ${parseGem(gem) ? '' : `<option value="${esc(gem)}" selected>${esc(gem)}</option>`}
-          </select>
-          <button class="ghost small" data-gem-remove="${esc(slotId)}" data-gem-index="${index}">Remove</button>
-        </div>`).join('')}
-        <div class="gem-line">
-          <select data-gem-new="${esc(slotId)}">
-            <option value="">— add a gemstone —</option>
-            ${gemOptionValues().map(value => `<option value="${esc(value)}">${esc(value)}</option>`).join('')}
-          </select>
-          <button class="ghost small" data-gem-add="${esc(slotId)}">Add</button>
-        </div>
+        ${capabilities.gemstoneSlots.map((socket, index) => {
+          const current = String(gems[index] || '').trim().toUpperCase();
+          const values = gemValuesForSlotType(socket.slotType);
+          const preserveCurrent = current && !values.includes(current);
+          return `<label class="gem-line exact-gem-line">
+            <span><strong>${esc(socket.slotType)}</strong> slot ${index + 1}</span>
+            <select data-gem-value="${esc(slotId)}" data-gem-index="${index}">
+              <option value="">— empty —</option>
+              ${values.map(value => `<option value="${esc(value)}" ${value === current ? 'selected' : ''}>${esc(value)}</option>`).join('')}
+              ${preserveCurrent ? `<option value="${esc(current)}" selected>${esc(current)} (current)</option>` : ''}
+            </select>
+          </label>`;
+        }).join('')}
       </div>
     </section>` : ''}
   </div>`;
@@ -2170,9 +2166,42 @@ function setupsPage() {
     ${state.setupSlot ? slotEditor(state.setupSlot) : ''}`;
 }
 
+function interactionSelector(element) {
+  if (!element || element === document.body) return null;
+  const escape = value => String(value).replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+  if (element.id) return `[id="${escape(element.id)}"]`;
+  const attributes = [...(element.attributes || [])].filter(attribute => attribute.name.startsWith('data-'));
+  if (!attributes.length) return null;
+  return `${String(element.tagName || '').toLowerCase()}${attributes.map(attribute => `[${attribute.name}="${escape(attribute.value)}"]`).join('')}`;
+}
+
+function captureInteraction() {
+  return {
+    x: Number(window.scrollX || 0),
+    y: Number(window.scrollY || 0),
+    selector: interactionSelector(document.activeElement),
+  };
+}
+
+function restoreInteraction(interaction) {
+  if (!interaction) return;
+  const restore = () => {
+    window.scrollTo(interaction.x, interaction.y);
+    if (interaction.selector) document.querySelector(interaction.selector)?.focus({ preventScroll: true });
+  };
+  restore();
+  if (typeof requestAnimationFrame === 'function') requestAnimationFrame(restore);
+}
+
 function bindSetups() {
   const all = setups();
-  const rerender = () => { reapplyGear(); saveState(); render(); };
+  const rerender = () => {
+    const interaction = captureInteraction();
+    reapplyGear();
+    saveState();
+    render();
+    restoreInteraction(interaction);
+  };
 
   document.querySelectorAll('[data-setup]').forEach(el => el.addEventListener('click', () => {
     all.activeId = el.dataset.setup;
@@ -2285,6 +2314,9 @@ function bindSetups() {
       skyblockId: chosen?.id ?? null,
       displayName: chosen?.name ?? currentItem().displayName,
       enchantments: changingItem ? intrinsicEnchantmentsForCatalogItem(chosen) : currentItem().enchantments,
+      reforge: changingItem ? null : currentItem().reforge,
+      recombobulated: changingItem ? false : currentItem().recombobulated,
+      gems: changingItem ? [] : currentItem().gems,
       // Hypixel's own item resource carries the base tier, so picking an item
       // from the list colours it correctly without anyone typing a rarity. A
       // recombobulator raises the shown rarity, which the editor states
@@ -2319,19 +2351,15 @@ function bindSetups() {
     rerender();
   }));
 
-  document.querySelector(`[data-gem-add="${slotId}"]`)?.addEventListener('click', () => {
-    const value = document.querySelector(`[data-gem-new="${slotId}"]`)?.value?.trim().toUpperCase();
-    if (!value) return;
-    patch({ gems: [...currentItem().gems, value] }); rerender();
-  });
   document.querySelectorAll(`[data-gem-value="${slotId}"]`).forEach(el => el.addEventListener('change', event => {
-    const gems = [...currentItem().gems];
+    const capabilities = itemCapabilities(slotId, currentItem(), itemCatalog);
+    const gems = Array.from(
+      { length: capabilities.gemstoneSlots.length },
+      (_, index) => String(currentItem().gems?.[index] || '').trim().toUpperCase(),
+    );
     gems[Number(el.dataset.gemIndex)] = String(event.target.value || '').trim().toUpperCase();
-    patch({ gems: gems.filter(Boolean) }); rerender();
-  }));
-  document.querySelectorAll(`[data-gem-remove="${slotId}"]`).forEach(el => el.addEventListener('click', () => {
-    const gems = currentItem().gems.filter((_, index) => index !== Number(el.dataset.gemIndex));
-    patch({ gems }); rerender();
+    patch({ gems });
+    rerender();
   }));
 }
 
@@ -2904,8 +2932,10 @@ render();
 // Settings writes synced values straight to storage; re-read and repaint so the
 // cards show them without a manual reload.
 window.addEventListener('farming420:state-changed', () => {
+  const interaction = captureInteraction();
   state = loadState();
   render();
+  restoreInteraction(interaction);
 });
 
 // Market refresh changes only the price cache, not profile state. Do not

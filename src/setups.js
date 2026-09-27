@@ -17,6 +17,7 @@
 import { baseRarityFromDisplayed } from './setup-rarity.js';
 import { petLevelFromExperience } from './mooshroom-cow.js';
 import { clampPetLevel, petLevelBounds } from './setup-pet-catalog.js';
+import { snapshotSectionCanAutoFill } from './profile-trust.js';
 
 export const SETUPS_MODEL_VERSION = 4;
 
@@ -217,12 +218,16 @@ export function itemRecordsFromSnapshotPet(pet) {
 
 function gemListFrom(gems) {
   if (!gems || typeof gems !== 'object') return [];
-  return Object.entries(gems)
-    .map(([slot, value]) => {
-      const quality = typeof value === 'string' ? value : value?.quality;
-      return quality ? `${String(quality).toUpperCase()} ${slot.replace(/_\d+$/, '').toUpperCase()}` : null;
-    })
-    .filter(Boolean);
+  const result = [];
+  for (const [slot, value] of Object.entries(gems)) {
+    const quality = typeof value === 'string' ? value : value?.quality;
+    if (!quality) continue;
+    const slotName = String(slot || '').toUpperCase();
+    const indexMatch = slotName.match(/_(\d+)$/);
+    const index = indexMatch ? Number(indexMatch[1]) : result.length;
+    result[index] = `${String(quality).toUpperCase()} ${slotName.replace(/_\d+$/, '')}`;
+  }
+  return result;
 }
 
 /** Turns one decoded profile item into a setup item record. */
@@ -394,8 +399,16 @@ export function writeLinkedSetupSlot(setups, setupId, slotId, item) {
   return true;
 }
 
-const isWornArmor = container => container === 'armor';
-const isWornEquipment = container => container === 'equipment';
+function wornCopy(item, container) {
+  if (String(item?.container || '') === container) return item;
+  const locations = Array.isArray(item?.locations) ? item.locations : [];
+  const worn = locations.find(location => String(location?.container || '') === container);
+  return worn ? { ...item, container, slot: worn.slot ?? item?.slot ?? null } : null;
+}
+
+function wornItems(items, container) {
+  return items.map(item => wornCopy(item, container)).filter(Boolean);
+}
 
 /**
  * Fills a setup's slots from the items a sync detected.
@@ -408,10 +421,12 @@ const isWornEquipment = container => container === 'equipment';
  * is set, so a sync never silently discards manual work.
  */
 export function prefillSetupFromSnapshot(setup, snapshot, { overwrite = false } = {}) {
-  const items = Array.isArray(snapshot?.items) ? snapshot.items : [];
-  const armor = items.filter(item => isWornArmor(String(item?.container || '')));
-  const equipment = items.filter(item => isWornEquipment(String(item?.container || '')));
-  const pets = Array.isArray(snapshot?.pets) ? snapshot.pets : [];
+  const itemsReliable = snapshotSectionCanAutoFill(snapshot, 'items');
+  const petsReliable = snapshotSectionCanAutoFill(snapshot, 'pets');
+  const items = itemsReliable && Array.isArray(snapshot?.items) ? snapshot.items : [];
+  const armor = wornItems(items, 'armor');
+  const equipment = wornItems(items, 'equipment');
+  const pets = petsReliable && Array.isArray(snapshot?.pets) ? snapshot.pets : [];
 
   const filled = [];
   const next = { ...setup, slots: { ...setup.slots } };
@@ -423,12 +438,36 @@ export function prefillSetupFromSnapshot(setup, snapshot, { overwrite = false } 
     filled.push(slotId);
   };
 
-  // Hypixel returns worn armor boots-first; the editor lists it helmet-first.
-  const armorBySlot = [...armor].sort((a, b) => Number(b.slot ?? 0) - Number(a.slot ?? 0));
-  ARMOR_SLOT_ORDER.forEach((slotId, index) => assign(slotId, itemRecordFromDecoded(armorBySlot[index])));
+  // Hypixel slot numbers are authoritative even when only part of a loadout is
+  // visible. Sorting then assigning by array position would turn a lone pair of
+  // boots into a helmet, or a lone belt into a necklace.
+  const armorFallback = [];
+  for (const item of armor) {
+    const slot = Number(item?.slot);
+    const slotId = Number.isInteger(slot) && slot >= 0 && slot < ARMOR_SLOT_ORDER.length
+      ? ARMOR_SLOT_ORDER[ARMOR_SLOT_ORDER.length - 1 - slot]
+      : null;
+    if (slotId) assign(slotId, itemRecordFromDecoded(item));
+    else armorFallback.push(item);
+  }
+  for (const item of armorFallback) {
+    const slotId = ARMOR_SLOT_ORDER.find(id => !next.slots[id]);
+    if (slotId) assign(slotId, itemRecordFromDecoded(item));
+  }
 
-  const equipmentBySlot = [...equipment].sort((a, b) => Number(a.slot ?? 0) - Number(b.slot ?? 0));
-  EQUIPMENT_SLOT_ORDER.forEach((slotId, index) => assign(slotId, itemRecordFromDecoded(equipmentBySlot[index])));
+  const equipmentFallback = [];
+  for (const item of equipment) {
+    const slot = Number(item?.slot);
+    const slotId = Number.isInteger(slot) && slot >= 0 && slot < EQUIPMENT_SLOT_ORDER.length
+      ? EQUIPMENT_SLOT_ORDER[slot]
+      : null;
+    if (slotId) assign(slotId, itemRecordFromDecoded(item));
+    else equipmentFallback.push(item);
+  }
+  for (const item of equipmentFallback) {
+    const slotId = EQUIPMENT_SLOT_ORDER.find(id => !next.slots[id]);
+    if (slotId) assign(slotId, itemRecordFromDecoded(item));
+  }
 
   const activePet = pets.find(pet => pet.active === true);
   if (activePet) {
@@ -437,7 +476,14 @@ export function prefillSetupFromSnapshot(setup, snapshot, { overwrite = false } 
     assign('petItem', records.petItem);
   }
 
-  return { setup: next, filled, armorSeen: armor.length, equipmentSeen: equipment.length };
+  return {
+    setup: next,
+    filled,
+    armorSeen: armor.length,
+    equipmentSeen: equipment.length,
+    itemsReliable,
+    petsReliable,
+  };
 }
 
 function setupSlotsEqual(a, b) {
