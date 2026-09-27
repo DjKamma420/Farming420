@@ -234,6 +234,23 @@ const SCROLL_ANCHOR_CONTROL_SELECTOR = 'button, input, select, textarea, a, labe
 
 function scrollAnchorElement(target) {
   if (!target?.closest) return null;
+
+  // Setup editors are moved/rebuilt after every item edit. Anchoring to the
+  // control inside that editor is unstable because the control may disappear,
+  // move, or become hidden (for example an option inside a closed <details>).
+  // Anchor the interaction to the physical slot card instead; that card is the
+  // stable thing the user is looking at.
+  if (state.page === 'setups') {
+    const editor = target.closest('[data-item-editor]');
+    const slotId = editor?.dataset.itemEditor;
+    if (slotId) {
+      const card = [...document.querySelectorAll('.slot-card[data-slot]')].find(candidate =>
+        candidate.dataset.slot === slotId
+        && (!state.setupSlotTarget || candidate.dataset.setupTarget === state.setupSlotTarget));
+      if (card) return card;
+    }
+  }
+
   let element = target.closest(SCROLL_ANCHOR_CONTROL_SELECTOR) || target;
   if (element?.tagName === 'LABEL') {
     element = element.querySelector('input, select, textarea, button') || element;
