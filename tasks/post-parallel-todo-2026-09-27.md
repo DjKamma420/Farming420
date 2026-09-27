@@ -6,9 +6,9 @@ This backlog assumes the ten parallel workstreams started on 2026-09-27 are comp
 
 ## Work already assigned to the ten parallel chats
 
-Do not create a second implementation for these areas while their parallel work is active:
+Do not create a second implementation for areas whose parallel work is still active. Completed entries remain here as the coordination record:
 
-1. Farming / Spawning / Killing loadout model
+1. [x] Farming / Spawning / Killing loadout model — completed and merged via PR #222
 2. Upgrade Planner and Cost Until Maxed
 3. Pricing, Bazaar/AH routing and 90-day averages
 4. Global search
