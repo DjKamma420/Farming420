@@ -269,6 +269,22 @@ function migrateFfBpcLoadouts(state) {
   profile.setups = prepareFfBpcSetups(profile.setups);
 }
 
+/**
+ * Schema 9 -> 10
+ *
+ * Dashboard Farming gets its own crop selection so changing the FF Dashboard
+ * does not mutate the crop currently open on Garden/Tools pages. Existing
+ * players start with the crop they already had selected.
+ */
+function migrateDashboardCropSelection(state) {
+  const fallback = CROPS.some(entry => entry.id === state.selectedCrop)
+    ? state.selectedCrop
+    : DEFAULT_CROP_ID;
+  if (!CROPS.some(entry => entry.id === state.dashboardCrop)) {
+    state.dashboardCrop = fallback;
+  }
+}
+
 const MIGRATIONS = [
   {
     to: 2,
@@ -309,6 +325,11 @@ const MIGRATIONS = [
     to: 9,
     description: 'Migrate persisted loadouts to the FF/BPC model with shared Farming/Killing gear.',
     run: migrateFfBpcLoadouts,
+  },
+  {
+    to: 10,
+    description: 'Give the Dashboard FF set an independent crop selection.',
+    run: migrateDashboardCropSelection,
   },
 ];
 
