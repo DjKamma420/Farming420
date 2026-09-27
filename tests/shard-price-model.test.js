@@ -32,9 +32,14 @@ test('Ladybug is a Rare shard with 48 total shards through attribute level 10', 
   );
 });
 
-test('the day/night shard row exposes two explicit alternative market items', () => {
+test('day and night shards are separate global market items', () => {
   assert.deepEqual(
-    [...farmingShardMarket('attribute-shard-firefly-or-lunar-moth-shard').itemTags],
-    ['SHARD_FIREFLY', 'SHARD_LUNAR_MOTH'],
+    [...farmingShardMarket('attribute-shard-firefly-solar-power').itemTags],
+    ['SHARD_FIREFLY'],
   );
+  assert.deepEqual(
+    [...farmingShardMarket('attribute-shard-lunar-moth-lunar-power').itemTags],
+    ['SHARD_LUNAR_MOTH'],
+  );
+  assert.equal(farmingShardMarket('attribute-shard-firefly-or-lunar-moth-shard'), null);
 });
