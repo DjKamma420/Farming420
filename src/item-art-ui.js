@@ -149,6 +149,20 @@ export function catalogItemForSetupArt(catalogValue, skyblockId) {
   return catalogValue.find(item => String(item?.id || '').trim().toUpperCase() === id) || null;
 }
 
+/**
+ * Non-head Pet Items are not guaranteed to exist in the shipped SkyBlock
+ * resource-pack manifest. Once the official Hypixel item catalog confirms the
+ * exact id is a PET_ITEM, use the same exact-id rendered-icon endpoint already
+ * used by the setup art layer. Display names are never turned into URLs.
+ */
+export function catalogRenderedIconForSetupArt(catalogValue, skyblockId) {
+  const record = catalogItemForSetupArt(catalogValue, skyblockId);
+  if (!record || String(record.category || '').trim().toUpperCase() !== 'PET_ITEM') return null;
+  const id = String(record.id || '').trim().toLowerCase();
+  if (!/^[a-z0-9_-]+$/.test(id)) return null;
+  return `https://skyah.net/icons/items/${id}.webp`;
+}
+
 function exactSetupArtNode(itemId, item, onError = null) {
   const descriptor = exactSetupItemArt(itemId);
   if (!descriptor) return null;
@@ -179,6 +193,9 @@ function catalogFallbackNode(itemId, item, onError = null) {
   if (/^[0-9a-f]{32,64}$/.test(catalogTexture)) {
     return skullNode(catalogTexture, item, onError);
   }
+
+  const renderedIconUrl = catalogRenderedIconForSetupArt(itemCatalog, itemId);
+  if (renderedIconUrl) return remoteIconNode(renderedIconUrl, item, onError);
 
   const markup = armorItemSvgMarkup(record);
   if (!markup) return null;
