@@ -8,6 +8,7 @@ import {
   itemForSetupSlot,
   setupItemAsset,
 } from '../src/item-art-ui.js';
+import { exactSetupItemArt } from '../src/setup-item-art-map.js';
 
 const manifest = {
   schemaVersion: 1,
@@ -153,4 +154,34 @@ test('concurrent core renders share resource promises instead of dropping the ne
   assert.match(source, /catalogPromise \|\|=/);
   assert.doesNotMatch(source, /if \(applying/);
   assert.match(source, /Every caller paints its own current DOM/);
+});
+
+
+test('Helianthus setup art is assigned directly by exact SkyBlock item id', () => {
+  const helmet = exactSetupItemArt('HELIANTHUS_HELMET');
+  const chest = exactSetupItemArt('HELIANTHUS_CHESTPLATE');
+  const legs = exactSetupItemArt('HELIANTHUS_LEGGINGS');
+  const boots = exactSetupItemArt('HELIANTHUS_BOOTS');
+
+  assert.deepEqual(helmet, {
+    kind: 'head',
+    textureId: '46e48a6eff318dcda57d5d76a9b2656be25973e3d472b6d2e446a8e60f60a78a',
+  });
+  assert.equal(chest?.kind, 'armor');
+  assert.equal(chest?.item?.material, 'IRON_CHESTPLATE');
+  assert.equal(legs?.kind, 'armor');
+  assert.equal(legs?.item?.material, 'LEATHER_LEGGINGS');
+  assert.equal(legs?.item?.color, '255,229,1');
+  assert.equal(boots?.kind, 'armor');
+  assert.equal(boots?.item?.material, 'IRON_BOOTS');
+});
+
+test('exact setup item-id art outranks generated SkyAH armor icon URLs', () => {
+  const source = readFileSync(new URL('../src/item-art-ui.js', import.meta.url), 'utf8');
+  const mappedLookup = source.indexOf('const mappedArt = exactSetupItemArt(itemId)');
+  const remoteLookup = source.indexOf('knownSkyblockRenderedIcon(itemId)');
+  const mappedRender = source.indexOf('if (mappedArt) {');
+  assert.ok(mappedLookup >= 0 && remoteLookup > mappedLookup);
+  assert.ok(mappedRender > mappedLookup);
+  assert.match(source, /exactSetupArtNode\(itemId, item/);
 });

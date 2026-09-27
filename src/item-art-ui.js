@@ -3,6 +3,7 @@ import { itemAssetForSkyblockId, loadItemAssetManifest } from './item-assets.js'
 import { armorItemSvgMarkup } from './armor-item-art.js';
 import { loadItemCatalog, readCachedCatalog } from './item-catalog.js';
 import { effectiveSetup } from './setups.js';
+import { exactSetupItemArt } from './setup-item-art-map.js';
 import { knownSkyblockHeadTexture, knownSkyblockRenderedIcon, skullTextureUrl } from './skull-art.js?v=20260918-4';
 
 let manifest = null;
@@ -148,6 +149,28 @@ export function catalogItemForSetupArt(catalogValue, skyblockId) {
   return catalogValue.find(item => String(item?.id || '').trim().toUpperCase() === id) || null;
 }
 
+function exactSetupArtNode(itemId, item, onError = null) {
+  const descriptor = exactSetupItemArt(itemId);
+  if (!descriptor) return null;
+
+  if (descriptor.kind === 'head') {
+    return skullNode(descriptor.textureId, item, onError);
+  }
+
+  if (descriptor.kind === 'armor') {
+    const markup = armorItemSvgMarkup(descriptor.item);
+    if (!markup) return null;
+    const node = document.createElement('span');
+    node.className = 'official-item-art setup-armor-item-art exact-setup-item-art';
+    node.setAttribute('role', 'img');
+    node.setAttribute('aria-label', `${item?.displayName || descriptor.item?.name || itemId} item model`);
+    node.innerHTML = markup;
+    return node;
+  }
+
+  return null;
+}
+
 function catalogFallbackNode(itemId, item, onError = null) {
   const record = catalogItemForSetupArt(itemCatalog, itemId);
   if (!record) return null;
@@ -240,17 +263,36 @@ export function renderSetupItemArt({ root = document, rawState = readState(), ma
     if (card.dataset.skyblockItemId !== itemId) card.dataset.skyblockItemId = itemId;
 
     const exactStoredTexture = storedItemId === itemId ? storedItem?.skullTexture : null;
-    const textureId = exactStoredTexture || knownSkyblockHeadTexture(itemId);
-    const renderedIconUrl = exactStoredTexture ? null : knownSkyblockRenderedIcon(itemId);
-    const identity = renderedIconUrl
-      ? `rendered:${itemId}`
-      : textureId
-        ? `skull:${textureId}`
-        : itemId ? `item:${itemId}` : `unresolved:${setupId || 'active'}:${slotId}`;
+    const mappedArt = exactSetupItemArt(itemId);
+    const mappedTextureId = mappedArt?.kind === 'head' ? mappedArt.textureId : null;
+    const textureId = exactStoredTexture || mappedTextureId || knownSkyblockHeadTexture(itemId);
+    // A deterministic item-id mapping is stronger than a generated third-party
+    // icon URL. Only use SkyAH when no exact local/head mapping exists.
+    const renderedIconUrl = exactStoredTexture || mappedArt
+      ? null
+      : knownSkyblockRenderedIcon(itemId);
+    const identity = mappedArt
+      ? `mapped:${itemId}`
+      : renderedIconUrl
+        ? `rendered:${itemId}`
+        : textureId
+          ? `skull:${textureId}`
+          : itemId ? `item:${itemId}` : `unresolved:${setupId || 'active'}:${slotId}`;
     if ((card.classList.contains('has-official-item-art') || card.classList.contains('has-item-art-fallback')) && card.dataset.renderedItemArt === identity) return;
     removeRenderedArt(card);
 
     const asset = itemId ? itemAssetForSkyblockId(manifestValue, itemId) : null;
+
+    if (mappedArt) {
+      const exactMapped = exactSetupArtNode(itemId, item, () => showCatalogOrLetterFallback(card, item, itemId, slotId, identity));
+      if (exactMapped) {
+        card.prepend(exactMapped);
+        card.classList.add('has-official-item-art');
+        card.dataset.renderedItemArt = identity;
+        rendered += 1;
+        return;
+      }
+    }
 
     if (renderedIconUrl) {
       const exact = remoteIconNode(renderedIconUrl, item, () => {
