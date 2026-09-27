@@ -1,12 +1,14 @@
 export const INTERNET_FARMING_TIME_VALUE_COINS_PER_HOUR = 20_000_000;
 
-function finiteNumber(value, fallback = 0) {
+function finiteOrNull(value) {
+  if (value === null || value === undefined || value === '') return null;
   const number = Number(value);
-  return Number.isFinite(number) ? number : fallback;
+  return Number.isFinite(number) ? number : null;
 }
 
-function nonNegative(value) {
-  return Math.max(0, finiteNumber(value));
+function nonNegativeOrNull(value) {
+  const number = finiteOrNull(value);
+  return number === null ? null : Math.max(0, number);
 }
 
 /**
@@ -22,11 +24,15 @@ export function buyableNetCost({
   switchingCostCoins = 0,
   saleProceedsReplacedAssetsCoins = 0,
 } = {}) {
-  return nonNegative(purchasePriceCoins)
-    + nonNegative(applicationFeesCoins)
-    + nonNegative(consumedInputMarketValueCoins)
-    + nonNegative(switchingCostCoins)
-    - nonNegative(saleProceedsReplacedAssetsCoins);
+  const values = [
+    nonNegativeOrNull(purchasePriceCoins),
+    nonNegativeOrNull(applicationFeesCoins),
+    nonNegativeOrNull(consumedInputMarketValueCoins),
+    nonNegativeOrNull(switchingCostCoins),
+    nonNegativeOrNull(saleProceedsReplacedAssetsCoins),
+  ];
+  if (values.some(value => value === null)) return null;
+  return values[0] + values[1] + values[2] + values[3] - values[4];
 }
 
 /**
@@ -43,15 +49,17 @@ export function earnedNetCost({
   timeValueCoinsPerHour = INTERNET_FARMING_TIME_VALUE_COINS_PER_HOUR,
   incidentalGrindProfitCoinsPerHour = 0,
 } = {}) {
-  const grindHours = nonNegative(activeGrindHours);
-  const opportunityRate = Math.max(
-    0,
-    nonNegative(timeValueCoinsPerHour) - nonNegative(incidentalGrindProfitCoinsPerHour),
-  );
+  const directCost = nonNegativeOrNull(directCoinCost);
+  const consumedValue = nonNegativeOrNull(consumedTradeableInputMarketValueCoins);
+  const grindHours = nonNegativeOrNull(activeGrindHours);
+  const timeValue = nonNegativeOrNull(timeValueCoinsPerHour);
+  const incidentalProfit = nonNegativeOrNull(incidentalGrindProfitCoinsPerHour);
+  if ([directCost, consumedValue, grindHours, timeValue, incidentalProfit].some(value => value === null)) {
+    return null;
+  }
 
-  return nonNegative(directCoinCost)
-    + nonNegative(consumedTradeableInputMarketValueCoins)
-    + grindHours * opportunityRate;
+  const opportunityRate = Math.max(0, timeValue - incidentalProfit);
+  return directCost + consumedValue + grindHours * opportunityRate;
 }
 
 /**
@@ -62,17 +70,20 @@ export function recurringGainCoinsPerHour({
   beforeNetCoinsPerHour = 0,
   afterNetCoinsPerHour = 0,
 } = {}) {
-  return finiteNumber(afterNetCoinsPerHour) - finiteNumber(beforeNetCoinsPerHour);
+  const before = finiteOrNull(beforeNetCoinsPerHour);
+  const after = finiteOrNull(afterNetCoinsPerHour);
+  if (before === null || after === null) return null;
+  return after - before;
 }
 
 export function paybackHoursFromCost({
   acquisitionCostCoins = 0,
   recurringGainCoinsPerHour: recurringGain = 0,
 } = {}) {
-  const gain = finiteNumber(recurringGain);
-  const cost = finiteNumber(acquisitionCostCoins);
+  const gain = finiteOrNull(recurringGain);
+  const cost = finiteOrNull(acquisitionCostCoins);
 
-  if (gain <= 0) return null;
+  if (gain === null || cost === null || gain <= 0) return null;
   if (cost <= 0) return 0;
   return cost / gain;
 }
@@ -81,9 +92,9 @@ export function gainPerMillionCost({
   acquisitionCostCoins = 0,
   recurringGainCoinsPerHour: recurringGain = 0,
 } = {}) {
-  const gain = finiteNumber(recurringGain);
-  const cost = finiteNumber(acquisitionCostCoins);
-  if (gain <= 0 || cost <= 0) return null;
+  const gain = finiteOrNull(recurringGain);
+  const cost = finiteOrNull(acquisitionCostCoins);
+  if (gain === null || cost === null || gain <= 0 || cost <= 0) return null;
   return gain / (cost / 1_000_000);
 }
 
@@ -101,8 +112,8 @@ function baseEvaluation({
   return {
     acquisitionMode,
     acquisitionCostCoins,
-    beforeNetCoinsPerHour: finiteNumber(beforeNetCoinsPerHour),
-    afterNetCoinsPerHour: finiteNumber(afterNetCoinsPerHour),
+    beforeNetCoinsPerHour: finiteOrNull(beforeNetCoinsPerHour),
+    afterNetCoinsPerHour: finiteOrNull(afterNetCoinsPerHour),
     recurringGainCoinsPerHour: gain,
     paybackHours: paybackHoursFromCost({ acquisitionCostCoins, recurringGainCoinsPerHour: gain }),
     gainPerMillionCost: gainPerMillionCost({ acquisitionCostCoins, recurringGainCoinsPerHour: gain }),
@@ -165,11 +176,11 @@ export function evaluateEarnedUpgrade({
       afterNetCoinsPerHour,
     }),
     costLabel: 'EARNED — time converted to coins',
-    activeGrindHours: nonNegative(activeGrindHours),
-    passiveWaitHours: nonNegative(passiveWaitHours),
-    marketWaitHours: nonNegative(marketWaitHours),
-    timeValueCoinsPerHour: nonNegative(timeValueCoinsPerHour),
+    activeGrindHours: nonNegativeOrNull(activeGrindHours),
+    passiveWaitHours: nonNegativeOrNull(passiveWaitHours),
+    marketWaitHours: nonNegativeOrNull(marketWaitHours),
+    timeValueCoinsPerHour: nonNegativeOrNull(timeValueCoinsPerHour),
     timeValueSource,
-    incidentalGrindProfitCoinsPerHour: nonNegative(incidentalGrindProfitCoinsPerHour),
+    incidentalGrindProfitCoinsPerHour: nonNegativeOrNull(incidentalGrindProfitCoinsPerHour),
   };
 }
