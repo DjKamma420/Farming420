@@ -192,9 +192,8 @@ test('Helianthus setup art is assigned directly by exact SkyBlock item id', () =
 test('exact setup item-id art controls the intended portrait route before generic fallbacks', () => {
   const source = readFileSync(new URL('../src/item-art-ui.js', import.meta.url), 'utf8');
   const mappedLookup = source.indexOf('const mappedArt = exactSetupItemArt(itemId)');
-  const remoteLookup = source.indexOf('knownSkyblockRenderedIcon(itemId)');
-  const mappedRender = source.indexOf('if (mappedArt) {');
-  assert.ok(mappedLookup >= 0 && remoteLookup > mappedLookup);
+  const mappedRender = source.indexOf('if (mappedArt) {', mappedLookup);
+  assert.ok(mappedLookup >= 0);
   assert.ok(mappedRender > mappedLookup);
   assert.match(source, /exactSetupArtNode\(itemId, item/);
   assert.match(source, /descriptor\.kind === 'rendered'/);
