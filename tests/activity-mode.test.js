@@ -117,6 +117,7 @@ test('computed totals isolate BPC to spawning and pest loot Overbloom/Fortune to
   state.profile.levels.pestOb = 1;
   state.profile.levels.bpc = 1;
   state.profile.toolProgress['melon-dicer'].levels.farmTool = 1;
+  state.profile.vacuumProgress.skyblockId = 'SKYMART_VACUUM';
   state.profile.vacuumProgress.levels.vacuum = 1;
 
   const entries = [
