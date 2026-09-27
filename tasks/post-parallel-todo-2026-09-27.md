@@ -27,7 +27,7 @@ Do not create a second implementation for these areas while their parallel work 
 
 - [ ] **IN PROGRESS** — Merge/reconcile all ten parallel workstreams without keeping duplicate models, duplicate state fields or duplicate UI.
 - [ ] **IN PROGRESS** — Resolve cross-chat ownership conflicts centrally. In particular, Pricing, Planner, Loadouts, Auto-Fill, Vacuum, Dashboard and Search must consume the same canonical data/model layers.
-- [ ] Verify state migrations for every schema change introduced by the parallel work.
+- [ ] **IN PROGRESS** — Verify state migrations for every schema change introduced by the parallel work.
 - [ ] Verify service-worker/cache completeness after files are added, renamed or removed.
 - [ ] Run the complete regression gate on the integrated result:
   - npm test
