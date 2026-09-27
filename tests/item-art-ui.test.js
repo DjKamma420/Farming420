@@ -128,3 +128,16 @@ test('pack fallback is replaced after the async manifest becomes available', () 
     /\(card\.classList\.contains\('has-official-item-art'\) \|\| card\.classList\.contains\('has-item-art-fallback'\)\)[\s\S]{0,120}renderedPackAsset/,
   );
 });
+
+
+test('core render explicitly reapplies setup art with the same in-memory state', () => {
+  const app = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  assert.match(app, /import \{ applySetupItemArt \} from '\.\/item-art-ui\.js'/);
+  assert.match(app, /applySetupItemArt\(\{ root: appRoot, rawState: state \}\)/);
+});
+
+test('setup art exposes an explicit render hook instead of depending only on observers', () => {
+  const source = readFileSync(new URL('../src/item-art-ui.js', import.meta.url), 'utf8');
+  assert.match(source, /export async function applySetupItemArt/);
+  assert.match(source, /renderSetupItemArt\(\{ root, rawState, manifestValue: manifest \}\)/);
+});

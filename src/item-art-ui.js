@@ -309,13 +309,17 @@ async function ensureCatalog() {
   return itemCatalog;
 }
 
-async function apply() {
-  if (applying) return;
+export async function applySetupItemArt({
+  root = document,
+  rawState = readState(),
+} = {}) {
+  if (applying || !root?.querySelectorAll || !rawState) return 0;
   applying = true;
   try {
-    renderSetupItemArt({ manifestValue: manifest });
+    let rendered = renderSetupItemArt({ root, rawState, manifestValue: manifest });
     const [loaded] = await Promise.all([ensureManifest(), ensureCatalog()]);
-    renderSetupItemArt({ manifestValue: loaded });
+    rendered += renderSetupItemArt({ root, rawState, manifestValue: loaded });
+    return rendered;
   } finally {
     applying = false;
   }
@@ -326,7 +330,7 @@ function queueApply() {
   applyQueued = true;
   queueMicrotask(async () => {
     applyQueued = false;
-    await apply();
+    await applySetupItemArt();
   });
 }
 
