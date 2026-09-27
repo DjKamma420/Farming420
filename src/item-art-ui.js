@@ -171,6 +171,10 @@ function exactSetupArtNode(itemId, item, onError = null) {
     return skullNode(descriptor.textureId, item, onError);
   }
 
+  if (descriptor.kind === 'rendered') {
+    return remoteIconNode(knownSkyblockRenderedIcon(itemId), item, onError);
+  }
+
   if (descriptor.kind === 'armor') {
     const markup = armorItemSvgMarkup(descriptor.item);
     if (!markup) return null;
