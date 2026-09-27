@@ -1,6 +1,5 @@
 import { STORAGE_KEY } from './config.js';
 import { itemAssetForSkyblockId, loadItemAssetManifest } from './item-assets.js';
-import { armorItemSvgMarkup } from './armor-item-art.js';
 import { loadItemCatalog, readCachedCatalog } from './item-catalog.js';
 import { effectiveSetup } from './setups.js';
 import { exactSetupItemArt } from './setup-item-art-map.js';
@@ -223,17 +222,6 @@ function exactSetupArtNode(itemId, item, onError = null) {
     return remoteIconNode(descriptor.iconUrl || knownSkyblockRenderedIcon(itemId), item, onError);
   }
 
-  if (descriptor.kind === 'armor') {
-    const markup = armorItemSvgMarkup(descriptor.item);
-    if (!markup) return null;
-    const node = document.createElement('span');
-    node.className = 'official-item-art setup-armor-item-art exact-setup-item-art';
-    node.setAttribute('role', 'img');
-    node.setAttribute('aria-label', `${item?.displayName || descriptor.item?.name || itemId} item model`);
-    node.innerHTML = markup;
-    return node;
-  }
-
   return null;
 }
 
@@ -243,20 +231,18 @@ function catalogFallbackNode(itemId, item, onError = null) {
 
   const catalogTexture = String(record.skin || '').trim().toLowerCase();
   if (/^[0-9a-f]{32,64}$/.test(catalogTexture)) {
-    return skullNode(catalogTexture, item, onError);
+    return String(record.category || '').trim().toUpperCase() === 'HELMET'
+      ? voxelHeadNode(catalogTexture, item, onError)
+      : skullNode(catalogTexture, item, onError);
   }
 
-  const renderedIconUrl = catalogRenderedIconForSetupArt(itemCatalog, itemId);
+  const renderedIconUrl = knownSkyblockRenderedIcon(itemId)
+    || catalogRenderedIconForSetupArt(itemCatalog, itemId);
   if (renderedIconUrl) return remoteIconNode(renderedIconUrl, item, onError);
 
-  const markup = armorItemSvgMarkup(record);
-  if (!markup) return null;
-  const node = document.createElement('span');
-  node.className = 'official-item-art setup-armor-item-art';
-  node.setAttribute('role', 'img');
-  node.setAttribute('aria-label', `${item?.displayName || record.name || itemId} item model`);
-  node.innerHTML = markup;
-  return node;
+  // Do not invent a hand-drawn armor silhouette. If no real portrait source is
+  // available, the caller shows the explicit missing-art fallback instead.
+  return null;
 }
 
 function showCatalogOrLetterFallback(container, item, itemId, slotId, identity) {
@@ -333,20 +319,28 @@ export function renderSetupItemArt({ root = document, rawState = readState(), ma
 
     const exactStoredTexture = storedItemId === itemId ? storedItem?.skullTexture : null;
     const mappedArt = exactSetupItemArt(itemId);
+    const catalogRecord = catalogItemForSetupArt(itemCatalog, itemId);
+    const catalogTexture = String(catalogRecord?.skin || '').trim().toLowerCase();
+    const validCatalogTexture = /^[0-9a-f]{32,64}$/.test(catalogTexture) ? catalogTexture : null;
     const mappedTextureId = mappedArt?.kind === 'head' ? mappedArt.textureId : null;
     const textureId = exactStoredTexture || mappedTextureId || knownSkyblockHeadTexture(itemId);
-    // A deterministic item-id mapping is stronger than a generated third-party
-    // icon URL. Only use SkyAH when no exact local/head mapping exists.
-    const renderedIconUrl = exactStoredTexture || mappedArt
-      ? null
-      : knownSkyblockRenderedIcon(itemId);
+    const helmetTextureId = slotId === 'helmet'
+      ? (exactStoredTexture
+        || (mappedArt?.kind === 'voxel-head' ? mappedArt.textureId : null)
+        || validCatalogTexture)
+      : null;
+    // Armor uses a real rendered item icon when it is not a player-head helmet.
+    // Synced helmet skins become a 3D voxel head instead of a flat face crop.
+    const renderedIconUrl = mappedArt ? null : knownSkyblockRenderedIcon(itemId);
     const identity = mappedArt
       ? `mapped:${itemId}`
-      : renderedIconUrl
-        ? `rendered:${itemId}`
-        : textureId
-          ? `skull:${textureId}`
-          : itemId ? `item:${itemId}` : `unresolved:${setupId || 'active'}:${slotId}`;
+      : helmetTextureId
+        ? `voxel:${helmetTextureId}`
+        : renderedIconUrl
+          ? `rendered:${itemId}`
+          : textureId
+            ? `skull:${textureId}`
+            : itemId ? `item:${itemId}` : `unresolved:${setupId || 'active'}:${slotId}`;
     if ((card.classList.contains('has-official-item-art') || card.classList.contains('has-item-art-fallback')) && card.dataset.renderedItemArt === identity) return;
     removeRenderedArt(card);
 
@@ -356,6 +350,17 @@ export function renderSetupItemArt({ root = document, rawState = readState(), ma
       const exactMapped = exactSetupArtNode(itemId, item, () => showCatalogOrLetterFallback(card, item, itemId, slotId, identity));
       if (exactMapped) {
         card.prepend(exactMapped);
+        card.classList.add('has-official-item-art');
+        card.dataset.renderedItemArt = identity;
+        rendered += 1;
+        return;
+      }
+    }
+
+    if (helmetTextureId && !mappedArt) {
+      const voxel = voxelHeadNode(helmetTextureId, item, () => showCatalogOrLetterFallback(card, item, itemId, slotId, identity));
+      if (voxel) {
+        card.prepend(voxel);
         card.classList.add('has-official-item-art');
         card.dataset.renderedItemArt = identity;
         rendered += 1;
