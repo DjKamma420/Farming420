@@ -55,11 +55,17 @@ export function petStrategyViolations(strategy) {
  * A missing or non-positive uplift deliberately returns null rather than
  * pretending the purchase is worthwhile.
  */
+function finiteOrNull(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
 export function petRulePaybackHours({ acquisitionCostCoins, marginalCoinsPerHour }) {
-  const cost = Number(acquisitionCostCoins);
-  const uplift = Number(marginalCoinsPerHour);
-  if (!Number.isFinite(cost) || cost < 0) return null;
-  if (!Number.isFinite(uplift) || uplift <= 0) return null;
+  const cost = finiteOrNull(acquisitionCostCoins);
+  const uplift = finiteOrNull(marginalCoinsPerHour);
+  if (cost === null || cost < 0) return null;
+  if (uplift === null || uplift <= 0) return null;
   return cost / uplift;
 }
 
@@ -70,8 +76,8 @@ export function petRulePaybackHours({ acquisitionCostCoins, marginalCoinsPerHour
  */
 export function petRuleDecision({ acquisitionCostCoins, marginalCoinsPerHour, maxPaybackHours }) {
   const paybackHours = petRulePaybackHours({ acquisitionCostCoins, marginalCoinsPerHour });
-  const horizon = Number(maxPaybackHours);
-  if (paybackHours === null || !Number.isFinite(horizon) || horizon < 0) {
+  const horizon = finiteOrNull(maxPaybackHours);
+  if (paybackHours === null || horizon === null || horizon < 0) {
     return { recommend: false, paybackHours, reason: 'insufficient-data' };
   }
   return {
