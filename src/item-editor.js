@@ -4,9 +4,10 @@
  * Editing gear used to mean typing enchantment names into a free-text field: an
  * empty box gives no hint that Pesterminator exists, no hint that it stops at
  * VI, and no protection against a typo silently creating a second enchantment.
- * This module turns each slot into a fixed, known list of the enchantments that
- * can actually sit on it, so the player toggles what they have and picks a
- * level inside the sourced maximum instead of recalling identifiers.
+ * This module turns each slot into a fixed, known list of farming-relevant
+ * enchantments. The player toggles what matters to Farming420 and picks a level
+ * inside the sourced maximum instead of wading through unrelated combat,
+ * defense, mana, or utility enchants.
  *
  * It holds no DOM. Everything here is a pure function over one item record.
  */
@@ -75,64 +76,19 @@ export function slotKind(slotId) {
 
 /** Display names. Identifiers are storage; nobody should have to read them. */
 export const ENCHANT_LABELS = Object.freeze({
-  aqua_affinity: 'Aqua Affinity',
-  bank: 'Bank',
-  big_brain: 'Big Brain',
-  blast_protection: 'Blast Protection',
-  bobbin_time: "Bobbin' Time",
   bug_blender: 'Bug Blender',
-  cayenne: 'Cayenne',
-  counter_strike: 'Counter-Strike',
   crop_fever: 'Crop Fever',
   cultivating: 'Cultivating',
   dedication: 'Dedication',
   delicate: 'Delicate',
-  depth_strider: 'Depth Strider',
   feast: 'Feast',
-  feather_falling: 'Feather Falling',
-  ferocious_mana: 'Ferocious Mana',
-  fire_protection: 'Fire Protection',
-  forest_pledge: 'Forest Pledge',
   green_thumb: 'Green Thumb',
-  growth: 'Growth',
-  habanero_tactics: 'Habanero Tactics',
-  hardened_mana: 'Hardened Mana',
-  hardened_vitality: 'Hardened Vitality',
   harvesting: 'Harvesting',
-  hecatomb: 'Hecatomb',
-  ice_cold: 'Ice Cold',
-  last_stand: 'Last Stand',
-  legion: 'Legion',
-  mana_vampire: 'Mana Vampire',
-  no_pain_no_gain: 'No Pain No Gain',
   pesterminator: 'Pesterminator',
-  projectile_protection: 'Projectile Protection',
-  prosperity: 'Prosperity',
-  protection: 'Protection',
-  quantum: 'Quantum',
-  reflection: 'Reflection',
-  refrigerate: 'Refrigerate',
-  rejuvenate: 'Rejuvenate',
   replenish: 'Replenish',
-  respiration: 'Respiration',
-  respite: 'Respite',
-  scuba: 'Scuba',
-  small_brain: 'Small Brain',
-  smarty_pants: 'Smarty Pants',
-  stealth: 'Stealth',
-  strong_mana: 'Strong Mana',
-  strong_vitality: 'Strong Vitality',
-  sugar_rush: 'Sugar Rush',
   sunset: 'Sunset',
-  the_one: 'The One',
   thorns: 'Thorns',
-  tidal: 'Tidal',
-  transylvanian: 'Transylvanian',
-  true_protection: 'True Protection',
   turbo_crop: 'Turbo-Crop',
-  vampiric_vitality: 'Vampiric Vitality',
-  vivacious_vitality: 'Vivacious Vitality',
-  wisdom: 'Wisdom',
 });
 
 export function enchantLabel(enchantId) {
@@ -165,22 +121,21 @@ function storedEnchant(enchantments, id) {
 }
 
 /**
- * The rows one slot shows: every verified enchantment that can sit on it, plus
- * anything already stored on the item that the verified list does not cover.
+ * The rows one slot shows: only verified farming-relevant enchantments that can
+ * sit on it.
  *
- * The second half matters. An item synced from a profile can carry an enchant
- * this app has not researched yet, and dropping it from the editor would let a
- * later save quietly delete a value the player really has.
+ * Synced items may also carry combat/defense/other enchantments. Those remain
+ * untouched in item.enchantments; the mutation helpers below clone the complete
+ * map. Hiding them here therefore removes UI clutter without deleting profile
+ * data on a later farming-specific edit.
  */
 export function enchantRowsFor(slotId, item) {
   const kind = slotKind(slotId);
   const enchantments = item?.enchantments && typeof item.enchantments === 'object' ? item.enchantments : {};
   const rows = [];
-  const covered = new Set();
 
   for (const [id, meta] of Object.entries(VERIFIED_FARMING_ENCHANT_META)) {
     if (!kind || (!meta.appliesTo.includes(kind) && !meta.appliesTo.includes(slotId))) continue;
-    covered.add(id);
     const { level, storageKey } = storedEnchant(enchantments, id);
     rows.push({
       id,
@@ -204,32 +159,6 @@ export function enchantRowsFor(slotId, item) {
     return a.label.localeCompare(b.label);
   });
 
-  const extras = new Map();
-  for (const [key, value] of Object.entries(enchantments)) {
-    const id = canonicalEnchantId(key);
-    if (covered.has(id) || Number(value) <= 0) continue;
-    // Keyed by the stored key, not the canonical id: two crop-specific Turbo
-    // enchants on one item are two real entries, not one.
-    extras.set(key, Math.max(extras.get(key) || 0, Number(value) || 0));
-  }
-  for (const [key, level] of [...extras.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
-    rows.push({
-      id: key,
-      storageKey: key,
-      label: enchantLabel(key),
-      minLevel: 1,
-      maxLevel: null,
-      trueMaxLevel: null,
-      kind: 'normal',
-      conflicts: Object.freeze([]),
-      level,
-      active: true,
-      known: false,
-      state: enchantPresentation(key, level).state,
-      source: null,
-    });
-  }
-
   return rows;
 }
 
@@ -241,7 +170,7 @@ function clampLevel(level, maxLevel) {
 
 /**
  * Turning an enchantment on starts at its lowest obtainable tier, never at its
- * maximum. Some enchants begin at III/IV rather than I.
+ * maximum.
  */
 export function withEnchantToggled(item, enchantId, on) {
   const next = { ...(item?.enchantments || {}) };
@@ -264,7 +193,9 @@ export function withEnchantToggled(item, enchantId, on) {
   for (const key of Object.keys(next)) {
     const existing = canonicalEnchantId(key);
     const existingMeta = VERIFIED_FARMING_ENCHANT_META[existing] || null;
-    if (incompatible.has(existing) || (meta?.kind === 'ultimate' && existingMeta?.kind === 'ultimate' && existing !== canonical)) {
+    const existingIsUltimate = existingMeta?.kind === 'ultimate'
+      || String(key).toLowerCase().startsWith('ultimate_');
+    if (incompatible.has(existing) || (meta?.kind === 'ultimate' && existingIsUltimate && existing !== canonical)) {
       delete next[key];
     }
   }
