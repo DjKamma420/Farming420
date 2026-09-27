@@ -1,5 +1,5 @@
 import { ACTIVITY_MODE, activityLabel, setupIdForActivity } from './activity-mode.js';
-import { physicalItemId } from './setups.js';
+import { effectiveSetup, physicalItemId } from './setups.js';
 
 export const UPGRADE_FILTER = Object.freeze({
   ALL: 'all',
@@ -93,8 +93,9 @@ function componentFor(item) {
 }
 
 function setupForMode(state, mode) {
-  const setupId = setupIdForActivity(mode);
-  return state?.profile?.setups?.list?.find(setup => setup?.id === setupId) || null;
+  const setups = state?.profile?.setups;
+  if (!setups) return null;
+  return effectiveSetup(setups, setupIdForActivity(mode));
 }
 
 function componentIdentity(setup, component) {
@@ -145,6 +146,12 @@ export function combinedSetupLabel(modes, sharedPhysical = false) {
     && unique.includes(ACTIVITY_MODE.PEST_SPAWN)
     && unique.includes(ACTIVITY_MODE.PEST_KILL)) {
     return 'All sets';
+  }
+  if (sharedPhysical
+    && unique.length === 2
+    && unique.includes(ACTIVITY_MODE.FARM)
+    && unique.includes(ACTIVITY_MODE.PEST_KILL)) {
+    return 'FF Set · Farming + Killing · shared item';
   }
   const labels = unique.map(shortActivityLabel);
   const suffix = sharedPhysical && unique.length > 1 ? ' · shared item' : '';

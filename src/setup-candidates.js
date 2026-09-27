@@ -195,6 +195,24 @@ function fillComponent(setup, component) {
   }
 }
 
+function lockedWearableComponent(setup, kind) {
+  if (!setup?.slots) return null;
+  const slotIds = kind === 'armor' ? ARMOR_SLOTS : EQUIPMENT_SLOTS;
+  return Object.freeze({
+    id: 'ff-set',
+    kind,
+    label: `FF Set ${kind}`,
+    currentObserved: true,
+    origins: Object.freeze(['ff-set']),
+    slots: Object.freeze(Object.fromEntries(slotIds.map(slotId => [
+      slotId,
+      setup.slots[slotId] ? { ...setup.slots[slotId] } : null,
+    ]))),
+    complete: slotIds.every(slotId => Boolean(setup.slots[slotId])),
+    filledSlots: slotIds.filter(slotId => Boolean(setup.slots[slotId])).length,
+  });
+}
+
 function missingWearableSlots(setup) {
   return [...ARMOR_SLOTS, ...EQUIPMENT_SLOTS].filter(slotId => !setup?.slots?.[slotId]);
 }
@@ -234,8 +252,11 @@ export function buildSetupCandidateInventory(snapshot) {
 export function buildSetupCandidates(snapshot, options = {}) {
   const phase = normalizeActivityMode(options.phase || ACTIVITY_MODE.FARM);
   const inventory = buildSetupCandidateInventory(snapshot);
-  const armorChoices = inventory.armorSets.length ? inventory.armorSets : [null];
-  const equipmentChoices = inventory.equipmentSets.length ? inventory.equipmentSets : [null];
+  const lockedWearable = phase === ACTIVITY_MODE.PEST_KILL ? options.lockedWearableSetup : null;
+  const lockedArmor = lockedWearableComponent(lockedWearable, 'armor');
+  const lockedEquipment = lockedWearableComponent(lockedWearable, 'equipment');
+  const armorChoices = lockedArmor ? [lockedArmor] : (inventory.armorSets.length ? inventory.armorSets : [null]);
+  const equipmentChoices = lockedEquipment ? [lockedEquipment] : (inventory.equipmentSets.length ? inventory.equipmentSets : [null]);
   const petChoices = inventory.pets.length ? inventory.pets : [null];
   const candidates = [];
 

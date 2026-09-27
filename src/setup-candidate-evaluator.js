@@ -3,7 +3,14 @@ import { computeStatTotals } from './computed-stats.js';
 import { applySnapshotToProgress, cropsForToolItem } from './snapshot-apply.js';
 import { isHelianthusArmorPiece } from './armor-fortune.js';
 import { isBlossomPiece, isPestEquipmentPiece } from './equipment-fortune.js';
-import { activeSetup, normalizeSetups } from './setups.js';
+import {
+  FF_SETUP_ID,
+  KILLING_SETUP_ID,
+  PET_SETUP_SLOTS,
+  activeSetup,
+  prepareFfBpcSetups,
+  synchronizeFarmingKillingLoadouts,
+} from './setups.js';
 import { GARDEN_VACUUM_ITEMS } from './exact-farming-items.js';
 import { gardenLevelFromExperience } from './garden-level.js';
 import { setupPetItemContribution } from './setup-pet-items.js';
@@ -53,18 +60,33 @@ function normalizedState(state) {
 
 function setupForPhase(state, phase) {
   state.profile ||= {};
-  const setups = normalizeSetups(state.profile.setups);
+  const setups = prepareFfBpcSetups(state.profile.setups);
   const targetId = setupIdForActivity(phase);
   if (setups.list.some(setup => setup.id === targetId)) setups.activeId = targetId;
   state.profile.setups = setups;
   return setups.activeId;
 }
 
-function activateCandidate(state, candidate) {
+function activateCandidate(state, candidate, phase) {
   state.profile ||= {};
-  const setups = normalizeSetups(state.profile.setups);
+  const setups = prepareFfBpcSetups(state.profile.setups);
   const setup = cloned(candidate?.setup);
   if (!setup?.id) return null;
+
+  if (phase === ACTIVITY_MODE.PEST_KILL) {
+    const killing = setups.list.find(row => row.id === KILLING_SETUP_ID);
+    const ff = setups.list.find(row => row.id === FF_SETUP_ID);
+    if (!killing || !ff) return null;
+
+    const petTarget = setups.shareFarmingKillingPet === true ? ff : killing;
+    for (const slotId of PET_SETUP_SLOTS) {
+      petTarget.slots[slotId] = setup.slots?.[slotId] ? cloned(setup.slots[slotId]) : null;
+    }
+    synchronizeFarmingKillingLoadouts(setups);
+    setups.activeId = KILLING_SETUP_ID;
+    state.profile.setups = setups;
+    return KILLING_SETUP_ID;
+  }
 
   const index = setups.list.findIndex(row => row.id === setup.id);
   if (index >= 0) setups.list[index] = setup;
@@ -248,7 +270,7 @@ export function evaluateSetupCandidate(state, candidate, options = {}) {
 
   const afterState = normalizedState(state);
   setupForPhase(afterState, phase);
-  const afterSetupId = activateCandidate(afterState, candidate);
+  const afterSetupId = activateCandidate(afterState, candidate, phase);
   const afterSetup = activeSetup(afterState.profile.setups);
   const afterMissingSlots = missingWearableSlots(afterSetup);
   const afterPetItem = petItemForPhase(afterSetup, snapshot, phase, options);

@@ -1,4 +1,4 @@
-import { createSetup, normalizeSetups } from './setups.js';
+import { createSetup, prepareFfBpcSetups } from './setups.js';
 
 export const ACTIVITY_MODE = Object.freeze({
   FARM: 'farm',
@@ -36,18 +36,18 @@ export function activityModeForState(state) {
 export function activityLabel(mode) {
   switch (normalizeActivityMode(mode)) {
     case ACTIVITY_MODE.PEST_SPAWN:
-      return 'Pest Spawning Set';
+      return 'BPC Set';
     case ACTIVITY_MODE.PEST_KILL:
-      return 'Pest Killing Set';
+      return 'FF Set · Killing';
     default:
-      return 'Farming Set';
+      return 'FF Set';
   }
 }
 
 export function setActivityModeOnState(state, mode) {
   const normalized = normalizeActivityMode(mode);
   state.profile ||= {};
-  state.profile.setups = normalizeSetups(state.profile.setups);
+  state.profile.setups = prepareFfBpcSetups(state.profile.setups);
 
   const targetId = setupIdForActivity(normalized);
   if (!state.profile.setups.list.some(setup => setup.id === targetId)) {

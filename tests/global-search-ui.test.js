@@ -39,14 +39,14 @@ test('settings search targets real settings sections', () => {
   assert.match(foundation, /openSettings\(event\.detail\?\.section \|\| null\)/);
 });
 
-test('the two baseline armor roles are named FF set and BPC set', () => {
+test('the two baseline armor roles are named FF Set and BPC Set', () => {
   const app = read('src/app.js');
   const guide = read('src/phase-loadout-guide.js');
-  assert.match(app, /Armor · BPC set/);
-  assert.match(app, /Armor · FF set/);
-  assert.match(guide, /return 'BPC set'/);
-  assert.match(guide, /return 'FF set'/);
-  assert.match(guide, /FF set \+ BPC set/);
+  assert.match(app, /Armor · BPC Set/);
+  assert.match(app, /Armor · FF Set/);
+  assert.match(guide, /return 'BPC Set'/);
+  assert.match(guide, /return 'FF Set'/);
+  assert.match(guide, /FF Set \+ BPC Set/);
 });
 
 
