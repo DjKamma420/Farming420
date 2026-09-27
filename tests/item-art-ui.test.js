@@ -178,7 +178,8 @@ test('Helianthus setup art is assigned directly by exact SkyBlock item id', () =
   const boots = exactSetupItemArt('HELIANTHUS_BOOTS');
 
   assert.deepEqual(helmet, {
-    kind: 'rendered',
+    kind: 'voxel-head',
+    textureId: '46e48a6eff318dcda57d5d76a9b2656be25973e3d472b6d2e446a8e60f60a78a',
   });
   assert.equal(chest?.kind, 'armor');
   assert.equal(chest?.item?.material, 'IRON_CHESTPLATE');
@@ -196,6 +197,8 @@ test('exact setup item-id art controls the intended portrait route before generi
   assert.ok(mappedLookup >= 0);
   assert.ok(mappedRender > mappedLookup);
   assert.match(source, /exactSetupArtNode\(itemId, item/);
+  assert.match(source, /descriptor\.kind === 'voxel-head'/);
+  assert.match(source, /voxelHeadNode\(descriptor\.textureId, item, onError\)/);
   assert.match(source, /descriptor\.kind === 'rendered'/);
   assert.match(source, /remoteIconNode\(knownSkyblockRenderedIcon\(itemId\), item, onError\)/);
 });
@@ -242,4 +245,18 @@ test('catalog Pet Item icon fallback is below exact setup art and exact catalog 
   assert.ok(mappedRender >= 0);
   assert.ok(catalogTexture >= 0 && petItemRemote > catalogTexture);
   assert.match(source, /if \(renderedIconUrl\) return remoteIconNode\(renderedIconUrl, item, onError\)/);
+});
+
+
+test('Helianthus Helmet 3D portrait is a real three-face voxel cube, not a flat crop', () => {
+  const source = readFileSync(new URL('../src/item-art-ui.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../src/item-art-ui.css', import.meta.url), 'utf8');
+  assert.match(source, /function voxelHeadNode/);
+  assert.match(source, /\['front', 'right', 'top'\]/);
+  assert.match(source, /\['base', 'hat'\]/);
+  assert.match(source, /setup-voxel-head-cube/);
+  assert.match(css, /transform-style:\s*preserve-3d/);
+  assert.match(css, /setup-voxel-front[^\n]*translateZ\(15px\)/);
+  assert.match(css, /setup-voxel-right[^\n]*rotateY\(90deg\) translateZ\(15px\)/);
+  assert.match(css, /setup-voxel-top[^\n]*rotateX\(90deg\) translateZ\(15px\)/);
 });

@@ -15,8 +15,9 @@ Killing then resolves shared Armor and Equipment through the effective FF setup.
 ## The precedence, strongest first
 
 1. **Explicit exact portrait route** for an item whose normal fallback shape is
-   visibly wrong. `HELIANTHUS_HELMET` deliberately uses its full rendered 3D
-   item icon instead of flattening the player-head skin to a face square.
+   visibly wrong. `HELIANTHUS_HELMET` uses its verified Mojang player-head
+   texture on a three-face CSS voxel cube, so the setup card shows an actual 3D
+   Minecraft head model instead of a flat face square.
 2. **Player-head NBT texture** from the synced item's own tag.
 3. **Exact rendered item icon** for verified manual/offline gear ids. This is the
    same route used for equipment when flat skin cropping is unreliable.
@@ -72,10 +73,10 @@ in-game as Tater Boots), `CROPIE_HELMET`, `SQUASH_LEGGINGS`,
 `FERMENTO_HELMET`, `HELIANTHUS_HELMET`, `HELIANTHUS_CHESTPLATE`,
 `RANCHERS_BOOTS` and `FARMER_BOOTS`.
 
-The Helianthus Helmet is intentionally pinned to that rendered-icon route even
-when a synced skull texture exists. The skull texture is correct source data,
-but the app's 2D face crop is not the portrait shown in the target UI; the
-rendered icon restores the 3D helmet model.
+The Helianthus Helmet is intentionally pinned to the local 3D voxel-head route.
+The exact verified skin is cropped into front, right and top faces, including
+the hat overlay, and composed with CSS 3D transforms. This avoids both the flat
+2D face crop and dependence on a third-party rendered-icon URL.
 
 A failed remote icon still falls back to the existing head/pack/material path,
 so this does not make the setup editor depend on the remote source.
