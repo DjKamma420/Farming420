@@ -1422,3 +1422,17 @@ Before answering or coding a Farming recommendation:
 - explain caveats instead of hiding them.
 
 This file is the canonical single-file starting point. Read newer verified narrow repository modules/tests whenever an exact mechanic can have changed after 2026-09-16.
+
+
+## 2026-09-27 — Shards and Accessories farming relevance
+
+Use `research/FARMING_SHARDS.md` and `research/FARMING_ACCESSORIES.md` for the current relevance model.
+
+Key invariants:
+- Shard and accessory ownership/progression is account-global. Never create separate Farming / Pest Spawning / Pest Killing copies.
+- A farming-related item is not automatically a profit recommendation. Planner-facing entries use explicit targets; an explicit empty target list means the mechanic is relevant/searchable but deliberately unranked.
+- Direct supported targets in this pass are Farming Fortune, Overbloom, Bonus Pest Chance and sourced Pest Cooldown.
+- Strength shard chains are evaluated through Legendary Mooshroom Cow breakpoints rather than converted to a fake flat Farming Fortune value.
+- Mite Filter Upgrade scales Atmospheric Filter's seasonal effects; Autumn changes Pest spawn chance after cooldown and does not shorten the cooldown.
+- Firefly Solar Power and Lunar Moth Lunar Power are separate global shards even though day/night makes their active conditions mutually exclusive.
+- Freshly Baked accessories are one progression line from +1 to +5 Overbloom; Feast doubles only that accessory's own Overbloom.
