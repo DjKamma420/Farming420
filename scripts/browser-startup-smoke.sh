@@ -102,8 +102,14 @@ if ! grep -q 'Farming System · FF and BPC sets' "$SETUPS_DOM"; then
   exit 1
 fi
 
-if ! grep -q 'data-physical-set-count="2"' "$SETUPS_DOM" || ! grep -q 'data-physical-set-count="3"' "$SETUPS_DOM"; then
-  echo "The Loadouts header is missing the 2 Sets / 3 Sets control" >&2
+if grep -q 'data-physical-set-count=' "$SETUPS_DOM"; then
+  echo "The Loadouts header still renders the old 2 Sets / 3 Sets control" >&2
+  sed -n '1,240p' "$SETUPS_DOM" >&2 || true
+  exit 1
+fi
+
+if ! grep -q 'data-add-physical-set' "$SETUPS_DOM"; then
+  echo "The Loadouts header is missing the Add Set button for the optional third set" >&2
   sed -n '1,240p' "$SETUPS_DOM" >&2 || true
   exit 1
 fi
