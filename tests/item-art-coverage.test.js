@@ -246,17 +246,16 @@ test('Attribute Shards keep exact physical art without depending on live catalog
 });
 
 
-test('current shard ids use exact rendered item icons instead of initials', () => {
-  assert.equal(
-    knownSkyblockRenderedIcon('SHARD_LUNAR_MOTH'),
-    'https://skyah.net/icons/items/shard_lunar_moth.webp',
-  );
-  assert.equal(
-    knownSkyblockRenderedIcon('SHARD_GALAXY_FISH'),
-    'https://skyah.net/icons/items/shard_galaxy_fish.webp',
-  );
+test('shards never use the unreliable external rendered-icon fallback', () => {
+  assert.equal(knownSkyblockRenderedIcon('SHARD_LUNAR_MOTH'), null);
+  assert.equal(knownSkyblockRenderedIcon('SHARD_GALAXY_FISH'), null);
   const source = readFileSync(new URL('../src/item-art-coverage.js', import.meta.url), 'utf8');
   assert.match(source, /function shardPhysicalItemId/);
-  assert.match(source, /knownSkyblockRenderedIcon/);
   assert.match(source, /decorateSynergyShardCards\(items\)/);
+});
+
+test('pack-backed progression cards have exactly one portrait writer', () => {
+  const source = readFileSync(new URL('../src/item-art-coverage.js', import.meta.url), 'utf8');
+  assert.match(source, /if \(portrait\.dataset\.packAsset\) return/);
+  assert.match(source, /Garden Chips/);
 });
