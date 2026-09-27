@@ -11,6 +11,7 @@ import {
   vacuumBuzzingFarmingFortune,
   vacuumPeridotFortune,
   vacuumPhysicalStats,
+  selectedVacuumRecord,
 } from './vacuum-state.js';
 import { TOOL_GEM_ENTRY_ID, toolGemstoneContribution } from './tool-gemstone-contribution.js';
 import {
@@ -132,6 +133,11 @@ function contributionFor(state, item, cropId, mode = null, activeContextScope = 
   // BPC is a spawn-phase stat. Keeping it out of Farming/Killing totals prevents
   // the old two-set model from making those loadouts look better than they are.
   if (mode && axis === STAT_AXIS.BONUS_PEST_CHANCE && mode !== ACTIVITY_MODE.PEST_SPAWN) return null;
+
+  // Vacuum-local modifiers only exist on a selected physical Vacuum. Old or
+  // partial state may still contain modifier flags without a model; never turn
+  // those orphaned flags into account stats.
+  if (isVacuumItemEntry(item) && !selectedVacuumRecord(profile.vacuumProgress || {})) return null;
 
   // The old single Perfect-Peridot row was only a placeholder. The physical
   // tool editor now stores every socket separately, including quality, unlock
