@@ -389,11 +389,15 @@ function decorateCropIcons() {
 }
 
 
+function topLevelToolCards(grid) {
+  return [...(grid?.children || [])].filter(child => child.matches?.('.sb-tool-card'));
+}
+
 function syncToolSurfaceSelection() {
   const grid = document.querySelector('.sb-tool-picker .sb-tool-grid');
   if (!grid) return;
   const selectedKey = toolKeyForCropId(activeCropId());
-  grid.querySelectorAll('.sb-tool-card').forEach(card => {
+  topLevelToolCards(grid).forEach(card => {
     const isVacuum = card.hasAttribute('data-sb-vacuum');
     const selected = isVacuum
       ? activeToolSurface === 'vacuum'
@@ -502,8 +506,8 @@ function dockToolEditor() {
   if (pageId() !== 'tools') return;
   const grid = document.querySelector('.sb-tool-picker .sb-tool-grid');
   if (!grid) return;
-  const selected = grid.querySelector('.sb-tool-card.selected')
-    || grid.querySelector('.sb-tool-card');
+  const cards = topLevelToolCards(grid);
+  const selected = cards.find(card => card.classList.contains('selected')) || cards[0];
   if (!selected) return;
 
   const vacuumSelected = selected.hasAttribute('data-sb-vacuum');
@@ -515,7 +519,7 @@ function dockToolEditor() {
 
   const selectedKey = vacuumSelected ? 'vacuum' : toolKeyForCropId(selected.dataset.sbToolCrop);
   const collapsed = vacuumSelected ? vacuumCollapsed : collapsedToolKey === selectedKey;
-  grid.querySelectorAll('.sb-tool-card').forEach(button => {
+  cards.forEach(button => {
     const expanded = button === selected && !collapsed;
     const nextValue = expanded ? 'true' : 'false';
     if (button.getAttribute('aria-expanded') !== nextValue) button.setAttribute('aria-expanded', nextValue);
