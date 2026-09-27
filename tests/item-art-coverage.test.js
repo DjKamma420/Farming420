@@ -53,7 +53,7 @@ test('every Recombobulator selector gets the same physical item visual aid', () 
   const css = readFileSync(new URL('../src/item-art-coverage.css', import.meta.url), 'utf8');
 
   assert.equal(RECOMBOBULATOR_ITEM_ID, 'RECOMBOBULATOR_3000');
-  assert.match(source, /\[data-accessory-recomb\]/);
+  assert.doesNotMatch(source, /\[data-accessory-recomb\]/);
   assert.match(source, /\[data-slot-recomb\]/);
   assert.match(source, /\[data-vacuum-recomb\]/);
   assert.match(source, /\[data-tool-recomb\]/);
@@ -310,4 +310,13 @@ test('Rat Shard keeps its verified Sprayonator Serendipity head even if live ski
     skin: 'e'.repeat(64),
   });
   assert.ok(ordinaryLive.endsWith('e'.repeat(64)));
+});
+
+
+test('Pesthunter Badge keeps its verified player-head portrait when live skin metadata disagrees', () => {
+  const pinned = skinTextureUrl({
+    id: 'PESTHUNTER_BADGE',
+    skin: 'f'.repeat(64),
+  });
+  assert.ok(pinned.endsWith('b4f1f0cf3adb4adc6b996ff9cb4e6d9d8912e0a5ab851c366c8abbdaf8b2ef04'));
 });
