@@ -24,6 +24,7 @@ function state(reforge) {
       levels: {}, owned: {}, costs: {}, manualGain: {},
       cropProgress: {}, toolProgress: {},
       vacuumProgress: {
+        skyblockId: 'SKYMART_VACUUM',
         reforge,
         levels: { [beady.id]: 1 },
         owned: { [beady.id]: true },

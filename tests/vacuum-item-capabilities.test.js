@@ -38,7 +38,7 @@ test('Hooverius Recomb changes host rarity and therefore Peridot Fortune', () =>
   assert.equal(vacuumPeridotFortune(bucket), 20);
 });
 
-test('Vacuum Peridot and Farming for Dummies count only in Pest mode', () => {
+test('Vacuum base Fortune, Peridot and Farming for Dummies count only in Pest mode', () => {
   const state = {
     selectedCrop: 'melon',
     profile: {
@@ -56,7 +56,7 @@ test('Vacuum Peridot and Farming for Dummies count only in Pest mode', () => {
   };
   const pest = computeStatTotals(state, 'melon', ACTIVITY_MODE.PEST);
   const farm = computeStatTotals(state, 'melon', ACTIVITY_MODE.FARM);
-  assert.equal(pest.pestFortune, 25, '20 Peridot + 5 Farming for Dummies');
+  assert.equal(pest.pestFortune, 50, '25 Hooverius base + 20 Peridot + 5 Farming for Dummies');
   assert.equal(farm.pestFortune, 0);
 });
 

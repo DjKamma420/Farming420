@@ -1,17 +1,17 @@
 import { STORAGE_KEY } from './config.js';
 import { UPGRADES } from './data.js';
-import { ACTIVITY_MODE, isVacuumItemEntry, setActivityModeOnState } from './activity-mode.js';
+import { ACTIVITY_MODE, setActivityModeOnState } from './activity-mode.js';
 import { computeStatTotals } from './computed-stats.js';
 import { applySnapshotToProgress } from './snapshot-apply.js';
 import {
   FARMING_REFORGES_BY_FAMILY,
-  VACUUM_REFORGE_EFFECT_ENTRY_IDS,
   applyVacuumReforge,
   selectedVacuumReforge,
 } from './item-capabilities.js';
 import { petLevelFromExperience } from './mooshroom-cow.js';
 import { writeLinkedSetupSlot } from './setups.js';
 import { formatNumber } from './format-number.js';
+import { isVacuumDirectUpgrade, vacuumPhysicalStats } from './vacuum-state.js';
 
 const PET_RARITIES = Object.freeze(['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY', 'MYTHIC']);
 let applying = false;
@@ -221,14 +221,14 @@ function renderVacuumSurface(raw) {
 
   const cropId = raw.selectedCrop || 'melon';
   const killStats = statsForMode(raw, cropId, ACTIVITY_MODE.PEST_KILL);
-  const totalPestFortune = Number(killStats.globalFortune || 0) + Number(killStats.pestFortune || 0);
+  const totalPestFortune = Number(killStats.effectiveFortune || 0);
   const bucket = ensureVacuumBucket(raw);
   const reforge = selectedVacuumReforge(bucket);
   // If an old build left Beady's scored flag enabled while Buzzing was selected,
   // normalize it before totals are recalculated.
   if (bucket.reforge && reforge) applyVacuumReforge(bucket, reforge);
-  const reforgeEntries = new Set(Object.values(VACUUM_REFORGE_EFFECT_ENTRY_IDS).filter(Boolean));
-  const entries = UPGRADES.filter(isVacuumItemEntry).filter(item => !reforgeEntries.has(item.id));
+  const vacuumStats = vacuumPhysicalStats(bucket);
+  const entries = UPGRADES.filter(isVacuumDirectUpgrade);
   const signature = [
     reforge || '',
     bucket.skyblockId || '',
@@ -236,6 +236,9 @@ function renderVacuumSurface(raw) {
     totalPestFortune,
     killStats.pestFortune,
     killStats.overbloom,
+    vacuumStats.farmingFortune,
+    vacuumStats.damage,
+    vacuumStats.range,
     entries.map(item => `${item.id}:${vacuumLevel(bucket, item)}`).join('|'),
   ].join('|');
   if (panel.dataset.signature === signature) return;
@@ -244,7 +247,7 @@ function renderVacuumSurface(raw) {
   panel.innerHTML = `
     <section class="item-editor-section" data-vacuum-section="reforge">
       <div class="workspace-section-head"><div><h3>Reforge</h3><p>Exactly one Vacuum reforge can be active.</p></div></div>
-      <div class="workspace-choice-list" role="radiogroup" aria-label="Vacuum reforge">
+      ${vacuumStats.selected ? `<div class="workspace-choice-list" role="radiogroup" aria-label="Vacuum reforge">
         ${[
           { id: '', name: 'No reforge', stone: 'Nothing applied' },
           ...FARMING_REFORGES_BY_FAMILY.vacuum,
@@ -256,19 +259,25 @@ function renderVacuumSurface(raw) {
             <span class="workspace-choice-copy"><strong>${esc(option.name)}</strong><small>${esc(option.stone || '')}</small></span>
           </label>`;
         }).join('')}
-      </div>
+      </div>` : '<p class="hint">Choose the physical Vacuum model above before selecting a reforge.</p>'}
     </section>
     <section class="item-editor-section" data-vacuum-section="upgrades">
       <div class="workspace-section-head"><div><h3>Vacuum upgrades</h3><p>Use the same 0-to-max progression controls as the farming tools. Zero means the upgrade is not applied.</p></div></div>
       <div class="workspace-level-list">
-        ${entries.map(item => vacuumUpgradeRow(bucket, item)).join('') || '<p class="hint">No other modeled Vacuum values are available yet.</p>'}
+        ${vacuumStats.selected
+          ? (entries.map(item => vacuumUpgradeRow(bucket, item)).join('') || '<p class="hint">No other modeled Vacuum values are available yet.</p>')
+          : '<p class="hint">Choose the physical Vacuum model above before configuring item-local upgrades.</p>'}
       </div>
     </section>
     <section class="item-editor-section" data-vacuum-section="totals">
       <div class="workspace-section-head"><div><h3>Pest totals</h3><p>Calculated from the configured Vacuum and the active Killing setup.</p></div></div>
       <div class="pest-loadout-stats" aria-label="Vacuum Pest totals">
-        <div class="pest-loadout-stat"><span>Total Pest Fortune</span><strong>${formatNumber(totalPestFortune)}</strong><small>Global + Pest-only (+${formatNumber(Number(killStats.pestFortune || 0))})</small></div>
+        <div class="pest-loadout-stat"><span>Effective Pest Fortune</span><strong>${formatNumber(totalPestFortune)}</strong><small>Global ${formatNumber(Number(killStats.globalFortune || 0))} + crop ${formatNumber(Number(killStats.cropFortune || 0))} + Pest-only ${formatNumber(Number(killStats.pestFortune || 0))}</small></div>
+        <div class="pest-loadout-stat"><span>Pest-only Fortune</span><strong>${formatNumber(Number(killStats.pestFortune || 0))}</strong></div>
         <div class="pest-loadout-stat"><span>Pest Overbloom</span><strong>${formatNumber(Number(killStats.overbloom || 0))}</strong></div>
+        <div class="pest-loadout-stat"><span>Vacuum Farming Fortune</span><strong>${formatNumber(vacuumStats.farmingFortune)}</strong><small>Selected Vacuum and its item-local modifiers only</small></div>
+        <div class="pest-loadout-stat"><span>Vacuum Damage</span><strong>${formatNumber(vacuumStats.damage)}</strong></div>
+        <div class="pest-loadout-stat"><span>Vacuum Range</span><strong>${formatNumber(vacuumStats.range)}</strong></div>
       </div>
     </section>`;
 

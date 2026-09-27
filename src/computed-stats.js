@@ -6,7 +6,13 @@ import { mooshroomCowContribution } from './mooshroom-cow.js';
 import { roseDragonContribution } from './rose-dragon.js';
 import { pestSpawnPetContribution } from './pest-spawn-pets.js';
 import { VACUUM_REFORGE_EFFECT_ENTRY_IDS, selectedVacuumReforge } from './item-capabilities.js';
-import { vacuumPeridotFortune } from './vacuum-state.js';
+import {
+  vacuumBaseFarmingFortune,
+  vacuumBuzzingFarmingFortune,
+  vacuumPeridotFortune,
+  vacuumPhysicalStats,
+  selectedVacuumRecord,
+} from './vacuum-state.js';
 import { TOOL_GEM_ENTRY_ID, toolGemstoneContribution } from './tool-gemstone-contribution.js';
 import {
   ACTIVITY_MODE,
@@ -127,6 +133,11 @@ function contributionFor(state, item, cropId, mode = null, activeContextScope = 
   // BPC is a spawn-phase stat. Keeping it out of Farming/Killing totals prevents
   // the old two-set model from making those loadouts look better than they are.
   if (mode && axis === STAT_AXIS.BONUS_PEST_CHANCE && mode !== ACTIVITY_MODE.PEST_SPAWN) return null;
+
+  // Vacuum-local modifiers only exist on a selected physical Vacuum. Old or
+  // partial state may still contain modifier flags without a model; never turn
+  // those orphaned flags into account stats.
+  if (isVacuumItemEntry(item) && !selectedVacuumRecord(profile.vacuumProgress || {})) return null;
 
   // The old single Perfect-Peridot row was only a placeholder. The physical
   // tool editor now stores every socket separately, including quality, unlock
@@ -368,9 +379,19 @@ function applyDerivedMechanics(state, totals, mode, cropId, derivedContext = {})
   const pestSpawnPet = pestSpawnPetContribution(state, cropId, derivedContext);
   const setupPetItem = setupPetItemForState(state, mode, derivedContext);
   const pestSetupGear = pestSetupGearContribution(state, mode, derivedContext);
-  const vacuumPeridot = mode === ACTIVITY_MODE.PEST_KILL
-    ? vacuumPeridotFortune(state?.profile?.vacuumProgress || {})
+  const vacuumBucket = state?.profile?.vacuumProgress || {};
+  const vacuumBaseFortune = mode === ACTIVITY_MODE.PEST_KILL
+    ? vacuumBaseFarmingFortune(vacuumBucket)
     : 0;
+  const vacuumBuzzingFortune = mode === ACTIVITY_MODE.PEST_KILL
+    ? vacuumBuzzingFarmingFortune(vacuumBucket)
+    : 0;
+  const vacuumPeridot = mode === ACTIVITY_MODE.PEST_KILL
+    ? vacuumPeridotFortune(vacuumBucket)
+    : 0;
+  const vacuumStats = mode === ACTIVITY_MODE.PEST_KILL
+    ? vacuumPhysicalStats(vacuumBucket)
+    : null;
   const toolPeridot = (mode === ACTIVITY_MODE.FARM || mode === ACTIVITY_MODE.PEST_SPAWN)
     ? toolGemstoneContribution(state, cropId)
     : { active: false, value: 0, incomplete: false, filled: 0, available: 0 };
@@ -381,7 +402,10 @@ function applyDerivedMechanics(state, totals, mode, cropId, derivedContext = {})
     pestSpawnPet,
     setupPetItem,
     pestSetupGear,
+    vacuumBaseFarmingFortune: vacuumBaseFortune,
+    vacuumBuzzingFarmingFortune: vacuumBuzzingFortune,
     vacuumPeridotFortune: vacuumPeridot,
+    vacuumPhysicalStats: vacuumStats,
     toolPeridotFortune: toolPeridot,
   };
 
@@ -483,8 +507,9 @@ function applyDerivedMechanics(state, totals, mode, cropId, derivedContext = {})
     });
   }
 
-  if (vacuumPeridot > 0) {
-    totals.pestFortune += vacuumPeridot;
+  for (const value of [vacuumBaseFortune, vacuumBuzzingFortune, vacuumPeridot]) {
+    if (value <= 0) continue;
+    totals.pestFortune += value;
     totals.sourceCount.pestFortune += 1;
   }
 

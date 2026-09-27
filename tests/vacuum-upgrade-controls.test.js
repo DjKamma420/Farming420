@@ -28,11 +28,12 @@ test('single-step Vacuum upgrades keep the tool-style toggle row', () => {
 });
 
 
-test('Vacuum editor follows the same progression-first order as crop tools', () => {
-  assert.match(exact, /<h3>Vacuum progression<\/h3>/);
-  assert.match(exact, /<strong>Vacuum model<\/strong>/);
+test('Vacuum editor follows the same model-first order as crop tools', () => {
+  assert.match(exact, /<h3>Vacuum model<\/h3>/);
+  assert.match(exact, /sb-vacuum-model-grid/);
   assert.match(exact, /data-vacuum-model/);
-  assert.match(exact, /This replaces the Mk\. tier choice used by crop tools/);
+  assert.match(exact, /Vacuum Tier \$\{record\.tier\}/);
+  assert.match(exact, /Choose the physical Vacuum first/);
   assert.match(source, /data-vacuum-section="reforge"/);
   assert.match(source, /data-vacuum-section="upgrades"/);
   assert.match(exact, /data-vacuum-gemstones="1"/);

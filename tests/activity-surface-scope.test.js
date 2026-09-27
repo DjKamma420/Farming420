@@ -27,8 +27,8 @@ test('Vacuum totals are calculated in Killing context while configuration stays 
   assert.doesNotMatch(loadoutUi, /statsForMode\(raw, cropId, ACTIVITY_MODE\.PEST_SPAWN\)/);
   assert.match(loadoutUi, /setActivityModeOnState\(scoped, mode\)/);
   assert.match(loadoutUi, /applySnapshotToProgress\(scoped,/);
-  assert.match(loadoutUi, /const totalPestFortune = Number\(killStats\.globalFortune \|\| 0\) \+ Number\(killStats\.pestFortune \|\| 0\)/);
-  for (const label of ['Total Pest Fortune', 'Pest Overbloom', 'Vacuum upgrades']) {
+  assert.match(loadoutUi, /const totalPestFortune = Number\(killStats\.effectiveFortune \|\| 0\)/);
+  for (const label of ['Effective Pest Fortune', 'Pest Overbloom', 'Vacuum upgrades']) {
     assert.match(loadoutUi, new RegExp(label));
   }
 });
