@@ -346,7 +346,7 @@ test('editing one linked setup item updates every reference to the same physical
   writeLinkedSetupSlot(setups, 'pest-kill', 'helmet', { ...shared, reforge: 'mantid', source: ITEM_SOURCE.MANUAL });
 
   assert.equal(setups.list[0].slots.helmet.reforge, 'mantid');
-  assert.equal(setups.list[2].slots.helmet.reforge, 'mantid');
+  assert.equal(setups.list[2].slots.helmet, null);
   assert.equal(setups.list[0].slots.helmet.physicalItemId, 'shared:normal:helmet');
 });
 
@@ -371,6 +371,7 @@ test('replacing Killing armor writes through to the shared FF gear slot', () => 
   writeLinkedSetupSlot(setups, 'pest-kill', 'helmet', { ...createEmptyItem(), displayName: 'Different Helmet' });
 
   assert.equal(setups.list[0].slots.helmet.displayName, 'Different Helmet');
-  assert.equal(setups.list[2].slots.helmet.displayName, 'Different Helmet');
-  assert.equal(setups.list[0].slots.helmet.physicalItemId, setups.list[2].slots.helmet.physicalItemId);
+  assert.equal(setups.list[2].slots.helmet, null);
+  setups.activeId = 'pest-kill';
+  assert.equal(activeSetup(setups).slots.helmet.displayName, 'Different Helmet');
 });
