@@ -105,13 +105,23 @@ function physicalNameCandidates(entry) {
  * Arbitrary substring matching is deliberately forbidden: that previously made
  * Blessed Fruit display Blessed Bait art.
  */
+const ATTRIBUTE_SHARD_ID_OVERRIDES = Object.freeze({
+  // Praying Mantis' current physical item is keyed by Insect Power even though
+  // Farming420 keeps the farming-facing "Pest Ruler" label for this row.
+  'attribute-shard-praying-mantis-pest-ruler': 'ATTRIBUTE_SHARD_INSECT_POWER;1',
+});
+
 function shardPhysicalItemId(entry) {
   if (!entry || entry.category !== 'Attribute Shard') return null;
   if (entry.physicalItemId) return String(entry.physicalItemId).trim().toUpperCase();
-  const baseName = clean(entry.name).split(/\s+-\s+|\s+—\s+/)[0].replace(/\s+\(formerly [^)]+\)\s*$/i, '').trim();
-  if (!/\bShard$/i.test(baseName)) return null;
-  const shardName = baseName.replace(/\s+Shard$/i, '').trim();
-  return shardName ? `SHARD_${shardName.toUpperCase().replace(/[^A-Z0-9]+/g, '_')}` : null;
+
+  const override = ATTRIBUTE_SHARD_ID_OVERRIDES[entry.id];
+  if (override) return override;
+
+  const attribute = clean(entry.attribute);
+  if (!attribute) return null;
+  const suffix = attribute.toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+  return suffix ? `ATTRIBUTE_SHARD_${suffix};1` : null;
 }
 
 export function catalogItemForUpgrade(catalog, entry) {
