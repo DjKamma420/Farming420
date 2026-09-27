@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 
 import {
   FARMING_PETS,
   clampPetLevel,
   farmingPetById,
+  petIconUrl,
   petLevelBounds,
   petRarities,
 } from '../src/setup-pet-catalog.js';
@@ -21,7 +23,33 @@ test('the setup pet picker exposes unique sourced farming pets', () => {
     assert.match(pet.lastVerified, /^\d{4}-\d{2}-\d{2}$/);
     assert.ok(pet.lastVerified >= '2026-09-17', `${pet.id} verification date regressed`);
     assert.ok(pet.rarities.length > 0);
+    assert.match(pet.iconUrl, /^https:\/\/skyah\.net\/icons\/pets\/[a-z0-9_]+\.webp$/);
   }
+});
+
+
+test('farming pets have exact rendered icons for dropdowns and setup portraits', () => {
+  const expected = {
+    BEE: 'https://skyah.net/icons/pets/bee.webp',
+    CHICKEN: 'https://skyah.net/icons/pets/chicken.webp',
+    ELEPHANT: 'https://skyah.net/icons/pets/elephant.webp',
+    HEDGEHOG: 'https://skyah.net/icons/pets/hedgehog.webp',
+    MOOSHROOM_COW: 'https://skyah.net/icons/pets/mooshroom_cow.webp',
+    MOSQUITO: 'https://skyah.net/icons/pets/mosquito.webp',
+    ORCHID_MANTIS: 'https://skyah.net/icons/pets/orchid_mantis.webp',
+    PIG: 'https://skyah.net/icons/pets/pig.webp',
+    RABBIT: 'https://skyah.net/icons/pets/rabbit.webp',
+    ROSE_DRAGON: 'https://skyah.net/icons/pets/rose_dragon.webp',
+    SLUG: 'https://skyah.net/icons/pets/slug.webp',
+  };
+  assert.deepEqual(Object.fromEntries(FARMING_PETS.map(pet => [pet.id, pet.iconUrl])), expected);
+  for (const [id, url] of Object.entries(expected)) assert.equal(petIconUrl(id), url, id);
+  assert.equal(petIconUrl('not_a_pet'), null);
+});
+
+test('setup slot art prefers the exact pet render before generic item art', () => {
+  const source = readFileSync(new URL('../src/item-art-ui.js', import.meta.url), 'utf8');
+  assert.match(source, /petIconUrl\(itemId\) \|\| knownSkyblockRenderedIcon\(itemId\)/);
 });
 
 test('current farming-pet rarity ranges stay explicit instead of free text', () => {
