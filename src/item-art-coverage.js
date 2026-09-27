@@ -3,7 +3,7 @@ import { UPGRADES } from './data.js';
 import { loadItemCatalog } from './item-catalog.js';
 import { armorItemSvgMarkup, isArmorItem } from './armor-item-art.js';
 import { ITEM_ART_MANIFEST_READY_EVENT, packArtNodeFor } from './pack-item-art.js';
-import { knownSkyblockHeadTexture } from './skull-art.js';
+import { knownSkyblockHeadTexture, knownSkyblockRenderedIcon } from './skull-art.js';
 
 export const REFORGE_ITEM_IDS = Object.freeze({
   bountiful: 'GOLDEN_BALL',
@@ -105,10 +105,25 @@ function physicalNameCandidates(entry) {
  * Arbitrary substring matching is deliberately forbidden: that previously made
  * Blessed Fruit display Blessed Bait art.
  */
+function shardPhysicalItemId(entry) {
+  if (!entry || entry.category !== 'Attribute Shard') return null;
+  if (entry.physicalItemId) return String(entry.physicalItemId).trim().toUpperCase();
+  const baseName = clean(entry.name).split(/\s+-\s+|\s+—\s+/)[0].replace(/\s+\(formerly [^)]+\)\s*$/i, '').trim();
+  if (!/\bShard$/i.test(baseName)) return null;
+  const shardName = baseName.replace(/\s+Shard$/i, '').trim();
+  return shardName ? `SHARD_${shardName.toUpperCase().replace(/[^A-Z0-9]+/g, '_')}` : null;
+}
+
 export function catalogItemForUpgrade(catalog, entry) {
   if (!Array.isArray(catalog) || !entry) return null;
-  const exactItemId = entry.physicalItemId || CARD_ITEM_ID_OVERRIDES[entry.id];
-  if (exactItemId) return catalogItemById(catalog, exactItemId);
+  const explicitItemId = entry.physicalItemId || CARD_ITEM_ID_OVERRIDES[entry.id];
+  if (explicitItemId) return catalogItemById(catalog, explicitItemId);
+
+  const inferredShardId = shardPhysicalItemId(entry);
+  if (inferredShardId) {
+    const exactShard = catalogItemById(catalog, inferredShardId);
+    if (exactShard) return exactShard;
+  }
   if (!entry.packAsset && !PHYSICAL_CARD_CATEGORIES.has(entry.category)) return null;
 
   const candidates = physicalNameCandidates(entry);
@@ -203,7 +218,24 @@ function letterArtNode(item, label) {
  * texture does not load, the card must fall to exactly the model it would have
  * had if the texture had never been offered.
  */
+function renderedIconNode(item, label) {
+  const url = knownSkyblockRenderedIcon(item?.id);
+  if (!url || typeof document === 'undefined') return null;
+  const image = document.createElement('img');
+  image.className = 'coverage-item-art coverage-rendered-art';
+  image.src = url;
+  image.alt = '';
+  image.loading = 'lazy';
+  image.decoding = 'async';
+  image.setAttribute('role', 'img');
+  image.setAttribute('aria-label', `${label || item?.name || 'SkyBlock item'} item icon`);
+  return image;
+}
+
 function nonSkullArtNode(item, label) {
+  const rendered = renderedIconNode(item, label);
+  if (rendered) return rendered;
+
   // Hypixel does not currently ship Resource Pack models for armour. The
   // official item resource does publish the actual item material and leather
   // dye, so armour must use that model instead of a Cropie/Fermento/etc. crop
@@ -283,39 +315,46 @@ function putArt(container, node, identity, { prepend = true } = {}) {
   return true;
 }
 
+function progressionCardArtRecord(catalog, entry) {
+  const record = catalogItemForUpgrade(catalog, entry);
+  if (record) return record;
+  const physicalItemId = entry?.physicalItemId || shardPhysicalItemId(entry);
+  return physicalItemId ? { id: physicalItemId, name: entry.name } : null;
+}
+
+function putProgressionCardArt(card, record, label, identity) {
+  if (!card || !record) return;
+  if (card.dataset.physicalItemId !== record.id) card.dataset.physicalItemId = record.id;
+  let portrait = card.querySelector('.card-head > .card-portrait');
+  if (!portrait) {
+    portrait = document.createElement('span');
+    portrait.className = 'card-portrait shard-portrait coverage-card-portrait';
+    card.querySelector('.card-head')?.prepend(portrait);
+  }
+  const node = itemArtNode(record, label || record.name);
+  if (node) putArt(portrait, node, identity, { prepend: false });
+}
+
 function decorateProgressionCards(catalog) {
   document.querySelectorAll('.item-card[data-open]').forEach(card => {
     const entry = UPGRADES.find(item => item.id === card.dataset.open);
     if (!entry) return;
-    const record = catalogItemForUpgrade(catalog, entry);
+    const record = progressionCardArtRecord(catalog, entry);
     if (!record) {
       delete card.dataset.physicalItemId;
-      if (entry.category === 'Attribute Shard') {
-        let portrait = card.querySelector('.card-head > .card-portrait');
-        if (!portrait) {
-          portrait = document.createElement('span');
-          portrait.className = 'card-portrait shard-portrait coverage-card-portrait';
-          card.querySelector('.card-head')?.prepend(portrait);
-        }
-        if (!portrait.querySelector(':scope > .official-item-art, :scope > .coverage-item-art')) {
-          const fallback = packArtNodeFor(entry, entry.name) || letterArtNode(entry, entry.name);
-          putArt(portrait, fallback, `shard-fallback:${entry.id}`, { prepend: false });
-        }
-      }
       return;
     }
-    if (card.dataset.physicalItemId !== record.id) card.dataset.physicalItemId = record.id;
-    const node = itemArtNode(record, record.name || entry.name);
-    if (!node) return;
-    let portrait = card.querySelector('.card-head > .card-portrait');
-    if (!portrait) {
-      portrait = document.createElement('span');
-      portrait.className = 'card-portrait coverage-card-portrait';
-      card.querySelector('.card-head')?.prepend(portrait);
-    }
-    if (!portrait.querySelector(':scope > .official-item-art, :scope > .coverage-item-art')) {
-      putArt(portrait, node, `card:${record.id}`, { prepend: false });
-    }
+    putProgressionCardArt(card, record, entry.name, `card:${record.id}`);
+  });
+}
+
+function decorateSynergyShardCards(catalog) {
+  document.querySelectorAll('.shard-synergy-card[data-synergy-shard-art]').forEach(card => {
+    const itemId = String(card.dataset.synergyShardArt || '').trim().toUpperCase();
+    if (!itemId) return;
+    const label = card.querySelector('.item-title')?.textContent?.trim() || itemId;
+    const record = catalogItemById(catalog, itemId) || { id: itemId, name: label };
+    putProgressionCardArt(card, record, label, `synergy-shard:${record.id}`);
   });
 }
 
@@ -447,6 +486,7 @@ export async function applyItemArtCoverage(root = document, rawState = readState
     // Progression fallback art must still run when the live item catalog is
     // unavailable; otherwise Attribute Shards render as empty portrait boxes.
     decorateProgressionCards(items);
+    decorateSynergyShardCards(items);
     decorateAccessoryCatalog(items);
     decorateDrawer(items, rawState);
     decorateReforges(items);

@@ -11,16 +11,16 @@ export const FARMING_SYNERGY_SOURCES = Object.freeze({
 });
 
 export const ELEMENTAL_STRENGTH_SHARDS = Object.freeze([
-  Object.freeze({ id: 'flash', name: 'Flash Shard', attribute: 'Light Elemental', rarity: 'COMMON', perLevelStrength: 1, maxLevel: 10, global: true }),
-  Object.freeze({ id: 'quake', name: 'Quake Shard', attribute: 'Stone Elemental', rarity: 'UNCOMMON', perLevelStrength: 1, maxLevel: 10, global: true }),
-  Object.freeze({ id: 'bolt', name: 'Bolt Shard', attribute: 'Lightning Elemental', rarity: 'RARE', perLevelStrength: 1, maxLevel: 10, global: true }),
-  Object.freeze({ id: 'aero', name: 'Aero Shard', attribute: 'Wind Elemental', rarity: 'EPIC', perLevelStrength: 1, maxLevel: 10, global: true }),
-  Object.freeze({ id: 'tempest', name: 'Tempest Shard', attribute: 'Storm Elemental', rarity: 'LEGENDARY', perLevelStrength: 1, maxLevel: 10, global: true }),
+  Object.freeze({ id: 'flash', physicalItemId: 'SHARD_FLASH', name: 'Flash Shard', attribute: 'Light Elemental', rarity: 'COMMON', perLevelStrength: 1, maxLevel: 10, global: true }),
+  Object.freeze({ id: 'quake', physicalItemId: 'SHARD_QUAKE', name: 'Quake Shard', attribute: 'Stone Elemental', rarity: 'UNCOMMON', perLevelStrength: 1, maxLevel: 10, global: true }),
+  Object.freeze({ id: 'bolt', physicalItemId: 'SHARD_BOLT', name: 'Bolt Shard', attribute: 'Lightning Elemental', rarity: 'RARE', perLevelStrength: 1, maxLevel: 10, global: true }),
+  Object.freeze({ id: 'aero', physicalItemId: 'SHARD_AERO', name: 'Aero Shard', attribute: 'Wind Elemental', rarity: 'EPIC', perLevelStrength: 1, maxLevel: 10, global: true }),
+  Object.freeze({ id: 'tempest', physicalItemId: 'SHARD_TEMPEST', name: 'Tempest Shard', attribute: 'Storm Elemental', rarity: 'LEGENDARY', perLevelStrength: 1, maxLevel: 10, global: true }),
 ]);
 
 export const FARMING_SHARD_SYNERGIES = Object.freeze({
   echoOfElemental: Object.freeze({
-    id: 'starborn',
+    id: 'starborn', physicalItemId: 'SHARD_STARBORN',
     name: 'Starborn Shard',
     attribute: 'Echo of Elemental',
     maxLevel: 10,
@@ -31,7 +31,7 @@ export const FARMING_SHARD_SYNERGIES = Object.freeze({
     recommendationTargets: Object.freeze(['farming-fortune']),
   }),
   unlimitedPower: Object.freeze({
-    id: 'jormung',
+    id: 'jormung', physicalItemId: 'SHARD_JORMUNG',
     name: 'Jormung Shard',
     attribute: 'Unlimited Power',
     maxLevel: 10,
@@ -42,7 +42,7 @@ export const FARMING_SHARD_SYNERGIES = Object.freeze({
     recommendationTargets: Object.freeze(['farming-fortune']),
   }),
   almightyEcho: Object.freeze({
-    id: 'molthorn',
+    id: 'molthorn', physicalItemId: 'SHARD_MOLTHORN',
     name: 'Molthorn Shard',
     attribute: 'Almighty Echo',
     maxLevel: 10,
@@ -53,7 +53,7 @@ export const FARMING_SHARD_SYNERGIES = Object.freeze({
     recommendationTargets: Object.freeze(['farming-fortune']),
   }),
   tuningBox: Object.freeze({
-    id: 'hideonbox',
+    id: 'hideonbox', physicalItemId: 'SHARD_HIDEONBOX',
     name: 'Hideonbox Shard',
     attribute: 'Tuning Box',
     maxLevel: 10,
@@ -64,7 +64,7 @@ export const FARMING_SHARD_SYNERGIES = Object.freeze({
     recommendationTargets: Object.freeze(['farming-fortune']),
   }),
   filterUpgrade: Object.freeze({
-    id: 'mite',
+    id: 'mite', physicalItemId: 'SHARD_MITE',
     name: 'Mite Shard',
     attribute: 'Filter Upgrade',
     maxLevel: 10,
@@ -75,7 +75,7 @@ export const FARMING_SHARD_SYNERGIES = Object.freeze({
     recommendationTargets: Object.freeze(['farming-fortune', 'pest-spawn-chance']),
   }),
   echoOfWisdom: Object.freeze({
-    id: 'wyvern',
+    id: 'wyvern', physicalItemId: 'SHARD_WYVERN',
     name: 'Wyvern Shard',
     attribute: 'Echo of Wisdom',
     maxLevel: 10,
@@ -86,7 +86,7 @@ export const FARMING_SHARD_SYNERGIES = Object.freeze({
     recommendationTargets: Object.freeze([]),
   }),
   queenlyEcho: Object.freeze({
-    id: 'queen-snake',
+    id: 'queen-snake', physicalItemId: 'SHARD_QUEEN_SNAKE',
     name: 'Queen Snake Shard',
     attribute: 'Queenly Echo',
     maxLevel: 10,
@@ -97,7 +97,7 @@ export const FARMING_SHARD_SYNERGIES = Object.freeze({
     recommendationTargets: Object.freeze([]),
   }),
   echoOfEchoes: Object.freeze({
-    id: 'tiamat',
+    id: 'tiamat', physicalItemId: 'SHARD_TIAMAT',
     name: 'Tiamat Shard',
     attribute: 'Echo of Echoes',
     maxLevel: 10,

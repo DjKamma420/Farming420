@@ -95,3 +95,14 @@ test('Shards page exposes verified indirect shard-to-shard and Cow synergy contr
   assert.doesNotMatch(source.slice(source.indexOf('function shardSynergyPanel'), source.indexOf('function shardsPage')), /input type="number"/);
   assert.match(source, /case 'shards': content = shardsPage\(\);/);
 });
+
+
+test('indirect shards use the same full card surface as direct Attribute Shards', () => {
+  const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  assert.match(source, /function synergyShardCard/);
+  assert.match(source, /item-card shard-card shard-synergy-card/);
+  assert.match(source, /card-portrait shard-portrait/);
+  assert.match(source, /card-meta/);
+  assert.match(source, /card-grid shard-gallery shard-synergy-gallery/);
+  assert.doesNotMatch(source.slice(source.indexOf('function shardSynergyPanel'), source.indexOf('function shardsPage')), /accessory-upgrade-row shard-synergy-row/);
+});
