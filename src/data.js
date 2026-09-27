@@ -2412,15 +2412,15 @@ export const HIDDEN_INTERACTIONS = [
     "status": "ACTIVE",
     "lastVerified": "2026-09-27",
     "source": "https://hypixelskyblock.minecraft.wiki/w/Attributes"
-  }
+  },
   {
     "id": "pest-cooldown-has-no-published-per-level-value",
     "name": "Pest Cooldown (Moth Shard) publishes no per-level scaling",
-    "effect": "The wiki states, as a flat figure on both the attribute list and the Moth Shard page, that the attribute reduces the spawn cooldown of Pest by 0.5s, while all eleven other farming attributes print an explicit level 1 to level 10 range.",
+    "effect": "The current attribute list states a flat 0.5s Pest spawn-cooldown reduction and does not publish a level 1 to level 10 range for this effect.",
     "why": "Attributes level to 10, so a flat figure is either a genuinely unscaling effect or an undocumented range. Assuming 0.5s per level would silently invent a 5s reduction that no source states.",
     "handling": "Kept as a VERIFY entry with stepGain 0, so it appears in the shard list and can be filled in manually but never contributes a derived number. It becomes scored only when a per-level value is sourced.",
     "status": "VERIFY",
-    "lastVerified": "2026-09-16",
+    "lastVerified": "2026-09-27",
     "source": "https://hypixelskyblock.minecraft.wiki/w/Moth_Shard"
   }
 ];
