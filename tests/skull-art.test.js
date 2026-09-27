@@ -243,3 +243,11 @@ test('the page is allowed to load head textures, and only from Mojang', () => {
   // pixels are never read back, and it has no business in connect-src.
   assert.doesNotMatch(csp.match(/connect-src ([^;]+)/)?.[1] ?? '', /textures\.minecraft\.net/);
 });
+
+
+test('verified Attribute Shard textures may use Mojang hashes shorter than 64 hex chars', () => {
+  assert.equal(
+    knownSkyblockHeadTexture('ATTRIBUTE_SHARD_SPRAYONATOR_SERENDIPITY;1'),
+    'a8abb471db0ab78703011979dc8b40798a941f3a4dec3ec61cbeec2af8cffe8',
+  );
+});
