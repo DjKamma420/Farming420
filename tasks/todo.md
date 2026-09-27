@@ -1532,7 +1532,7 @@ fine in a real browser; nothing about them is claimed either way.
 
 Reported with screenshots: the Mossy Helianthus set renders as flat white, grey
 and yellow armour outlines, and the Blossom equipment as two-letter badges on a
-hatched square. "Das sind nicht die richtigen Modelle."
+hatched square. "Those are not the correct models."
 
 ### What was measured
 
