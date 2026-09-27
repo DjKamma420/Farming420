@@ -3,7 +3,7 @@ import { UPGRADES } from './data.js';
 
 const ENCHANTMENTS_SOURCE = 'https://hypixelskyblock.minecraft.wiki/w/Enchantments';
 const ULTIMATE_ENCHANTMENTS_SOURCE = 'https://hypixelskyblock.minecraft.wiki/w/Ultimate_Enchantments';
-const VERIFIED_AT = '2026-09-21';
+const VERIFIED_AT = '2026-09-28';
 
 function meta(maxLevel, appliesTo, options = {}) {
   const trueMaxLevel = Number(options.trueMaxLevel ?? maxLevel);
@@ -19,13 +19,6 @@ function meta(maxLevel, appliesTo, options = {}) {
   });
 }
 
-const PROTECTION_CONFLICTS = Object.freeze(['blast_protection', 'fire_protection', 'projectile_protection', 'protection']);
-const VITALITY_CONFLICTS = Object.freeze(['hardened_vitality', 'strong_vitality', 'vampiric_vitality', 'vivacious_vitality']);
-
-function conflictsExcept(group, id) {
-  return group.filter(entry => entry !== id);
-}
-
 function ultimate(maxLevel, appliesTo, options = {}) {
   return meta(maxLevel, appliesTo, {
     ...options,
@@ -35,15 +28,13 @@ function ultimate(maxLevel, appliesTo, options = {}) {
 }
 
 /**
- * Verified enchant mechanics for every enchantment currently applicable to the
- * Farming420 farming armor/equipment editor, plus the farming tool/vacuum
- * enchantments the app already models. Slot-specific appliesTo values use the
- * setup slot id; family-wide values use armor/equipment/farming-tool/vacuum.
+ * Strict Farming420 enchant whitelist.
  *
- * maxLevel is the highest normally applicable level. trueMaxLevel is only
- * different where a concrete item can legitimately carry a higher intrinsic
- * level (Century Pufferfish Hat: Thorns V). Unknown NBT enchantments remain
- * visible but neutral instead of being assigned guessed metadata.
+ * This is intentionally narrower than "everything the item can technically
+ * carry". An enchant belongs here only when it directly affects farming,
+ * Garden/Pest farming, farming throughput, or a documented farming synergy.
+ * Profile-synced non-farming enchants remain stored on the physical item but
+ * are not offered as editable Farming420 choices.
  */
 export const VERIFIED_FARMING_ENCHANT_META = Object.freeze({
   // Farming tools and vacuums.
@@ -52,71 +43,23 @@ export const VERIFIED_FARMING_ENCHANT_META = Object.freeze({
   dedication: meta(4, ['farming-tool'], { source: 'https://hypixelskyblock.minecraft.wiki/w/Dedication' }),
   delicate: meta(5, ['farming-tool'], { source: 'https://hypixelskyblock.minecraft.wiki/w/Delicate' }),
   feast: meta(5, ['farming-tool'], { source: 'https://hypixelskyblock.minecraft.wiki/w/Feast' }),
-  harvesting: meta(6, ['farming-tool']),
+  harvesting: meta(6, ['farming-tool'], { source: 'https://hypixelskyblock.minecraft.wiki/w/Harvesting' }),
   replenish: meta(1, ['farming-tool'], { source: 'https://hypixelskyblock.minecraft.wiki/w/Replenish' }),
-  turbo_crop: meta(7, ['farming-tool']),
-  crop_fever: ultimate(5, ['farming-tool']),
+  turbo_crop: meta(7, ['farming-tool'], { source: 'https://hypixelskyblock.minecraft.wiki/w/Turbo-Crop' }),
+  crop_fever: ultimate(5, ['farming-tool'], { source: 'https://hypixelskyblock.minecraft.wiki/w/Crop_Fever' }),
 
-  // Armor: universal normal enchantments.
-  blast_protection: meta(7, ['armor'], { conflicts: conflictsExcept(PROTECTION_CONFLICTS, 'blast_protection') }),
-  ferocious_mana: meta(10, ['armor']),
-  fire_protection: meta(7, ['armor'], { conflicts: conflictsExcept(PROTECTION_CONFLICTS, 'fire_protection') }),
-  forest_pledge: meta(6, ['armor'], { minLevel: 3 }),
-  growth: meta(7, ['armor']),
-  hardened_mana: meta(10, ['armor']),
-  hardened_vitality: meta(10, ['armor'], { conflicts: conflictsExcept(VITALITY_CONFLICTS, 'hardened_vitality') }),
-  ice_cold: meta(5, ['armor']),
-  mana_vampire: meta(10, ['armor']),
-  pesterminator: meta(6, ['armor']),
-  projectile_protection: meta(7, ['armor'], { conflicts: conflictsExcept(PROTECTION_CONFLICTS, 'projectile_protection') }),
-  protection: meta(7, ['armor'], { conflicts: conflictsExcept(PROTECTION_CONFLICTS, 'protection') }),
-  rejuvenate: meta(5, ['armor'], { conflicts: ['respite'] }),
-  respite: meta(5, ['armor'], { conflicts: ['rejuvenate'] }),
-  scuba: meta(6, ['armor']),
-  strong_mana: meta(10, ['armor']),
-  strong_vitality: meta(10, ['armor'], { conflicts: conflictsExcept(VITALITY_CONFLICTS, 'strong_vitality') }),
+  // Armor. Thorns is farming-relevant through the documented Thorny-equipment
+  // Overbloom interaction; the Century/Raffle Pufferfish Hat can carry V.
+  pesterminator: meta(6, ['armor'], { source: 'https://hypixelskyblock.minecraft.wiki/w/Pesterminator' }),
+  sunset: ultimate(5, ['armor'], { source: 'https://hypixelskyblock.minecraft.wiki/w/Sunset' }),
   thorns: meta(4, ['armor'], {
     trueMaxLevel: 5,
     conflicts: ['reflection'],
     source: 'https://hypixel.net/threads/hypixel-skyblock-0-26-1-new-player-improvements-harvest-feast-changes-healing-revamp-and-more.6127383/',
   }),
-  vampiric_vitality: meta(10, ['armor'], { conflicts: conflictsExcept(VITALITY_CONFLICTS, 'vampiric_vitality') }),
-  vivacious_vitality: meta(10, ['armor'], { conflicts: conflictsExcept(VITALITY_CONFLICTS, 'vivacious_vitality') }),
 
-  // Armor: slot-specific normal enchantments.
-  aqua_affinity: meta(1, ['helmet']),
-  big_brain: meta(5, ['helmet'], { minLevel: 3, conflicts: ['small_brain'] }),
-  hecatomb: meta(10, ['helmet']),
-  respiration: meta(4, ['helmet']),
-  small_brain: meta(5, ['helmet'], { minLevel: 3, conflicts: ['big_brain'] }),
-  transylvanian: meta(5, ['helmet'], { minLevel: 4 }),
-  counter_strike: meta(5, ['chestplate'], { minLevel: 3 }),
-  reflection: meta(5, ['chestplate'], { conflicts: ['thorns'] }),
-  true_protection: meta(1, ['chestplate']),
-  smarty_pants: meta(5, ['leggings']),
-  tidal: meta(3, ['leggings']),
-  depth_strider: meta(3, ['boots']),
-  feather_falling: meta(10, ['boots']),
-  stealth: meta(6, ['boots']),
-  sugar_rush: meta(3, ['boots']),
-
-  // Armor Ultimate Enchantments. One Ultimate may exist on an item at a time.
-  bank: ultimate(5, ['armor']),
-  bobbin_time: ultimate(5, ['armor'], { minLevel: 3 }),
-  habanero_tactics: ultimate(5, ['armor'], { minLevel: 4 }),
-  last_stand: ultimate(5, ['armor']),
-  legion: ultimate(5, ['armor']),
-  no_pain_no_gain: ultimate(5, ['armor']),
-  refrigerate: ultimate(5, ['armor']),
-  sunset: ultimate(5, ['armor']),
-  wisdom: ultimate(5, ['armor']),
-
-  // Equipment. Quantum and The One are necklace-only.
-  cayenne: meta(5, ['equipment'], { minLevel: 4 }),
-  green_thumb: meta(5, ['equipment']),
-  prosperity: meta(5, ['equipment']),
-  quantum: meta(5, ['equipment1'], { minLevel: 3 }),
-  the_one: ultimate(5, ['equipment1'], { minLevel: 4 }),
+  // Equipment.
+  green_thumb: meta(5, ['equipment'], { source: 'https://hypixelskyblock.minecraft.wiki/w/Green_Thumb_(Enchantment)' }),
 });
 
 export const VERIFIED_FARMING_ENCHANT_MAX = Object.freeze(Object.fromEntries(
@@ -185,16 +128,20 @@ export function enchantPresentation(enchantId, rawLevel) {
 }
 
 /**
- * Only one Ultimate Enchantment can be applied to an item. The NBT checker
- * recognises every verified Farming420 ultimate rather than only the ones that
- * change Farming stats.
+ * Only one Ultimate Enchantment can be applied to an item. Hidden non-farming
+ * ultimates still participate in this validity check when their NBT key keeps
+ * the standard ultimate_ prefix.
  */
 export function ultimateEnchantConflict(enchantments) {
   if (!enchantments || typeof enchantments !== 'object') return null;
   const active = Object.entries(enchantments)
     .filter(([, level]) => Number(level) > 0)
-    .map(([id]) => canonicalEnchantId(id))
-    .filter(id => VERIFIED_FARMING_ENCHANT_META[id]?.kind === 'ultimate');
+    .filter(([id]) => {
+      const canonical = canonicalEnchantId(id);
+      return String(id).toLowerCase().startsWith('ultimate_')
+        || VERIFIED_FARMING_ENCHANT_META[canonical]?.kind === 'ultimate';
+    })
+    .map(([id]) => canonicalEnchantId(id));
   const unique = [...new Set(active)];
   return unique.length > 1 ? Object.freeze({ group: 'ultimate-enchantment', enchantments: Object.freeze(unique) }) : null;
 }

@@ -35,19 +35,23 @@ test('every setup slot knows which enchantment family it belongs to', () => {
   }
 });
 
-test('slots offer the complete verified enchant set for their family and exact slot', () => {
-  const helmet = new Set(enchantRowsFor('helmet', {}).map(row => row.id));
-  for (const id of ['growth', 'protection', 'pesterminator', 'aqua_affinity', 'big_brain', 'hecatomb', 'respiration', 'sunset', 'legion']) {
-    assert.equal(helmet.has(id), true, `helmet is missing ${id}`);
-  }
-  assert.equal(helmet.has('counter_strike'), false);
-  assert.equal(helmet.has('depth_strider'), false);
-
-  const necklace = new Set(enchantRowsFor('equipment1', {}).map(row => row.id));
-  for (const id of ['cayenne', 'green_thumb', 'prosperity', 'quantum', 'the_one']) assert.equal(necklace.has(id), true);
-  const cloak = new Set(enchantRowsFor('equipment2', {}).map(row => row.id));
-  assert.equal(cloak.has('quantum'), false);
-  assert.equal(cloak.has('the_one'), false);
+test('slots offer only the farming-relevant enchant set for their family', () => {
+  assert.deepEqual(
+    enchantRowsFor('helmet', {}).map(row => row.id),
+    ['pesterminator', 'thorns', 'sunset'],
+  );
+  assert.deepEqual(
+    enchantRowsFor('equipment1', {}).map(row => row.id),
+    ['green_thumb'],
+  );
+  assert.deepEqual(
+    enchantRowsFor('tool', {}).map(row => row.id),
+    ['cultivating', 'dedication', 'delicate', 'feast', 'harvesting', 'replenish', 'turbo_crop', 'crop_fever'],
+  );
+  assert.deepEqual(
+    enchantRowsFor('vacuum', {}).map(row => row.id),
+    ['bug_blender'],
+  );
 
   // Pets take no enchantments, so the editor shows the section as absent rather
   // than as an empty box waiting to be filled.
@@ -69,15 +73,27 @@ test('ultimate enchantments sort last so the common ones are not buried', () => 
   assert.equal(rows[0].kind, 'normal');
 });
 
-test('an enchantment the app has not verified is shown, never dropped', () => {
-  // A synced profile can carry an enchant this repo has not researched. Hiding
-  // it would let the next save quietly delete something the player really has.
-  const rows = enchantRowsFor('helmet', { enchantments: { pesterminator: 3, mystery_thing: 2 } });
-  const extra = rows.find(row => row.id === 'mystery_thing');
-  assert.ok(extra, 'an unverified enchantment disappeared from the editor');
-  assert.equal(extra.known, false);
-  assert.equal(extra.maxLevel, null, 'an unverified enchantment must not be given an invented maximum');
-  assert.equal(extra.level, 2);
+test('synced non-farming enchantments stay stored but are hidden from the farming editor', () => {
+  const item = {
+    enchantments: {
+      pesterminator: 3,
+      protection: 7,
+      mystery_thing: 2,
+    },
+  };
+  const rows = enchantRowsFor('helmet', item);
+  assert.equal(rows.some(row => row.id === 'protection'), false);
+  assert.equal(rows.some(row => row.id === 'mystery_thing'), false);
+  assert.equal(rows.find(row => row.id === 'pesterminator').level, 3);
+
+  // A farming-specific edit clones the complete enchant map. Hidden synced
+  // values therefore survive rather than being silently deleted.
+  assert.deepEqual(withEnchantToggled(item, 'sunset', true), {
+    pesterminator: 3,
+    protection: 7,
+    mystery_thing: 2,
+    sunset: 1,
+  });
 });
 
 test('a crop-specific Turbo enchant keeps its own storage key through an edit', () => {
@@ -91,10 +107,10 @@ test('a crop-specific Turbo enchant keeps its own storage key through an edit', 
   assert.deepEqual(withEnchantToggled(item, turbo.storageKey, false), {});
 });
 
-test('turning an enchantment on starts at its lowest real tier, never its maximum', () => {
+test('turning a farming enchantment on starts at its lowest real tier, never its maximum', () => {
   assert.deepEqual(withEnchantToggled({ enchantments: {} }, 'dedication', true), { dedication: 1 });
-  assert.deepEqual(withEnchantToggled({ enchantments: {} }, 'big_brain', true), { big_brain: 3 });
-  assert.deepEqual(withEnchantToggled({ enchantments: {} }, 'cayenne', true), { cayenne: 4 });
+  assert.deepEqual(withEnchantToggled({ enchantments: {} }, 'green_thumb', true), { green_thumb: 1 });
+  assert.deepEqual(withEnchantToggled({ enchantments: {} }, 'crop_fever', true), { crop_fever: 1 });
 });
 
 test('a level can never be saved above the sourced maximum, and zero turns it off', () => {
@@ -193,14 +209,10 @@ test('the panel lists no entry twice', () => {
   assert.equal(new Set(ids).size, ids.length);
 });
 
-test('turning on an incompatible enchant clears the existing peer', () => {
+test('turning on farming-relevant Thorns clears its hidden incompatible peer', () => {
   assert.deepEqual(
-    withEnchantToggled({ enchantments: { protection: 7 } }, 'blast_protection', true),
-    { blast_protection: 1 },
-  );
-  assert.deepEqual(
-    withEnchantToggled({ enchantments: { big_brain: 5 } }, 'small_brain', true),
-    { small_brain: 3 },
+    withEnchantToggled({ enchantments: { reflection: 5, protection: 7 } }, 'thorns', true),
+    { protection: 7, thorns: 1 },
   );
 });
 
@@ -211,17 +223,16 @@ test('turning on a verified ultimate replaces the previous ultimate', () => {
   );
 });
 
-test('slot-specific rows expose their real minimum and true maximum', () => {
-  const bigBrain = enchantRowsFor('helmet', {}).find(row => row.id === 'big_brain');
-  assert.equal(bigBrain.minLevel, 3);
+test('Thorns exposes its normal and Century Hat maximum', () => {
   const thorns = enchantRowsFor('helmet', { enchantments: { thorns: 5 } }).find(row => row.id === 'thorns');
+  assert.equal(thorns.minLevel, 1);
   assert.equal(thorns.maxLevel, 4);
   assert.equal(thorns.trueMaxLevel, 5);
   assert.equal(thorns.state, 'special-maxed');
 });
 
 
-test("withEnchantLevel clamps a manually supplied level to the enchantment's real minimum", () => {
-  assert.deepEqual(withEnchantLevel({ enchantments: {} }, 'big_brain', 1, 5), { big_brain: 3 });
-  assert.deepEqual(withEnchantLevel({ enchantments: {} }, 'cayenne', 2, 5), { cayenne: 4 });
+test("withEnchantLevel keeps farming enchantments inside their real level range", () => {
+  assert.deepEqual(withEnchantLevel({ enchantments: {} }, 'thorns', 1, 4), { thorns: 1 });
+  assert.deepEqual(withEnchantLevel({ enchantments: {} }, 'green_thumb', 99, 5), { green_thumb: 5 });
 });
