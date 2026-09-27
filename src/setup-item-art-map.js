@@ -29,9 +29,10 @@ export const EXACT_SETUP_ITEM_ART = Object.freeze({
   BROWN_BANDANA: Object.freeze({ kind: 'head', textureId: '674e061e6d853822bbad56d079357c248c9a40de494f20eae0078a0a02ef0da7' }),
 
   HELIANTHUS_HELMET: Object.freeze({
-    // A cropped player-head skin only shows a flat face. The setup card is
-    // supposed to match the in-game-style 3D helmet portrait instead.
-    kind: 'rendered',
+    // Render the verified player-head texture as an actual CSS 3D cube. A flat
+    // face crop and an unreliable third-party item icon both miss the target UI.
+    kind: 'voxel-head',
+    textureId: '46e48a6eff318dcda57d5d76a9b2656be25973e3d472b6d2e446a8e60f60a78a',
   }),
   HELIANTHUS_CHESTPLATE: Object.freeze({
     kind: 'armor',
