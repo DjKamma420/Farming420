@@ -15,6 +15,7 @@ test('global search updates results without rerendering the app per keystroke', 
 
 test('global search indexes selectable and explanatory surfaces', () => {
   const app = read('src/app.js');
+  const info = read('src/info-content.js');
   for (const marker of [
     'selectableCatalogSearchEntries',
     'FARMING_ACCESSORY_GROUPS',
@@ -22,12 +23,12 @@ test('global search indexes selectable and explanatory surfaces', () => {
     'FARMING_TOOL_ITEM_IDS',
     'GARDEN_VACUUM_ITEMS',
     'SETTINGS_SEARCH_TOPICS',
-    'INFO_UPGRADE_TOPICS',
+    'allInfoEntries(CROPS)',
   ]) assert.ok(app.includes(marker), marker);
 
-  assert.match(app, /title: 'Recombobulator 3000'/);
-  assert.match(app, /title: 'Gemstones'/);
-  assert.match(app, /target: \{ type: 'info', page: 'info'/);
+  assert.match(info, /title: 'Recombobulator 3000'/);
+  assert.match(info, /title: 'Gemstones'/);
+  assert.match(app, /target: \{ type: 'info', page: 'info', anchor: topic\.anchor \}/);
 });
 
 test('settings search targets real settings sections', () => {
