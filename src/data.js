@@ -1,3 +1,5 @@
+import { GARDEN_CHIP_UPGRADES } from './garden-chips.js';
+
 export const CROPS = [
   {
     "id": "wheat",
@@ -682,46 +684,7 @@ export const UPGRADES = [
     "source": "https://wiki.eliteskyblock.com/Farming_Fortune",
     "workbookRank": null
   },
-  {
-    "id": "garden-chip-cropshot-chip",
-    "packAsset": "cropshot_chip",
-    "category": "Garden Chip",
-    "section": "chips",
-    "name": "Cropshot Chip",
-    "metric": "Crop Yield",
-    "modeScope": "Any",
-    "cropScope": "Any",
-    "status": "ACTIVE",
-    "max": 20,
-    "stepGain": 5,
-    "manualDefault": null,
-    "rawMarginal": 5,
-    "hypercharge": false,
-    "notes": "At Legendary: +5 FF per chip level, max +100. Adjust manual delta if current rarity uses +3/+4 per level.",
-    "source": "https://hypixelskyblock.minecraft.wiki/w/Garden_Chips",
-    "lastVerified": "2026-09-23",
-    "workbookRank": 27
-  },
-  {
-    "id": "garden-chip-hypercharge-chip-next-level",
-    "packAsset": "hypercharge_chip",
-    "category": "Garden Chip",
-    "section": "chips",
-    "name": "Hypercharge Chip next level",
-    "metric": "Crop Yield",
-    "modeScope": "Any",
-    "cropScope": "Any",
-    "status": "ACTIVE",
-    "max": 20,
-    "stepGain": 0,
-    "manualDefault": 0.25,
-    "rawMarginal": 0.25,
-    "hypercharge": false,
-    "notes": "Special formula: marginal value equals active eligible temporary base FF × next chip percentage step.",
-    "source": "https://hypixelskyblock.minecraft.wiki/w/Garden_Chips",
-    "lastVerified": "2026-09-23",
-    "workbookRank": 38
-  },
+  ...GARDEN_CHIP_UPGRADES,
   {
     "id": "armor-helianthus-armor-base-stats",
     "category": "Armor",
