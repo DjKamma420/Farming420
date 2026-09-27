@@ -23,6 +23,7 @@ const state = {
   profile: {
     setups: {
       activeId: 'normal',
+      shareFarmingKillingPet: false,
       list: [
         {
           id: 'normal',
@@ -31,20 +32,37 @@ const state = {
             chestplate: { skyblockId: null, displayName: 'Manual Item' },
           },
         },
-        { id: 'pest', slots: { helmet: { skyblockId: 'OTHER' } } },
+        { id: 'pest', slots: { helmet: { skyblockId: 'OTHER', displayName: 'Other Helmet' } } },
+        { id: 'pest-kill', slots: { pet: { skyblockId: 'HEDGEHOG', displayName: 'Hedgehog Pet' } } },
       ],
     },
   },
 };
 
-test('setup art lookup uses the active setup only', () => {
+test('setup art lookup follows the active effective setup', () => {
   assert.equal(activeSetupFromStoredState(state).id, 'normal');
   assert.equal(itemForSetupSlot(state, 'helmet').skyblockId, 'MELON_DICER_3');
   assert.equal(itemForSetupSlot(state, 'boots'), null);
 });
 
-test('setup art resolves from real skyblockId and never display-name guesses', () => {
+test('Killing art inherits FF gear but keeps the Killing pet', () => {
+  const killingState = structuredClone(state);
+  killingState.profile.setups.activeId = 'pest-kill';
+
+  assert.equal(activeSetupFromStoredState(killingState).slots.helmet.skyblockId, 'MELON_DICER_3');
+  assert.equal(itemForSetupSlot(killingState, 'helmet', 'pest-kill').skyblockId, 'MELON_DICER_3');
+  assert.equal(itemForSetupSlot(killingState, 'pet', 'pest-kill').skyblockId, 'HEDGEHOG');
+  assert.equal(itemForSetupSlot(killingState, 'helmet', 'pest').skyblockId, 'OTHER');
+});
+
+test('setup art resolves from exact skyblockId and never display-name guesses', () => {
   assert.deepEqual(setupItemAsset(manifest, state, 'helmet'), {
+    key: 'melon_dicer_3',
+    textureUrl: './assets/hypixel-pack/textures/item/melon_dicer_3.png',
+    source: 'island_relevant/garden/melon_dicer_3',
+    packHash: 'pack-hash',
+  });
+  assert.deepEqual(setupItemAsset(manifest, state, 'helmet', 'pest-kill'), {
     key: 'melon_dicer_3',
     textureUrl: './assets/hypixel-pack/textures/item/melon_dicer_3.png',
     source: 'island_relevant/garden/melon_dicer_3',
@@ -53,14 +71,22 @@ test('setup art resolves from real skyblockId and never display-name guesses', (
   assert.equal(setupItemAsset(manifest, state, 'chestplate'), null);
 });
 
+test('rendering binds portraits to the card setup target and item id', () => {
+  const source = readFileSync(new URL('../src/item-art-ui.js', import.meta.url), 'utf8');
+  assert.match(source, /slotCard\?\.dataset\.setupTarget/);
+  assert.match(source, /dataset\.skyblockItemId/);
+  assert.match(source, /itemAssetForSkyblockId\(manifestValue, itemId\)/);
+  assert.match(source, /knownSkyblockHeadTexture\(itemId\)/);
+  assert.doesNotMatch(source, /itemAssetForSkyblockId\(manifestValue, item\.displayName\)/);
+});
+
 test('manual equipment ids use their exact head model before the letter fallback', () => {
   const source = readFileSync(new URL('../src/item-art-ui.js', import.meta.url), 'utf8');
-  assert.match(source, /item\.skullTexture \|\| knownSkyblockHeadTexture\(item\.skyblockId\)/);
+  assert.match(source, /knownSkyblockHeadTexture\(itemId\)/);
   assert.match(source, /const skull = skullNode\(textureId, item, \(\) => showFallback/);
   assert.match(source, /document\.createElement\('img'\)/);
   assert.doesNotMatch(source, /style\.backgroundImage/);
 });
-
 
 test('head art renders before the optional pack manifest finishes loading', () => {
   const source = readFileSync(new URL('../src/item-art-ui.js', import.meta.url), 'utf8');
