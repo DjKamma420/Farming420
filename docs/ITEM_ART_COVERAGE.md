@@ -23,7 +23,7 @@ fallback automatically.
 
 ## Exact equipment head models
 
-Verified 2026-09-18 against the current NotEnoughUpdates item repository. The
+Verified 2026-09-27 against the current NotEnoughUpdates item repository. The
 hashes live in `KNOWN_FARMING_EQUIPMENT_HEAD_TEXTURES` in
 `src/skull-art.js`.
 
@@ -32,6 +32,7 @@ hashes live in `KNOWN_FARMING_EQUIPMENT_HEAD_TEXTURES` in
 | Lotus / Peony | `LOTUS_NECKLACE`, `LOTUS_CLOAK`, `LOTUS_BELT`, `LOTUS_BRACELET` | 4 |
 | Blossom | `BLOSSOM_NECKLACE`, `BLOSSOM_CLOAK`, `BLOSSOM_BELT`, `BLOSSOM_BRACELET` | 4 |
 | Pesthunter | `PESTHUNTERS_NECKLACE`, `PESTHUNTERS_CLOAK`, `PESTHUNTERS_BELT`, `PESTHUNTERS_GLOVES` | 4 |
+| Freshly Baked accessories | `FRESHLY_BAKED_TALISMAN`, `FRESHLY_BAKED_RING`, `FRESHLY_BAKED_ARTIFACT`, `FRESHLY_BAKED_RELIC`, `FRESHLY_BAKED_HEIRLOOM` | 5 |
 | Pest utility | `PEST_VEST` | 1 |
 | Contest cape | `ZORROS_CAPE` | 1 |
 
