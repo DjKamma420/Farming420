@@ -1,6 +1,8 @@
 import { STORAGE_KEY } from './config.js';
 import { loadItemCatalog, readCachedCatalog } from './item-catalog.js';
+import { itemAssetForSkyblockId, loadItemAssetManifest } from './item-assets.js';
 import { enchantRowsFor, withEnchantLevel, withEnchantToggled } from './item-editor.js';
+import { canRecombobulateItem } from './item-capabilities.js';
 import { VACUUM_BUG_BLENDER } from './vacuum-data-patches.js';
 import {
   GARDEN_VACUUM_ITEMS,
@@ -23,6 +25,8 @@ import {
 let applying = false;
 let queued = false;
 let catalogRequested = false;
+let assetManifest = null;
+let assetsRequested = false;
 
 function esc(value = '') {
   return String(value).replace(/[&<>"']/g, character => ({
@@ -155,28 +159,34 @@ function enchantmentsHtml(bucket) {
   </section>`;
 }
 
+function vacuumModelCard(record, selected) {
+  const asset = itemAssetForSkyblockId(assetManifest, record.id);
+  return `<button type="button" class="sb-tool-card ${record.id === selected ? 'selected' : ''}" data-vacuum-model="${record.id}" aria-pressed="${record.id === selected ? 'true' : 'false'}">
+    <span class="sb-tool-art">${asset ? `<img class="sb-pack-icon" src="${esc(asset.textureUrl)}" alt="${esc(record.name)}" loading="lazy" decoding="async">` : ''}<span class="sb-tool-fallback">V</span></span>
+    <span class="sb-tool-copy"><strong>${esc(record.name)}</strong><small>Vacuum Tier ${record.tier}</small></span>
+    <span class="sb-tool-tier">${esc(record.rarity)}</span>
+    <span class="sb-state-dot" aria-hidden="true"></span>
+  </button>`;
+}
+
 function progressionHtml(bucket) {
   const selected = String(bucket.skyblockId || '').toUpperCase();
   const item = catalogItem(bucket);
   const rarity = vacuumRarity(bucket);
-  const recombAllowed = Boolean(selected) && item?.canRecombobulate !== false;
+  const recombAllowed = Boolean(selected) && (item ? canRecombobulateItem('vacuum', item) : true);
 
   return `<section class="item-editor-section" data-vacuum-exact="1">
-    <div class="workspace-section-head"><div><h3>Vacuum progression</h3><p>Choose the physical Vacuum first. Reforge and every other modifier apply to this selected model.</p></div></div>
+    <div class="workspace-section-head"><div><h3>Vacuum model</h3><p>Choose the physical Vacuum first. Reforge and every other modifier apply to this selected tier.</p></div></div>
+    <div class="sb-tool-grid sb-vacuum-model-grid" role="radiogroup" aria-label="Vacuum model">
+      ${GARDEN_VACUUM_ITEMS.map(record => vacuumModelCard(record, selected)).join('')}
+    </div>
     <div class="workspace-level-list">
-      <div class="workspace-level-row">
-        <div><strong>Vacuum model</strong><small>This replaces the Mk. tier choice used by crop tools.</small></div>
-        <select data-vacuum-model aria-label="Vacuum model">
-          <option value="">— select Vacuum —</option>
-          ${GARDEN_VACUUM_ITEMS.map(record => `<option value="${record.id}" ${record.id === selected ? 'selected' : ''}>${esc(record.name)} · ${record.rarity}</option>`).join('')}
-        </select>
-      </div>
       <div class="workspace-level-row">
         <div><strong>Item rarity</strong><small>Derived from the selected Vacuum and Recombobulator state.</small></div>
         <div class="workspace-derived"><strong>${esc(rarity || 'Unknown')}</strong><small>${selected ? 'Current physical Vacuum rarity.' : 'Select a Vacuum first.'}</small></div>
       </div>
       <label class="workspace-level-row workspace-toggle-row ${recombAllowed ? '' : 'is-disabled'}">
-        <div><strong>Recombobulator 3000</strong><small>${!selected ? 'Select a Vacuum first.' : item?.canRecombobulate === false ? 'Hypixel marks this item as not recombobulatable.' : 'Can be applied once; raises this Vacuum by one rarity.'}</small></div>
+        <div><strong>Recombobulator 3000</strong><small>${!selected ? 'Select a Vacuum first.' : item && !canRecombobulateItem('vacuum', item) ? 'Hypixel marks this item as not recombobulatable.' : 'Can be applied once; raises this Vacuum by one rarity.'}</small></div>
         <input type="checkbox" data-vacuum-recomb ${bucket.recombobulated ? 'checked' : ''} ${recombAllowed ? '' : 'disabled'}>
       </label>
     </div>
@@ -187,28 +197,29 @@ function gemstonesHtml(bucket) {
   const selected = String(bucket.skyblockId || '').toUpperCase();
   const item = catalogItem(bucket);
   const count = socketCount(bucket, item);
+  if (!selected || count <= 0) return '';
+
   const slots = normalizeToolGemstoneSlots(bucket.gemSlots, count);
   const peridot = vacuumPeridotFortune(bucket);
 
   return `<section class="item-editor-section workspace-gemstones" data-vacuum-gemstones="1">
-    <div class="workspace-section-head"><div><h3>Gemstone slots</h3><p>${selected ? (item ? `Exact Hypixel item data: ${esc(item.name)} (${esc(item.id)}).` : 'Official item data is unavailable; verified Vacuum fallback is used.') : 'Select a Vacuum to see its gemstone sockets.'}</p></div></div>
-    <div class="workspace-gem-summary"><strong>${count ? `${peridot} Farming Fortune from filled active Peridot sockets` : 'This Vacuum has no Peridot socket.'}</strong><span>${count} physical socket${count === 1 ? '' : 's'}</span></div>
+    <div class="workspace-section-head"><div><h3>Gemstone slots</h3><p>${item ? `Exact Hypixel item data: ${esc(item.name)} (${esc(item.id)}).` : 'Official item data is unavailable; verified Vacuum fallback is used.'}</p></div></div>
+    <div class="workspace-gem-summary"><strong>${peridot} Farming Fortune from filled active Peridot sockets</strong><span>${count} physical socket${count === 1 ? '' : 's'}</span></div>
     <div class="workspace-gem-list">
       ${slots.map((slot, index) => {
         return `<div class="workspace-gem-slot ${slot.unlocked ? 'unlocked' : 'locked'}">
           <label class="workspace-slot-toggle"><input type="checkbox" data-vacuum-gem-unlocked="${index}" ${slot.unlocked ? 'checked' : ''}><span>Peridot Slot ${index + 1}</span><small>${slot.unlocked ? 'Unlocked' : 'Locked'}</small></label>
-          
           <label><span>Gemstone</span><select data-vacuum-gem-value="${index}" ${slot.unlocked ? '' : 'disabled'}>${gemOptions(slot.gem)}</select></label>
         </div>`;
-      }).join('') || '<p class="hint">No gemstone socket belongs to this physical Vacuum.</p>'}
+      }).join('')}
     </div>
   </section>`;
 }
 
 function bind(section) {
-  section.querySelector('[data-vacuum-model]')?.addEventListener('change', event => write(bucket => {
-    bucket.skyblockId = event.target.value || null;
-  }));
+  section.querySelectorAll('[data-vacuum-model]').forEach(button => button.addEventListener('click', () => write(bucket => {
+    bucket.skyblockId = button.dataset.vacuumModel || null;
+  })));
   section.querySelector('[data-vacuum-recomb]')?.addEventListener('change', event => write(bucket => {
     bucket.recombobulated = event.target.checked === true;
   }));
@@ -250,10 +261,16 @@ export function applyExactVacuumUI() {
     const oldProgression = panel.querySelector('[data-vacuum-exact]');
     const oldEnchantments = panel.querySelector('[data-vacuum-enchantments]');
     const oldGemstones = panel.querySelector('[data-vacuum-gemstones]');
-    const signature = `${bucket.skyblockId || ''}|${bucket.recombobulated ? 1 : 0}|${JSON.stringify(enchantmentsForBucket(bucket))}|${JSON.stringify(bucket.gemSlots || [])}|${readCachedCatalog()?.fetchedAt || ''}`;
+    const enchantmentMarkup = enchantmentsHtml(bucket);
+    const gemstoneMarkup = gemstonesHtml(bucket);
+    const wantsEnchantments = Boolean(enchantmentMarkup);
+    const wantsGemstones = Boolean(gemstoneMarkup);
+    const signature = `${bucket.skyblockId || ''}|${bucket.recombobulated ? 1 : 0}|${JSON.stringify(enchantmentsForBucket(bucket))}|${JSON.stringify(bucket.gemSlots || [])}|${readCachedCatalog()?.fetchedAt || ''}|${assetManifest?.pack?.hash || ''}`;
     if (oldProgression?.dataset.signature === signature
-      && oldEnchantments?.dataset.signature === signature
-      && oldGemstones?.dataset.signature === signature) return;
+      && Boolean(oldEnchantments) === wantsEnchantments
+      && (!oldEnchantments || oldEnchantments.dataset.signature === signature)
+      && Boolean(oldGemstones) === wantsGemstones
+      && (!oldGemstones || oldGemstones.dataset.signature === signature)) return;
 
     oldProgression?.remove();
     oldEnchantments?.remove();
@@ -265,14 +282,14 @@ export function applyExactVacuumUI() {
     progression.dataset.signature = signature;
 
     const enchantmentWrapper = document.createElement('div');
-    enchantmentWrapper.innerHTML = enchantmentsHtml(bucket);
+    enchantmentWrapper.innerHTML = enchantmentMarkup;
     const enchantments = enchantmentWrapper.firstElementChild;
     if (enchantments) enchantments.dataset.signature = signature;
 
     const gemstoneWrapper = document.createElement('div');
-    gemstoneWrapper.innerHTML = gemstonesHtml(bucket);
+    gemstoneWrapper.innerHTML = gemstoneMarkup;
     const gemstones = gemstoneWrapper.firstElementChild;
-    gemstones.dataset.signature = signature;
+    if (gemstones) gemstones.dataset.signature = signature;
 
     const reforge = panel.querySelector('[data-vacuum-section="reforge"]');
     if (reforge) reforge.insertAdjacentElement('beforebegin', progression);
@@ -283,9 +300,11 @@ export function applyExactVacuumUI() {
       else progression.insertAdjacentElement('afterend', enchantments);
     }
 
-    const upgrades = panel.querySelector('[data-vacuum-section="upgrades"]');
-    if (upgrades) upgrades.insertAdjacentElement('afterend', gemstones);
-    else panel.append(gemstones);
+    if (gemstones) {
+      const upgrades = panel.querySelector('[data-vacuum-section="upgrades"]');
+      if (upgrades) upgrades.insertAdjacentElement('afterend', gemstones);
+      else panel.append(gemstones);
+    }
 
     bind(panel);
   } finally {
@@ -322,9 +341,20 @@ async function ensureCatalog() {
   if (result?.items?.length && result.fetchedAt !== before) schedule();
 }
 
+async function ensureAssets() {
+  if (assetsRequested) return;
+  assetsRequested = true;
+  const loaded = await loadItemAssetManifest();
+  if (loaded && loaded !== assetManifest) {
+    assetManifest = loaded;
+    schedule();
+  }
+}
+
 function boot() {
   applyExactVacuumUI();
   ensureCatalog();
+  ensureAssets();
   const app = document.getElementById('app');
   if (app && typeof MutationObserver !== 'undefined') {
     new MutationObserver(mutations => {
