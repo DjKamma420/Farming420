@@ -34,11 +34,14 @@ function sanitizedMeasurements(measured = {}) {
 }
 
 function revenueStream(id, label, status, coinsPerHour, note) {
+  const normalizedCoins = coinsPerHour === null || coinsPerHour === undefined || coinsPerHour === ''
+    ? null
+    : Number(coinsPerHour);
   return Object.freeze({
     id,
     label,
     status,
-    coinsPerHour: Number.isFinite(Number(coinsPerHour)) ? Number(coinsPerHour) : null,
+    coinsPerHour: Number.isFinite(normalizedCoins) ? normalizedCoins : null,
     note,
   });
 }
@@ -131,10 +134,11 @@ export function calculateDashboardEconomics({
     values.feastMaterialCoins = feastPrice;
   }
 
+  const axisComplete = axis => (stats.incomplete?.[axis]?.length || 0) === 0;
   const engineResult = measuredBaseline(values, {
-    farmingFortune: stats.globalFortune,
-    cropFortune: stats.cropFortune,
-    overbloom: stats.overbloom,
+    farmingFortune: axisComplete('globalFortune') ? stats.globalFortune : undefined,
+    cropFortune: axisComplete('cropFortune') ? stats.cropFortune : undefined,
+    overbloom: axisComplete('overbloom') ? stats.overbloom : undefined,
   }, cropId);
 
   const streams = [];
