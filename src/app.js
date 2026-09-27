@@ -533,21 +533,47 @@ function selectableCatalogSearchEntries() {
     }
   }
 
-  cachedCatalogSearchEntries = [...byItem.values()].map(({ item, slots }) => ({
-    id: `catalog:${item.id}`,
-    kind: 'Selectable item',
-    title: item.name,
-    subtitle: `Can be selected for ${slots.map(slot => slot.label).join(', ')}`,
-    keywords: [item.id, item.category, item.tier, ...slots.map(slot => slot.label)],
-    target: {
-      type: 'catalog-item',
-      page: 'setups',
-      itemId: item.id,
-      itemName: item.name,
-      slotId: slots[0]?.id || null,
-    },
-  }));
+  cachedCatalogSearchEntries = [...byItem.values()].map(({ item, slots }) => {
+    const groups = [...new Set(slots.map(slot => slot.group).filter(Boolean))];
+    const armorRoles = groups.includes('Armor') ? ['ff set', 'bpc set', 'farming set', 'pest spawning set'] : [];
+    const roleLabel = groups.includes('Armor') ? ' · FF set / BPC set' : '';
+    return {
+      id: `catalog:${item.id}`,
+      kind: groups.length === 1 ? groups[0] : 'Selectable item',
+      title: item.name,
+      subtitle: `${groups.join(' / ') || 'Selectable item'}${roleLabel} · ${slots.map(slot => slot.label).join(', ')}`,
+      keywords: [item.id, item.category, item.tier, ...groups, ...armorRoles, ...slots.map(slot => slot.label)],
+      target: {
+        type: 'catalog-item',
+        page: 'setups',
+        itemId: item.id,
+        itemName: item.name,
+        slotId: slots[0]?.id || null,
+      },
+    };
+  });
   return cachedCatalogSearchEntries;
+}
+
+function searchAnchorSlug(prefix, value) {
+  const slug = String(value || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return `${prefix}-${slug || 'entry'}`;
+}
+
+function searchKeywordAliases(...values) {
+  const haystack = values.flat().filter(Boolean).join(' ').toLowerCase();
+  const aliases = [];
+  if (haystack.includes('farming fortune')) aliases.push('ff');
+  if (haystack.includes('bonus pest chance')) aliases.push('bpc');
+  if (haystack.includes('pest fortune')) aliases.push('pf');
+  if (haystack.includes('pest overbloom')) aliases.push('pest rng');
+  if (haystack.includes('overbloom')) aliases.push('rare drop chance', 'rng');
+  if (haystack.includes('vacuum')) aliases.push('vacuum damage', 'pest killing');
+  if (haystack.includes('cooldown')) aliases.push('pest cooldown');
+  return aliases;
 }
 
 function globalSearchEntries() {
@@ -664,24 +690,133 @@ function globalSearchEntries() {
     });
   }
 
+  SPAWN_PIPELINE.forEach((topic, index) => {
+    entries.push({
+      id: `info:pest-spawn:${index}`,
+      kind: 'Mechanic',
+      title: topic.step,
+      subtitle: topic.detail,
+      keywords: ['pest', 'spawn', 'spawning', ...searchKeywordAliases(topic.step, topic.detail)],
+      priority: 980,
+      target: { type: 'info', page: 'info', anchor: 'info-pests' },
+    });
+  });
+
+  LOOT_PIPELINE.forEach((topic, index) => {
+    entries.push({
+      id: `info:pest-loot:${index}`,
+      kind: 'Mechanic',
+      title: topic.step,
+      subtitle: topic.detail,
+      keywords: ['pest', 'loot', 'drops', ...searchKeywordAliases(topic.step, topic.detail)],
+      priority: 980,
+      target: { type: 'info', page: 'info', anchor: 'info-pests' },
+    });
+  });
+
+  for (const [sideId, side] of Object.entries(PEST_STAT_SIDES)) {
+    entries.push({
+      id: `info:pest-side:${sideId}`,
+      kind: 'Mechanic',
+      title: side.label,
+      subtitle: side.note,
+      keywords: [sideId, 'pest stats', ...searchKeywordAliases(side.label, side.note)],
+      priority: 940,
+      target: { type: 'info', page: 'info', anchor: 'info-pests' },
+    });
+  }
+
+  for (const pest of GARDEN_PESTS) {
+    const cropName = infoCropName(pest);
+    entries.push({
+      id: `info:pest:${pest.name}`,
+      kind: 'Pest',
+      title: pest.name,
+      subtitle: `${cropName} · ${guaranteedDropText(pest) || 'Pest crop mapping'}`,
+      keywords: [cropName, pest.cropId, pest.vinyl, pest.notes, ...searchKeywordAliases(pest.name, cropName, pest.notes)],
+      priority: 760,
+      target: { type: 'info', page: 'info', anchor: searchAnchorSlug('info-pest', pest.name) },
+    });
+  }
+
+  for (const place of BEGINNER_PLACES) {
+    entries.push({
+      id: `info:place:${place.name}`,
+      kind: 'Info location',
+      title: place.name,
+      subtitle: `${place.location} · ${place.detail}`,
+      keywords: [place.location, place.detail],
+      priority: 720,
+      target: { type: 'info', page: 'info', anchor: searchAnchorSlug('info-place', place.name) },
+    });
+  }
+
+  for (const stage of STAGES) {
+    entries.push({
+      id: `info:stage:${stage.id}`,
+      kind: 'Progression',
+      title: stage.name,
+      subtitle: `Farming ${stage.levelFrom}-${stage.levelTo} · ${stage.summary}`,
+      keywords: [stage.id, `farming ${stage.levelFrom}`, `farming ${stage.levelTo}`, ...stage.steps],
+      priority: 700,
+      target: { type: 'info', page: 'info', anchor: 'info-progression', guideStage: stage.id },
+    });
+  }
+
+  for (const ladder of ENCHANT_LADDERS) {
+    entries.push({
+      id: `info:enchant:${ladder.name}`,
+      kind: 'Info',
+      title: ladder.name,
+      subtitle: `${ladder.scope} · ${ladder.perLevel}`,
+      keywords: [ladder.scope, ladder.max, ladder.gate, ...ladder.steps.flatMap(step => [step.levels, step.from])],
+      priority: 760,
+      target: { type: 'info', page: 'info', anchor: searchAnchorSlug('info-enchant', ladder.name) },
+    });
+  }
+
   return [...entries, ...selectableCatalogSearchEntries()];
 }
 
+function searchResultGroup(entry) {
+  const kind = String(entry?.kind || '').toLowerCase();
+  if (kind.includes('setting')) return 'Settings';
+  if (/info|mechanic|progression|pest/.test(kind)) return 'Info & mechanics';
+  if (/upgrade|shard/.test(kind)) return 'Upgrades';
+  if (/page|crop/.test(kind)) return 'Navigation';
+  return 'Items';
+}
+
+function searchResultButtonMarkup(entry, index) {
+  return `<button id="search-result-${index}" class="search-result" type="button" role="option" aria-selected="false" data-search-result="${index}">
+    <span class="search-result-kind">${esc(entry.kind)}</span>
+    <span class="search-result-copy">
+      <strong>${esc(entry.title)}</strong>
+      <small>${esc(entry.subtitle || '')}</small>
+    </span>
+  </button>`;
+}
+
 function searchResultsMarkup(query) {
-  activeSearchResults = searchEntries(globalSearchEntries(), query, 12);
+  activeSearchResults = searchEntries(globalSearchEntries(), query, 16);
   activeSearchResultIndex = -1;
   if (!String(query || '').trim()) return '';
   if (!activeSearchResults.length) {
-    return '<div class="search-no-results">No direct match. Try an item, shard, setting, stat or upgrade name.</div>';
+    return '<div class="search-no-results">No direct match. Try an item, shard, setting, stat, mechanic or upgrade name.</div>';
   }
-  return activeSearchResults.map((entry, index) => `
-    <button id="search-result-${index}" class="search-result" type="button" role="option" aria-selected="false" data-search-result="${index}">
-      <span class="search-result-kind">${esc(entry.kind)}</span>
-      <span class="search-result-copy">
-        <strong>${esc(entry.title)}</strong>
-        <small>${esc(entry.subtitle || '')}</small>
-      </span>
-    </button>`).join('');
+
+  const groups = new Map();
+  activeSearchResults.forEach((entry, index) => {
+    const group = searchResultGroup(entry);
+    if (!groups.has(group)) groups.set(group, []);
+    groups.get(group).push({ entry, index });
+  });
+
+  return [...groups.entries()].map(([group, rows]) => `
+    <div class="search-result-group" role="group" aria-label="${esc(group)}">
+      <div class="search-result-group-title">${esc(group)}</div>
+      ${rows.map(({ entry, index }) => searchResultButtonMarkup(entry, index)).join('')}
+    </div>`).join('');
 }
 
 function updateSearchResults(query) {
@@ -726,7 +861,7 @@ function focusSearchResult(index) {
   });
   const target = buttons[nextIndex];
   input?.setAttribute('aria-activedescendant', target.id);
-  target.focus();
+  input?.focus({ preventScroll: true });
   target.scrollIntoView({ block: 'nearest' });
   return true;
 }
@@ -830,6 +965,9 @@ function navigateSearchResult(entry) {
   } else if (target.type === 'vacuum') {
     state.page = target.page;
     pendingSearchSpotlight = target;
+  } else if (target.type === 'info') {
+    state.page = target.page;
+    if (target.guideStage) state.guideStage = target.guideStage;
   } else {
     state.page = target.page || state.page;
   }
@@ -2501,7 +2639,7 @@ function infoPestGuide() {
     <div class="pest-list">
       ${GARDEN_PESTS.map(pest => {
         const cropName = infoCropName(pest);
-        return `<div class="pest-row${pest.status === 'VERIFIED' ? '' : ' pest-row-unverified'}">
+        return `<div id="${esc(searchAnchorSlug('info-pest', pest.name))}" class="pest-row${pest.status === 'VERIFIED' ? '' : ' pest-row-unverified'}">
           <span class="pest-crop-icon"><span class="pest-crop-letter">${esc(cropName.slice(0, 1))}</span></span>
           <div class="pest-main"><strong>${esc(pest.name)}</strong><span>${esc(cropName)}</span></div>
           <div class="pest-drop"><strong>${esc(guaranteedDropText(pest) || 'Guaranteed drop scaling not verified')}</strong><span>guaranteed drop</span></div>
@@ -2550,7 +2688,7 @@ function infoPage() {
           <div><div class="eyebrow">Where to go</div><h2>Important places and NPCs</h2><p>Use this as a routing sheet when a guide tells you to buy, unlock or start something.</p></div>
         </div>
         <div class="info-place-grid">
-          ${BEGINNER_PLACES.map(place => `<article class="info-place-card">
+          ${BEGINNER_PLACES.map(place => `<article class="info-place-card" id="${esc(searchAnchorSlug('info-place', place.name))}">
             <span>${esc(place.location)}</span>
             <strong>${esc(place.name)}</strong>
             <p>${esc(place.detail)}</p>
@@ -2623,7 +2761,7 @@ function guidePage(embedded = false) {
 
     <div class="section-row"><div><h2>Enchantments by level</h2><p>Which level is reachable now, and what the next one takes.</p></div></div>
     <div class="ladder-grid">
-      ${ENCHANT_LADDERS.map(ladder => `<article class="ladder">
+      ${ENCHANT_LADDERS.map(ladder => `<article class="ladder" id="${esc(searchAnchorSlug('info-enchant', ladder.name))}">
         <div class="eyebrow">${esc(ladder.scope)}</div>
         <h3>${esc(ladder.name)}</h3>
         <p><strong>${esc(ladder.perLevel)}</strong> · max ${esc(ladder.max)}</p>
@@ -2655,7 +2793,33 @@ function bindGuide() {
   }));
 }
 
+function activeSearchFocusSnapshot() {
+  const input = document.getElementById('search');
+  if (!input || document.activeElement !== input) return null;
+  return {
+    start: input.selectionStart,
+    end: input.selectionEnd,
+    direction: input.selectionDirection,
+  };
+}
+
+function restoreActiveSearchFocus(snapshot) {
+  if (!snapshot) return;
+  const input = document.getElementById('search');
+  if (!input) return;
+  input.focus({ preventScroll: true });
+  const length = input.value.length;
+  const start = Math.min(snapshot.start ?? length, length);
+  const end = Math.min(snapshot.end ?? start, length);
+  try {
+    input.setSelectionRange(start, end, snapshot.direction || 'none');
+  } catch {
+    // Text inputs support setSelectionRange; keep focus even if a browser disagrees.
+  }
+}
+
 function render({ preserveScroll = true } = {}) {
+  const searchFocusSnapshot = preserveScroll ? activeSearchFocusSnapshot() : null;
   // Most state changes only alter a control/card. Replacing #app is still the
   // core render model, but it must not behave like navigation: keep the right
   // content pane and the navigation rail exactly where the user left them.
@@ -2685,6 +2849,7 @@ function render({ preserveScroll = true } = {}) {
   }
   document.getElementById('app').innerHTML = shell(content);
   bind();
+  restoreActiveSearchFocus(searchFocusSnapshot);
   if (state.page === 'setups') bindSetups();
   if (['setups', 'shards'].includes(state.page)) ensureItemCatalog();
   if (state.page === 'tools') bindToolPanel();
