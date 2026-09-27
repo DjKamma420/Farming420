@@ -46,6 +46,7 @@ test('buyable physical planner rows become purchase actions with preserved econo
   assert.deepEqual(action.targetState, { level: 2, known: true });
   assert.deepEqual(action.sources, ['https://example.test/source']);
   assert.equal(action.lastVerified, '2026-09-27');
+  assert.equal(action.confidence, 'sourced-active');
 });
 
 test('earned progress becomes a grind action and keeps active time separate from coin cost', () => {
@@ -112,4 +113,17 @@ test('action ids describe the target and do not depend on list position', () => 
   const second = recommendationActionFromRow(row());
   assert.equal(first.id, second.id);
   assert.equal(first.id, 'action:tool-example:farm:default:level-2');
+});
+
+
+test('active rows without source metadata do not claim verified confidence', () => {
+  const action = recommendationActionFromRow(row({
+    item: {
+      ...row().item,
+      id: 'missing-evidence',
+      source: null,
+      lastVerified: null,
+    },
+  }));
+  assert.equal(action.confidence, 'incomplete-evidence');
 });
