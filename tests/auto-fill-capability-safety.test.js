@@ -24,17 +24,18 @@ const catalog = [
   },
 ];
 
-test('unknown items preserve observed enchants without receiving generic enchant toggles', () => {
-  const capabilities = itemCapabilities('helmet', {
+test('unknown items preserve stored enchants without exposing non-farming enchant controls', () => {
+  const item = {
     displayName: 'Unmapped Helmet',
     enchantments: { pesterminator: 3, future_account_enchant: 2 },
-  }, catalog);
+  };
+  const capabilities = itemCapabilities('helmet', item, catalog);
 
   assert.equal(capabilities.known, false);
   assert.equal(capabilities.canEnchant, false);
-  assert.equal(capabilities.enchantmentRows.length > 0, true);
+  assert.deepEqual(capabilities.enchantmentRows.map(row => row.id), ['pesterminator']);
   assert.equal(capabilities.enchantmentRows.every(row => row.active), true);
-  assert.equal(capabilities.enchantmentRows.some(row => row.storageKey === 'future_account_enchant'), true);
+  assert.equal(item.enchantments.future_account_enchant, 2);
 });
 
 test('known exact items expose only their concrete gemstone socket count', () => {
