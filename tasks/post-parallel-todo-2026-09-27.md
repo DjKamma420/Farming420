@@ -41,7 +41,7 @@ Do not create a second implementation for these areas while their parallel work 
 
 The current ten chats improve planner costs and account modeling, but they do not fully implement the product-spec recommendation engine.
 
-- [ ] Generate **actions**, not only item upgrades.
+- [ ] **wird bearbeitet** — Generate **actions**, not only item upgrades.
 - [ ] Model prerequisite chains for purchase, grind, unlock, upgrade, wait, contest and craft actions.
 - [ ] Calculate before/after profit for each action from complete legal setup states.
 - [ ] Keep acquisition cost, recoverable resale value, recurring cost, active grind time and passive wait time separate.
