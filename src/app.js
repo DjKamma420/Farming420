@@ -72,17 +72,22 @@ import {
   ITEM_SOURCE,
   KILLING_SETUP_ID,
   SETUP_SLOTS,
-  VISIBLE_SETUP_IDS,
+  THIRD_SETUP_ID,
   activeSetup,
   applyCandidateSetupSafely,
   createEmptyItem,
   effectiveSetup,
   farmingKillingPetShared,
+  physicalSetupCount,
   prefillSetupFromSnapshot,
   prepareFfBpcSetups,
   setFarmingKillingPetShared,
+  setPhysicalSetupCount,
+  setThirdSetupName,
   setupSummary,
   synchronizeFarmingKillingLoadouts,
+  thirdSetupName,
+  visiblePhysicalSetupIds,
   writeLinkedSetupSlot,
 } from './setups.js';
 import { buildSetupCandidates } from './setup-candidates.js';
@@ -2002,11 +2007,15 @@ function setupById(all, setupId) {
 }
 
 function visibleSetupId(all = setups()) {
-  return all.activeId === BPC_SETUP_ID ? BPC_SETUP_ID : FF_SETUP_ID;
+  const visibleIds = visiblePhysicalSetupIds(all);
+  return visibleIds.includes(all.activeId) ? all.activeId : FF_SETUP_ID;
 }
 
-function visibleSetupLabel(setupId) {
-  return setupId === BPC_SETUP_ID ? 'BPC Set' : 'FF Set';
+function visibleSetupLabel(setupId, all = setups()) {
+  if (setupId === FF_SETUP_ID) return 'FF (Farming Fortune) Set';
+  if (setupId === BPC_SETUP_ID) return 'BPC (Bonus Pest Chance) Set';
+  if (setupId === THIRD_SETUP_ID) return thirdSetupName(all);
+  return setupById(all, setupId)?.name || 'Set';
 }
 
 function slotItem(slotId, setupId = null) {
@@ -2303,7 +2312,10 @@ function setupsPage() {
   const synced = snapshot();
   const hasSnapshot = Boolean(synced?.items?.length || synced?.pets?.some(pet => pet?.active === true));
   const ffSelected = selectedId === FF_SETUP_ID;
+  const bpcSelected = selectedId === BPC_SETUP_ID;
   const sharedPet = farmingKillingPetShared(all);
+  const physicalCount = physicalSetupCount(all);
+  const visibleIds = visiblePhysicalSetupIds(all);
 
   const gearGroups = ['Armor', 'Equipment'].map(group => `
     <div class="section-row"><div><h2>${group}</h2></div></div>
@@ -2323,13 +2335,27 @@ function setupsPage() {
         ? petSetupSection('Farming + Killing Pet', FF_SETUP_ID, 'One pet configuration is used for both Farming and Killing.')
         : `${petSetupSection('Farming Pet', FF_SETUP_ID, 'Used while farming crops.')}
            ${petSetupSection('Killing Pet', KILLING_SETUP_ID, 'Only the pet can differ for Killing; Armor and Equipment stay identical to the FF Set.')}`}`
-    : petSetupSection('BPC Pet', BPC_SETUP_ID, 'Used with the BPC Set while preparing Pest spawns.');
+    : bpcSelected
+      ? petSetupSection('BPC Pet', BPC_SETUP_ID, 'Used with the BPC Set while preparing Pest spawns.')
+      : petSetupSection('Pet', THIRD_SETUP_ID, `Used with ${visibleSetupLabel(THIRD_SETUP_ID, all)}.`);
 
-  return `${pageHeader('Loadouts', 'Farming System · FF and BPC sets', 'FF owns the Farming/Killing armor and equipment. BPC is the separate spawning set. Killing only has a separate pet choice when you want one.')}
+  return `${pageHeader('Loadouts', 'Farming System · 2 or 3 physical sets', 'FF and BPC keep fixed roles and names. An optional third set is fully independent and can be named freely. Killing remains a pet-only overlay on the FF set.')}
     ${setupObjectivePanel()}
+    <div class="setup-bar">
+      <label class="inline-input">Physical sets
+        <select data-physical-set-count>
+          <option value="2" ${physicalCount === 2 ? 'selected' : ''}>2 sets</option>
+          <option value="3" ${physicalCount === 3 ? 'selected' : ''}>3 sets</option>
+        </select>
+      </label>
+      ${physicalCount === 3 ? `<label class="inline-input">Set 3 name
+        <input type="text" maxlength="48" data-third-setup-name value="${esc(thirdSetupName(all))}" placeholder="Set 3">
+      </label>` : ''}
+      <div class="hint">Fixed: FF (Farming Fortune) Set and BPC (Bonus Pest Chance) Set. Switching back to 2 sets only hides Set 3; its items and name stay saved.</div>
+    </div>
     <div class="setup-tabs">
-      ${VISIBLE_SETUP_IDS.map(setupId =>
-        `<button class="setup-tab ${setupId === selectedId ? 'active' : ''}" data-setup="${esc(setupId)}">${esc(visibleSetupLabel(setupId))}</button>`
+      ${visibleIds.map(setupId =>
+        `<button class="setup-tab ${setupId === selectedId ? 'active' : ''}" data-setup="${esc(setupId)}">${esc(visibleSetupLabel(setupId, all))}</button>`
       ).join('')}
     </div>
 
@@ -2337,7 +2363,7 @@ function setupsPage() {
       <div class="setup-actions">
         <button class="ghost small" data-setup-prefill="1" ${hasSnapshot ? '' : 'disabled'}>Fill from sync</button>
       </div>
-      <div class="hint">${summary.filled}/${summary.total} ${visibleSetupLabel(selectedId)} slots filled${summary.fromSync ? `, ${summary.fromSync} from your last sync` : ''}.${hasSnapshot ? '' : ' Sync your profile in Settings to fill these automatically.'}</div>
+      <div class="hint">${summary.filled}/${summary.total} ${visibleSetupLabel(selectedId, all)} slots filled${summary.fromSync ? `, ${summary.fromSync} from your last sync` : ''}.${hasSnapshot ? '' : ' Sync your profile in Settings to fill these automatically.'}</div>
     </div>
 
     ${gearGroups}
@@ -2388,6 +2414,16 @@ function bindSetups() {
     state.setupSlotTarget = null;
     rerender();
   }));
+  document.querySelector('[data-physical-set-count]')?.addEventListener('change', event => {
+    setPhysicalSetupCount(all, event.target.value);
+    state.setupSlot = null;
+    state.setupSlotTarget = null;
+    rerender();
+  });
+  document.querySelector('[data-third-setup-name]')?.addEventListener('change', event => {
+    setThirdSetupName(all, event.target.value);
+    rerender();
+  });
   document.querySelector('[data-share-farming-killing-pet]')?.addEventListener('change', event => {
     setFarmingKillingPetShared(all, event.target.checked);
     state.setupSlot = null;
