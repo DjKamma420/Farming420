@@ -86,12 +86,19 @@ test('Mite Filter Upgrade scales each seasonal Atmospheric Filter effect without
 });
 
 
-test('every modeled synergy shard carries its exact SHARD_* physical item id', () => {
+test('every modeled synergy shard carries its exact Attribute Shard physical item id', () => {
   const shards = [
     ...ELEMENTAL_STRENGTH_SHARDS,
     ...Object.values(FARMING_SHARD_SYNERGIES),
   ];
   for (const shard of shards) {
-    assert.match(shard.physicalItemId, /^SHARD_[A-Z0-9_]+$/, shard.name);
+    assert.match(shard.physicalItemId, /^ATTRIBUTE_SHARD_[A-Z0-9_]+;1$/, shard.name);
   }
+});
+
+
+test('the screenshot-visible elemental shards use their current attribute-keyed ids', () => {
+  assert.equal(ELEMENTAL_STRENGTH_SHARDS.find(row => row.name === 'Quake Shard').physicalItemId, 'ATTRIBUTE_SHARD_STONE_ELEMENTAL;1');
+  assert.equal(ELEMENTAL_STRENGTH_SHARDS.find(row => row.name === 'Bolt Shard').physicalItemId, 'ATTRIBUTE_SHARD_LIGHTNING_ELEMENTAL;1');
+  assert.equal(FARMING_SHARD_SYNERGIES.echoOfElemental.physicalItemId, 'ATTRIBUTE_SHARD_ECHO_OF_ELEMENTAL;1');
 });
