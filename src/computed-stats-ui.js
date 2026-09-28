@@ -39,36 +39,13 @@ function replaceGlobalInput(raw) {
   if (!strip) return;
   const missing = stats.incomplete.globalFortune.length;
   const sourceCount = Number(stats.sourceCount?.globalFortune || 0);
-  const strength = raw.profile?.inputs?.strength;
-  const cow = stats.derived?.mooshroomCow;
-  const cowDetail = cow?.active
-    ? (cow.level === null
-      ? 'Mooshroom Cow active · level unavailable'
-      : `Mooshroom Cow Lv${cow.level}: +${shortValue(cow.baseFortune)} base FF${cow.rarity === 'LEGENDARY' ? ` +${shortValue(cow.strengthFortune)} from Strength` : ''}`)
-    : 'Used automatically when a Mooshroom Cow is the active pet.';
 
   strip.className = 'computed-output-panel';
   strip.innerHTML = `
     <div class="computed-output-value"><span class="eyebrow">Calculated total</span><strong>${shortValue(stats.globalFortune)} Farming Fortune</strong></div>
-    <label class="computed-source-input">
-      <span>Strength · input</span>
-      <input id="strengthInput" type="number" min="0" step="1" inputmode="numeric" value="${strength === null || strength === undefined ? '' : Number(strength)}" placeholder="e.g. 850">
-      <small>${cowDetail}</small>
-    </label>
     <p>${sourceCount
       ? `This total is derived from ${sourceCount} configured source${sourceCount === 1 ? '' : 's'} and cannot be entered manually.${missing ? ` ${missing} source${missing === 1 ? '' : 's'} still need${missing === 1 ? 's' : ''} an exact total formula or input, so this value is marked incomplete.` : ''}`
       : 'No global Farming Fortune sources are configured yet. The displayed 0 is an empty result, not a completed calculation.'}</p>`;
-
-  strip.querySelector('#strengthInput')?.addEventListener('change', event => {
-    const next = load();
-    next.profile ||= {};
-    next.profile.inputs ||= {};
-    const value = event.target.value;
-    if (value === '') delete next.profile.inputs.strength;
-    else next.profile.inputs.strength = Math.max(0, Number(value || 0));
-    save(next);
-    window.dispatchEvent(new Event('farming420:state-changed'));
-  });
 }
 
 function replaceCropInput(raw) {
