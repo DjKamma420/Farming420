@@ -78,7 +78,8 @@ test('setup rarity is resolved per rendered setup card instead of only from the 
 test('Pet Item dropdown rows and trigger use their physical item rarity backgrounds', () => {
   assert.match(uiSource, /\[data-pet-item-trigger\]/);
   assert.match(uiSource, /\[data-pet-item-option\]/);
-  assert.match(uiSource, /mergeFarmingSetupCatalog\(readCachedCatalog\(\)\?\.items \|\| \[\]\)/);
+  assert.match(uiSource, /const surfaceCatalog = mergeFarmingSetupCatalog\(catalog\)/);
+  assert.match(uiSource, /applyCatalogItemSurfaceRarity\(root, surfaceCatalog\)/);
   assert.match(cssSource, /\[data-pet-item-trigger\]\.rarity-surface/);
   assert.match(cssSource, /\.sb-pet-item-dropdown-option\.rarity-surface/);
   assert.match(cssSource, /\.sb-pet-item-dropdown-option\.rarity-surface\.is-selected/);
