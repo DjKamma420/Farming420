@@ -173,24 +173,24 @@ test('concurrent core renders share resource promises instead of dropping the ne
 });
 
 
-test('verified helmet exceptions use the correct physical model', () => {
+test('verified helmet exceptions use normal inventory icons instead of custom 3D/generated models', () => {
   assert.deepEqual(exactSetupItemArt('HELIANTHUS_HELMET'), {
     kind: 'rendered',
     iconUrl: 'https://skyah.net/icons/items/helianthus_helmet.webp',
   });
   assert.deepEqual(exactSetupItemArt('FARM_SUIT_HELMET'), {
-    kind: 'armor',
-    item: {
-      id: 'FARM_SUIT_HELMET',
-      name: 'Farmhand Helmet',
-      category: 'HELMET',
-      material: 'LEATHER_HELMET',
-      color: '253,232,98',
-    },
+    kind: 'rendered',
+    iconUrl: 'https://skyah.net/icons/items/farm_suit_helmet.webp',
+  });
+  assert.deepEqual(exactSetupItemArt('FARMHAND_HELMET'), {
+    kind: 'rendered',
+    iconUrl: 'https://skyah.net/icons/items/farm_suit_helmet.webp',
   });
   assert.equal(exactSetupItemArt('FARM_ARMOR_HELMET')?.iconUrl, 'https://skyah.net/icons/items/hay_block.webp');
-  assert.equal(exactSetupItemArt('PUMPKIN_HELMET')?.textureId, '2f92489725093d51dd18a259382fa0207a20a94495883d9f4b1fd97a8a11b9f0');
-  assert.equal(exactSetupItemArt('MELON_HELMET')?.textureId, '8208669e699d6f0d3a77f74b2b27228ce51b9359678d26f9c3408764b2e779aa');
+  assert.equal(exactSetupItemArt('PUMPKIN_HELMET')?.iconUrl, 'https://skyah.net/icons/items/pumpkin_helmet.webp');
+  assert.equal(exactSetupItemArt('SPROUT_HELMET')?.iconUrl, 'https://skyah.net/icons/items/pumpkin_helmet.webp');
+  assert.equal(exactSetupItemArt('MELON_HELMET')?.iconUrl, 'https://skyah.net/icons/items/melon_helmet.webp');
+  assert.equal(exactSetupItemArt('TATER_HELMET')?.iconUrl, 'https://skyah.net/icons/items/melon_helmet.webp');
   assert.equal(exactSetupItemArt('HELIANTHUS_CHESTPLATE'), null);
 });
 
@@ -277,10 +277,9 @@ test('Poignant Lucky Clover has deterministic rendered Pet Item art', () => {
 });
 
 
-test('setup armor art only uses SVG armor for exact verified material/color mappings', () => {
+test('setup armor art does not reintroduce generated SVG armor silhouettes', () => {
   const source = readFileSync(new URL('../src/item-art-ui.js', import.meta.url), 'utf8');
-  assert.match(source, /descriptor\.kind === 'armor'/);
-  assert.match(source, /armorItemSvgMarkup\(descriptor\.item\)/);
+  assert.doesNotMatch(source, /armorItemSvgMarkup/);
   assert.match(source, /knownSkyblockRenderedIcon\(itemId\)/);
   assert.match(source, /Do not invent a hand-drawn armor silhouette/);
 });
@@ -291,4 +290,12 @@ test('any catalog-backed player-head helmet uses the 3D voxel renderer', () => {
   assert.match(source, /validCatalogTexture/);
   assert.match(source, /if \(helmetTextureId && !mappedArt\)/);
   assert.match(source, /voxelHeadNode\(helmetTextureId, item/);
+});
+
+
+test('Farmhand setup icon corrects only the stale brown rendered asset', () => {
+  const css = readFileSync(new URL('../src/item-art-ui.css', import.meta.url), 'utf8');
+  assert.match(css, /farm_suit_helmet\.webp/);
+  assert.match(css, /saturate\(4\.6\)/);
+  assert.match(css, /brightness\(1\.5\)/);
 });
