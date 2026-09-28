@@ -24,6 +24,23 @@ test('ordinary app renders preserve scroll and the operated control stays viewpo
   assert.match(source, /scheduleScrollAnchorRestore\(activeScrollAnchor\)/);
 });
 
+test('selection anchors use stable control identity instead of mutable item or input values', () => {
+  const source = read('app.js');
+  assert.match(source, /function scrollAnchorAttributes\(element\)/);
+  assert.match(source, /element\.matches\?\.\('\.slot-card\[data-slot\]'\)/);
+  assert.match(source, /\['data-slot', 'data-setup-target'\]/);
+  assert.match(source, /\['name', 'type'\]\.includes\(attr\.name\)/);
+  assert.doesNotMatch(source, /\['name', 'value', 'type'\]\.includes\(attr\.name\)/);
+});
+
+test('late physical value renders preserve the active selection position', () => {
+  const source = read('app.js');
+  const handler = source.match(/window\.addEventListener\('farming420:item-value-updated',[\s\S]*?\n\}\);/)?.[0] || '';
+  assert.match(handler, /const interaction = captureInteraction\(\)/);
+  assert.match(handler, /render\(\)/);
+  assert.match(handler, /restoreInteraction\(interaction\)/);
+});
+
 test('relative scroll anchoring survives repeated renders from one interaction', () => {
   const source = read('app.js');
   assert.match(source, /const relativeAnchor = preserveScroll \? currentScrollAnchor\(\)/);

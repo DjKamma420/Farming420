@@ -269,13 +269,29 @@ function scrollAnchorPath(root, element) {
   return node === root ? path : null;
 }
 
+function scrollAnchorAttributes(element) {
+  // Identity attributes must survive the state change caused by the control.
+  // A setup slot keeps the same logical identity while its selected item id
+  // changes, so anchoring to data-skyblock-item-id makes the old card
+  // impossible to resolve after an item selection.
+  if (element.matches?.('.slot-card[data-slot]')) {
+    return ['data-slot', 'data-setup-target']
+      .map(name => [name, element.getAttribute(name)])
+      .filter(([, value]) => value !== null);
+  }
+
+  // The value attribute is mutable state, not control identity. Keeping it in
+  // the descriptor makes number/text selections lose their anchor on rerender.
+  return [...element.attributes]
+    .filter(attr => attr.name.startsWith('data-') || ['name', 'type'].includes(attr.name))
+    .map(attr => [attr.name, attr.value]);
+}
+
 function describeScrollAnchor(root, element) {
   return {
     tag: element.tagName.toLowerCase(),
     id: element.id || '',
-    attrs: [...element.attributes]
-      .filter(attr => attr.name.startsWith('data-') || ['name', 'value', 'type'].includes(attr.name))
-      .map(attr => [attr.name, attr.value]),
+    attrs: scrollAnchorAttributes(element),
     path: scrollAnchorPath(root, element),
   };
 }
@@ -3376,5 +3392,14 @@ window.addEventListener('farming420:market-average-updated', () => {
 });
 
 window.addEventListener('farming420:item-value-updated', () => {
-  if (state.page === 'setups' || state.page === 'tools') render();
+  if (state.page !== 'setups' && state.page !== 'tools') return;
+
+  // Physical value refreshes finish after the selection that requested them.
+  // On Setups that late render is followed by editor docking, so it needs the
+  // same interaction/slot restore path as a direct state change. Without it,
+  // item-dependent price refreshes can move the page even though the original
+  // selection itself was scroll-safe.
+  const interaction = captureInteraction();
+  render();
+  restoreInteraction(interaction);
 });
