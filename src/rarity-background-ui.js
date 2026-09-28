@@ -154,9 +154,10 @@ function applyVacuumRarity(root, state) {
 export function applyRarityBackgrounds(root = document) {
   if (!root?.querySelector) return;
   const state = readState();
-  const catalog = mergeFarmingSetupCatalog(readCachedCatalog()?.items || []);
+  const catalog = readCachedCatalog()?.items || [];
+  const surfaceCatalog = mergeFarmingSetupCatalog(catalog);
   applySetupRarity(root, state, catalog);
-  applyCatalogItemSurfaceRarity(root, catalog);
+  applyCatalogItemSurfaceRarity(root, surfaceCatalog);
   applyToolRarity(root, state, catalog);
   applyVacuumRarity(root, state);
 }
