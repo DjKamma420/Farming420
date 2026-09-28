@@ -219,6 +219,10 @@ test('all farming pet types have deterministic exact head portraits', () => {
 });
 
 test('farming Bandanas have exact local head portraits before the catalog loads', () => {
+  assert.deepEqual(exactSetupItemArt('YELLOW_BANDANA'), {
+    kind: 'head',
+    textureId: '799d16737b4f2633f9e7c4538992115c107928a9a01abff407c0297194bd6867',
+  });
   assert.deepEqual(exactSetupItemArt('GREEN_BANDANA'), {
     kind: 'head',
     textureId: '3521cccdbb892dff183d97bbdb12f2671e0cd12b945b8fca211a7065359a03a5',
