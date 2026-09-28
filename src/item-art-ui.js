@@ -1,9 +1,8 @@
 import { STORAGE_KEY } from './config.js';
 import { itemAssetForSkyblockId, loadItemAssetManifest } from './item-assets.js';
-import { armorItemSvgMarkup } from './armor-item-art.js';
 import { loadItemCatalog, readCachedCatalog } from './item-catalog.js';
 import { effectiveSetup } from './setups.js';
-import { exactSetupItemArt } from './setup-item-art-map.js?v=20260928-2';
+import { exactSetupItemArt } from './setup-item-art-map.js?v=20260928-3';
 import { knownSkyblockHeadTexture, knownSkyblockRenderedIcon, skullTextureUrl } from './skull-art.js?v=20260928-1';
 
 let manifest = null;
@@ -223,16 +222,6 @@ function exactSetupArtNode(itemId, item, onError = null) {
     return remoteIconNode(descriptor.iconUrl || knownSkyblockRenderedIcon(itemId), item, onError);
   }
 
-  if (descriptor.kind === 'armor') {
-    const markup = armorItemSvgMarkup(descriptor.item);
-    if (!markup) return null;
-    const node = document.createElement('span');
-    node.className = 'official-item-art setup-armor-item-art exact-setup-item-art';
-    node.setAttribute('role', 'img');
-    node.setAttribute('aria-label', `${item?.displayName || descriptor.item?.name || itemId} item model`);
-    node.innerHTML = markup;
-    return node;
-  }
 
   return null;
 }
