@@ -1181,14 +1181,29 @@ function dashboardGroupSummary(setup, group) {
   return `${items.length}/${slots.length} · ${preview}${names.length > 2 ? ` +${names.length - 2}` : ''}`;
 }
 
+function dashboardLinkedSetLabel(mode) {
+  return mode === ACTIVITY_MODE.PEST_SPAWN ? 'BPC Set' : 'FF Set';
+}
+
+function dashboardPhaseLabel(mode) {
+  if (mode === ACTIVITY_MODE.PEST_SPAWN) return 'Spawning';
+  if (mode === ACTIVITY_MODE.PEST_KILL) return 'Killing';
+  return 'Farming';
+}
+
 function dashboardLoadoutSummary(mode, selectedCrop) {
-  const setup = state.profile.setups?.list?.find(entry => entry.id === setupIdForActivity(mode)) || null;
+  // Dashboard phases are not extra physical sets. Resolve the phase through the
+  // canonical linked loadout so Killing reads FF Armor/Equipment (and, in
+  // two-set mode, the FF Pet) instead of the hidden Killing overlay directly.
+  const setup = state.profile.setups
+    ? effectiveSetup(state.profile.setups, setupIdForActivity(mode))
+    : null;
   const pet = setup?.slots?.pet?.displayName || setup?.slots?.pet?.skyblockId || 'Not configured';
   const base = {
     armor: dashboardGroupSummary(setup, 'Armor'),
     equipment: dashboardGroupSummary(setup, 'Equipment'),
     pet,
-    setup: setup?.name || activityLabel(mode),
+    setup: dashboardLinkedSetLabel(mode),
   };
   if (mode === ACTIVITY_MODE.PEST_KILL) {
     const vacuumId = state.profile.vacuumProgress?.skyblockId;
@@ -1209,6 +1224,8 @@ function dashboard() {
   const stats = computeStatTotals(state, farmingMode ? selectedCrop.id : null, mode, contextScopes);
   const estimate = dashboardProfitEstimate(farmingMode ? selectedCrop.id : null, mode, context, stats);
   const loadout = dashboardLoadoutSummary(mode, farmingMode ? selectedCrop : null);
+  const phaseLabel = dashboardPhaseLabel(mode);
+  const linkedSetLabel = dashboardLinkedSetLabel(mode);
   const marker = count => count ? ' ~' : '';
   const number = value => formatNumber(Number(value || 0), FRACTION_2);
   const effectiveIncomplete = stats.incomplete.globalFortune.length
@@ -1266,10 +1283,10 @@ function dashboard() {
       </article>`
     : mode === ACTIVITY_MODE.PEST_SPAWN
       ? `<article class="stat-card dashboard-total-card">
-          <span>BPC Set</span>
+          <span>Pest Spawning</span>
           <strong>${number(stats.bonusPestChance)} BPC${marker(stats.incomplete.bonusPestChance.length)}</strong>
           <small>Pest cooldown reduction ${number(stats.pestCooldownReductionPct)}%</small>
-          <small>No crop-specific Fortune or tool state is included.</small>
+          <small>Linked to the BPC Set. No crop-specific Fortune or tool state is included.</small>
         </article>`
       : `<article class="stat-card dashboard-total-card">
           <span>Pest Killing</span>
@@ -1341,11 +1358,11 @@ function dashboard() {
   const primaryInputCard = farmingMode
     ? `<article class="stat-card"><span>FF crop / Tool</span><strong>${esc(selectedCrop.name)}</strong><small>${esc(loadout.tool)}</small></article>`
     : mode === ACTIVITY_MODE.PEST_SPAWN
-      ? '<article class="stat-card"><span>Phase</span><strong>BPC Set</strong><small>Crop selection is intentionally not part of this phase.</small></article>'
-      : `<article class="stat-card"><span>Vacuum</span><strong>${esc(loadout.tool)}</strong><small>Killing is Pest-specific, not crop-specific.</small></article>`;
+      ? '<article class="stat-card"><span>Phase</span><strong>Spawning</strong><small>Linked to BPC Set. Crop selection is not part of this phase.</small></article>'
+      : `<article class="stat-card"><span>Vacuum</span><strong>${esc(loadout.tool)}</strong><small>Killing is linked to FF Set gear and is Pest-specific, not crop-specific.</small></article>`;
 
   return `
-    ${pageHeader('Dashboard', 'Calculated Farming Stats', `Result overview · ${activityLabel(mode)} · ${farmingContextLabel(context)}. Crop selection exists only for the FF Set.`)}
+    ${pageHeader('Dashboard', 'Calculated Farming Stats', `Result overview · ${phaseLabel} phase · linked physical loadout: ${linkedSetLabel} · ${farmingContextLabel(context)}. Crop selection exists only for Farming.`)}
     <section class="dashboard-context-panel">
       ${farmingMode ? `<label>
         <span>FF crop</span>
@@ -1362,6 +1379,10 @@ function dashboard() {
       <div>
         <strong>${esc(farmingContextLabel(context))}</strong>
         <small>${esc(contextHelp)}</small>
+      </div>
+      <div>
+        <strong>${esc(linkedSetLabel)}</strong>
+        <small>${esc(`${phaseLabel} phase is linked to this physical loadout.`)}</small>
       </div>
     </section>
 
