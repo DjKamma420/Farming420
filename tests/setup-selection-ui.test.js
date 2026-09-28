@@ -49,6 +49,9 @@ test('armor and Pet Items use illustrated closed dropdowns while equipment keeps
   assert.match(source, /armorItemOption/);
   assert.match(source, /knownSkyblockRenderedIcon/);
   assert.match(source, /armorVoxelHeadNode/);
+  assert.match(source, /armorItemSvgMarkup/);
+  assert.match(source, /descriptor\?\.kind === 'rendered'/);
+  assert.match(source, /descriptor\?\.kind === 'armor'/);
   assert.match(source, /petItemDropdown/);
   assert.match(source, /petItemOption/);
   assert.match(source, /petItemArtNode/);
@@ -207,4 +210,18 @@ test('Pet Item picker shows objective recommendation and exposes rarity surface 
   assert.match(source, /effectSummary/);
   assert.match(css, /\.sb-pet-item-recommendation/);
   assert.match(css, /\.sb-pet-item-recommended-badge/);
+});
+
+
+test('helmet picker pins corrected early-game art and Helianthus normal icon route', () => {
+  const source = read('src/setup-selection-ui.js');
+  const map = read('src/setup-item-art-map.js');
+  assert.match(map, /FARM_SUIT_HELMET/);
+  assert.match(map, /color: '253,232,98'/);
+  assert.match(map, /FARM_ARMOR_HELMET/);
+  assert.match(map, /hay_block\.webp/);
+  assert.match(map, /PUMPKIN_HELMET/);
+  assert.match(map, /MELON_HELMET/);
+  assert.match(map, /HELIANTHUS_HELMET[\s\S]*?kind: 'rendered'[\s\S]*?helianthus_helmet\.webp/);
+  assert.match(source, /descriptor\?\.kind === 'rendered'/);
 });
