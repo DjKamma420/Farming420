@@ -49,9 +49,8 @@ test('armor and Pet Items use illustrated closed dropdowns while equipment keeps
   assert.match(source, /armorItemOption/);
   assert.match(source, /knownSkyblockRenderedIcon/);
   assert.match(source, /armorVoxelHeadNode/);
-  assert.match(source, /armorItemSvgMarkup/);
   assert.match(source, /descriptor\?\.kind === 'rendered'/);
-  assert.match(source, /descriptor\?\.kind === 'armor'/);
+  assert.doesNotMatch(source, /armorItemSvgMarkup/);
   assert.match(source, /petItemDropdown/);
   assert.match(source, /petItemOption/);
   assert.match(source, /petItemArtNode/);
@@ -213,15 +212,23 @@ test('Pet Item picker shows objective recommendation and exposes rarity surface 
 });
 
 
-test('helmet picker pins corrected early-game art and Helianthus normal icon route', () => {
+test('helmet picker pins Farmhand, Sprout and Tater to normal inventory icons', () => {
   const source = read('src/setup-selection-ui.js');
   const map = read('src/setup-item-art-map.js');
-  assert.match(map, /FARM_SUIT_HELMET/);
-  assert.match(map, /color: '253,232,98'/);
-  assert.match(map, /FARM_ARMOR_HELMET/);
-  assert.match(map, /hay_block\.webp/);
-  assert.match(map, /PUMPKIN_HELMET/);
-  assert.match(map, /MELON_HELMET/);
+  const css = read('src/setup-selection-ui.css');
+  assert.match(map, /FARM_SUIT_HELMET[\s\S]*?kind: 'rendered'[\s\S]*?farm_suit_helmet\.webp/);
+  assert.match(map, /SPROUT_HELMET[\s\S]*?kind: 'rendered'[\s\S]*?pumpkin_helmet\.webp/);
+  assert.match(map, /TATER_HELMET[\s\S]*?kind: 'rendered'[\s\S]*?melon_helmet\.webp/);
   assert.match(map, /HELIANTHUS_HELMET[\s\S]*?kind: 'rendered'[\s\S]*?helianthus_helmet\.webp/);
   assert.match(source, /descriptor\?\.kind === 'rendered'/);
+  assert.doesNotMatch(source, /armorItemSvgMarkup/);
+  assert.match(css, /farm_suit_helmet\.webp/);
+});
+
+
+test('helmet art map import revision is bumped so corrected helmets are not served from the old module cache', () => {
+  const picker = read('src/setup-selection-ui.js');
+  const setupArt = read('src/item-art-ui.js');
+  assert.match(picker, /setup-item-art-map\.js\?v=20260928-3/);
+  assert.match(setupArt, /setup-item-art-map\.js\?v=20260928-3/);
 });
