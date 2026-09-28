@@ -143,6 +143,29 @@ test('manual accessory state survives a sync that does not contain the item', ()
   });
 });
 
+test('manual accessory selection override survives profile sync refreshes', () => {
+  const state = emptyState();
+  state.profile.accessoryItems = {
+    PESTHUNTER_RING: { selected: true, source: 'hypixel-sync' },
+    PESTHUNTER_RELIC: { selected: false, source: 'hypixel-sync' },
+  };
+
+  applySnapshotToProgress(state, snapshotWith({
+    items: [{
+      container: 'talisman_bag',
+      skyblockId: 'PESTHUNTER_RELIC',
+      displayName: 'Pesthunter Relic',
+      recombobulated: 0,
+      enchantments: {},
+      gems: {},
+    }],
+  }));
+
+  assert.deepEqual(state.profile.accessoryItems.PESTHUNTER_RING, { selected: true });
+  assert.equal(state.profile.accessoryItems.PESTHUNTER_RELIC.selected, false);
+  assert.equal(state.profile.accessoryItems.PESTHUNTER_RELIC.source, 'hypixel-sync');
+});
+
 test('values are clamped to each documented maximum', () => {
   const state = emptyState();
   applySnapshotToProgress(state, snapshotWith({
