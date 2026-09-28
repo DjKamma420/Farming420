@@ -8,6 +8,7 @@ import {
   KILLING_SETUP_ID,
   PET_SETUP_SLOTS,
   activeSetup,
+  farmingKillingPetShared,
   prepareFfBpcSetups,
   synchronizeFarmingKillingLoadouts,
 } from './setups.js';
@@ -78,7 +79,7 @@ function activateCandidate(state, candidate, phase) {
     const ff = setups.list.find(row => row.id === FF_SETUP_ID);
     if (!killing || !ff) return null;
 
-    const petTarget = setups.shareFarmingKillingPet === true ? ff : killing;
+    const petTarget = farmingKillingPetShared(setups) ? ff : killing;
     for (const slotId of PET_SETUP_SLOTS) {
       petTarget.slots[slotId] = setup.slots?.[slotId] ? cloned(setup.slots[slotId]) : null;
     }
