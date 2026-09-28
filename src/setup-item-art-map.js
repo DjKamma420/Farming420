@@ -36,25 +36,14 @@ export const EXACT_SETUP_ITEM_ART = Object.freeze({
   // Current farming helmets whose generic/legacy icon route is wrong or
   // incomplete. These values come from current NEU item overlays.
   FARM_SUIT_HELMET: Object.freeze({
-    kind: 'armor',
-    item: Object.freeze({
-      id: 'FARM_SUIT_HELMET',
-      name: 'Farmhand Helmet',
-      category: 'HELMET',
-      material: 'LEATHER_HELMET',
-      // minecraft:dyed_color 16640098 = #FDE862.
-      color: '253,232,98',
-    }),
+    // Use the real inventory icon shape. The CSS art layer applies the verified
+    // #FDE862 leather dye instead of showing SkyAH's stale brown default.
+    kind: 'rendered',
+    iconUrl: 'https://skyah.net/icons/items/farm_suit_helmet.webp',
   }),
   FARMHAND_HELMET: Object.freeze({
-    kind: 'armor',
-    item: Object.freeze({
-      id: 'FARMHAND_HELMET',
-      name: 'Farmhand Helmet',
-      category: 'HELMET',
-      material: 'LEATHER_HELMET',
-      color: '253,232,98',
-    }),
+    kind: 'rendered',
+    iconUrl: 'https://skyah.net/icons/items/farm_suit_helmet.webp',
   }),
   FARM_ARMOR_HELMET: Object.freeze({
     kind: 'rendered',
@@ -65,20 +54,20 @@ export const EXACT_SETUP_ITEM_ART = Object.freeze({
     iconUrl: 'https://skyah.net/icons/items/hay_block.webp',
   }),
   PUMPKIN_HELMET: Object.freeze({
-    kind: 'voxel-head',
-    textureId: '2f92489725093d51dd18a259382fa0207a20a94495883d9f4b1fd97a8a11b9f0',
+    kind: 'rendered',
+    iconUrl: 'https://skyah.net/icons/items/pumpkin_helmet.webp',
   }),
   SPROUT_HELMET: Object.freeze({
-    kind: 'voxel-head',
-    textureId: '2f92489725093d51dd18a259382fa0207a20a94495883d9f4b1fd97a8a11b9f0',
+    kind: 'rendered',
+    iconUrl: 'https://skyah.net/icons/items/pumpkin_helmet.webp',
   }),
   MELON_HELMET: Object.freeze({
-    kind: 'voxel-head',
-    textureId: '8208669e699d6f0d3a77f74b2b27228ce51b9359678d26f9c3408764b2e779aa',
+    kind: 'rendered',
+    iconUrl: 'https://skyah.net/icons/items/melon_helmet.webp',
   }),
   TATER_HELMET: Object.freeze({
-    kind: 'voxel-head',
-    textureId: '8208669e699d6f0d3a77f74b2b27228ce51b9359678d26f9c3408764b2e779aa',
+    kind: 'rendered',
+    iconUrl: 'https://skyah.net/icons/items/melon_helmet.webp',
   }),
   HELIANTHUS_HELMET: Object.freeze({
     // Deliberately use the same normal rendered-item route as Fermento.
