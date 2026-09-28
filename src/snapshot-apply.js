@@ -224,17 +224,32 @@ function applyToolItem(state, cropIds, item, autoApplied, applied) {
 
 function syncAccessoryItemStates(state, snapshot) {
   const accessoryItems = state.profile.accessoryItems ||= {};
+  const selectionOverrides = new Map();
 
-  // A fresh sync owns only records previously written by a sync. Manual item
-  // state survives when the current API payload does not contain that accessory.
+  // Selection is a user choice layered on top of profile discovery. Preserve an
+  // explicit true/false override even when the synced item record is refreshed.
   for (const [itemId, itemState] of Object.entries(accessoryItems)) {
-    if (itemState && typeof itemState === 'object') delete itemState.enrichment;
+    if (itemState && typeof itemState === 'object') {
+      delete itemState.enrichment;
+      if (Object.prototype.hasOwnProperty.call(itemState, 'selected')) {
+        selectionOverrides.set(itemId, itemState.selected === true);
+      }
+    }
     if (itemState?.source === AUTO_SOURCE) delete accessoryItems[itemId];
   }
 
   for (const accessory of FARMING_ACCESSORIES) {
     const synced = accessoryStateFromSnapshot(snapshot, accessory.itemId);
-    if (synced) accessoryItems[accessory.itemId] = synced;
+    if (!synced) continue;
+    const selected = selectionOverrides.get(accessory.itemId);
+    accessoryItems[accessory.itemId] = selected === undefined
+      ? synced
+      : { ...synced, selected };
+  }
+
+  for (const [itemId, selected] of selectionOverrides) {
+    if (accessoryItems[itemId]) continue;
+    accessoryItems[itemId] = { selected };
   }
 }
 
