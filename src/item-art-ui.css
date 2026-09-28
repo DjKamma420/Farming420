@@ -158,3 +158,11 @@
 .setup-voxel-right > .setup-voxel-hat { left: -400%; top: -100%; }
 .setup-voxel-top > .setup-voxel-base { left: -100%; top: 0; }
 .setup-voxel-top > .setup-voxel-hat { left: -500%; top: 0; }
+
+
+/* Farmhand/Farm Suit is a dyed leather helmet. The public rendered icon keeps
+   the exact Minecraft inventory shape but is brown; recolor that single known
+   asset to the verified #FDE862 dye instead of inventing a replacement model. */
+.exact-remote-item-art[src*="/farm_suit_helmet.webp"] {
+  filter: sepia(1) saturate(4.6) hue-rotate(354deg) brightness(1.5) contrast(.96);
+}
