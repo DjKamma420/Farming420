@@ -33,11 +33,58 @@ export const EXACT_SETUP_ITEM_ART = Object.freeze({
     iconUrl: 'https://skyah.net/icons/items/poignant_lucky_clover.webp',
   }),
 
-  HELIANTHUS_HELMET: Object.freeze({
-    // Render the verified player-head texture as an actual CSS 3D cube. A flat
-    // face crop and an unreliable third-party item icon both miss the target UI.
+  // Current farming helmets whose generic/legacy icon route is wrong or
+  // incomplete. These values come from current NEU item overlays.
+  FARM_SUIT_HELMET: Object.freeze({
+    kind: 'armor',
+    item: Object.freeze({
+      id: 'FARM_SUIT_HELMET',
+      name: 'Farmhand Helmet',
+      category: 'HELMET',
+      material: 'LEATHER_HELMET',
+      // minecraft:dyed_color 16640098 = #FDE862.
+      color: '253,232,98',
+    }),
+  }),
+  FARMHAND_HELMET: Object.freeze({
+    kind: 'armor',
+    item: Object.freeze({
+      id: 'FARMHAND_HELMET',
+      name: 'Farmhand Helmet',
+      category: 'HELMET',
+      material: 'LEATHER_HELMET',
+      color: '253,232,98',
+    }),
+  }),
+  FARM_ARMOR_HELMET: Object.freeze({
+    kind: 'rendered',
+    iconUrl: 'https://skyah.net/icons/items/hay_block.webp',
+  }),
+  HAYMAKER_HELMET: Object.freeze({
+    kind: 'rendered',
+    iconUrl: 'https://skyah.net/icons/items/hay_block.webp',
+  }),
+  PUMPKIN_HELMET: Object.freeze({
     kind: 'voxel-head',
-    textureId: '46e48a6eff318dcda57d5d76a9b2656be25973e3d472b6d2e446a8e60f60a78a',
+    textureId: '2f92489725093d51dd18a259382fa0207a20a94495883d9f4b1fd97a8a11b9f0',
+  }),
+  SPROUT_HELMET: Object.freeze({
+    kind: 'voxel-head',
+    textureId: '2f92489725093d51dd18a259382fa0207a20a94495883d9f4b1fd97a8a11b9f0',
+  }),
+  MELON_HELMET: Object.freeze({
+    kind: 'voxel-head',
+    textureId: '8208669e699d6f0d3a77f74b2b27228ce51b9359678d26f9c3408764b2e779aa',
+  }),
+  TATER_HELMET: Object.freeze({
+    kind: 'voxel-head',
+    textureId: '8208669e699d6f0d3a77f74b2b27228ce51b9359678d26f9c3408764b2e779aa',
+  }),
+  HELIANTHUS_HELMET: Object.freeze({
+    // Deliberately use the same normal rendered-item route as Fermento.
+    // The local CSS player-head cube was visibly different from the target UI.
+    kind: 'rendered',
+    iconUrl: 'https://skyah.net/icons/items/helianthus_helmet.webp',
   }),
 });
 
