@@ -55,3 +55,26 @@
 .skyblock-redesign .rarity-surface.rarity-unknown {
   --rarity-tone: #6d7d73;
 }
+
+
+/* Pet Item choices are physical items too. Keep their tier color visible in the
+   closed trigger and in every menu row, including selected/hovered rows. */
+.skyblock-redesign [data-pet-item-trigger].rarity-surface,
+.skyblock-redesign .sb-pet-item-dropdown-option.rarity-surface {
+  background:
+    radial-gradient(110% 120% at 0% 0%, color-mix(in srgb, var(--rarity-tone) 22%, transparent), transparent 58%),
+    linear-gradient(145deg,
+      color-mix(in srgb, var(--rarity-tone) 16%, #17231c),
+      color-mix(in srgb, var(--rarity-tone) 5%, #0c130f));
+  border-color: color-mix(in srgb, var(--rarity-tone) 52%, #34483a);
+}
+
+.skyblock-redesign .sb-pet-item-dropdown-option.rarity-surface:hover,
+.skyblock-redesign .sb-pet-item-dropdown-option.rarity-surface:focus-visible,
+.skyblock-redesign .sb-pet-item-dropdown-option.rarity-surface.is-selected {
+  background:
+    radial-gradient(110% 120% at 0% 0%, color-mix(in srgb, var(--rarity-tone) 30%, transparent), transparent 58%),
+    linear-gradient(145deg,
+      color-mix(in srgb, var(--rarity-tone) 22%, #17231c),
+      color-mix(in srgb, var(--rarity-tone) 9%, #0c130f));
+}
