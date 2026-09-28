@@ -1,4 +1,5 @@
 import { UPGRADES } from './data.js';
+import { FARMING_RELEVANT_PET_ITEMS, isFarmingRelevantPetItem } from './setup-pet-items.js';
 
 /** Selectable options for the setup editor. */
 export const OPTION_SOURCE = Object.freeze({
@@ -105,11 +106,12 @@ const FALLBACK_EQUIPMENT_ITEMS = Object.freeze([
   Object.freeze({ id: 'ZORROS_CAPE', name: "Zorro's Cape", category: 'CLOAK', tier: 'LEGENDARY' }),
 ]);
 
-const FALLBACK_PET_ITEMS = Object.freeze([
-  Object.freeze({ id: 'GREEN_BANDANA', name: 'Green Bandana', category: 'PET_ITEM', tier: 'EPIC' }),
-  Object.freeze({ id: 'POIGNANT_LUCKY_CLOVER', name: 'Poignant Lucky Clover', category: 'PET_ITEM', tier: 'LEGENDARY' }),
-  Object.freeze({ id: 'BROWN_BANDANA', name: 'Brown Bandana', category: 'PET_ITEM', tier: 'EPIC' }),
-]);
+const FALLBACK_PET_ITEMS = Object.freeze(
+  FARMING_RELEVANT_PET_ITEMS.map(item => Object.freeze({
+    ...item,
+    category: 'PET_ITEM',
+  })),
+);
 
 export const FARMING_SETUP_FALLBACK_ITEMS = Object.freeze([
   ...FALLBACK_ARMOR_SET_SPECS.flatMap(set => FALLBACK_ARMOR_PIECES.map(piece => Object.freeze({
@@ -264,6 +266,7 @@ export function itemsForSlot(catalog, slotId) {
     .filter(item => item.category && wanted.has(item.category))
     .filter(item => !ARMOR_SLOT_IDS.has(slotId) || isFarmingArmorCatalogItem(item))
     .filter(item => !EQUIPMENT_SLOT_IDS.has(slotId) || isFarmingEquipmentCatalogItem(item))
+    .filter(item => slotId !== 'petItem' || isFarmingRelevantPetItem(item))
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
