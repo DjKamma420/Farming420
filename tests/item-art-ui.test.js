@@ -115,7 +115,7 @@ test('manual equipment ids use their exact head model before the letter fallback
   assert.match(source, /knownSkyblockHeadTexture\(itemId\)/);
   assert.match(source, /const skull = skullNode\(textureId, item, \(\) => showCatalogOrLetterFallback/);
   assert.match(source, /knownSkyblockRenderedIcon\(itemId\)/);
-  assert.match(source, /armorItemSvgMarkup\(descriptor\.item\)/);
+  assert.doesNotMatch(source, /armorItemSvgMarkup/);
   assert.match(source, /loadItemCatalog/);
   assert.match(source, /document\.createElement\('img'\)/);
   assert.doesNotMatch(source, /style\.backgroundImage/);
