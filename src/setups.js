@@ -573,15 +573,23 @@ export function applyCandidateSetupSafely(setups, targetSetupId, candidateSetup)
     return Object.freeze({ applied: false, targetSetupId: null, backupId: null, reason: 'invalid setup data' });
   }
 
-  const target = setups.list.find(setup => setup?.id === targetSetupId);
+  const requestedTarget = setups.list.find(setup => setup?.id === targetSetupId);
+  if (!requestedTarget) {
+    return Object.freeze({ applied: false, targetSetupId: null, backupId: null, reason: 'target setup is missing' });
+  }
+
+  const killingPetSharesFf = requestedTarget.id === KILLING_SETUP_ID && physicalSetupCount(setups) < 3;
+  const target = killingPetSharesFf
+    ? setupById(setups, FF_SETUP_ID)
+    : requestedTarget;
   if (!target) {
     return Object.freeze({ applied: false, targetSetupId: null, backupId: null, reason: 'target setup is missing' });
   }
 
-  const appliedSlotIds = target.id === KILLING_SETUP_ID ? PET_SETUP_SLOTS : SLOT_IDS;
+  const appliedSlotIds = requestedTarget.id === KILLING_SETUP_ID ? PET_SETUP_SLOTS : SLOT_IDS;
   if (setupSlotsEqual(target, candidateSetup, appliedSlotIds)) {
-    setups.activeId = target.id;
-    return Object.freeze({ applied: false, targetSetupId: target.id, backupId: null, reason: 'candidate already matches target' });
+    setups.activeId = requestedTarget.id;
+    return Object.freeze({ applied: false, targetSetupId: requestedTarget.id, backupId: null, reason: 'candidate already matches target' });
   }
 
   let backupId = null;
@@ -599,20 +607,12 @@ export function applyCandidateSetupSafely(setups, targetSetupId, candidateSetup)
       ? structuredClone(candidateSetup.slots[slotId])
       : null;
   }
-  if (target.id === KILLING_SETUP_ID && physicalSetupCount(setups) < 3) {
-    const ff = setupById(setups, FF_SETUP_ID);
-    if (ff) {
-      for (const slotId of PET_SETUP_SLOTS) {
-        ff.slots[slotId] = target.slots[slotId] ? structuredClone(target.slots[slotId]) : null;
-      }
-    }
-  }
   synchronizeFarmingKillingLoadouts(setups);
-  setups.activeId = target.id;
+  setups.activeId = requestedTarget.id;
 
   return Object.freeze({
     applied: true,
-    targetSetupId: target.id,
+    targetSetupId: requestedTarget.id,
     backupId,
     reason: null,
   });
