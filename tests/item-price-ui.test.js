@@ -5,6 +5,7 @@ import test from 'node:test';
 const root = new URL('../', import.meta.url);
 const app = readFileSync(new URL('src/app.js', root), 'utf8');
 const revenuePlanner = readFileSync(new URL('src/revenue-planner.js', root), 'utf8');
+const physicalItemValue = readFileSync(new URL('src/physical-item-value.js', root), 'utf8');
 
 test('priced upgrade cards use compact approximate coin tags', () => {
   assert.match(app, /formatApproxCoins\(priceTagCoins\)/);
@@ -23,7 +24,7 @@ test('upgrade drawer shows next cost, cost to max and shard-specific value field
 test('physical item editors and Farming Tool expose installed-upgrade build value', () => {
   assert.match(app, /Estimated replacement value/);
   assert.match(app, /physicalItemBuildValue/);
-  assert.match(app, /Recombobulator/);
+  assert.match(physicalItemValue, /Recombobulator 3000/);
   assert.match(app, /rolling 90-day market averages/);
   assert.match(app, /marketAverageTimestampLabel/);
   assert.match(app, /Current level replacement value/);
