@@ -1,10 +1,94 @@
-export const SETUP_PET_ITEM_VERIFIED = '2026-09-23';
+export const SETUP_PET_ITEM_VERIFIED = '2026-09-28';
+
+const NEU_COMMIT = '392fd5db2afc4f5020eb9bd379d140a1f6df2011';
+const NEU_ITEM_URL = id =>
+  `https://github.com/NotEnoughUpdates/NotEnoughUpdates-REPO/blob/${NEU_COMMIT}/items/${id}.json`;
 
 export const SETUP_PET_ITEM_SOURCE = Object.freeze({
-  GREEN_BANDANA: 'https://hypixelskyblock.minecraft.wiki/w/Green_Bandana',
-  POIGNANT_LUCKY_CLOVER: 'https://hypixelskyblock.minecraft.wiki/w/Poignant_Lucky_Clover',
-  BROWN_BANDANA: 'https://hypixelskyblock.minecraft.wiki/w/Brown_Bandana',
+  YELLOW_BANDANA: NEU_ITEM_URL('YELLOW_BANDANA'),
+  GREEN_BANDANA: NEU_ITEM_URL('GREEN_BANDANA'),
+  POIGNANT_LUCKY_CLOVER: NEU_ITEM_URL('POIGNANT_LUCKY_CLOVER'),
+  BROWN_BANDANA: NEU_ITEM_URL('BROWN_BANDANA'),
 });
+
+export const FARMING_RELEVANT_PET_ITEMS = Object.freeze([
+  Object.freeze({
+    id: 'YELLOW_BANDANA',
+    name: 'Yellow Bandana',
+    tier: 'RARE',
+    effectSummary: '+30 Farming Fortune',
+    plannerRole: 'farming-fortune',
+  }),
+  Object.freeze({
+    id: 'GREEN_BANDANA',
+    name: 'Green Bandana',
+    tier: 'EPIC',
+    effectSummary: '+4 Farming Fortune per Garden level (max +60)',
+    plannerRole: 'farming-fortune',
+  }),
+  Object.freeze({
+    id: 'BROWN_BANDANA',
+    name: 'Brown Bandana',
+    tier: 'EPIC',
+    effectSummary: '+0.2 Bonus Pest Chance per eligible Pest Bestiary tier',
+    plannerRole: 'pest-spawn',
+  }),
+  Object.freeze({
+    id: 'POIGNANT_LUCKY_CLOVER',
+    name: 'Poignant Lucky Clover',
+    tier: 'LEGENDARY',
+    effectSummary: '+13 Overbloom',
+    plannerRole: 'pest-kill',
+  }),
+]);
+
+const FARMING_RELEVANT_PET_ITEM_BY_ID = new Map(
+  FARMING_RELEVANT_PET_ITEMS.map(item => [item.id, item]),
+);
+
+export function farmingRelevantPetItemById(value) {
+  const id = String(value?.skyblockId || value?.id || value || '').trim().toUpperCase();
+  return FARMING_RELEVANT_PET_ITEM_BY_ID.get(id) || null;
+}
+
+export function isFarmingRelevantPetItem(value) {
+  return Boolean(farmingRelevantPetItemById(value));
+}
+
+export function recommendedFarmingPetItem({ setupId = 'normal', gardenLevel = null } = {}) {
+  const target = String(setupId || '').trim().toLowerCase();
+  if (target === 'pest') {
+    return Object.freeze({
+      item: farmingRelevantPetItemById('BROWN_BANDANA'),
+      conditional: false,
+      reason: 'Best direct Pet Item for the BPC set.',
+    });
+  }
+  if (target === 'pest-kill') {
+    return Object.freeze({
+      item: farmingRelevantPetItemById('POIGNANT_LUCKY_CLOVER'),
+      conditional: false,
+      reason: 'Adds Overbloom for the Pest Killing objective.',
+    });
+  }
+
+  const level = knownNonNegative(gardenLevel);
+  if (level === null) {
+    return Object.freeze({
+      item: null,
+      conditional: true,
+      reason: 'Green Bandana is better from Garden 8; Yellow Bandana is better below Garden 8.',
+    });
+  }
+  const useGreen = Math.floor(level) >= 8;
+  return Object.freeze({
+    item: farmingRelevantPetItemById(useGreen ? 'GREEN_BANDANA' : 'YELLOW_BANDANA'),
+    conditional: false,
+    reason: useGreen
+      ? 'Garden 8+ makes Green Bandana exceed Yellow Bandana\'s +30 Farming Fortune.'
+      : 'Below Garden 8, Yellow Bandana gives more Farming Fortune than Green Bandana.',
+  });
+}
 
 function normalizedId(item) {
   return String(item?.skyblockId || item?.id || '').trim().toUpperCase();
@@ -49,6 +133,14 @@ function result({
 export function setupPetItemContribution(item, context = {}) {
   if (!item) return result({ id: null });
   const id = normalizedId(item);
+
+  if (id === 'YELLOW_BANDANA') {
+    return result({
+      id,
+      globalFortune: 30,
+      source: SETUP_PET_ITEM_SOURCE.YELLOW_BANDANA,
+    });
+  }
 
   if (id === 'GREEN_BANDANA') {
     const gardenLevel = knownNonNegative(context.gardenLevel);

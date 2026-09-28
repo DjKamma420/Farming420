@@ -1,6 +1,19 @@
 const STANDARD_TO_LEGENDARY = Object.freeze(['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY']);
 const STANDARD_TO_MYTHIC = Object.freeze([...STANDARD_TO_LEGENDARY, 'MYTHIC']);
 
+const RARITY_INDEX = Object.freeze({
+  COMMON: 0,
+  UNCOMMON: 1,
+  RARE: 2,
+  EPIC: 3,
+  LEGENDARY: 4,
+  MYTHIC: 5,
+});
+
+const NEU_PET_ITEMS_SOURCE =
+  'https://github.com/NotEnoughUpdates/NotEnoughUpdates-REPO/tree/392fd5db2afc4f5020eb9bd379d140a1f6df2011/items';
+const PET_RARITY_VERIFIED = '2026-09-28';
+
 /**
  * Farming-relevant pets exposed by the Setups picker.
  *
@@ -109,7 +122,12 @@ export const FARMING_PETS = Object.freeze([
     source: 'https://hypixelskyblock.minecraft.wiki/w/Slug_Pet',
     lastVerified: '2026-09-23',
   },
-].map(row => Object.freeze(row)));
+].map(row => Object.freeze({
+  ...row,
+  source: NEU_PET_ITEMS_SOURCE,
+  lastVerified: PET_RARITY_VERIFIED,
+  rarityItemIds: Object.freeze(row.rarities.map(rarity => `${row.id};${RARITY_INDEX[rarity]}`)),
+})));
 
 export function farmingPetById(id) {
   const normalized = String(id || '').trim().toUpperCase();

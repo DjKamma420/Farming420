@@ -2,7 +2,7 @@ import { STORAGE_KEY } from './config.js';
 import { itemAssetForSkyblockId, loadItemAssetManifest } from './item-assets.js';
 import { loadItemCatalog, readCachedCatalog } from './item-catalog.js';
 import { effectiveSetup } from './setups.js';
-import { exactSetupItemArt } from './setup-item-art-map.js';
+import { exactSetupItemArt } from './setup-item-art-map.js?v=20260928-2';
 import { knownSkyblockHeadTexture, knownSkyblockRenderedIcon, skullTextureUrl } from './skull-art.js?v=20260928-1';
 
 let manifest = null;

@@ -236,3 +236,27 @@
 .sb-gear-dropdown-option {
   grid-template-columns: 44px minmax(0, 1fr) 18px;
 }
+
+
+/* Pet Item choices expose the objective-specific recommendation without hiding
+   the item's own rarity/effect metadata. */
+.sb-pet-item-recommendation {
+  display: block;
+  margin: 2px 0 7px;
+  color: var(--accent2);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.sb-pet-item-recommended-badge {
+  justify-self: start;
+  margin-top: 2px;
+  padding: 2px 5px;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  color: var(--accent2);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}

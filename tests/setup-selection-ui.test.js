@@ -183,3 +183,28 @@ test('setup editor controls use the physical slot card as the global scroll anch
   assert.match(app, /candidate\.dataset\.slot === slotId/);
   assert.match(app, /if \(card\) return card/);
 });
+
+
+test('pet picker refreshes its rarity choices after switching pet species', () => {
+  const source = read('src/setup-selection-ui.js');
+  assert.match(source, /function petPickerSignature/);
+  assert.match(source, /\.\.\.petRarities\(currentId\)/);
+  assert.match(source, /existing\?\.dataset\.petSignature === signature/);
+  assert.match(source, /existing\.replaceWith\(picker\)/);
+  assert.match(source, /pet\.rarities\.length === 1/);
+  assert.match(source, /pet\.rarities\.at\(-1\)/);
+});
+
+test('Pet Item picker shows objective recommendation and exposes rarity surface ids', () => {
+  const source = read('src/setup-selection-ui.js');
+  const css = read('src/setup-selection-ui.css');
+  assert.match(source, /recommendedFarmingPetItem/);
+  assert.match(source, /currentGardenLevelForRecommendation/);
+  assert.match(source, /Recommended:/);
+  assert.match(source, /petItemTrigger/);
+  assert.match(source, /physicalItemId/);
+  assert.match(source, /sb-pet-item-recommended-badge/);
+  assert.match(source, /effectSummary/);
+  assert.match(css, /\.sb-pet-item-recommendation/);
+  assert.match(css, /\.sb-pet-item-recommended-badge/);
+});

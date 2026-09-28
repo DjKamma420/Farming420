@@ -104,7 +104,7 @@ test('the local setup fallback keeps farming armor and equipment selectable with
   assert.equal(cloakIds.has('PESTHUNTERS_CLOAK'), true);
   assert.equal(cloakIds.has('PEST_VEST'), true);
   assert.equal(cloakIds.has('ZORROS_CAPE'), true);
-  for (const id of ['GREEN_BANDANA', 'POIGNANT_LUCKY_CLOVER', 'BROWN_BANDANA']) {
+  for (const id of ['YELLOW_BANDANA', 'GREEN_BANDANA', 'POIGNANT_LUCKY_CLOVER', 'BROWN_BANDANA']) {
     assert.equal(petItemIds.has(id), true, `${id} should remain selectable offline`);
   }
 
@@ -133,6 +133,19 @@ test('official catalog metadata overrides fallback metadata while fallback cover
   assert.equal(helianthus.skin, 'live-skin');
   assert.equal(helianthus.gemstoneSlots.length, 1);
   assert.equal(catalog.some(item => item.id === 'FERMENTO_HELMET'), true);
+});
+
+test('Pet Item slot rejects non-farming Pet Items from the live catalog', () => {
+  const catalog = mergeFarmingSetupCatalog([
+    { id: 'GREEN_BANDANA', name: 'Green Bandana', category: 'PET_ITEM', tier: 'EPIC' },
+    { id: 'PET_ITEM_COMBAT_SKILL_BOOST_EPIC', name: 'Combat Exp Boost', category: 'PET_ITEM', tier: 'EPIC' },
+    { id: 'PET_ITEM_FISHING_SKILL_BOOST_EPIC', name: 'Fishing Exp Boost', category: 'PET_ITEM', tier: 'EPIC' },
+    { id: 'PET_ITEM_QUICK_CLAW', name: 'Quick Claw', category: 'PET_ITEM', tier: 'EPIC' },
+  ]);
+  assert.deepEqual(
+    itemsForSlot(catalog, 'petItem').map(item => item.id).sort(),
+    ['BROWN_BANDANA', 'GREEN_BANDANA', 'POIGNANT_LUCKY_CLOVER', 'YELLOW_BANDANA'],
+  );
 });
 
 test('current Pesthunter and Zorro ids stay selectable in their equipment slots', () => {

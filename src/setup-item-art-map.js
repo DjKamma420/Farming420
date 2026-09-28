@@ -25,6 +25,7 @@ export const EXACT_SETUP_ITEM_ART = Object.freeze({
 
   // Farming-relevant held pet items that are themselves player heads. These
   // render immediately even before the async Hypixel item catalog is available.
+  YELLOW_BANDANA: Object.freeze({ kind: 'head', textureId: '799d16737b4f2633f9e7c4538992115c107928a9a01abff407c0297194bd6867' }),
   GREEN_BANDANA: Object.freeze({ kind: 'head', textureId: '3521cccdbb892dff183d97bbdb12f2671e0cd12b945b8fca211a7065359a03a5' }),
   BROWN_BANDANA: Object.freeze({ kind: 'head', textureId: '674e061e6d853822bbad56d079357c248c9a40de494f20eae0078a0a02ef0da7' }),
   POIGNANT_LUCKY_CLOVER: Object.freeze({

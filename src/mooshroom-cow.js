@@ -2,8 +2,9 @@ import { activeSetup } from './setups.js';
 
 // Mooshroom Cow mechanics used by the computed-stat coverage check.
 // Current post-0.26.1 base Farming Fortune is 1 -> 100 by pet level.
-// LEGENDARY Farming Strength grants +0.7 Farming Fortune per X Strength,
-// where X scales from 39.8 at level 1 to 20 at level 100.
+// RARE and higher Farming Strength grants +0.7 Farming Fortune per X Strength,
+// where X scales from 39.8 at level 1 to 20 at level 100. Current NEU item
+// definitions expose the perk on RARE, EPIC and LEGENDARY Mooshroom Cow pets.
 
 const PET_LEVEL_XP = Object.freeze([
   100, 110, 120, 130, 145, 160, 175, 190, 210, 230, 250, 275, 300, 330, 360, 400, 440, 490, 540, 600, 660, 730, 800,
@@ -14,6 +15,8 @@ const PET_LEVEL_XP = Object.freeze([
   272700, 291700, 311700, 333700, 357700, 383700, 411700, 441700, 476700, 516700, 561700, 611700, 666700, 726700,
   791700, 861700, 936700, 1016700, 1101700, 1191700, 1286700, 1386700, 1496700, 1616700, 1746700, 1886700,
 ]);
+
+const FARMING_STRENGTH_RARITIES = new Set(['RARE', 'EPIC', 'LEGENDARY']);
 
 const PET_RARITY_OFFSET = Object.freeze({
   COMMON: 0,
@@ -66,7 +69,7 @@ export function mooshroomStrengthRequirement(level) {
 export function mooshroomStrengthFortune(strength, level = 100, rarity = 'LEGENDARY') {
   const safeStrength = finiteNonNegative(strength);
   if (safeStrength === null) return null;
-  if (String(rarity || '').toUpperCase() !== 'LEGENDARY') return 0;
+  if (!FARMING_STRENGTH_RARITIES.has(String(rarity || '').toUpperCase())) return 0;
   const requirement = mooshroomStrengthRequirement(level);
   return Math.floor((safeStrength / requirement) * 0.7);
 }
@@ -129,7 +132,7 @@ export function mooshroomCowContribution(state) {
   else baseFortune = level;
 
   let strengthFortune = 0;
-  if (rarity === 'LEGENDARY') {
+  if (FARMING_STRENGTH_RARITIES.has(rarity)) {
     if (level === null) reasons.push('Farming Strength needs the Mooshroom Cow level');
     if (strength === null) reasons.push('Strength input is missing');
     if (level !== null && strength !== null) {

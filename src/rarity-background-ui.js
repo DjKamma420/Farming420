@@ -3,7 +3,7 @@ import { CROPS } from './data.js';
 import { rarityClass, RARITY_COLORS } from './item-editor.js';
 import { effectiveSetup } from './setups.js';
 import { effectiveSetupItemRarity, normalizeRarity } from './setup-rarity.js';
-import { loadItemCatalog, readCachedCatalog } from './item-catalog.js';
+import { loadItemCatalog, mergeFarmingSetupCatalog, readCachedCatalog } from './item-catalog.js';
 import { canRecombobulateItem, catalogItemForSetupItem } from './item-capabilities.js';
 import { toolKeyForCropId } from './migrations.js';
 import { TOOL_TIER_CHAIN, highestChainTier } from './progression-chains.js';
@@ -117,7 +117,7 @@ function clearRarityClass(node) {
   delete node.dataset.effectiveRarity;
 }
 
-const CATALOG_RARITY_SURFACE_SELECTOR = '.item-card[data-open], .accessory-catalog-card[data-accessory-item-id], .drawer, .sb-reforge-card, .workspace-level-row';
+const CATALOG_RARITY_SURFACE_SELECTOR = '.item-card[data-open], .accessory-catalog-card[data-accessory-item-id], .drawer, .sb-reforge-card, .workspace-level-row, [data-pet-item-trigger], [data-pet-item-option]';
 
 function applyCatalogItemSurfaceRarity(root, catalog) {
   for (const surface of root.querySelectorAll(CATALOG_RARITY_SURFACE_SELECTOR)) {
@@ -155,8 +155,9 @@ export function applyRarityBackgrounds(root = document) {
   if (!root?.querySelector) return;
   const state = readState();
   const catalog = readCachedCatalog()?.items || [];
+  const surfaceCatalog = mergeFarmingSetupCatalog(catalog);
   applySetupRarity(root, state, catalog);
-  applyCatalogItemSurfaceRarity(root, catalog);
+  applyCatalogItemSurfaceRarity(root, surfaceCatalog);
   applyToolRarity(root, state, catalog);
   applyVacuumRarity(root, state);
 }
@@ -183,7 +184,7 @@ async function ensureCatalog() {
   }
 }
 
-const RARITY_SURFACE_SELECTOR = '.slot-card, [data-item-editor], .item-card[data-open], .accessory-catalog-card[data-accessory-item-id], .drawer, .sb-reforge-card, .workspace-level-row, .sb-tool-card, [data-tool-editor], [data-vacuum-panel]';
+const RARITY_SURFACE_SELECTOR = '.slot-card, [data-item-editor], .item-card[data-open], .accessory-catalog-card[data-accessory-item-id], .drawer, .sb-reforge-card, .workspace-level-row, .sb-tool-card, [data-tool-editor], [data-vacuum-panel], [data-pet-item-trigger], [data-pet-item-option]';
 
 function mutationNeedsRarity(mutations) {
   return mutations.some(mutation => {
