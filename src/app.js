@@ -76,7 +76,6 @@ import {
   farmingKillingPetShared,
   prefillSetupFromSnapshot,
   prepareFfBpcSetups,
-  setFarmingKillingPetShared,
   setupSummary,
   synchronizeFarmingKillingLoadouts,
   thirdSetupName,
@@ -2411,23 +2410,19 @@ function setupsPage() {
   `).join('');
 
   const petContent = ffSelected
-    ? `<div class="setup-bar">
-        <label class="lever setup-pet-link">
-          <input type="checkbox" data-share-farming-killing-pet ${sharedPet ? 'checked' : ''}>
-          <span class="lever-track" aria-hidden="true"></span>
-          <span>Use one pet for Farming + Killing</span>
-        </label>
-        <div class="hint">Armor and Equipment are always shared. Enable this when one Pet and Pet Item should also be used for both jobs.</div>
-      </div>
-      ${sharedPet
-        ? petSetupSection('Farming + Killing Pet', FF_SETUP_ID, 'One pet configuration is used for both Farming and Killing.')
-        : `${petSetupSection('Farming Pet', FF_SETUP_ID, 'Used while farming crops.')}
-           ${petSetupSection('Killing Pet', KILLING_SETUP_ID, 'Only the pet can differ for Killing; Armor and Equipment stay identical to the FF Set.')}`}`
+    ? (sharedPet
+      ? petSetupSection(
+          'Farming Pet',
+          FF_SETUP_ID,
+          'Used for Farming and also for Killing while only FF and BPC sets exist. Add Set 3 to unlock a separate Killing Pet.',
+        )
+      : `${petSetupSection('Farming Pet', FF_SETUP_ID, 'Used while farming crops.')}
+         ${petSetupSection('Killing Pet', KILLING_SETUP_ID, 'Unlocked by Set 3. Killing still inherits Armor and Equipment from the FF Set.')}`)
     : bpcSelected
       ? petSetupSection('BPC Pet', BPC_SETUP_ID, 'Used with the BPC Set while preparing Pest spawns.')
       : petSetupSection('Pet', THIRD_SETUP_ID, `Used with ${visibleSetupLabel(THIRD_SETUP_ID, all)}.`);
 
-  return `${pageHeader('Loadouts', 'Farming System · FF and BPC sets', 'FF and BPC keep fixed roles and names. An optional third set is fully independent and can be named freely. Killing remains a pet-only overlay on the FF set.')}
+  return `${pageHeader('Loadouts', 'Farming System · FF and BPC sets', 'FF and BPC keep fixed roles and names. With two sets, Killing uses the FF Pet. Adding Set 3 unlocks a separate Killing Pet while Killing Armor and Equipment continue to inherit the FF Set.')}
     ${objectivePanel}
     <div class="setup-tabs">
       ${visibleIds.map(setupId =>
@@ -2539,12 +2534,6 @@ function bindSetups() {
     state.setupSlotTarget = null;
     rerender();
   }));
-  document.querySelector('[data-share-farming-killing-pet]')?.addEventListener('change', event => {
-    setFarmingKillingPetShared(all, event.target.checked);
-    state.setupSlot = null;
-    state.setupSlotTarget = null;
-    rerender();
-  });
   document.querySelectorAll('[data-setup-objective-apply]').forEach(button => {
     button.addEventListener('click', () => {
       const synced = snapshot();
