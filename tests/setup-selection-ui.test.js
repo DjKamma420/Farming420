@@ -232,3 +232,18 @@ test('helmet art map import revision is bumped so corrected helmets are not serv
   assert.match(picker, /setup-item-art-map\.js\?v=20260928-3/);
   assert.match(setupArt, /setup-item-art-map\.js\?v=20260928-3/);
 });
+
+
+test('Strength input is exposed only inside the Mooshroom Cow pet editor', () => {
+  const setupUi = read('src/setup-selection-ui.js');
+  const computedUi = read('src/computed-stats-ui.js');
+
+  assert.match(setupUi, /currentId === 'MOOSHROOM_COW'/);
+  assert.match(setupUi, /dataset: \{ cowStrength: '1' \}/);
+  assert.match(setupUi, /profile\.inputs\.strength/);
+
+  assert.doesNotMatch(computedUi, /id="strengthInput"/);
+  assert.doesNotMatch(computedUi, /Strength · input/);
+  assert.doesNotMatch(computedUi, /Used automatically when a Mooshroom Cow is the active pet/);
+  assert.doesNotMatch(computedUi, /profile\?\.inputs\?\.strength/);
+});
