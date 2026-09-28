@@ -161,6 +161,16 @@
 .accessory-chain-card .badge.owned {
   border-color: #3f7956;
 }
+.accessory-catalog-card.accessory-selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(110,231,168,.22);
+  background: #10251a;
+}
+.accessory-select-btn.selected {
+  border-color: var(--accent);
+  background: #173521;
+  color: var(--accent);
+}
 .accessory-upgrade-group + .accessory-upgrade-group {
   margin-top: 28px;
 }
