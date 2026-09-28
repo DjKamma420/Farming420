@@ -21,6 +21,11 @@ import {
   petLevelBounds,
   petRarities,
 } from './setup-pet-catalog.js';
+import {
+  farmingRelevantPetItemById,
+  recommendedFarmingPetItem,
+} from './setup-pet-items.js';
+import { gardenLevelFromExperience } from './garden-level.js';
 import { exactSetupItemArt } from './setup-item-art-map.js';
 import {
   FACE_OFFSET,
@@ -298,7 +303,11 @@ function buildPetDropdown(currentId, item) {
     const copy = element('span', { className: 'sb-pet-option-copy' });
     copy.append(
       element('strong', {}, label),
-      ...(pet ? [element('small', {}, `Level 1–${pet.levelMax}`)] : []),
+      ...(pet ? [element(
+        'small',
+        {},
+        `${pet.rarities.length === 1 ? `${pet.rarities[0]} only` : `${pet.rarities[0]}–${pet.rarities.at(-1)}`} · Level 1–${pet.levelMax}`,
+      )] : []),
     );
     option.append(
       petArtNode(pet, label),
@@ -337,16 +346,33 @@ function buildLevelSelect(petId, currentLevel) {
   return select;
 }
 
+function petPickerSignature(currentId, item, currentStrength) {
+  return [
+    currentId,
+    normalizedRarity(item?.rarity) || '',
+    item?.petLevel ?? '',
+    currentStrength ?? '',
+    ...petRarities(currentId),
+  ].join('|');
+}
+
 function buildPetPicker(editor, item) {
-  if (editor.querySelector('[data-farming-pet-picker]')) return;
+  const currentId = selectedPetId(item);
+  const isMooshroomCow = currentId === 'MOOSHROOM_COW';
+  const currentStrength = isMooshroomCow ? currentProfileStrength() : null;
+  const signature = petPickerSignature(currentId, item, currentStrength);
+  const existing = editor.querySelector('[data-farming-pet-picker]');
+  if (existing?.dataset.petSignature === signature) return;
 
   editor.classList.add('sb-pet-editor');
   const picker = element('div', {
     className: 'sb-selection-picker sb-pet-picker item-editor-grid',
-    dataset: { farmingPetPicker: '1' },
+    dataset: {
+      farmingPetPicker: '1',
+      petSignature: signature,
+    },
   });
 
-  const currentId = selectedPetId(item);
   const petDropdown = buildPetDropdown(currentId, item);
 
   const raritySelect = element('select', { dataset: { farmingPetRarity: '1' }, disabled: !currentId });
@@ -354,15 +380,13 @@ function buildPetPicker(editor, item) {
   const legalRarities = [...petRarities(currentId)];
   const currentRarity = normalizedRarity(item?.rarity);
   if (currentRarity && !legalRarities.includes(currentRarity)) {
-    raritySelect.append(element('option', { value: currentRarity }, `${currentRarity} · current`));
+    raritySelect.append(element('option', { value: currentRarity }, `${currentRarity} · saved value`));
   }
   for (const rarity of legalRarities) raritySelect.append(element('option', { value: rarity }, rarity));
   raritySelect.value = currentRarity || '';
 
   const levelSelect = buildLevelSelect(currentId, item?.petLevel);
 
-  const isMooshroomCow = currentId === 'MOOSHROOM_COW';
-  const currentStrength = isMooshroomCow ? currentProfileStrength() : null;
   const strengthMissing = isMooshroomCow && currentStrength === null;
   let strengthField = null;
   if (isMooshroomCow) {
@@ -420,7 +444,9 @@ function buildPetPicker(editor, item) {
     field('Level', levelSelect),
     ...(strengthField ? [strengthField] : []),
   );
-  editor.querySelector('.item-editor-head')?.insertAdjacentElement('afterend', picker);
+
+  if (existing) existing.replaceWith(picker);
+  else editor.querySelector('.item-editor-head')?.insertAdjacentElement('afterend', picker);
 }
 
 let pickerCatalogItems = readCachedCatalog()?.items || [];
@@ -435,6 +461,21 @@ function closedItemPickerSignature(options, item) {
     String(item?.displayName || '').trim(),
     ...options.map(option => `${option.id}:${option.name}:${option.tier || ''}:${option.skin || ''}:${option.material || ''}`),
   ].join('|');
+}
+
+function currentGardenLevelForRecommendation() {
+  const state = readState();
+  const garden = state?.profile?.normalizedSnapshot?.garden || {};
+  const direct = Number(garden.level);
+  if (Number.isFinite(direct) && direct >= 0) return Math.floor(direct);
+  return gardenLevelFromExperience(garden.experience);
+}
+
+function petItemRecommendationForSetup(setupId) {
+  return recommendedFarmingPetItem({
+    setupId,
+    gardenLevel: currentGardenLevelForRecommendation(),
+  });
 }
 
 function writeClosedItemSelection(slotId, itemId) {
@@ -462,9 +503,16 @@ function writeClosedItemSelection(slotId, itemId) {
   });
 }
 
-function buildPetItemPicker(editor, item) {
+function buildPetItemPicker(editor, item, setupId = null) {
   const options = currentCatalogItems('petItem');
-  const signature = closedItemPickerSignature(options, item);
+  const recommendation = petItemRecommendationForSetup(setupId);
+  const recommendedId = recommendation.item?.id || null;
+  const signature = [
+    closedItemPickerSignature(options, item),
+    setupId || '',
+    recommendedId || '',
+    recommendation.reason || '',
+  ].join('|');
   const existing = editor.querySelector('[data-pet-item-dropdown]');
   const oldControl = existing
     || editor.querySelector('[data-closed-item-select="petItem"]')
@@ -486,7 +534,13 @@ function buildPetItemPicker(editor, item) {
       catalogSignature: signature,
     },
   });
-  const trigger = element('summary', { className: 'sb-pet-dropdown-trigger' });
+  const trigger = element('summary', {
+    className: 'sb-pet-dropdown-trigger',
+    dataset: {
+      petItemTrigger: '1',
+      ...(currentRecord?.id ? { physicalItemId: currentRecord.id } : {}),
+    },
+  });
   const triggerCopy = element('span', { className: 'sb-pet-dropdown-copy' });
   triggerCopy.append(
     element('strong', {}, currentName),
@@ -510,14 +564,23 @@ function buildPetItemPicker(editor, item) {
     const option = element('button', {
       type: 'button',
       className: `sb-pet-dropdown-option sb-pet-item-dropdown-option${selected ? ' is-selected' : ''}`,
-      dataset: { petItemOption: itemId },
+      dataset: {
+        petItemOption: itemId,
+        ...(itemId ? { physicalItemId: itemId } : {}),
+      },
       role: 'option',
       'aria-selected': String(selected),
     });
     const copy = element('span', { className: 'sb-pet-option-copy' });
+    const farmingMeta = farmingRelevantPetItemById(itemId);
+    const details = [
+      record?.tier ? String(record.tier).replace(/_/g, ' ') : null,
+      farmingMeta?.effectSummary || record?.effectSummary || null,
+    ].filter(Boolean).join(' · ');
     copy.append(
       element('strong', {}, label),
-      ...(record?.tier ? [element('small', {}, String(record.tier).replace(/_/g, ' '))] : []),
+      ...(details ? [element('small', {}, details)] : []),
+      ...(recommendedId === itemId ? [element('span', { className: 'sb-pet-item-recommended-badge' }, 'Recommended')] : []),
     );
     option.append(
       petItemArtNode(record, label),
@@ -537,7 +600,14 @@ function buildPetItemPicker(editor, item) {
 
   dropdown.append(trigger, menu);
   const closedField = element('div', { className: 'settings-field sb-closed-item-field sb-pet-item-dropdown-field' });
-  closedField.append(element('span', {}, 'Which item'), dropdown);
+  const recommendationText = recommendation.item
+    ? `Recommended: ${recommendation.item.name} · ${recommendation.reason}`
+    : `Recommendation: ${recommendation.reason}`;
+  closedField.append(
+    element('span', {}, 'Which item'),
+    element('small', { className: 'sb-pet-item-recommendation' }, recommendationText),
+    dropdown,
+  );
   if (!options.length) {
     closedField.append(element(
       'span',
@@ -725,10 +795,10 @@ function buildArmorItemPicker(editor, slotId, item) {
   oldField.replaceWith(closedField);
 }
 
-function buildClosedItemPicker(editor, slotId, item) {
+function buildClosedItemPicker(editor, slotId, item, setupId = null) {
   if (!slotHasOfficialCategory(slotId)) return;
   if (slotId === 'petItem') {
-    buildPetItemPicker(editor, item);
+    buildPetItemPicker(editor, item, setupId);
     return;
   }
   if (ARMOR_SLOT_IDS.has(slotId)) {
@@ -846,7 +916,7 @@ export function applySetupSelectionUi(root = document) {
   if (slotId === 'pet') {
     buildPetPicker(editor, item);
   } else {
-    buildClosedItemPicker(editor, slotId, item);
+    buildClosedItemPicker(editor, slotId, item, targetId);
     if (slotId === 'petItem') editor.classList.add('sb-pet-item-editor');
     else closeReforgePicker(editor, slotId, item);
     ensurePickerCatalog();
