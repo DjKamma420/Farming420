@@ -51,11 +51,23 @@ test('topbar does not duplicate the dashboard stat results', () => {
   assert.match(computedStatsUi, /querySelector\('\.fortune-pill'\)\?\.remove\(\)/);
 });
 
-test('activity switch exposes three fully named phase roles', () => {
-  assert.match(activityModeUi, />FF Set · Farming<\/button>/);
-  assert.match(activityModeUi, />BPC Set · Spawning<\/button>/);
-  assert.match(activityModeUi, />FF Set · Killing<\/button>/);
-  assert.doesNotMatch(activityModeUi, />Farm<\/button>|>Spawn<\/button>|>Kill<\/button>|>Pest<\/button>/);
+test('activity switch exposes phases without presenting Killing as another physical set', () => {
+  assert.match(activityModeUi, /aria-label="Farming phase, linked to FF Set"[^>]*>Farming<\/button>/);
+  assert.match(activityModeUi, /aria-label="Spawning phase, linked to BPC Set"[^>]*>Spawning<\/button>/);
+  assert.match(activityModeUi, /aria-label="Killing phase, linked to FF Set"[^>]*>Killing<\/button>/);
+  assert.doesNotMatch(activityModeUi, />FF Set · Killing<\/button>|>BPC Set · Spawning<\/button>/);
   assert.match(activityModeUi, /data-activity-mode="pest-spawn"/);
   assert.match(activityModeUi, /data-activity-mode="pest-kill"/);
+});
+
+test('dashboard resolves every phase through its linked physical loadout', () => {
+  const match = app.match(/function dashboardLoadoutSummary\(mode, selectedCrop\) \{([\s\S]*?)\n\}/);
+  assert.ok(match, 'dashboardLoadoutSummary() source not found');
+  const source = match[1];
+
+  assert.match(source, /effectiveSetup\(state\.profile\.setups, setupIdForActivity\(mode\)\)/);
+  assert.match(source, /setup: dashboardLinkedSetLabel\(mode\)/);
+  assert.doesNotMatch(source, /setups\?\.list\?\.find/);
+  assert.match(app, /return mode === ACTIVITY_MODE\.PEST_SPAWN \? 'BPC Set' : 'FF Set'/);
+  assert.match(dashboardSource(), /linked physical loadout: \$\{linkedSetLabel\}/);
 });
