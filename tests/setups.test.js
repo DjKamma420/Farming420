@@ -14,6 +14,7 @@ import {
   normalizeSetups,
   prefillSetupFromSnapshot,
   setupSummary,
+  setPhysicalSetupCount,
   ensurePhysicalItemId,
   physicalItemId,
   writeLinkedSetupSlot,
@@ -28,7 +29,7 @@ test('the default setups are farming, pest spawning, and pest killing', () => {
   assert.deepEqual(setups.list.map(setup => setup.id), ['normal', 'pest', 'pest-kill']);
   assert.deepEqual(setups.list.map(setup => setup.name), ['FF (Farming Fortune) Set', 'BPC (Bonus Pest Chance) Set', 'Pest Killing']);
   assert.equal(setups.activeId, 'normal');
-  assert.equal(setups.shareFarmingKillingPet, false);
+  assert.equal(setups.shareFarmingKillingPet, true, 'two-set mode shares FF Pet with Killing');
 });
 
 test('a new setup starts with every slot empty', () => {
@@ -248,8 +249,9 @@ test('applying to an empty phase setup needs no backup', () => {
   assert.equal(setups.activeId, 'pest');
 });
 
-test('re-applying an identical candidate does not create backup noise', () => {
+test('re-applying an identical separate Killing Pet candidate does not create backup noise', () => {
   const setups = createDefaultSetups();
+  setPhysicalSetupCount(setups, 3);
   const target = setups.list.find(setup => setup.id === 'pest-kill');
   target.slots.pet = {
     ...createEmptyItem(),
@@ -267,6 +269,34 @@ test('re-applying an identical candidate does not create backup noise', () => {
   assert.equal(result.reason, 'candidate already matches target');
   assert.equal(setups.list.length, beforeCount);
   assert.equal(setups.activeId, 'pest-kill');
+});
+
+test('Killing candidate application targets FF with two sets and the Killing overlay with three', () => {
+  const setups = createDefaultSetups();
+  const candidate = createSetup('candidate', 'Candidate');
+  candidate.slots.pet = {
+    ...createEmptyItem(),
+    skyblockId: 'HEDGEHOG',
+    displayName: 'Hedgehog Pet',
+    physicalItemId: 'pet:hedgehog',
+  };
+
+  const twoSet = applyCandidateSetupSafely(setups, 'pest-kill', candidate);
+  assert.equal(twoSet.applied, true);
+  assert.equal(setups.list.find(setup => setup.id === 'normal').slots.pet.skyblockId, 'HEDGEHOG');
+  assert.equal(setups.list.find(setup => setup.id === 'pest-kill').slots.pet, null);
+
+  setPhysicalSetupCount(setups, 3);
+  candidate.slots.pet = {
+    ...candidate.slots.pet,
+    skyblockId: 'ROSE_DRAGON',
+    displayName: 'Rose Dragon Pet',
+    physicalItemId: 'pet:rose',
+  };
+  const threeSet = applyCandidateSetupSafely(setups, 'pest-kill', candidate);
+  assert.equal(threeSet.applied, true);
+  assert.equal(setups.list.find(setup => setup.id === 'normal').slots.pet.skyblockId, 'HEDGEHOG');
+  assert.equal(setups.list.find(setup => setup.id === 'pest-kill').slots.pet.skyblockId, 'ROSE_DRAGON');
 });
 
 test('safe candidate application rejects missing targets without mutating setups', () => {

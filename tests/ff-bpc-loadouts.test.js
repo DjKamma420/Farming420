@@ -15,7 +15,6 @@ import {
   farmingKillingPetShared,
   physicalSetupCount,
   prepareFfBpcSetups,
-  setFarmingKillingPetShared,
   setPhysicalSetupCount,
   setThirdSetupName,
   thirdSetupName,
@@ -107,24 +106,36 @@ test('writing Killing gear writes through to FF without persisting a second copy
   assert.equal(effectiveSetup(setups, KILLING_SETUP_ID).slots.boots.displayName, 'Shared Boots');
 });
 
-test('Farming and Killing pets can be separate or resolved from one shared configuration', () => {
+test('Killing shares the FF Pet with two sets and gets a separate Pet only with Set 3', () => {
   const setups = createDefaultSetups();
   writeLinkedSetupSlot(setups, FF_SETUP_ID, 'pet', item('Farming Pet', 'ELEPHANT'));
-  writeLinkedSetupSlot(setups, KILLING_SETUP_ID, 'pet', item('Killing Pet', 'HEDGEHOG'));
-  assert.equal(farmingKillingPetShared(setups), false);
-  assert.equal(effectiveSetup(setups, KILLING_SETUP_ID).slots.pet.skyblockId, 'HEDGEHOG');
 
-  setFarmingKillingPetShared(setups, true);
-  assert.equal(setups.list.find(setup => setup.id === KILLING_SETUP_ID).slots.pet, null);
+  assert.equal(farmingKillingPetShared(setups), true);
   assert.equal(effectiveSetup(setups, KILLING_SETUP_ID).slots.pet.skyblockId, 'ELEPHANT');
 
+  // Two-set mode redirects any Killing Pet edit back to FF because no separate
+  // Killing Pet exists yet.
   writeLinkedSetupSlot(setups, KILLING_SETUP_ID, 'pet', item('Rose Dragon Pet', 'ROSE_DRAGON'));
   assert.equal(setups.list.find(setup => setup.id === FF_SETUP_ID).slots.pet.skyblockId, 'ROSE_DRAGON');
+  assert.equal(setups.list.find(setup => setup.id === KILLING_SETUP_ID).slots.pet, null);
   assert.equal(effectiveSetup(setups, KILLING_SETUP_ID).slots.pet.skyblockId, 'ROSE_DRAGON');
 
-  setFarmingKillingPetShared(setups, false);
+  // Adding Set 3 unlocks the separate Killing Pet overlay.
+  setPhysicalSetupCount(setups, 3);
+  assert.equal(farmingKillingPetShared(setups), false);
   writeLinkedSetupSlot(setups, KILLING_SETUP_ID, 'pet', item('Killing Pet', 'HEDGEHOG'));
   assert.equal(setups.list.find(setup => setup.id === FF_SETUP_ID).slots.pet.skyblockId, 'ROSE_DRAGON');
+  assert.equal(setups.list.find(setup => setup.id === KILLING_SETUP_ID).slots.pet.skyblockId, 'HEDGEHOG');
+  assert.equal(effectiveSetup(setups, KILLING_SETUP_ID).slots.pet.skyblockId, 'HEDGEHOG');
+
+  // Removing Set 3 hides but preserves the separate Killing Pet. Killing falls
+  // back to FF until Set 3 is added again.
+  setPhysicalSetupCount(setups, 2);
+  assert.equal(farmingKillingPetShared(setups), true);
+  assert.equal(setups.list.find(setup => setup.id === KILLING_SETUP_ID).slots.pet.skyblockId, 'HEDGEHOG');
+  assert.equal(effectiveSetup(setups, KILLING_SETUP_ID).slots.pet.skyblockId, 'ROSE_DRAGON');
+
+  setPhysicalSetupCount(setups, 3);
   assert.equal(effectiveSetup(setups, KILLING_SETUP_ID).slots.pet.skyblockId, 'HEDGEHOG');
 
   setups.activeId = KILLING_SETUP_ID;
@@ -151,10 +162,11 @@ test('the Setups UI adds the optional third set from a name dialog instead of a 
   assert.doesNotMatch(activityCss, /\.physical-set-switch\s*\{[^}]*overflow-x:\s*auto/);
   assert.match(app, /visiblePhysicalSetupIds\(all\)/);
   assert.match(app, /Set 3 has no automatic FF, BPC or Killing role\./);
-  assert.match(app, /Use one pet for Farming \+ Killing/);
-  assert.match(app, /Farming Pet/);
-  assert.match(app, /Killing Pet/);
-  assert.match(app, /Only the pet can differ for Killing; Armor and Equipment stay identical to the FF Set\./);
+  assert.doesNotMatch(app, /data-share-farming-killing-pet/);
+  assert.doesNotMatch(app, /Use one pet for Farming \+ Killing/);
+  assert.match(app, /Add Set 3 to unlock a separate Killing Pet/);
+  assert.match(app, /Unlocked by Set 3\. Killing still inherits Armor and Equipment from the FF Set\./);
+  assert.match(app, /With two sets, Killing uses the FF Pet/);
   assert.doesNotMatch(app, /data-setup-add|data-setup-remove|id="setupName"/);
   assert.match(app, /effectiveSetup\(all, setupId \|\| all\.activeId\)/);
   assert.match(app, /data-skyblock-item-id/);

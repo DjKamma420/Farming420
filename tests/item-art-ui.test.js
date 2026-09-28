@@ -26,6 +26,7 @@ const state = {
   profile: {
     setups: {
       activeId: 'normal',
+      physicalSetCount: 3,
       shareFarmingKillingPet: false,
       list: [
         {

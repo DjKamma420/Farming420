@@ -19,7 +19,7 @@ import { petLevelFromExperience } from './mooshroom-cow.js';
 import { clampPetLevel, petLevelBounds } from './setup-pet-catalog.js';
 import { snapshotSectionCanAutoFill } from './profile-trust.js';
 
-export const SETUPS_MODEL_VERSION = 6;
+export const SETUPS_MODEL_VERSION = 7;
 
 /** The slots a setup has, in the order the editor shows them. */
 export const SETUP_SLOTS = Object.freeze([
@@ -98,7 +98,9 @@ export function createDefaultSetups() {
     modelVersion: SETUPS_MODEL_VERSION,
     activeId: FF_SETUP_ID,
     physicalSetCount: 2,
-    shareFarmingKillingPet: false,
+    // Compatibility field for older backups. The actual rule is now derived
+    // from physicalSetCount: Killing gets its own Pet/Pet Item only with Set 3.
+    shareFarmingKillingPet: true,
     list: DEFAULT_SETUP_TEMPLATES.map(template => createSetup(template.id, template.name)),
   };
 }
@@ -131,11 +133,14 @@ export function normalizeSetups(raw) {
       return { id: String(setup.id), name: String(setup.name || setup.id), slots };
     });
 
+  const physicalSetCount = Number(source.physicalSetCount) === 3 ? 3 : 2;
   const result = {
     modelVersion: SETUPS_MODEL_VERSION,
     activeId: source.activeId,
-    physicalSetCount: Number(source.physicalSetCount) === 3 ? 3 : 2,
-    shareFarmingKillingPet: source.shareFarmingKillingPet === true,
+    physicalSetCount,
+    // Legacy field remains serialized for backward compatibility, but Set 3
+    // is the only switch that enables a separate Killing Pet configuration.
+    shareFarmingKillingPet: physicalSetCount < 3,
     list: normalized.length ? normalized : createDefaultSetups().list,
   };
   if (!result.list.some(setup => setup.id === result.activeId)) result.activeId = result.list[0].id;
@@ -153,7 +158,7 @@ function effectiveSetupFromNormalized(normalized, setupId) {
   for (const slotId of FARMING_KILLING_SHARED_GEAR_SLOTS) {
     slots[slotId] = ff.slots?.[slotId] || null;
   }
-  if (normalized.shareFarmingKillingPet === true) {
+  if (physicalSetupCount(normalized) < 3) {
     for (const slotId of PET_SETUP_SLOTS) slots[slotId] = ff.slots?.[slotId] || null;
   }
   return { ...target, slots };
@@ -161,8 +166,9 @@ function effectiveSetupFromNormalized(normalized, setupId) {
 
 /**
  * Resolves a phase setup without duplicating shared physical gear in storage.
- * Killing is an overlay: FF owns Armor/Equipment, while Killing owns only its
- * separate Pet/Pet Item when the pet-link switch is disabled.
+ * Killing always inherits FF Armor/Equipment. With two physical sets it also
+ * inherits the FF Pet/Pet Item; a separate Killing Pet exists only after Set 3
+ * has been added.
  */
 export function effectiveSetup(setups, setupId = null) {
   const normalized = prepareFfBpcSetups(setups);
@@ -327,17 +333,10 @@ export function synchronizeFarmingKillingLoadouts(setups) {
     killing.slots[slotId] = null;
   }
 
-  if (setups.shareFarmingKillingPet === true) {
-    for (const slotId of PET_SETUP_SLOTS) {
-      if (!ff.slots[slotId] && killing.slots[slotId]) {
-        ff.slots[slotId] = ensurePhysicalItemId(
-          structuredClone(killing.slots[slotId]),
-          `shared:${FF_SETUP_ID}:${slotId}`,
-        );
-      }
-      killing.slots[slotId] = null;
-    }
-  }
+  // Do not erase the hidden Killing Pet when Set 3 is removed. Two-set mode
+  // simply ignores it and reads FF instead, so adding Set 3 again restores the
+  // previous Killing Pet configuration.
+  setups.shareFarmingKillingPet = physicalSetupCount(setups) < 3;
   return setups;
 }
 
@@ -390,6 +389,7 @@ function ensureThirdPhysicalSetup(setups) {
 export function setPhysicalSetupCount(setups, count) {
   if (!setups || typeof setups !== 'object') return 2;
   setups.physicalSetCount = Number(count) === 3 ? 3 : 2;
+  setups.shareFarmingKillingPet = setups.physicalSetCount < 3;
   if (setups.physicalSetCount === 3) ensureThirdPhysicalSetup(setups);
   if (setups.physicalSetCount === 2 && setups.activeId === THIRD_SETUP_ID) {
     setups.activeId = FF_SETUP_ID;
@@ -410,14 +410,16 @@ export function setThirdSetupName(setups, name) {
 }
 
 export function farmingKillingPetShared(setups) {
-  return setups?.shareFarmingKillingPet === true;
+  return physicalSetupCount(setups) < 3;
 }
 
-export function setFarmingKillingPetShared(setups, shared) {
-  if (!setups || typeof setups !== 'object') return false;
-  const enable = Boolean(shared);
-  setups.shareFarmingKillingPet = enable;
-  synchronizeFarmingKillingLoadouts(setups);
+/**
+ * Compatibility shim for old callers/backups. The old manual pet-link switch
+ * no longer controls behavior; the number of physical sets is authoritative.
+ */
+export function setFarmingKillingPetShared(setups) {
+  if (!setups || typeof setups !== 'object') return true;
+  setups.shareFarmingKillingPet = physicalSetupCount(setups) < 3;
   return setups.shareFarmingKillingPet;
 }
 
@@ -430,7 +432,7 @@ export function writeLinkedSetupSlot(setups, setupId, slotId, item) {
   const list = Array.isArray(setups?.list) ? setups.list : [];
   const redirectToFf = setupId === KILLING_SETUP_ID
     && (SHARED_GEAR_SLOT_SET.has(slotId)
-      || (PET_SLOT_SET.has(slotId) && setups?.shareFarmingKillingPet === true));
+      || (PET_SLOT_SET.has(slotId) && physicalSetupCount(setups) < 3));
   const targetId = redirectToFf ? FF_SETUP_ID : setupId;
   const target = list.find(setup => setup?.id === targetId) || null;
   if (!target) return false;
@@ -571,15 +573,23 @@ export function applyCandidateSetupSafely(setups, targetSetupId, candidateSetup)
     return Object.freeze({ applied: false, targetSetupId: null, backupId: null, reason: 'invalid setup data' });
   }
 
-  const target = setups.list.find(setup => setup?.id === targetSetupId);
+  const requestedTarget = setups.list.find(setup => setup?.id === targetSetupId);
+  if (!requestedTarget) {
+    return Object.freeze({ applied: false, targetSetupId: null, backupId: null, reason: 'target setup is missing' });
+  }
+
+  const killingPetSharesFf = requestedTarget.id === KILLING_SETUP_ID && physicalSetupCount(setups) < 3;
+  const target = killingPetSharesFf
+    ? setupById(setups, FF_SETUP_ID)
+    : requestedTarget;
   if (!target) {
     return Object.freeze({ applied: false, targetSetupId: null, backupId: null, reason: 'target setup is missing' });
   }
 
-  const appliedSlotIds = target.id === KILLING_SETUP_ID ? PET_SETUP_SLOTS : SLOT_IDS;
+  const appliedSlotIds = requestedTarget.id === KILLING_SETUP_ID ? PET_SETUP_SLOTS : SLOT_IDS;
   if (setupSlotsEqual(target, candidateSetup, appliedSlotIds)) {
-    setups.activeId = target.id;
-    return Object.freeze({ applied: false, targetSetupId: target.id, backupId: null, reason: 'candidate already matches target' });
+    setups.activeId = requestedTarget.id;
+    return Object.freeze({ applied: false, targetSetupId: requestedTarget.id, backupId: null, reason: 'candidate already matches target' });
   }
 
   let backupId = null;
@@ -597,20 +607,12 @@ export function applyCandidateSetupSafely(setups, targetSetupId, candidateSetup)
       ? structuredClone(candidateSetup.slots[slotId])
       : null;
   }
-  if (target.id === KILLING_SETUP_ID && setups.shareFarmingKillingPet === true) {
-    const ff = setupById(setups, FF_SETUP_ID);
-    if (ff) {
-      for (const slotId of PET_SETUP_SLOTS) {
-        ff.slots[slotId] = target.slots[slotId] ? structuredClone(target.slots[slotId]) : null;
-      }
-    }
-  }
   synchronizeFarmingKillingLoadouts(setups);
-  setups.activeId = target.id;
+  setups.activeId = requestedTarget.id;
 
   return Object.freeze({
     applied: true,
-    targetSetupId: target.id,
+    targetSetupId: requestedTarget.id,
     backupId,
     reason: null,
   });

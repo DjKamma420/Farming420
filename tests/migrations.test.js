@@ -257,7 +257,7 @@ test('schema 8 migrates persisted Killing gear into the FF/BPC source-of-truth m
   const killing = setups.list.find(setup => setup.id === 'pest-kill');
 
   assert.equal(setups.modelVersion, SETUPS_MODEL_VERSION);
-  assert.equal(setups.shareFarmingKillingPet, false);
+  assert.equal(setups.shareFarmingKillingPet, true, 'legacy state without Set 3 now uses the FF Pet for Killing');
   assert.equal(farming.slots.helmet.displayName, 'Existing FF Helmet', 'existing FF gear wins a conflict');
   assert.equal(killing.slots.helmet, null, 'Killing does not persist a duplicate FF helmet');
   assert.equal(farming.slots.equipment2.displayName, 'Legacy Killing Cloak', 'Killing-only legacy gear is rescued into FF');
@@ -266,7 +266,8 @@ test('schema 8 migrates persisted Killing gear into the FF/BPC source-of-truth m
   assert.equal(effectiveKilling.slots.helmet.displayName, 'Existing FF Helmet', 'effective Killing inherits FF armor');
   assert.equal(effectiveKilling.slots.equipment2.displayName, 'Legacy Killing Cloak', 'effective Killing inherits rescued FF equipment');
   assert.equal(farming.slots.pet.skyblockId, 'ELEPHANT');
-  assert.equal(killing.slots.pet.skyblockId, 'HEDGEHOG', 'pets stay separate by default');
+  assert.equal(killing.slots.pet.skyblockId, 'HEDGEHOG', 'legacy separate Killing Pet is preserved but hidden without Set 3');
+  assert.equal(effectiveKilling.slots.pet.skyblockId, 'ELEPHANT', 'two-set Killing uses the FF Pet');
   assert.equal(spawning.slots.helmet.displayName, 'BPC Helmet', 'BPC gear remains independent');
   assert.equal(setups.activeId, 'pest-kill');
 });

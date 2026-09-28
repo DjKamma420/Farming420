@@ -132,6 +132,12 @@ if ! grep -q 'data-farming-pet-picker="1"' "$SETUPS_DOM"; then
   exit 1
 fi
 
+if grep -q 'data-setup-target="pest-kill"' "$SETUPS_DOM"; then
+  echo "Two-set Loadouts rendered a separate Killing Pet before Set 3 was added" >&2
+  grep 'data-setup-target="pest-kill"' "$SETUPS_DOM" >&2 || true
+  exit 1
+fi
+
 if ! grep -q 'sb-docked-setup-editor' "$SETUPS_DOM"; then
   echo "The Pet editor exists, but it was not docked below its selected slot" >&2
   sed -n '1,260p' "$SETUPS_DOM" >&2 || true
