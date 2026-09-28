@@ -172,14 +172,25 @@ test('concurrent core renders share resource promises instead of dropping the ne
 });
 
 
-test('Helianthus keeps only the exact 3D helmet override; body pieces use real rendered item icons', () => {
+test('verified helmet exceptions use the correct physical model', () => {
   assert.deepEqual(exactSetupItemArt('HELIANTHUS_HELMET'), {
-    kind: 'voxel-head',
-    textureId: '46e48a6eff318dcda57d5d76a9b2656be25973e3d472b6d2e446a8e60f60a78a',
+    kind: 'rendered',
+    iconUrl: 'https://skyah.net/icons/items/helianthus_helmet.webp',
   });
+  assert.deepEqual(exactSetupItemArt('FARM_SUIT_HELMET'), {
+    kind: 'armor',
+    item: {
+      id: 'FARM_SUIT_HELMET',
+      name: 'Farmhand Helmet',
+      category: 'HELMET',
+      material: 'LEATHER_HELMET',
+      color: '253,232,98',
+    },
+  });
+  assert.equal(exactSetupItemArt('FARM_ARMOR_HELMET')?.iconUrl, 'https://skyah.net/icons/items/hay_block.webp');
+  assert.equal(exactSetupItemArt('PUMPKIN_HELMET')?.textureId, '2f92489725093d51dd18a259382fa0207a20a94495883d9f4b1fd97a8a11b9f0');
+  assert.equal(exactSetupItemArt('MELON_HELMET')?.textureId, '8208669e699d6f0d3a77f74b2b27228ce51b9359678d26f9c3408764b2e779aa');
   assert.equal(exactSetupItemArt('HELIANTHUS_CHESTPLATE'), null);
-  assert.equal(exactSetupItemArt('HELIANTHUS_LEGGINGS'), null);
-  assert.equal(exactSetupItemArt('HELIANTHUS_BOOTS'), null);
 });
 
 test('exact setup item-id art controls the intended portrait route before generic fallbacks', () => {
@@ -244,7 +255,7 @@ test('catalog Pet Item icon fallback is below exact setup art and exact catalog 
 });
 
 
-test('Helianthus Helmet 3D portrait is a real three-face voxel cube, not a flat crop', () => {
+test('voxel fallback helmets still use a real three-face cube when their normal icon is unavailable', () => {
   const source = readFileSync(new URL('../src/item-art-ui.js', import.meta.url), 'utf8');
   const css = readFileSync(new URL('../src/item-art-ui.css', import.meta.url), 'utf8');
   assert.match(source, /function voxelHeadNode/);
@@ -265,9 +276,10 @@ test('Poignant Lucky Clover has deterministic rendered Pet Item art', () => {
 });
 
 
-test('setup armor art never falls back to generated SVG silhouettes', () => {
+test('setup armor art only uses SVG armor for exact verified material/color mappings', () => {
   const source = readFileSync(new URL('../src/item-art-ui.js', import.meta.url), 'utf8');
-  assert.doesNotMatch(source, /armorItemSvgMarkup/);
+  assert.match(source, /descriptor\.kind === 'armor'/);
+  assert.match(source, /armorItemSvgMarkup\(descriptor\.item\)/);
   assert.match(source, /knownSkyblockRenderedIcon\(itemId\)/);
   assert.match(source, /Do not invent a hand-drawn armor silhouette/);
 });
