@@ -155,6 +155,7 @@ test('Dashboard owns an FF-only crop selector and hides the global crop selector
   assert.match(app, /data-dashboard-crop/);
   assert.match(app, /state\.page === 'dashboard'/);
   assert.match(app, /computeStatTotals\(state, farmingMode \? selectedCrop\.id : null/);
-  assert.match(app, /Crop selection exists only for the FF Set/);
+  assert.match(app, /Crop selection exists only for Farming/);
+  assert.match(app, /linked physical loadout: \$\{linkedSetLabel\}/);
   assert.match(app, /No crop-specific Fortune or tool state is included/);
 });
