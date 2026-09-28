@@ -318,9 +318,9 @@ function injectHeaderSwitch(raw) {
   control.setAttribute('aria-label', 'Active farming phase');
   control.innerHTML = `
     <span>Phase</span>
-    <button type="button" data-activity-mode="farm" class="${mode === ACTIVITY_MODE.FARM ? 'active' : ''}" aria-pressed="${mode === ACTIVITY_MODE.FARM}">FF Set · Farming</button>
-    <button type="button" data-activity-mode="pest-spawn" class="${mode === ACTIVITY_MODE.PEST_SPAWN ? 'active' : ''}" aria-pressed="${mode === ACTIVITY_MODE.PEST_SPAWN}">BPC Set · Spawning</button>
-    <button type="button" data-activity-mode="pest-kill" class="${mode === ACTIVITY_MODE.PEST_KILL ? 'active' : ''}" aria-pressed="${mode === ACTIVITY_MODE.PEST_KILL}">FF Set · Killing</button>`;
+    <button type="button" data-activity-mode="farm" class="${mode === ACTIVITY_MODE.FARM ? 'active' : ''}" aria-pressed="${mode === ACTIVITY_MODE.FARM}" aria-label="Farming phase, linked to FF Set" title="Linked to FF Set">Farming</button>
+    <button type="button" data-activity-mode="pest-spawn" class="${mode === ACTIVITY_MODE.PEST_SPAWN ? 'active' : ''}" aria-pressed="${mode === ACTIVITY_MODE.PEST_SPAWN}" aria-label="Spawning phase, linked to BPC Set" title="Linked to BPC Set">Spawning</button>
+    <button type="button" data-activity-mode="pest-kill" class="${mode === ACTIVITY_MODE.PEST_KILL ? 'active' : ''}" aria-pressed="${mode === ACTIVITY_MODE.PEST_KILL}" aria-label="Killing phase, linked to FF Set" title="Linked to FF Set">Killing</button>`;
   control.querySelectorAll('[data-activity-mode]').forEach(button => button.addEventListener('click', () => {
     if (button.dataset.activityMode === mode) return;
     setMode(button.dataset.activityMode);
