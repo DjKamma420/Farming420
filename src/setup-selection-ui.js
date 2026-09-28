@@ -14,7 +14,7 @@ import {
   mergeFarmingSetupCatalog,
   readCachedCatalog,
   slotHasOfficialCategory,
-} from './item-catalog.js';
+} from './item-catalog.js?v=20260928-1';
 import {
   FARMING_PETS,
   farmingPetById,
