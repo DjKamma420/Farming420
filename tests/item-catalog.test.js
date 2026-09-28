@@ -265,3 +265,21 @@ test('a full storage quota does not break loading', async () => {
 test('catalog cache generation is refreshed for current Attribute Shard metadata', () => {
   assert.equal(CATALOG_STORAGE_KEY, 'farming420-item-catalog-v5');
 });
+
+
+test('renamed early farming armor keeps current picker names while using legacy physical ids', () => {
+  const catalog = mergeFarmingSetupCatalog([
+    { id: 'FARM_SUIT_HELMET', name: 'Farm Suit Helmet', category: 'HELMET', tier: 'COMMON', color: '253,232,98' },
+    { id: 'FARM_ARMOR_HELMET', name: 'Farm Armor Helmet', category: 'HELMET', tier: 'COMMON', material: 'HAY_BLOCK' },
+    { id: 'PUMPKIN_HELMET', name: 'Pumpkin Helmet', category: 'HELMET', tier: 'UNCOMMON', skin: 'pumpkin-live-skin' },
+    { id: 'MELON_HELMET', name: 'Melon Helmet', category: 'HELMET', tier: 'UNCOMMON', skin: 'melon-live-skin' },
+  ]);
+
+  const helmets = itemsForSlot(catalog, 'helmet');
+  assert.equal(helmets.find(item => item.id === 'FARM_SUIT_HELMET')?.name, 'Farmhand Helmet');
+  assert.equal(helmets.find(item => item.id === 'FARM_ARMOR_HELMET')?.name, 'Haymaker Helmet');
+  assert.equal(helmets.find(item => item.id === 'PUMPKIN_HELMET')?.name, 'Sprout Helmet');
+  assert.equal(helmets.find(item => item.id === 'MELON_HELMET')?.name, 'Tater Helmet');
+  assert.equal(helmets.find(item => item.id === 'MELON_HELMET')?.skin, 'melon-live-skin');
+  assert.equal(helmets.some(item => item.name === 'Tater Helmet'), true);
+});

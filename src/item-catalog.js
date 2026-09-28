@@ -38,6 +38,17 @@ const FARMING_ARMOR_NAME_PREFIXES = Object.freeze([
   'farmhand ', 'haymaker ', 'sprout ', 'tater ', 'cropie ', 'squash ', 'fermento ', 'helianthus ',
   'farm suit ', 'farm armor ', 'pumpkin ', 'melon ',
 ]);
+
+// Hypixel/NEU still use these legacy internal ids for the renamed early farming
+// sets. Keep the physical id and live capability metadata, but never let an
+// old resource display name turn Farmhand/Haymaker/Sprout/Tater back into
+// Farm Suit/Farm Armor/Pumpkin/Melon in the picker.
+const RENAMED_FARMING_ARMOR_ID_PREFIXES = Object.freeze([
+  'FARM_SUIT_',
+  'FARM_ARMOR_',
+  'PUMPKIN_',
+  'MELON_',
+]);
 const FARMING_STANDALONE_ARMOR_IDS = new Set([
   'RANCHERS_BOOTS', 'FARMER_BOOTS', 'ENCHANTED_JACK_O_LANTERN',
   'PUFFERFISH_HAT', 'PUFFERFISH_HELMET', 'PUFFERFISH_HAT_CELEBRATION',
@@ -136,7 +147,18 @@ export function mergeFarmingSetupCatalog(catalog) {
     const id = String(item.id || '').trim().toUpperCase();
     if (!id) continue;
     const fallback = merged.get(id);
-    merged.set(id, fallback ? { ...fallback, ...item, id } : item);
+    if (!fallback) {
+      merged.set(id, item);
+      continue;
+    }
+
+    const keepCurrentArmorName = RENAMED_FARMING_ARMOR_ID_PREFIXES.some(prefix => id.startsWith(prefix));
+    merged.set(id, {
+      ...fallback,
+      ...item,
+      id,
+      ...(keepCurrentArmorName ? { name: fallback.name } : {}),
+    });
   }
   return [...merged.values()];
 }
