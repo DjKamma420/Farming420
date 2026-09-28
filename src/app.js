@@ -1440,20 +1440,118 @@ function accessorySnapshotRecord(accessory) {
   return items.find(item => String(item?.skyblockId || '').trim().toUpperCase() === wanted) || null;
 }
 
-function accessoryCatalogCard(accessory, tierIndex = 0, tierCount = 1, upgradeLine = false) {
+function accessoryItemState(accessory) {
+  const wanted = String(accessory?.itemId || '').trim().toUpperCase();
+  if (!wanted) return {};
+  return state.profile?.accessoryItems?.[wanted] || {};
+}
+
+function accessoryProgressionUpgrade(group) {
+  const linkedIds = [...new Set(group.items.map(item => item.upgradeId).filter(Boolean))];
+  if (linkedIds.length !== 1) return null;
+  const upgrade = UPGRADES.find(item => item.id === linkedIds[0]) || null;
+  if (!upgrade || Number(upgrade.max || 1) !== group.items.length) return null;
+  return upgrade;
+}
+
+function accessoryGroupSelection(group) {
+  const explicit = group.items.filter(accessory =>
+    Object.prototype.hasOwnProperty.call(accessoryItemState(accessory), 'selected'));
+  if (explicit.length) {
+    const selected = [...group.items].reverse().find(accessory => accessoryItemState(accessory).selected === true);
+    return selected?.itemId || null;
+  }
+
+  const synced = [...group.items].reverse().find(accessory => accessorySnapshotRecord(accessory));
+  if (synced) return synced.itemId;
+
+  const progression = accessoryProgressionUpgrade(group);
+  if (progression) {
+    const level = currentLevel(progression);
+    if (level > 0) return group.items[level - 1]?.itemId || null;
+  }
+
+  const configured = [...group.items].reverse().find(accessory => {
+    const upgrade = accessory.upgradeId
+      ? UPGRADES.find(item => item.id === accessory.upgradeId)
+      : null;
+    return Boolean(upgrade && currentLevel(upgrade) > 0);
+  });
+  return configured?.itemId || null;
+}
+
+function accessoryIsSelected(accessory, group) {
+  if (group.upgradeLine) return accessoryGroupSelection(group) === accessory.itemId;
+
+  const itemState = accessoryItemState(accessory);
+  if (Object.prototype.hasOwnProperty.call(itemState, 'selected')) return itemState.selected === true;
+  const upgrade = accessory.upgradeId
+    ? UPGRADES.find(item => item.id === accessory.upgradeId)
+    : null;
+  return Boolean(accessorySnapshotRecord(accessory) || (upgrade && currentLevel(upgrade) > 0));
+}
+
+function setAccessorySelection(group, itemId, selected) {
+  const accessory = group.items.find(item => item.itemId === itemId);
+  if (!accessory) return;
+  state.profile.accessoryItems ||= {};
+  const enabled = Boolean(selected);
+
+  if (group.upgradeLine) {
+    for (const item of group.items) {
+      const current = { ...(state.profile.accessoryItems[item.itemId] || {}) };
+      current.selected = enabled && item.itemId === itemId;
+      state.profile.accessoryItems[item.itemId] = current;
+    }
+
+    const progression = accessoryProgressionUpgrade(group);
+    if (progression) {
+      if (enabled) clearExclusivePeers(progression);
+      const tier = group.items.findIndex(item => item.itemId === itemId) + 1;
+      setEntryLevel(progression, enabled ? tier : 0);
+    } else {
+      for (const item of group.items) {
+        if (!item.upgradeId) continue;
+        const upgrade = UPGRADES.find(entry => entry.id === item.upgradeId);
+        if (!upgrade) continue;
+        const active = enabled && item.itemId === itemId;
+        if (active) clearExclusivePeers(upgrade);
+        setEntryLevel(upgrade, active ? 1 : 0);
+      }
+    }
+  } else {
+    const current = { ...(state.profile.accessoryItems[itemId] || {}) };
+    current.selected = enabled;
+    state.profile.accessoryItems[itemId] = current;
+    if (accessory.upgradeId) {
+      const upgrade = UPGRADES.find(entry => entry.id === accessory.upgradeId);
+      if (upgrade) {
+        if (enabled) clearExclusivePeers(upgrade);
+        setEntryLevel(upgrade, enabled ? 1 : 0);
+      }
+    }
+  }
+
+  saveState();
+  render();
+}
+
+function accessoryCatalogCard(accessory, group, tierIndex = 0) {
+  const upgradeLine = Boolean(group.upgradeLine);
+  const tierCount = group.items.length;
   const upgrade = accessory.upgradeId
     ? UPGRADES.find(item => item.id === accessory.upgradeId)
     : null;
   const status = upgrade ? statusClass(upgrade) : '';
   const synced = Boolean(accessorySnapshotRecord(accessory));
-  const owned = Boolean(upgrade && currentLevel(upgrade) > 0);
-  const stateBadge = synced
-    ? badge('profile sync', 'synced')
-    : owned
-      ? badge('owned', 'owned')
+  const selected = accessoryIsSelected(accessory, group);
+  const stateBadge = selected
+    ? badge('selected', 'owned')
+    : synced
+      ? badge('profile sync', 'synced')
       : '';
 
-  return `<article class="item-card accessory-catalog-card ${upgradeLine ? 'accessory-chain-card' : ''} ${status}" data-accessory-item-id="${esc(accessory.itemId)}">
+  return `<article class="item-card accessory-catalog-card ${upgradeLine ? 'accessory-chain-card' : ''} ${selected ? 'accessory-selected' : ''} ${status}" data-accessory-item-id="${esc(accessory.itemId)}">
     <div class="card-layer"></div>
     <div class="card-head">
       <span class="card-portrait accessory-portrait" aria-hidden="true"></span>
@@ -1469,10 +1567,16 @@ function accessoryCatalogCard(accessory, tierIndex = 0, tierCount = 1, upgradeLi
       ${upgradeLine ? badge(`Tier ${tierIndex + 1}/${tierCount}`, 'soft') : ''}
       ${upgradeLine && tierIndex > 0 ? badge('upgrades previous tier', 'soft') : ''}
       ${upgradeLine && tierIndex === tierCount - 1 ? badge('final tier', 'owned') : ''}
+      ${synced ? badge('found in profile', 'synced') : ''}
     </div>
-    ${upgrade ? `<div class="accessory-upgrades">
-      <button class="ghost small accessory-progression-btn" type="button" data-open="${esc(upgrade.id)}">Open calculator progression</button>
-    </div>` : ''}
+    <div class="accessory-upgrades">
+      <button class="ghost small accessory-select-btn ${selected ? 'selected' : ''}" type="button"
+        data-accessory-select="${esc(accessory.itemId)}" data-accessory-group="${esc(group.id)}"
+        aria-pressed="${selected ? 'true' : 'false'}">
+        ${selected ? (upgradeLine ? 'Selected tier' : 'Selected') : (upgradeLine ? 'Select tier' : 'Select accessory')}
+      </button>
+      ${upgrade ? `<button class="ghost small accessory-progression-btn" type="button" data-open="${esc(upgrade.id)}">Open calculator progression</button>` : ''}
+    </div>
   </article>`;
 }
 
@@ -1480,14 +1584,14 @@ function accessorySections() {
   const groups = FARMING_ACCESSORY_GROUPS.filter(group => group.items.length);
 
   return `<div class="accessory-model-note">
-      <strong>Accessory upgrade lines</strong>
-      <span>Cards marked as tiers are one physical upgrade chain: each later tier replaces the previous item instead of stacking with it. Recombobulators and Enrichments are intentionally not configured here.</span>
+      <strong>Accessory selection</strong>
+      <span>Select your current tier directly on each progression line. Only one tier per upgrade line can be selected; separate utility accessories remain independently selectable. Profile sync is used as the default until you choose a manual override.</span>
     </div>
     ${groups.length ? groups.map(group => `
       <section class="accessory-group ${group.upgradeLine ? 'accessory-upgrade-group' : ''}" data-accessory-group="${esc(group.id)}">
         <div class="section-row"><div><h2>${esc(group.title)}</h2><p>${esc(group.note)}</p></div></div>
         <div class="card-grid accessory-grid ${group.upgradeLine ? 'accessory-upgrade-line' : ''}">
-          ${group.items.map((accessory, index) => accessoryCatalogCard(accessory, index, group.items.length, Boolean(group.upgradeLine))).join('')}
+          ${group.items.map((accessory, index) => accessoryCatalogCard(accessory, group, index)).join('')}
         </div>
       </section>
     `).join('') : '<div class="empty">No farming accessories match the current search.</div>'}`;
@@ -3166,6 +3270,14 @@ function bind() {
   if (gf) gf.addEventListener('change', e => { state.profile.globalFortune=Number(e.target.value||0); saveState(); render(); });
   const cf = document.getElementById('cropFortune');
   if (cf) cf.addEventListener('change', e => { state.profile.cropFortune[state.selectedCrop]=Number(e.target.value||0); saveState(); render(); });
+
+  document.querySelectorAll('[data-accessory-select]').forEach(button => button.addEventListener('click', event => {
+    const itemId = event.currentTarget.dataset.accessorySelect;
+    const groupId = event.currentTarget.dataset.accessoryGroup;
+    const group = FARMING_ACCESSORY_GROUPS.find(entry => entry.id === groupId);
+    if (!group || !group.items.some(item => item.itemId === itemId)) return;
+    setAccessorySelection(group, itemId, event.currentTarget.getAttribute('aria-pressed') !== 'true');
+  }));
 
   const cowStrengthPlanner = document.querySelector('[data-cow-strength-planner]');
   if (cowStrengthPlanner) cowStrengthPlanner.addEventListener('toggle', () => {
