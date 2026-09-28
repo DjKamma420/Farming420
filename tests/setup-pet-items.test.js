@@ -1,7 +1,16 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { setupPetItemContribution } from '../src/setup-pet-items.js';
+import {
+  FARMING_RELEVANT_PET_ITEMS,
+  isFarmingRelevantPetItem,
+  recommendedFarmingPetItem,
+  setupPetItemContribution,
+} from '../src/setup-pet-items.js';
+
+test('Yellow Bandana is a flat +30 Farming Fortune', () => {
+  assert.equal(setupPetItemContribution({ skyblockId: 'YELLOW_BANDANA' }).globalFortune, 30);
+});
 
 test('Green Bandana is +4 Farming Fortune per Garden level, capped at 60', () => {
   assert.equal(setupPetItemContribution({ skyblockId: 'GREEN_BANDANA' }, { gardenLevel: 1 }).globalFortune, 4);
@@ -42,4 +51,27 @@ test('unknown pet items stay incomplete instead of becoming zero-value supported
   const value = setupPetItemContribution({ skyblockId: 'SOME_FUTURE_ITEM', displayName: 'Future Item' });
   assert.equal(value.complete, false);
   assert.ok(value.reasons[0].includes('Future Item'));
+});
+
+
+test('the setup Pet Item catalogue contains only modeled farming-relevant choices', () => {
+  assert.deepEqual(
+    FARMING_RELEVANT_PET_ITEMS.map(item => item.id),
+    ['YELLOW_BANDANA', 'GREEN_BANDANA', 'BROWN_BANDANA', 'POIGNANT_LUCKY_CLOVER'],
+  );
+  assert.equal(isFarmingRelevantPetItem('GREEN_BANDANA'), true);
+  assert.equal(isFarmingRelevantPetItem({ id: 'PET_ITEM_COMBAT_SKILL_BOOST_EPIC' }), false);
+  assert.equal(isFarmingRelevantPetItem({ id: 'PET_ITEM_FISHING_SKILL_BOOST_EPIC' }), false);
+});
+
+test('Pet Item recommendation follows the active farming objective', () => {
+  assert.equal(recommendedFarmingPetItem({ setupId: 'normal', gardenLevel: 7 }).item.id, 'YELLOW_BANDANA');
+  assert.equal(recommendedFarmingPetItem({ setupId: 'normal', gardenLevel: 8 }).item.id, 'GREEN_BANDANA');
+  assert.equal(recommendedFarmingPetItem({ setupId: 'pest', gardenLevel: 15 }).item.id, 'BROWN_BANDANA');
+  assert.equal(recommendedFarmingPetItem({ setupId: 'pest-kill', gardenLevel: 15 }).item.id, 'POIGNANT_LUCKY_CLOVER');
+
+  const unknownGarden = recommendedFarmingPetItem({ setupId: 'normal' });
+  assert.equal(unknownGarden.item, null);
+  assert.equal(unknownGarden.conditional, true);
+  assert.match(unknownGarden.reason, /Garden 8/);
 });
