@@ -1,5 +1,4 @@
 import { DATA_SCHEMA_VERSION, STORAGE_KEY } from './config.js';
-import { armorItemSvgMarkup } from './armor-item-art.js';
 import {
   createEmptyItem,
   ITEM_SOURCE,
@@ -27,7 +26,7 @@ import {
   recommendedFarmingPetItem,
 } from './setup-pet-items.js';
 import { gardenLevelFromExperience } from './garden-level.js';
-import { exactSetupItemArt } from './setup-item-art-map.js?v=20260928-2';
+import { exactSetupItemArt } from './setup-item-art-map.js?v=20260928-3';
 import {
   FACE_OFFSET,
   HAT_OFFSET,
@@ -672,21 +671,6 @@ function armorItemArtNode(record, label = 'Armor') {
     && /^[0-9a-f]{32,64}$/.test(catalogSkin)
     ? catalogSkin
     : null;
-
-  if (descriptor?.kind === 'armor') {
-    const markup = armorItemSvgMarkup(descriptor.item);
-    if (markup) {
-      const model = element('span', {
-        className: 'official-item-art setup-armor-item-art exact-setup-item-art',
-        role: 'img',
-        ariaLabel: label + ' item model',
-      });
-      model.innerHTML = markup;
-      art.append(model);
-      art.classList.add('has-gear-art');
-      return art;
-    }
-  }
 
   if (descriptor?.kind === 'voxel-head') {
     const voxel = armorVoxelHeadNode(descriptor.textureId, label);
