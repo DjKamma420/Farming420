@@ -17,20 +17,38 @@ test('the setup pet picker exposes unique sourced farming pets', () => {
   assert.ok(ids.includes('ORCHID_MANTIS'));
   assert.ok(ids.includes('HEDGEHOG'));
   for (const pet of FARMING_PETS) {
-    assert.match(pet.source, /^https:\/\/hypixelskyblock\.minecraft\.wiki\/w\//);
-    assert.match(pet.lastVerified, /^\d{4}-\d{2}-\d{2}$/);
-    assert.ok(pet.lastVerified >= '2026-09-17', `${pet.id} verification date regressed`);
+    assert.match(pet.source, /^https:\/\/github\.com\/NotEnoughUpdates\/NotEnoughUpdates-REPO\/tree\//);
+    assert.equal(pet.lastVerified, '2026-09-28');
+    assert.equal(pet.rarityItemIds.length, pet.rarities.length);
+    assert.ok(pet.rarityItemIds.every(id => id.startsWith(`${pet.id};`)));
     assert.ok(pet.rarities.length > 0);
   }
 });
 
-test('current farming-pet rarity ranges stay explicit instead of free text', () => {
-  assert.deepEqual([...petRarities('ELEPHANT')], ['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY', 'MYTHIC']);
-  assert.deepEqual([...petRarities('RABBIT')], ['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY', 'MYTHIC']);
-  assert.deepEqual([...petRarities('BEE')], ['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY', 'MYTHIC']);
-  assert.deepEqual([...petRarities('SLUG')], ['EPIC', 'LEGENDARY']);
-  assert.deepEqual([...petRarities('HEDGEHOG')], ['LEGENDARY']);
-  assert.deepEqual([...petRarities('ROSE_DRAGON')], ['LEGENDARY']);
+test('current farming-pet rarity ranges match the verified NEU item variants', () => {
+  const expected = {
+    BEE: ['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY', 'MYTHIC'],
+    CHICKEN: ['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY'],
+    ELEPHANT: ['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY', 'MYTHIC'],
+    HEDGEHOG: ['LEGENDARY'],
+    MOOSHROOM_COW: ['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY'],
+    MOSQUITO: ['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY'],
+    ORCHID_MANTIS: ['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY'],
+    PIG: ['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY'],
+    RABBIT: ['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY', 'MYTHIC'],
+    ROSE_DRAGON: ['LEGENDARY'],
+    SLUG: ['EPIC', 'LEGENDARY'],
+  };
+
+  for (const [id, rarities] of Object.entries(expected)) {
+    assert.deepEqual([...petRarities(id)], rarities, `${id} rarity range changed`);
+    const pet = farmingPetById(id);
+    const expectedIds = rarities.map(rarity => {
+      const index = ['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY', 'MYTHIC'].indexOf(rarity);
+      return `${id};${index}`;
+    });
+    assert.deepEqual([...pet.rarityItemIds], expectedIds);
+  }
 });
 
 test('Rose Dragon preserves unhatched levels and caps at 200 while normal pets cap at 100', () => {
