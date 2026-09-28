@@ -26,7 +26,7 @@ import {
   recommendedFarmingPetItem,
 } from './setup-pet-items.js';
 import { gardenLevelFromExperience } from './garden-level.js';
-import { exactSetupItemArt } from './setup-item-art-map.js';
+import { exactSetupItemArt } from './setup-item-art-map.js?v=20260928-2';
 import {
   FACE_OFFSET,
   HAT_OFFSET,
