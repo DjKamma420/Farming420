@@ -1,4 +1,5 @@
 import { DATA_SCHEMA_VERSION, STORAGE_KEY } from './config.js';
+import { armorItemSvgMarkup } from './armor-item-art.js';
 import {
   createEmptyItem,
   ITEM_SOURCE,
@@ -667,20 +668,53 @@ function armorItemArtNode(record, label = 'Armor') {
 
   const descriptor = exactSetupItemArt(record.id);
   const catalogSkin = String(record.skin || '').trim().toLowerCase();
-  const voxelTextureId = descriptor?.kind === 'voxel-head'
-    ? descriptor.textureId
-    : (String(record.category || '').toUpperCase() === 'HELMET' && /^[0-9a-f]{32,64}$/.test(catalogSkin)
-      ? catalogSkin
-      : null);
-  const voxel = armorVoxelHeadNode(voxelTextureId, label);
-  if (voxel) {
-    art.append(voxel);
-    art.classList.add('has-gear-art');
-    return art;
+  const catalogTextureId = String(record.category || '').toUpperCase() === 'HELMET'
+    && /^[0-9a-f]{32,64}$/.test(catalogSkin)
+    ? catalogSkin
+    : null;
+
+  if (descriptor?.kind === 'armor') {
+    const markup = armorItemSvgMarkup(descriptor.item);
+    if (markup) {
+      const model = element('span', {
+        className: 'official-item-art setup-armor-item-art exact-setup-item-art',
+        role: 'img',
+        ariaLabel: label + ' item model',
+      });
+      model.innerHTML = markup;
+      art.append(model);
+      art.classList.add('has-gear-art');
+      return art;
+    }
   }
 
-  const iconUrl = knownSkyblockRenderedIcon(record.id);
-  if (!iconUrl) return art;
+  if (descriptor?.kind === 'voxel-head') {
+    const voxel = armorVoxelHeadNode(descriptor.textureId, label);
+    if (voxel) {
+      art.append(voxel);
+      art.classList.add('has-gear-art');
+      return art;
+    }
+  }
+
+  const iconUrl = descriptor?.kind === 'rendered'
+    ? (descriptor.iconUrl || knownSkyblockRenderedIcon(record.id))
+    : knownSkyblockRenderedIcon(record.id);
+
+  const appendVoxelFallback = () => {
+    const voxel = armorVoxelHeadNode(catalogTextureId, label);
+    if (!voxel) {
+      art.classList.remove('has-gear-art');
+      return;
+    }
+    art.append(voxel);
+    art.classList.add('has-gear-art');
+  };
+
+  if (!iconUrl) {
+    appendVoxelFallback();
+    return art;
+  }
 
   const image = element('img', {
     className: 'sb-gear-item-icon',
@@ -693,7 +727,7 @@ function armorItemArtNode(record, label = 'Armor') {
   image.addEventListener('load', () => art.classList.add('has-gear-art'), { once: true });
   image.addEventListener('error', () => {
     image.remove();
-    art.classList.remove('has-gear-art');
+    appendVoxelFallback();
   }, { once: true });
   art.append(image);
   return art;
