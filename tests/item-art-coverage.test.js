@@ -320,3 +320,17 @@ test('Pesthunter Badge keeps its verified player-head portrait when live skin me
   });
   assert.ok(pinned.endsWith('b4f1f0cf3adb4adc6b996ff9cb4e6d9d8912e0a5ab851c366c8abbdaf8b2ef04'));
 });
+
+test('known player-head accessories never fall back to third-party 3D rendered icons', () => {
+  const source = readFileSync(new URL('../src/item-art-coverage.js', import.meta.url), 'utf8');
+  assert.match(source, /const isKnownPlayerHead = Boolean\(knownSkyblockHeadTexture\(item\?\.id\)\)/);
+  assert.match(source, /if \(!isKnownPlayerHead\) \{[\s\S]*?renderedIconNode\(item, label\)/);
+  assert.equal(knownSkyblockRenderedIcon('PESTHUNTER_BADGE'), null);
+});
+
+test('accessory portraits clip and size every fallback inside the same flat icon box', () => {
+  const css = readFileSync(new URL('../src/item-art-coverage.css', import.meta.url), 'utf8');
+  assert.match(css, /\.accessory-catalog-card \.card-portrait \{[\s\S]*?overflow:\s*hidden/);
+  assert.match(css, /\.accessory-catalog-card \.card-portrait > \.coverage-item-art \{[\s\S]*?width:\s*78%[\s\S]*?height:\s*78%/);
+  assert.match(css, /object-fit:\s*contain/);
+});
