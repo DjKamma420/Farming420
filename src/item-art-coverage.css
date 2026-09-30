@@ -258,6 +258,15 @@ article.accessory-catalog-card:hover {
 .accessory-catalog-card .card-portrait {
   display: grid;
   place-items: center;
+  overflow: hidden;
+}
+
+.accessory-catalog-card .card-portrait > .coverage-item-art {
+  width: 78%;
+  height: 78%;
+  max-width: 78%;
+  max-height: 78%;
+  object-fit: contain;
 }
 
 
