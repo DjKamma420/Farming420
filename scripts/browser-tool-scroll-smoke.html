@@ -66,6 +66,7 @@
     const beforeTop = target.getBoundingClientRect().top;
     const beforeY = main.scrollTop;
 
+    target.focus({ preventScroll: true });
     target.click();
     for (let i = 0; i < 80; i++) {
       await wait(50);
