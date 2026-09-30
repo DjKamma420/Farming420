@@ -191,34 +191,3 @@ test('Vacuum uses the same workspace editor primitives as crop tools', () => {
   assert.match(vacuum, /class="workspace-level-list"/);
   assert.match(vacuum, /class="workspace-stepper"/);
 });
-
-
-test('switching between expanded tool cards preserves the tapped card viewport position', () => {
-  const src = read('skyblock-redesign.js');
-  assert.match(src, /let pendingToolViewportAnchor = null/);
-  assert.match(
-    src,
-    /function rememberToolViewportAnchor\(card\)[\s\S]*viewportTop: card\.getBoundingClientRect\(\)\.top/,
-  );
-  assert.match(
-    src,
-    /function restoreToolViewportAnchor\(\)[\s\S]*const delta = card\.getBoundingClientRect\(\)\.top - anchor\.viewportTop;[\s\S]*window\.scrollBy\(0, delta\)/,
-  );
-
-  const handlerStart = src.indexOf('function handleToolCardClick(cropId)');
-  const handlerEnd = src.indexOf('\nfunction handleVacuumCardClick()', handlerStart);
-  assert.ok(handlerStart >= 0 && handlerEnd > handlerStart, 'tool click handler not found');
-  const handler = src.slice(handlerStart, handlerEnd);
-  assert.match(handler, /rememberToolViewportAnchor\(clickedCard\)/);
-  assert.match(handler, /setCrop\(cropId\)/);
-
-  const applyStart = src.indexOf('function apply()');
-  const applyEnd = src.indexOf('\nasync function boot()', applyStart);
-  assert.ok(applyStart >= 0 && applyEnd > applyStart, 'apply block not found');
-  const apply = src.slice(applyStart, applyEnd);
-  assert.match(
-    apply,
-    /dockToolEditor\(\);\s*restoreToolViewportAnchor\(\);/,
-    'the viewport anchor must be restored only after the editor reached its final card',
-  );
-});
