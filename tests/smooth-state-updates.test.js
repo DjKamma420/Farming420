@@ -33,14 +33,21 @@ test('selection anchors use stable control identity instead of mutable item or i
   assert.doesNotMatch(source, /\['name', 'value', 'type'\]\.includes\(attr\.name\)/);
 });
 
-test('synthetic proxy events cannot replace the user scroll anchor', () => {
+test('marked proxy events cannot replace the user scroll anchor', () => {
   const source = read('app.js');
   const start = source.indexOf('function captureInteractionScrollAnchor(event)');
   const end = source.indexOf('\n}\n', start) + 3;
   assert.ok(start >= 0 && end > start, 'scroll-anchor capture handler not found');
   const handler = source.slice(start, end);
-  assert.match(handler, /if \(!event\.isTrusted\) return/);
+  assert.match(handler, /if \(event\.farming420Proxy === true\) return/);
   assert.match(handler, /rememberScrollAnchor\(event\.target\)/);
+
+  const redesign = read('skyblock-redesign.js');
+  const cropStart = redesign.indexOf('function setCrop(cropId)');
+  const cropEnd = redesign.indexOf('\n}\n', cropStart) + 3;
+  const setCrop = redesign.slice(cropStart, cropEnd);
+  assert.match(setCrop, /event\.farming420Proxy = true/);
+  assert.match(setCrop, /select\.dispatchEvent\(event\)/);
 });
 
 test('tool selection relies on the shared scroll anchor instead of a second manual scrollBy path', () => {

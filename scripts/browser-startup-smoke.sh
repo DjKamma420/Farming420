@@ -216,3 +216,22 @@ fi
 
 echo "Item art smoke test passed: all $ITEM_ART_PORTRAITS item portraits still hold art."
 
+
+TOOL_SCROLL_DOM="${RUNNER_TEMP:-/tmp}/farming420-tool-scroll-dom.html"
+run_chrome_dump "${BASE_URL}scripts/browser-tool-scroll-smoke.html" "$TOOL_SCROLL_DOM" 20000
+
+TOOL_SCROLL_VERDICT="$(grep -o 'TOOL_SCROLL_[A-Z]*[^<]*' "$TOOL_SCROLL_DOM" | head -n 1 || true)"
+if [[ -z "$TOOL_SCROLL_VERDICT" ]]; then
+  echo "The tool-scroll harness produced no verdict" >&2
+  sed -n '1,100p' "$TOOL_SCROLL_DOM" >&2 || true
+  exit 1
+fi
+if [[ "$TOOL_SCROLL_VERDICT" != TOOL_SCROLL_OK* ]]; then
+  echo "Switching an expanded tool moved the tapped card or jumped to the page bottom: $TOOL_SCROLL_VERDICT" >&2
+  exit 1
+fi
+
+echo "Tool accordion scroll smoke passed: $TOOL_SCROLL_VERDICT"
+
+echo "Running trusted touch tool accordion scroll smoke..."
+FARMING420_BASE_URL="$BASE_URL" node scripts/browser-tool-scroll-cdp.mjs
