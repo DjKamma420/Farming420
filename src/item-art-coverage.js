@@ -3,7 +3,7 @@ import { UPGRADES } from './data.js';
 import { loadItemCatalog } from './item-catalog.js';
 import { armorItemSvgMarkup, isArmorItem } from './armor-item-art.js';
 import { ITEM_ART_MANIFEST_READY_EVENT, packArtNodeFor } from './pack-item-art.js';
-import { knownSkyblockHeadTexture, knownSkyblockRenderedIcon } from './skull-art.js';
+import { knownSkyblockHeadTexture, knownSkyblockRenderedIcon } from './skull-art.js?v=20260930-flat-accessories-2';
 
 export const REFORGE_ITEM_IDS = Object.freeze({
   bountiful: 'GOLDEN_BALL',
