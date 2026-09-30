@@ -98,7 +98,15 @@ test('current farming equipment ids have exact verified head models', () => {
   assert.equal(knownSkyblockHeadTexture('NOT_REAL'), null);
 });
 
-test('Pesthunter necklace has an exact rendered item icon fallback', () => {
+test('Pesthunter Badge and necklace have exact rendered item icon fallbacks', () => {
+  assert.equal(
+    KNOWN_FARMING_EQUIPMENT_RENDERED_ICONS.PESTHUNTER_BADGE,
+    'https://skyah.net/icons/items/pesthunter_badge.webp',
+  );
+  assert.equal(
+    knownSkyblockRenderedIcon('PESTHUNTER_BADGE'),
+    'https://skyah.net/icons/items/pesthunter_badge.webp',
+  );
   assert.equal(
     KNOWN_FARMING_EQUIPMENT_RENDERED_ICONS.PESTHUNTERS_NECKLACE,
     'https://skyah.net/icons/items/pesthunters_necklace.webp',
