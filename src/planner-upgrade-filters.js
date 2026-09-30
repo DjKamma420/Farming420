@@ -84,6 +84,25 @@ export function matchesUpgradeFilter(item, filterId) {
   return upgradeFilterTags(item).has(filterId);
 }
 
+/**
+ * Temporary recommendations are intentionally broader than the "buffs" page:
+ * seasonal/conditional accessory rows use a temporary-* id, while potions,
+ * mixins, Feast effects and Cookie-dependent effects live in the buffs section.
+ * Keep this definition aligned with the permanent maxing model, which excludes
+ * both groups from durable progression.
+ */
+export function temporaryUpgrade(item) {
+  const id = String(item?.id || '').toLowerCase();
+  const section = String(item?.section || '').toLowerCase();
+  const category = String(item?.category || '').trim().toLowerCase();
+
+  return id.startsWith('temporary-')
+    || section === 'buffs'
+    || category === 'temporary'
+    || category === 'temporary buff'
+    || category === 'mixin';
+}
+
 function componentFor(item) {
   const id = String(item?.id || '');
   if (id.startsWith('armor-')) return { id: 'armor', slots: ARMOR_SLOTS };
