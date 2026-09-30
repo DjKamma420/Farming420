@@ -7,6 +7,7 @@ import {
   UPGRADE_FILTERS,
   aggregateUpgradeRows,
   matchesUpgradeFilter,
+  temporaryUpgrade,
   upgradeUsageScope,
   visitorSystemUpgrade,
 } from '../src/planner-upgrade-filters.js';
@@ -46,6 +47,31 @@ test('recommended-upgrade filter set is the requested seven filters', () => {
     UPGRADE_FILTERS.map(entry => entry.id),
     ['all', 'overbloom', 'bpc', 'ff', 'cf-crop', 'greenhouse', 'visitor'],
   );
+});
+
+test('temporary upgrade detection covers buff rows and conditional temporary accessories', () => {
+  const cases = [
+    { id: 'temporary-buff-pesthunter-phillip-buff', section: 'buffs', category: 'Temporary Buff' },
+    { id: 'mixin-celestial-mason-jar', section: 'buffs', category: 'Mixin' },
+    { id: 'harvest-feast-fortunate-feasting-v', section: 'buffs', category: 'Harvest Feast' },
+    { id: 'temporary-atmospheric-filter-spring', section: 'accessories', category: 'Accessory' },
+    { id: 'temporary-magic-8-ball-ff-roll', section: 'accessories', category: 'Accessory' },
+  ];
+
+  for (const item of cases) {
+    assert.equal(temporaryUpgrade(item), true, item.id);
+  }
+
+  assert.equal(temporaryUpgrade({
+    id: 'account-skill-farming-skill-level',
+    section: 'account',
+    category: 'Account/Skill',
+  }), false);
+  assert.equal(temporaryUpgrade({
+    id: 'accessory-pesthunter-badge',
+    section: 'accessories',
+    category: 'Accessory',
+  }), false);
 });
 
 test('filter classification separates global FF from crop-specific CF and keeps goal overlaps', () => {
