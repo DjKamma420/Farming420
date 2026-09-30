@@ -146,55 +146,90 @@ try {
   );
   await wait(250);
 
-  const before = await evaluate(`(() => {
-    const target = document.querySelector('.sb-tool-card[data-sb-tool-crop="mushroom"]');
-    const main = document.querySelector('.main');
-    target.scrollIntoView({ block: 'center' });
-    const rect = target.getBoundingClientRect();
-    return {
-      x: rect.left + rect.width / 2,
-      y: rect.top + rect.height / 2,
-      top: rect.top,
-      scrollTop: main.scrollTop,
-      maxScroll: Math.max(0, main.scrollHeight - main.clientHeight)
-    };
-  })()`);
-  await wait(100);
+  const cropIds = await evaluate(`[...document.querySelectorAll('.sb-tool-card[data-sb-tool-crop]')].map(card => card.dataset.sbToolCrop)`);
+  const sequence = [...cropIds.filter(id => id !== 'melon'), 'melon'];
+  let maxDrift = 0;
+  const rows = [];
 
-  // CDP input is a browser-generated interaction: event.isTrusted is true.
-  await send('Input.dispatchTouchEvent', {
-    type: 'touchStart',
-    touchPoints: [{ x: before.x, y: before.y, radiusX: 2, radiusY: 2, force: 1 }],
-  });
-  await send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  for (const cropId of sequence) {
+    const selector = `.sb-tool-card[data-sb-tool-crop="${cropId}"]`;
+    const selectedSelector = `.sb-tool-card.selected[data-sb-tool-crop="${cropId}"]`;
 
-  await waitFor(
-    'Boolean(document.querySelector(\'.sb-tool-card.selected[data-sb-tool-crop="mushroom"]\')?.nextElementSibling?.matches(\'.sb-docked-editor:not(.sb-tool-editor-collapsed)\'))',
-    'Fungi Cutter accordion',
-  );
-  await wait(300);
+    await evaluate(`(() => {
+      const target = document.querySelector(${JSON.stringify(selector)});
+      if (!target) return false;
+      target.scrollIntoView({ block: 'center' });
+      return true;
+    })()`);
+    await wait(100);
 
-  const after = await evaluate(`(() => {
-    const target = document.querySelector('.sb-tool-card.selected[data-sb-tool-crop="mushroom"]');
-    const main = document.querySelector('.main');
-    const rect = target.getBoundingClientRect();
-    return {
-      top: rect.top,
-      scrollTop: main.scrollTop,
-      maxScroll: Math.max(0, main.scrollHeight - main.clientHeight),
-      activeTag: document.activeElement?.tagName || '',
-      activeCrop: document.activeElement?.dataset?.sbToolCrop || ''
-    };
-  })()`);
+    const before = await evaluate(`(() => {
+      const target = document.querySelector(${JSON.stringify(selector)});
+      const main = document.querySelector('.main');
+      const rect = target.getBoundingClientRect();
+      return {
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+        top: rect.top,
+        scrollTop: main.scrollTop,
+        maxScroll: Math.max(0, main.scrollHeight - main.clientHeight)
+      };
+    })()`);
 
-  const drift = Math.abs(after.top - before.top);
-  const wasNearBottom = before.maxScroll > 0 && before.maxScroll - before.scrollTop <= 4;
-  const isAtBottom = after.maxScroll > 0 && after.maxScroll - after.scrollTop <= 4;
-  if (drift > 4 || (!wasNearBottom && isAtBottom)) {
-    fail(`trusted tool switch drifted: drift=${drift.toFixed(2)} beforeY=${before.scrollTop.toFixed(2)} afterY=${after.scrollTop.toFixed(2)} beforeMax=${before.maxScroll.toFixed(2)} afterMax=${after.maxScroll.toFixed(2)} active=${after.activeTag}:${after.activeCrop}`);
+    await send('Input.dispatchTouchEvent', {
+      type: 'touchStart',
+      touchPoints: [{ x: before.x, y: before.y, radiusX: 2, radiusY: 2, force: 1 }],
+    });
+    await send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+
+    await waitFor(
+      `Boolean(document.querySelector(${JSON.stringify(selectedSelector)})?.nextElementSibling?.matches('.sb-docked-editor:not(.sb-tool-editor-collapsed)'))`,
+      `${cropId} accordion`,
+    );
+    await wait(180);
+
+    const after = await evaluate(`(() => {
+      const target = document.querySelector(${JSON.stringify(selectedSelector)});
+      const main = document.querySelector('.main');
+      const rect = target.getBoundingClientRect();
+      return {
+        top: rect.top,
+        scrollTop: main.scrollTop,
+        maxScroll: Math.max(0, main.scrollHeight - main.clientHeight)
+      };
+    })()`);
+
+    const drift = Math.abs(after.top - before.top);
+    maxDrift = Math.max(maxDrift, drift);
+    const wasNearBottom = before.maxScroll > 0 && before.maxScroll - before.scrollTop <= 4;
+    const isAtBottom = after.maxScroll > 0 && after.maxScroll - after.scrollTop <= 4;
+    rows.push(`${cropId}:drift=${drift.toFixed(2)},y=${before.scrollTop.toFixed(0)}->${after.scrollTop.toFixed(0)},max=${after.maxScroll.toFixed(0)}`);
+    if (drift > 4 || (!wasNearBottom && isAtBottom)) {
+      fail(`trusted tool switch drifted for ${cropId}: drift=${drift.toFixed(2)} beforeY=${before.scrollTop.toFixed(2)} afterY=${after.scrollTop.toFixed(2)} beforeMax=${before.maxScroll.toFixed(2)} afterMax=${after.maxScroll.toFixed(2)}`);
+    }
   }
 
-  console.log(`TRUSTED_TOOL_SCROLL_OK drift=${drift.toFixed(2)} beforeY=${before.scrollTop.toFixed(2)} afterY=${after.scrollTop.toFixed(2)} maxY=${after.maxScroll.toFixed(2)} active=${after.activeTag}:${after.activeCrop}`);
+  // Also cover a delayed full value render after the click anchor has expired.
+  await wait(2100);
+  const lateBefore = await evaluate(`(() => {
+    const card = document.querySelector('.sb-tool-card.selected[data-sb-tool-crop="melon"]');
+    const main = document.querySelector('.main');
+    return { top: card.getBoundingClientRect().top, y: main.scrollTop };
+  })()`);
+  await evaluate(`window.dispatchEvent(new Event('farming420:item-value-updated')); true`);
+  await wait(500);
+  const lateAfter = await evaluate(`(() => {
+    const card = document.querySelector('.sb-tool-card.selected[data-sb-tool-crop="melon"]');
+    const main = document.querySelector('.main');
+    return { top: card.getBoundingClientRect().top, y: main.scrollTop };
+  })()`);
+  const lateDrift = Math.abs(lateAfter.top - lateBefore.top);
+  const lateScrollDelta = Math.abs(lateAfter.y - lateBefore.y);
+  if (lateDrift > 4 || lateScrollDelta > 4) {
+    fail(`delayed tool render drifted: top=${lateDrift.toFixed(2)} scroll=${lateScrollDelta.toFixed(2)}`);
+  }
+
+  console.log(`TRUSTED_TOOL_SCROLL_OK transitions=${sequence.length} maxDrift=${maxDrift.toFixed(2)} lateDrift=${lateDrift.toFixed(2)} lateScroll=${lateScrollDelta.toFixed(2)} ${rows.join(' | ')}`);
 } finally {
   try { socket?.close(); } catch {}
   chrome.kill('SIGTERM');
