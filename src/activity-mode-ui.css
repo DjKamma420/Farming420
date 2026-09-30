@@ -199,16 +199,30 @@
 }
 
 @media (max-width: 760px) {
+  /* Keep Loadouts on the same two-row mobile header as Dashboard/Planner:
+     title + selector first, search second. A 100% flex-basis here used to force
+     the physical-set selector onto its own third row. */
   .physical-set-switch {
-    flex: 1 1 100%;
-    max-width: 100%;
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: none;
+    flex-wrap: nowrap;
   }
 
   .physical-set-switch .physical-set-tabs {
-    flex: 1 1 auto;
+    flex: 1 1 0;
+    min-width: 0;
+    flex-wrap: nowrap;
   }
 
-  .physical-set-switch button {
+  .physical-set-switch .physical-set-tabs button {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .physical-set-switch .add-set-button,
+  .physical-set-switch .remove-set-button {
     flex: 0 0 auto;
   }
 }
