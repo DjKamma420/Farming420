@@ -394,6 +394,11 @@ function rememberScrollAnchor(target) {
 }
 
 function captureInteractionScrollAnchor(event) {
+  // Programmatic proxy events (for example a tool card changing #cropSelect)
+  // describe an implementation detail, not a new user interaction. Letting
+  // them replace the real click anchor makes accordion rerenders preserve the
+  // topbar control instead of the card the user actually tapped.
+  if (!event.isTrusted) return;
   rememberScrollAnchor(event.target);
 }
 
