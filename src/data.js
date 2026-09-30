@@ -961,10 +961,17 @@ export const UPGRADES = [
     "status": "ACTIVE",
     "max": 1,
     "stepGain": 15,
+    "additionalEffects": [
+      {
+        "label": "Farming Wisdom",
+        "metric": "Farming XP",
+        "stepGain": 3
+      }
+    ],
     "manualDefault": null,
     "rawMarginal": 15,
     "hypercharge": true,
-    "notes": "+15 Farming Fortune for the God Potion duration; Cookie Buff also permits direct consumption. This temporary Farming Fortune is Hypercharge-eligible.",
+    "notes": "One active Mason Jar state grants +15 Farming Fortune and +3 Farming Wisdom for the God Potion duration; Cookie Buff also permits direct consumption. The Farming Fortune portion is Hypercharge-eligible.",
     "source": "https://hypixelskyblock.minecraft.wiki/w/Celestial_Mason_Jar",
     "lastVerified": "2026-09-23",
     "workbookRank": 19
@@ -1254,25 +1261,6 @@ export const UPGRADES = [
     "hypercharge": false,
     "notes": "Pet XP/wisdom value is mutually exclusive with fortune pets; enter net marginal Wisdom manually.",
     "source": "https://hypixel-skyblock.fandom.com/wiki/Farming_Fortune",
-    "workbookRank": null
-  },
-  {
-    "id": "mixin-celestial-mason-jar-wisdom",
-    "category": "Mixin",
-    "section": "buffs",
-    "name": "Celestial Mason Jar Wisdom",
-    "metric": "Farming XP",
-    "modeScope": "Any",
-    "cropScope": "Any",
-    "status": "ACTIVE",
-    "max": 1,
-    "stepGain": 3,
-    "manualDefault": null,
-    "rawMarginal": 3,
-    "hypercharge": false,
-    "notes": "Celestial Mason Jar also grants +3 Global Wisdom for its active duration.",
-    "source": "https://hypixelskyblock.minecraft.wiki/w/Celestial_Mason_Jar",
-    "lastVerified": "2026-09-23",
     "workbookRank": null
   },
   {
