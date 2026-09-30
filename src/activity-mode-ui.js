@@ -192,7 +192,7 @@ function openAddSetDialog() {
       </label>
       <div class="physical-set-dialog-actions">
         <button type="submit" value="cancel" class="ghost">Cancel</button>
-        <button type="submit" value="add" class="primary">Add Set</button>
+        <button type="submit" value="add" class="primary-btn">Add Set</button>
       </div>
     </form>`;
 
@@ -236,6 +236,7 @@ function injectPhysicalSetHeader(raw, topbar, main, control) {
   const signature = [hasThirdSet ? 3 : 2, activeId, name].join(':');
 
   topbar.classList.remove('activity-mode-topbar-shared');
+  topbar.classList.add('activity-mode-topbar-controls');
   main?.classList.remove('activity-mode-page-shared');
 
   if (!control) {
@@ -291,12 +292,14 @@ function injectHeaderSwitch(raw) {
   // Add Set naming flow above.
   if (!MODE_SWITCH_PAGES.has(page)) {
     control?.remove();
+    topbar.classList.remove('activity-mode-topbar-controls');
     topbar.classList.add('activity-mode-topbar-shared');
     main?.classList.add('activity-mode-page-shared');
     return;
   }
 
   topbar.classList.remove('activity-mode-topbar-shared');
+  topbar.classList.add('activity-mode-topbar-controls');
   main?.classList.remove('activity-mode-page-shared');
 
   const mode = activityModeForState(raw);

@@ -89,6 +89,39 @@
     font-weight: 900;
   }
 
+  /* Pages with a phase/set selector use one deterministic header grid:
+     title + selector on row one, search across row two. */
+  .activity-mode-topbar-controls {
+    display: grid !important;
+    grid-template-columns: max-content minmax(0, 1fr);
+    grid-template-areas:
+      "title control"
+      "search search";
+    align-items: center;
+    gap: 10px 12px;
+  }
+
+  .activity-mode-topbar-controls > .mobile-title {
+    grid-area: title;
+    min-width: 0;
+  }
+
+  .activity-mode-topbar-controls > .activity-mode-switch {
+    grid-area: control;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    justify-self: stretch;
+  }
+
+  .activity-mode-topbar-controls > .search-wrap {
+    grid-area: search;
+    width: 100%;
+    min-width: 0;
+    order: initial;
+    flex: none;
+  }
+
   .activity-mode-topbar-shared {
     display: flex !important;
   }

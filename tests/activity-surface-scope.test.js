@@ -52,6 +52,6 @@ test('shared mobile pages use Farming420 in the topbar instead of leaving a blan
   assert.match(activityCss, /\.activity-mode-topbar-shared\s*\{[\s\S]*display:\s*flex\s*!important;/);
   assert.match(activityCss, /\.activity-mode-page-shared \.content\s*\{[\s\S]*padding-top:\s*10px;/);
   assert.doesNotMatch(activityCss, /activity-mode-topbar-shared[\s\S]*display:\s*none\s*!important/);
-  assert.match(indexHtml, /src\/activity-mode-ui\.css\?v=20260919-1/);
-  assert.match(indexHtml, /src\/activity-mode-ui\.js\?v=20260919-1/);
+  assert.match(indexHtml, /src\/activity-mode-ui\.css\?v=20260930-2/);
+  assert.match(indexHtml, /src\/activity-mode-ui\.js\?v=20260930-2/);
 });

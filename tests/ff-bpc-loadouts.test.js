@@ -146,6 +146,7 @@ test('the Setups UI adds the optional third set from a name dialog instead of a 
   const app = read('src/app.js');
   const activityUi = read('src/activity-mode-ui.js');
   const activityCss = read('src/activity-mode-ui.css');
+  const index = read('index.html');
   assert.doesNotMatch(app, /data-physical-set-count/);
   assert.doesNotMatch(app, /data-third-setup-name/);
   assert.doesNotMatch(activityUi, /data-physical-set-count=/);
@@ -153,6 +154,8 @@ test('the Setups UI adds the optional third set from a name dialog instead of a 
   assert.match(activityUi, /data-add-physical-set/);
   assert.match(activityUi, /data-add-set-dialog/);
   assert.match(activityUi, /data-new-set-name/);
+  assert.match(activityUi, /value="add" class="primary-btn">Add Set<\/button>/);
+  assert.doesNotMatch(activityUi, /value="add" class="primary">Add Set<\/button>/);
   assert.match(activityUi, /setPhysicalSetupCount\(next, 3\)/);
   assert.match(activityUi, /setThirdSetupName\(next, name\)/);
   assert.match(activityUi, /next\.activeId = THIRD_SETUP_ID/);
@@ -163,6 +166,11 @@ test('the Setups UI adds the optional third set from a name dialog instead of a 
   assert.doesNotMatch(activityCss, /@media \(max-width: 760px\)[\s\S]*?\.physical-set-switch\s*\{[^}]*flex:\s*1\s+1\s+100%/);
   assert.match(activityCss, /@media \(max-width: 760px\)[\s\S]*?\.physical-set-switch\s*\{[^}]*flex:\s*1\s+1\s+0;[^}]*flex-wrap:\s*nowrap/);
   assert.match(activityCss, /\.physical-set-switch \.physical-set-tabs button\s*\{[^}]*flex:\s*1\s+1\s+0/);
+  assert.match(activityUi, /topbar\.classList\.add\('activity-mode-topbar-controls'\)/);
+  assert.match(activityCss, /\.activity-mode-topbar-controls\s*\{[^}]*display:\s*grid\s*!important;[^}]*grid-template-columns:\s*max-content minmax\(0, 1fr\)/);
+  assert.match(activityCss, /"title control"\s*"search search"/);
+  assert.match(index, /activity-mode-ui\.css\?v=20260930-2/);
+  assert.match(index, /activity-mode-ui\.js\?v=20260930-2/);
   assert.match(app, /visiblePhysicalSetupIds\(all\)/);
   assert.match(app, /Set 3 has no automatic FF, BPC or Killing role\./);
   assert.doesNotMatch(app, /data-share-farming-killing-pet/);
