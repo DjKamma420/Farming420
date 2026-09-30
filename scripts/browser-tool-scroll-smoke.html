@@ -85,9 +85,28 @@
     const drift = Math.abs(afterTop - beforeTop);
     const bottomGap = Math.abs(maxY - afterY);
 
-    report(drift <= 4 && bottomGap > 4
-      ? `TOOL_SCROLL_OK drift=${drift.toFixed(2)} beforeTop=${beforeTop.toFixed(2)} afterTop=${afterTop.toFixed(2)} beforeY=${beforeY.toFixed(2)} afterY=${afterY.toFixed(2)} maxY=${maxY.toFixed(2)}`
-      : `TOOL_SCROLL_DRIFT drift=${drift.toFixed(2)} beforeTop=${beforeTop.toFixed(2)} afterTop=${afterTop.toFixed(2)} beforeY=${beforeY.toFixed(2)} afterY=${afterY.toFixed(2)} maxY=${maxY.toFixed(2)} bottomGap=${bottomGap.toFixed(2)}`);
+    // The click anchor intentionally expires after 1.8s. A delayed price/value
+    // refresh can then trigger another full core render, followed by tool-editor
+    // docking. That second render must not move the scroll container either.
+    await wait(2100);
+    const lateBeforeMain = doc.querySelector('.main');
+    const lateBeforeCard = doc.querySelector('.sb-tool-card.selected[data-sb-tool-crop="mushroom"]');
+    if (!lateBeforeMain || !lateBeforeCard) throw new Error('late-render baseline disappeared');
+    const lateBeforeY = lateBeforeMain.scrollTop;
+    const lateBeforeTop = lateBeforeCard.getBoundingClientRect().top;
+    win.dispatchEvent(new win.Event('farming420:item-value-updated'));
+    await wait(500);
+    const lateAfterMain = doc.querySelector('.main');
+    const lateAfterCard = doc.querySelector('.sb-tool-card.selected[data-sb-tool-crop="mushroom"]');
+    if (!lateAfterMain || !lateAfterCard) throw new Error('late-render result disappeared');
+    const lateAfterY = lateAfterMain.scrollTop;
+    const lateAfterTop = lateAfterCard.getBoundingClientRect().top;
+    const lateDrift = Math.abs(lateAfterTop - lateBeforeTop);
+    const lateScrollDelta = Math.abs(lateAfterY - lateBeforeY);
+
+    report(drift <= 4 && bottomGap > 4 && lateDrift <= 4 && lateScrollDelta <= 4
+      ? `TOOL_SCROLL_OK drift=${drift.toFixed(2)} lateDrift=${lateDrift.toFixed(2)} lateScrollDelta=${lateScrollDelta.toFixed(2)} beforeY=${beforeY.toFixed(2)} afterY=${afterY.toFixed(2)} maxY=${maxY.toFixed(2)}`
+      : `TOOL_SCROLL_DRIFT drift=${drift.toFixed(2)} lateDrift=${lateDrift.toFixed(2)} lateScrollDelta=${lateScrollDelta.toFixed(2)} beforeTop=${beforeTop.toFixed(2)} afterTop=${afterTop.toFixed(2)} beforeY=${beforeY.toFixed(2)} afterY=${afterY.toFixed(2)} maxY=${maxY.toFixed(2)} bottomGap=${bottomGap.toFixed(2)} lateBeforeY=${lateBeforeY.toFixed(2)} lateAfterY=${lateAfterY.toFixed(2)}`);
   } catch (error) {
     report(`TOOL_SCROLL_ERROR ${error?.message || String(error)}`);
   }
