@@ -97,13 +97,16 @@
 .skyblock-redesign .sb-card-chain {
   display: flex;
   flex: 1 1 auto;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 4px;
   min-width: 0;
   overflow-x: auto;
   overscroll-behavior-inline: contain;
-  touch-action: pan-x;
   scrollbar-width: thin;
+}
+
+.skyblock-redesign .sb-card-chain .sb-card-stage:first-child {
+  margin-left: auto;
 }
 
 .skyblock-redesign .sb-card-stage {
