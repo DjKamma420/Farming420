@@ -250,7 +250,9 @@ function setCrop(cropId) {
   const select = document.querySelector('#cropSelect');
   if (!select) return;
   select.value = cropId;
-  select.dispatchEvent(new Event('change', { bubbles: true }));
+  const event = new Event('change', { bubbles: true });
+  event.farming420Proxy = true;
+  select.dispatchEvent(event);
 }
 
 function recommendation(cropId, goal) {
