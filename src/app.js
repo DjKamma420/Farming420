@@ -1022,7 +1022,7 @@ function statusClass(item) {
   return 'missing';
 }
 
-function card(item, compact=false) {
+function card(item, compact=false, { showArt = true } = {}) {
   const level = currentLevel(item);
   const max = Number(item.max || 1);
   const status = statusClass(item);
@@ -1052,10 +1052,10 @@ function card(item, compact=false) {
       ? 'replacement'
       : pricing.costToMaxCoins != null ? 'to max' : 'item';
   return `
-    <button class="item-card ${status} ${isShard ? 'shard-card' : ''} ${compact ? 'compact' : ''}" data-open="${esc(item.id)}">
+    <button class="item-card ${status} ${isShard ? 'shard-card' : ''} ${compact ? 'compact' : ''}" data-open="${esc(item.id)}"${showArt ? '' : ' data-no-item-art="1"'}>
       <div class="card-layer"></div>
       <div class="card-head">
-        ${item.packAsset || isShard ? `<span class="card-portrait${isShard ? ' shard-portrait' : ''}"${item.packAsset ? ` data-pack-asset="${esc(item.packAsset)}"` : ''}></span>` : ''}
+        ${showArt && (item.packAsset || isShard) ? `<span class="card-portrait${isShard ? ' shard-portrait' : ''}"${item.packAsset ? ` data-pack-asset="${esc(item.packAsset)}"` : ''}></span>` : ''}
         <div>
           <div class="eyebrow">${esc(item.category)}</div>
           <div class="item-title">${esc(item.name)}</div>
@@ -1471,11 +1471,11 @@ function effectsPage() {
   return `${pageHeader('Effects', 'Farming Effects', 'Permanent farming effects and temporary buffs, mixins, cakes and event effects in one place.')}
     <div class="group">
       <div class="section-row"><div><h2>Permanent effects</h2><p>Account-wide consumables and permanent effect sources.</p></div></div>
-      <div class="card-grid">${permanent.map(x=>card(x)).join('') || '<div class="empty">No matches.</div>'}</div>
+      <div class="card-grid">${permanent.map(x=>card(x, false, { showArt: false })).join('') || '<div class="empty">No matches.</div>'}</div>
     </div>
     <div class="group">
       <div class="section-row"><div><h2>Temporary effects</h2><p>God Potion, mixins, cakes, event bonuses and other active effects.</p></div></div>
-      <div class="card-grid">${temporary.map(x=>card(x)).join('') || '<div class="empty">No matches.</div>'}</div>
+      <div class="card-grid">${temporary.map(x=>card(x, false, { showArt: false })).join('') || '<div class="empty">No matches.</div>'}</div>
     </div>`;
 }
 
