@@ -61,8 +61,10 @@
 
     target.scrollIntoView({ block: 'center' });
     await wait(100);
+    const main = doc.querySelector('.main');
+    if (!main) throw new Error('main scroll container is missing');
     const beforeTop = target.getBoundingClientRect().top;
-    const beforeY = win.scrollY;
+    const beforeY = main.scrollTop;
 
     target.click();
     for (let i = 0; i < 80; i++) {
@@ -75,8 +77,8 @@
     const after = doc.querySelector('.sb-tool-card.selected[data-sb-tool-crop="mushroom"]');
     if (!after) throw new Error('Fungi Cutter was not selected');
     const afterTop = after.getBoundingClientRect().top;
-    const afterY = win.scrollY;
-    const maxY = Math.max(0, doc.documentElement.scrollHeight - win.innerHeight);
+    const afterY = main.scrollTop;
+    const maxY = Math.max(0, main.scrollHeight - main.clientHeight);
     const drift = Math.abs(afterTop - beforeTop);
     const bottomGap = Math.abs(maxY - afterY);
 
