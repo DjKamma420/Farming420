@@ -1,3 +1,14 @@
+/* Effects is intentionally text/control-only. Keep this as a hard page-level
+   boundary so no current or future art renderer can leave image boxes there. */
+.effects-page img,
+.effects-page .card-portrait,
+.effects-page .official-item-art,
+.effects-page .coverage-item-art,
+.effects-page .skull-art,
+.effects-page .item-art-fallback {
+  display: none !important;
+}
+
 /* Progression cards: portrait + copy are one left-aligned visual unit. The
    redesign stylesheet has several more-specific card rules, so this layer pins
    the final flex behavior explicitly instead of relying on source order alone. */
