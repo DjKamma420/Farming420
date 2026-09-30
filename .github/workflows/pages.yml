@@ -11,11 +11,12 @@ permissions:
   id-token: write
 
 concurrency:
-  # Do not cancel an in-flight stamped deployment when several PRs merge close
-  # together. Cancelling here left GitHub Pages on the raw branch build, whose
-  # unversioned module URLs can keep an older app.js in mobile browser cache.
-  group: pages
-  cancel-in-progress: false
+  # Only the newest stamped build matters. The repository is also configured
+  # for GitHub's branch-based Pages publisher, which runs in parallel and
+  # normally finishes after this custom workflow. Keep this workflow separate
+  # and let a newer push replace an older waiting stamped deployment.
+  group: farming420-stamped-pages
+  cancel-in-progress: true
 
 jobs:
   deploy:
@@ -33,6 +34,8 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: .
+      - name: Wait for branch Pages publisher
+        run: sleep 70
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4

@@ -70,11 +70,24 @@ test('deployment version file contains the exact immutable build id', () => {
   });
 });
 
-test('pages deployment runs automatically for main and prepares a build marker', () => {
+test('pages deployment runs automatically for main, waits out the branch publisher, and prepares a build marker', () => {
   const workflow = readFileSync(new URL('../.github/workflows/pages.yml', import.meta.url), 'utf8');
   assert.match(workflow, /push:\s*\n\s+branches: \["main"\]/);
   assert.match(workflow, /node scripts\/prepare-pages-deploy\.js/);
   assert.match(workflow, /BUILD_ID: \$\{\{ github\.sha \}\}/);
+  assert.match(workflow, /group:\s*farming420-stamped-pages/);
+  assert.match(workflow, /cancel-in-progress:\s*true/);
+  assert.match(workflow, /Wait for branch Pages publisher[\s\S]*?sleep 70[\s\S]*?name: Deploy/);
+});
+
+test('raw branch Pages output also cache-busts the accessory art entrypoints', () => {
+  const index = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const coverage = readFileSync(new URL('../src/item-art-coverage.js', import.meta.url), 'utf8');
+
+  assert.match(index, /src\/item-art-coverage\.css\?v=20260930-5/);
+  assert.match(index, /src\/item-art-coverage\.js\?v=20260930-5/);
+  assert.match(index, /src\/update-manager\.js\?v=20260930-2/);
+  assert.match(coverage, /\.\/skull-art\.js\?v=20260930-flat-accessories-2/);
 });
 
 test('runtime update path is versionless and retires the old service worker', () => {
