@@ -33,6 +33,7 @@ import {
   UPGRADE_FILTERS,
   aggregateUpgradeRows,
   matchesUpgradeFilter,
+  temporaryUpgrade,
   upgradeFilterTags,
 } from './planner-upgrade-filters.js';
 import { plannerMaxSummary } from './planner-max-summary.js';
@@ -42,6 +43,7 @@ const PLANNER_BENCHMARK_COINS_PER_HOUR = INTERNET_FARMING_TIME_VALUE_COINS_PER_H
 const FOCUS_AVERAGE_STEP_HOURS = 1;
 const FOCUS_SCOPE_KEY = 'farming420-focus-scope-v1';
 const UPGRADE_FILTER_KEY = 'farming420-upgrade-filter-v1';
+const EXCLUDE_TEMPORARY_UPGRADES_KEY = 'farming420-upgrade-exclude-temporary-v1';
 const PLANNER_ACTIVITY_MODES = Object.freeze([
   ACTIVITY_MODE.FARM,
   ACTIVITY_MODE.PEST_SPAWN,
@@ -468,12 +470,26 @@ function selectedUpgradeFilter() {
   return UPGRADE_FILTERS.some(entry => entry.id === stored) ? stored : UPGRADE_FILTER.ALL;
 }
 
-function upgradeFilterMarkup(rows, activeFilter) {
-  return `<div class="upgrade-filter-bar" role="group" aria-label="Recommended upgrade filter">
-    ${UPGRADE_FILTERS.map(filter => {
-      const count = rows.filter(row => matchesUpgradeFilter(row.item, filter.id)).length;
-      return `<button type="button" class="upgrade-filter-chip ${filter.id === activeFilter ? 'active' : ''}" data-upgrade-filter="${esc(filter.id)}">${esc(filter.label)}<span>${count}</span></button>`;
-    }).join('')}
+function excludesTemporaryUpgrades() {
+  return localStorage.getItem(EXCLUDE_TEMPORARY_UPGRADES_KEY) === '1';
+}
+
+function upgradeFilterMarkup(rows, activeFilter, excludeTemporary) {
+  const countRows = excludeTemporary
+    ? rows.filter(row => !temporaryUpgrade(row.item))
+    : rows;
+
+  return `<div class="upgrade-filter-controls">
+    <div class="upgrade-filter-bar" role="group" aria-label="Recommended upgrade filter">
+      ${UPGRADE_FILTERS.map(filter => {
+        const count = countRows.filter(row => matchesUpgradeFilter(row.item, filter.id)).length;
+        return `<button type="button" class="upgrade-filter-chip ${filter.id === activeFilter ? 'active' : ''}" data-upgrade-filter="${esc(filter.id)}">${esc(filter.label)}<span>${count}</span></button>`;
+      }).join('')}
+    </div>
+    <label class="upgrade-temporary-toggle">
+      <input type="checkbox" data-exclude-temporary-upgrades${excludeTemporary ? ' checked' : ''}>
+      <span>Exclude temporary buffs</span>
+    </label>
   </div>`;
 }
 
@@ -1073,8 +1089,16 @@ function enhancePlanner() {
   const ready = true;
   const allRows = allSetBenchmarkRows(raw).filter(row => row.acquisitionMode !== 'EARNED');
   const activeFilter = selectedUpgradeFilter();
-  const rows = allRows.filter(row => matchesUpgradeFilter(row.item, activeFilter));
+  const excludeTemporary = excludesTemporaryUpgrades();
+  const recommendationRows = excludeTemporary
+    ? allRows.filter(row => !temporaryUpgrade(row.item))
+    : allRows;
+  const rows = recommendationRows.filter(row => matchesUpgradeFilter(row.item, activeFilter));
   const actions = generateRecommendationActions(rows);
+  const hiddenTemporaryCount = allRows.length - recommendationRows.length;
+  const hiddenTemporaryNote = hiddenTemporaryCount > 0
+    ? ` · ${hiddenTemporaryCount} temporary buff${hiddenTemporaryCount === 1 ? '' : 's'} hidden`
+    : '';
   const rankingTitle = 'Recommended actions · all sets';
   const rankingHelp = `Farming, Pest Spawning and Pest Killing are evaluated together. Global actions appear once. Crop-tool actions are shared between Farming and Spawning. Gear is merged only when the setup slots reference the same physical items; separate physical sets stay separate. Marginal value and payback use the common ${compactCoinNumber(PLANNER_BENCHMARK_COINS_PER_HOUR)}/h affected-income benchmark.`;
 
@@ -1083,8 +1107,8 @@ function enhancePlanner() {
   panel.className = 'revenue-planner-v2';
   panel.innerHTML = `${maxingPanel(raw)}
     ${benchmarkPanel(raw)}
-    <div class="section-row revenue-ranking-head"><div><h2>${esc(rankingTitle)}</h2><p>${esc(rankingHelp)}</p></div><span class="revenue-note">${rows.length}/${allRows.length} shown</span></div>
-    ${upgradeFilterMarkup(allRows, activeFilter)}
+    <div class="section-row revenue-ranking-head"><div><h2>${esc(rankingTitle)}</h2><p>${esc(rankingHelp)}</p></div><span class="revenue-note">${rows.length}/${recommendationRows.length} shown${esc(hiddenTemporaryNote)}</span></div>
+    ${upgradeFilterMarkup(allRows, activeFilter, excludeTemporary)}
     <div class="planner-list revenue-list">${rankingMarkup(actions, ready)}</div>`;
   original.before(panel);
 
@@ -1092,6 +1116,12 @@ function enhancePlanner() {
     localStorage.setItem(UPGRADE_FILTER_KEY, button.dataset.upgradeFilter || UPGRADE_FILTER.ALL);
     window.dispatchEvent(new Event('farming420:state-changed'));
   }));
+
+  panel.querySelector('[data-exclude-temporary-upgrades]')?.addEventListener('change', event => {
+    if (event.target.checked) localStorage.setItem(EXCLUDE_TEMPORARY_UPGRADES_KEY, '1');
+    else localStorage.removeItem(EXCLUDE_TEMPORARY_UPGRADES_KEY);
+    window.dispatchEvent(new Event('farming420:state-changed'));
+  });
 
   panel.querySelectorAll('[data-earned-hours]').forEach(input => input.addEventListener('change', event => {
     const next = load();
