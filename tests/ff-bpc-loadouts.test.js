@@ -160,6 +160,9 @@ test('the Setups UI adds the optional third set from a name dialog instead of a 
   assert.match(activityUi, /FF \(Farming Fortune\) Set/);
   assert.match(activityUi, /BPC \(Bonus Pest Chance\) Set/);
   assert.doesNotMatch(activityCss, /\.physical-set-switch\s*\{[^}]*overflow-x:\s*auto/);
+  assert.doesNotMatch(activityCss, /@media \(max-width: 760px\)[\s\S]*?\.physical-set-switch\s*\{[^}]*flex:\s*1\s+1\s+100%/);
+  assert.match(activityCss, /@media \(max-width: 760px\)[\s\S]*?\.physical-set-switch\s*\{[^}]*flex:\s*1\s+1\s+0;[^}]*flex-wrap:\s*nowrap/);
+  assert.match(activityCss, /\.physical-set-switch \.physical-set-tabs button\s*\{[^}]*flex:\s*1\s+1\s+0/);
   assert.match(app, /visiblePhysicalSetupIds\(all\)/);
   assert.match(app, /Set 3 has no automatic FF, BPC or Killing role\./);
   assert.doesNotMatch(app, /data-share-farming-killing-pet/);
