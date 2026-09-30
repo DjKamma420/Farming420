@@ -232,3 +232,6 @@ if [[ "$TOOL_SCROLL_VERDICT" != TOOL_SCROLL_OK* ]]; then
 fi
 
 echo "Tool accordion scroll smoke passed: $TOOL_SCROLL_VERDICT"
+
+echo "Running trusted touch tool accordion scroll smoke..."
+FARMING420_BASE_URL="$BASE_URL" node scripts/browser-tool-scroll-cdp.mjs
