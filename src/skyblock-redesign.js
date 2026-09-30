@@ -148,6 +148,7 @@ let applying = false;
 let collapsedToolKey = null;
 let activeToolSurface = 'tool';
 let vacuumCollapsed = false;
+let pendingToolViewportAnchor = null;
 
 function readState() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
@@ -383,6 +384,40 @@ function topLevelToolCards(grid) {
   return [...(grid?.children || [])].filter(child => child.matches?.('.sb-tool-card'));
 }
 
+/**
+ * Keep the card the user tapped at the same visual position while the single
+ * expanded editor moves from one tool row to another. Without this anchor,
+ * removing a tall editor from above the tapped card and docking it elsewhere
+ * lets mobile browser scroll anchoring move the whole page.
+ */
+function rememberToolViewportAnchor(card) {
+  if (!card) return;
+  pendingToolViewportAnchor = {
+    cropId: card.dataset.sbToolCrop || null,
+    vacuum: card.hasAttribute('data-sb-vacuum'),
+    viewportTop: card.getBoundingClientRect().top,
+  };
+}
+
+function restoreToolViewportAnchor() {
+  const anchor = pendingToolViewportAnchor;
+  if (!anchor || pageId() !== 'tools') return false;
+
+  const grid = document.querySelector('.sb-tool-picker .sb-tool-grid');
+  if (!grid) return false;
+  const card = topLevelToolCards(grid).find(candidate => (
+    anchor.vacuum
+      ? candidate.hasAttribute('data-sb-vacuum')
+      : candidate.dataset.sbToolCrop === anchor.cropId
+  ));
+  if (!card) return false;
+
+  const delta = card.getBoundingClientRect().top - anchor.viewportTop;
+  if (Math.abs(delta) >= 0.5) window.scrollBy(0, delta);
+  pendingToolViewportAnchor = null;
+  return true;
+}
+
 function syncToolSurfaceSelection() {
   const grid = document.querySelector('.sb-tool-picker .sb-tool-grid');
   if (!grid) return;
@@ -399,9 +434,16 @@ function syncToolSurfaceSelection() {
 function handleToolCardClick(cropId) {
   const clickedKey = toolKeyForCropId(cropId);
   const selectedKey = toolKeyForCropId(activeCropId());
+  const grid = document.querySelector('.sb-tool-picker .sb-tool-grid');
+  const clickedCard = topLevelToolCards(grid).find(card =>
+    !card.hasAttribute('data-sb-vacuum')
+    && toolKeyForCropId(card.dataset.sbToolCrop) === clickedKey);
+  rememberToolViewportAnchor(clickedCard);
+
   if (activeToolSurface === 'tool' && clickedKey === selectedKey) {
     collapsedToolKey = collapsedToolKey === selectedKey ? null : selectedKey;
     dockToolEditor();
+    restoreToolViewportAnchor();
     return;
   }
   activeToolSurface = 'tool';
@@ -409,12 +451,16 @@ function handleToolCardClick(cropId) {
   if (clickedKey === selectedKey) {
     syncToolSurfaceSelection();
     dockToolEditor();
+    restoreToolViewportAnchor();
     return;
   }
   setCrop(cropId);
 }
 
 function handleVacuumCardClick() {
+  const grid = document.querySelector('.sb-tool-picker .sb-tool-grid');
+  rememberToolViewportAnchor(topLevelToolCards(grid).find(card => card.hasAttribute('data-sb-vacuum')));
+
   if (activeToolSurface === 'vacuum') vacuumCollapsed = !vacuumCollapsed;
   else {
     activeToolSurface = 'vacuum';
@@ -423,6 +469,7 @@ function handleVacuumCardClick() {
   }
   syncToolSurfaceSelection();
   dockToolEditor();
+  restoreToolViewportAnchor();
 }
 
 function toolPicker() {
@@ -654,6 +701,7 @@ function apply() {
     toolPicker();
     syncToolSurfaceSelection();
     dockToolEditor();
+    restoreToolViewportAnchor();
     reforgePanel();
     vacuumReforgePanel();
     toolPortrait();
