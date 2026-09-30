@@ -3,7 +3,6 @@ import { STORAGE_KEY } from './config.js';
 import { toolKeyForCropId } from './migrations.js';
 import { EXCLUSIVE_ENTRY_GROUPS } from './exclusivity.js';
 
-const SMALL_CHAIN_MAX = 10;
 const DERIVED_ONLY_SECTIONS = new Set(['gear']);
 
 function load() {
@@ -73,17 +72,17 @@ function commit(item, updater) {
 }
 
 function binaryControl(item, current) {
-  return `<button type="button" class="sb-card-power ${current ? 'on' : ''}" data-direct-value="${current ? 0 : 1}" aria-pressed="${current ? 'true' : 'false'}">${current ? 'ON' : 'OFF'}</button>`;
+  const on = current > 0;
+  return `<button type="button" class="sb-card-switch ${on ? 'on' : ''}" data-direct-value="${on ? 0 : 1}" role="switch" aria-checked="${on ? 'true' : 'false'}" aria-label="${item.name}: ${on ? 'on' : 'off'}">
+    <span class="sb-card-switch-track" aria-hidden="true"><span class="sb-card-switch-knob"></span></span>
+    <span class="sb-card-switch-label">${on ? 'ON' : 'OFF'}</span>
+  </button>`;
 }
 
 function chainControl(item, current, max) {
   return `<span class="sb-card-chain" role="group" aria-label="${item.name} level">${Array.from({ length: max + 1 }, (_, value) =>
     `<button type="button" class="sb-card-stage ${value === current ? 'selected' : ''}" data-direct-value="${value}" aria-pressed="${value === current ? 'true' : 'false'}">${value}</button>`
   ).join('')}</span>`;
-}
-
-function stepperControl(current, max) {
-  return `<button type="button" class="sb-card-minus" data-direct-step="-1" aria-label="Decrease">−</button><span class="sb-card-level">${current}/${max}</span><button type="button" class="sb-card-plus" data-direct-step="1" aria-label="Increase">+</button>`;
 }
 
 function enhance(card) {
@@ -102,9 +101,7 @@ function enhance(card) {
   bar.dataset.directFor = item.id;
   bar.innerHTML = max === 1
     ? binaryControl(item, current)
-    : max <= SMALL_CHAIN_MAX
-      ? chainControl(item, current, max)
-      : stepperControl(current, max);
+    : chainControl(item, current, max);
 
   card.dataset.directReady = '1';
   card.append(bar);
@@ -117,8 +114,6 @@ function enhance(card) {
       commit(item, () => Number(direct.dataset.directValue));
       return;
     }
-    const step = event.target.closest('[data-direct-step]');
-    if (step) commit(item, value => Math.max(0, Math.min(max, value + Number(step.dataset.directStep))));
   });
 }
 
