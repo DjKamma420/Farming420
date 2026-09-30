@@ -1027,6 +1027,17 @@ function card(item, compact=false) {
   const max = Number(item.max || 1);
   const status = statusClass(item);
   const gain = gainFor(item);
+  const additionalGainText = Array.isArray(item.additionalEffects)
+    ? item.additionalEffects.map(effect => {
+        const value = Number(effect?.stepGain);
+        if (!Number.isFinite(value) || value === 0) return '';
+        return `+${formatNumber(value)} ${String(effect?.label || effect?.metric || 'effect')}`;
+      }).filter(Boolean)
+    : [];
+  const primaryGainText = gain
+    ? `+${formatNumber(Number(gain))} ${item.metric === 'Crop Yield' ? 'Fortune/step' : item.metric}`
+    : '';
+  const gainText = [primaryGainText, ...additionalGainText].filter(Boolean).join(' · ') || 'dynamic';
   const cropLimited = item.cropScope !== 'Any';
   const isShard = item.section === 'shards' || item.category === 'Attribute Shard';
   const pricing = upgradePriceSummary(itemStore(item), item);
@@ -1055,7 +1066,7 @@ function card(item, compact=false) {
       </div>
       <div class="card-meta">
         ${max > 1 ? `<span>Level ${level}/${max}</span>` : `<span>${isOwned(item) ? 'Owned' : 'Not set'}</span>`}
-        ${gain ? `<span>+${formatNumber(Number(gain))} ${esc(item.metric === 'Crop Yield' ? 'Fortune/step' : item.metric)}</span>` : '<span>dynamic</span>'}
+        <span>${esc(gainText)}</span>
       </div>
       <div class="progress"><i data-progress="${Math.min(100,(level/max)*100)}"></i></div>
       <div class="chips">
