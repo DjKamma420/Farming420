@@ -11,7 +11,6 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
   # Do not cancel an in-flight stamped deployment when several PRs merge close
   # together. Cancelling here left GitHub Pages on the raw branch build, whose
   # unversioned module URLs can keep an older app.js in mobile browser cache.
