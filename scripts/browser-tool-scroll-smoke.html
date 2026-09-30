@@ -76,9 +76,11 @@
 
     const after = doc.querySelector('.sb-tool-card.selected[data-sb-tool-crop="mushroom"]');
     if (!after) throw new Error('Fungi Cutter was not selected');
+    const nextMain = doc.querySelector('.main');
+    if (!nextMain) throw new Error('main scroll container disappeared after tool switch');
     const afterTop = after.getBoundingClientRect().top;
-    const afterY = main.scrollTop;
-    const maxY = Math.max(0, main.scrollHeight - main.clientHeight);
+    const afterY = nextMain.scrollTop;
+    const maxY = Math.max(0, nextMain.scrollHeight - nextMain.clientHeight);
     const drift = Math.abs(afterTop - beforeTop);
     const bottomGap = Math.abs(maxY - afterY);
 
