@@ -467,11 +467,6 @@ export const UPGRADE_COSTS = Object.freeze({
     "reason": "no price research is linked to this entry yet",
     "unit": null
   },
-  "mixin-celestial-mason-jar-wisdom": {
-    "coins": null,
-    "reason": "no price research is linked to this entry yet",
-    "unit": null
-  },
   "mixin-melon-juice-mixin": {
     "coins": null,
     "reason": "no price research is linked to this entry yet",
