@@ -12,8 +12,8 @@ exists rather than a guess from comparing two names.
 | Priced from research | 12 |
 | Covered by another entry | 2 |
 | Earned, not bought (needs a time figure) | 10 |
-| No price research linked yet | 75 |
-| **Total** | **99** |
+| No price research linked yet | 74 |
+| **Total** | **98** |
 
 `unknown != 0` holds: an unpriced entry carries `coins: null` and a reason,
 never zero, because zero would make it look free and win every ranking.
@@ -166,7 +166,7 @@ stone or a gemstone tier needs a line in the link table in
 | Dragonfly Shard - Garden Wisdom | `attribute-shard-dragonfly-garden-wisdom` |
 | Moth Shard - Pest Cooldown | `attribute-shard-moth-pest-cooldown` |
 
-### Buffs & Consumables (13)
+### Buffs & Consumables (12)
 
 | Entry | id |
 |---|---|
@@ -181,7 +181,6 @@ stone or a gemstone tier needs a line in the link table in
 | Grand Feast rare-crop bonus | `harvest-feast-grand-feast-rare-crop-bonus` |
 | Feast Crashers III | `harvest-feast-feast-crashers-iii` |
 | Booster Cookie Farming Wisdom contribution | `buff-booster-cookie-farming-wisdom-contribution` |
-| Celestial Mason Jar Wisdom | `mixin-celestial-mason-jar-wisdom` |
 | Refined Dark Cacao Truffle temporary stack | `temporary-buff-refined-dark-cacao-truffle-temporary-stack` |
 
 ### Pests (1)
