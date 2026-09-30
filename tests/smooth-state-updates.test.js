@@ -33,6 +33,24 @@ test('selection anchors use stable control identity instead of mutable item or i
   assert.doesNotMatch(source, /\['name', 'value', 'type'\]\.includes\(attr\.name\)/);
 });
 
+test('synthetic proxy events cannot replace the user scroll anchor', () => {
+  const source = read('app.js');
+  const start = source.indexOf('function captureInteractionScrollAnchor(event)');
+  const end = source.indexOf('\n}\n', start) + 3;
+  assert.ok(start >= 0 && end > start, 'scroll-anchor capture handler not found');
+  const handler = source.slice(start, end);
+  assert.match(handler, /if \(!event\.isTrusted\) return/);
+  assert.match(handler, /rememberScrollAnchor\(event\.target\)/);
+});
+
+test('tool selection relies on the shared scroll anchor instead of a second manual scrollBy path', () => {
+  const source = read('skyblock-redesign.js');
+  assert.doesNotMatch(source, /pendingToolViewportAnchor/);
+  assert.doesNotMatch(source, /rememberToolViewportAnchor/);
+  assert.doesNotMatch(source, /restoreToolViewportAnchor/);
+  assert.match(source, /setCrop\(cropId\)/);
+});
+
 test('late physical value renders preserve the active selection position', () => {
   const source = read('app.js');
   const handler = source.match(/window\.addEventListener\('farming420:item-value-updated',[\s\S]*?\n\}\);/)?.[0] || '';
