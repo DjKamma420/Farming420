@@ -366,7 +366,7 @@ function putProgressionCardArt(card, record, label, identity) {
 
 function decorateProgressionCards(catalog) {
   document.querySelectorAll('.item-card[data-open]').forEach(card => {
-    if (card.dataset.noItemArt === '1') return;
+    if (card.dataset.noItemArt === '1' || card.closest('[data-disable-item-art="1"]')) return;
     const entry = UPGRADES.find(item => item.id === card.dataset.open);
     if (!entry) return;
     const record = progressionCardArtRecord(catalog, entry);

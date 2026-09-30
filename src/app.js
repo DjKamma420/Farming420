@@ -1477,13 +1477,15 @@ function effectsPage() {
   const permanent = visibleUpgrades('account').filter(x => ['Consumable','Chocolate Factory'].includes(x.category));
   const temporary = visibleUpgrades('buffs');
   return `${pageHeader('Effects', 'Farming Effects', 'Permanent farming effects and temporary buffs, mixins, cakes and event effects in one place.')}
-    <div class="group">
-      <div class="section-row"><div><h2>Permanent effects</h2><p>Account-wide consumables and permanent effect sources.</p></div></div>
-      <div class="card-grid">${permanent.map(x=>card(x, false, { showArt: false })).join('') || '<div class="empty">No matches.</div>'}</div>
-    </div>
-    <div class="group">
-      <div class="section-row"><div><h2>Temporary effects</h2><p>God Potion, mixins, cakes, event bonuses and other active effects.</p></div></div>
-      <div class="card-grid">${temporary.map(x=>card(x, false, { showArt: false })).join('') || '<div class="empty">No matches.</div>'}</div>
+    <div class="effects-page" data-disable-item-art="1">
+      <div class="group">
+        <div class="section-row"><div><h2>Permanent effects</h2><p>Account-wide consumables and permanent effect sources.</p></div></div>
+        <div class="card-grid">${permanent.map(x=>card(x, false, { showArt: false })).join('') || '<div class="empty">No matches.</div>'}</div>
+      </div>
+      <div class="group">
+        <div class="section-row"><div><h2>Temporary effects</h2><p>God Potion, mixins, cakes, event bonuses and other active effects.</p></div></div>
+        <div class="card-grid">${temporary.map(x=>card(x, false, { showArt: false })).join('') || '<div class="empty">No matches.</div>'}</div>
+      </div>
     </div>`;
 }
 

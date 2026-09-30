@@ -262,6 +262,7 @@ export function renderSetupItemArt({ root = document, rawState = readState(), ma
   let rendered = 0;
 
   root.querySelectorAll('[data-pack-asset]').forEach(card => {
+    if (card.closest('[data-disable-item-art="1"]')) return;
     const requestedKey = String(card.dataset.packAsset || '');
     if (!requestedKey) return;
 
@@ -297,6 +298,7 @@ export function renderSetupItemArt({ root = document, rawState = readState(), ma
   });
 
   root.querySelectorAll('.slot-portrait').forEach(card => {
+    if (card.closest('[data-disable-item-art="1"]')) return;
     const slotCard = card.closest('[data-slot]');
     const slotId = card.dataset.slot || slotCard?.dataset.slot;
     if (!slotId) return;
