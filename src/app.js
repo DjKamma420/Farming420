@@ -971,7 +971,10 @@ function navigateSearchResult(entry) {
   } else if (target.type === 'accessory') {
     requestAnimationFrame(() => {
       [...document.querySelectorAll('[data-accessory-item-id]')]
-        .find(node => node.dataset.accessoryItemId === target.itemId)
+        .find(node => (
+          node.dataset.accessoryItemId === target.itemId
+          || String(node.dataset.accessoryTierItems || '').split(',').includes(target.itemId)
+        ))
         ?.scrollIntoView({ block: 'center' });
     });
   } else if (target.type === 'catalog-item' || target.type === 'setup-slot') {
@@ -1584,9 +1587,39 @@ function setAccessorySelection(group, itemId, selected) {
   render();
 }
 
-function accessoryCatalogCard(accessory, group, tierIndex = 0) {
-  const upgradeLine = Boolean(group.upgradeLine);
-  const tierCount = group.items.length;
+function setAccessoryGroupSelection(group, itemId) {
+  if (!group?.upgradeLine) return;
+  const wanted = String(itemId || '').trim().toUpperCase();
+
+  if (wanted) {
+    if (!group.items.some(item => item.itemId === wanted)) return;
+    setAccessorySelection(group, wanted, true);
+    return;
+  }
+
+  state.profile.accessoryItems ||= {};
+  for (const item of group.items) {
+    const current = { ...(state.profile.accessoryItems[item.itemId] || {}) };
+    current.selected = false;
+    state.profile.accessoryItems[item.itemId] = current;
+  }
+
+  const progression = accessoryProgressionUpgrade(group);
+  if (progression) {
+    setEntryLevel(progression, 0);
+  } else {
+    for (const item of group.items) {
+      if (!item.upgradeId) continue;
+      const upgrade = UPGRADES.find(entry => entry.id === item.upgradeId);
+      if (upgrade) setEntryLevel(upgrade, 0);
+    }
+  }
+
+  saveState();
+  render();
+}
+
+function accessoryCatalogCard(accessory, group) {
   const upgrade = accessory.upgradeId
     ? UPGRADES.find(item => item.id === accessory.upgradeId)
     : null;
@@ -1599,7 +1632,7 @@ function accessoryCatalogCard(accessory, group, tierIndex = 0) {
       ? badge('profile sync', 'synced')
       : '';
 
-  return `<article class="item-card accessory-catalog-card ${upgradeLine ? 'accessory-chain-card' : ''} ${selected ? 'accessory-selected' : ''} ${status}" data-accessory-item-id="${esc(accessory.itemId)}">
+  return `<article class="item-card accessory-catalog-card ${selected ? 'accessory-selected' : ''} ${status}" data-accessory-item-id="${esc(accessory.itemId)}">
     <div class="card-layer"></div>
     <div class="card-head">
       <span class="card-portrait accessory-portrait" aria-hidden="true"></span>
@@ -1612,18 +1645,75 @@ function accessoryCatalogCard(accessory, group, tierIndex = 0) {
     <p class="accessory-effect">${esc(accessory.effect)}</p>
     <div class="chips">
       ${badge(accessory.condition, 'soft')}
-      ${upgradeLine ? badge(`Tier ${tierIndex + 1}/${tierCount}`, 'soft') : ''}
-      ${upgradeLine && tierIndex > 0 ? badge('upgrades previous tier', 'soft') : ''}
-      ${upgradeLine && tierIndex === tierCount - 1 ? badge('final tier', 'owned') : ''}
       ${synced ? badge('found in profile', 'synced') : ''}
     </div>
     <div class="accessory-upgrades">
       <button class="ghost small accessory-select-btn ${selected ? 'selected' : ''}" type="button"
         data-accessory-select="${esc(accessory.itemId)}" data-accessory-group="${esc(group.id)}"
         aria-pressed="${selected ? 'true' : 'false'}">
-        ${selected ? (upgradeLine ? 'Selected tier' : 'Selected') : (upgradeLine ? 'Select tier' : 'Select accessory')}
+        ${selected ? 'Selected' : 'Select accessory'}
       </button>
       ${upgrade ? `<button class="ghost small accessory-progression-btn" type="button" data-open="${esc(upgrade.id)}">Open calculator progression</button>` : ''}
+    </div>
+  </article>`;
+}
+
+function accessoryUpgradeLineCard(group) {
+  const tierCount = group.items.length;
+  const selectedItemId = accessoryGroupSelection(group);
+  const selectedIndex = group.items.findIndex(item => item.itemId === selectedItemId);
+  const selectedAccessory = selectedIndex >= 0 ? group.items[selectedIndex] : null;
+  const displayedAccessory = selectedAccessory || group.items[0];
+  const synced = Boolean(selectedAccessory && accessorySnapshotRecord(selectedAccessory));
+  const manuallySelected = Boolean(
+    selectedAccessory && accessoryItemState(selectedAccessory).selected === true
+  );
+  const progression = accessoryProgressionUpgrade(group);
+  const displayedUpgrade = displayedAccessory?.upgradeId
+    ? UPGRADES.find(item => item.id === displayedAccessory.upgradeId)
+    : null;
+  const calculatorUpgrade = progression || displayedUpgrade;
+  const status = calculatorUpgrade ? statusClass(calculatorUpgrade) : '';
+  const stateBadge = manuallySelected
+    ? badge('selected', 'owned')
+    : synced
+      ? badge('profile sync', 'synced')
+      : selectedAccessory
+        ? badge('selected', 'owned')
+        : '';
+  const itemIds = group.items.map(item => item.itemId).join(',');
+
+  return `<article class="item-card accessory-catalog-card accessory-upgrade-card ${selectedAccessory ? 'accessory-selected' : ''} ${status}"
+      data-accessory-item-id="${esc(displayedAccessory.itemId)}"
+      data-accessory-tier-items="${esc(itemIds)}">
+    <div class="card-layer"></div>
+    <div class="card-head">
+      <span class="card-portrait accessory-portrait" aria-hidden="true"></span>
+      <div>
+        <div class="eyebrow">${selectedAccessory
+          ? `${esc(selectedAccessory.rarity)} · ${esc(selectedAccessory.itemId)}`
+          : 'No tier selected'}</div>
+        <div class="item-title">${esc(selectedAccessory?.name || group.title)}</div>
+      </div>
+      ${stateBadge}
+    </div>
+    <p class="accessory-effect">${esc(
+      selectedAccessory?.effect || 'Choose the highest tier you currently own.'
+    )}</p>
+    <div class="chips">
+      ${selectedAccessory ? badge(selectedAccessory.condition, 'soft') : ''}
+      ${badge(selectedAccessory ? `Tier ${selectedIndex + 1}/${tierCount}` : `${tierCount} tiers`, 'soft')}
+      ${synced ? badge('found in profile', 'synced') : ''}
+    </div>
+    <div class="accessory-upgrades">
+      <label class="accessory-tier-control">
+        <span>Current tier</span>
+        <select data-accessory-tier-select="${esc(group.id)}" aria-label="${esc(`${group.title} current tier`)}">
+          <option value="">Not selected</option>
+          ${group.items.map((item, index) => `<option value="${esc(item.itemId)}" ${item.itemId === selectedItemId ? 'selected' : ''}>Tier ${index + 1}/${tierCount} — ${esc(item.name)}</option>`).join('')}
+        </select>
+      </label>
+      ${calculatorUpgrade ? `<button class="ghost small accessory-progression-btn" type="button" data-open="${esc(calculatorUpgrade.id)}">Open calculator progression</button>` : ''}
     </div>
   </article>`;
 }
@@ -1633,13 +1723,15 @@ function accessorySections() {
 
   return `<div class="accessory-model-note">
       <strong>Accessory selection</strong>
-      <span>Select your current tier directly on each progression line. Only one tier per upgrade line can be selected; separate utility accessories remain independently selectable. Profile sync is used as the default until you choose a manual override.</span>
+      <span>Choose your current tier once per progression line. Only the selected tier counts; separate utility accessories remain independently selectable. Profile sync is used as the default until you choose a manual override.</span>
     </div>
     ${groups.length ? groups.map(group => `
       <section class="accessory-group ${group.upgradeLine ? 'accessory-upgrade-group' : ''}" data-accessory-group="${esc(group.id)}">
         <div class="section-row"><div><h2>${esc(group.title)}</h2><p>${esc(group.note)}</p></div></div>
         <div class="card-grid accessory-grid ${group.upgradeLine ? 'accessory-upgrade-line' : ''}">
-          ${group.items.map((accessory, index) => accessoryCatalogCard(accessory, group, index)).join('')}
+          ${group.upgradeLine
+            ? accessoryUpgradeLineCard(group)
+            : group.items.map(accessory => accessoryCatalogCard(accessory, group)).join('')}
         </div>
       </section>
     `).join('') : '<div class="empty">No farming accessories match the current search.</div>'}`;
@@ -3325,6 +3417,12 @@ function bind() {
     const group = FARMING_ACCESSORY_GROUPS.find(entry => entry.id === groupId);
     if (!group || !group.items.some(item => item.itemId === itemId)) return;
     setAccessorySelection(group, itemId, event.currentTarget.getAttribute('aria-pressed') !== 'true');
+  }));
+
+  document.querySelectorAll('[data-accessory-tier-select]').forEach(select => select.addEventListener('change', event => {
+    const group = FARMING_ACCESSORY_GROUPS.find(entry => entry.id === event.currentTarget.dataset.accessoryTierSelect);
+    if (!group?.upgradeLine) return;
+    setAccessoryGroupSelection(group, event.currentTarget.value);
   }));
 
   const cowStrengthPlanner = document.querySelector('[data-cow-strength-planner]');

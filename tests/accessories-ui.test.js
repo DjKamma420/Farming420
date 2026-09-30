@@ -43,7 +43,7 @@ test('conditional physical accessories stay in the accessories section', () => {
 });
 
 
-test('accessory cards expose tier selection without restoring Recombobulator or Enrichment controls', () => {
+test('accessory cards expose compact tier selection without restoring Recombobulator or Enrichment controls', () => {
   const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   assert.doesNotMatch(source, /data-accessory-recomb=/);
   assert.doesNotMatch(source, /data-accessory-strength-enrichment=/);
@@ -51,7 +51,9 @@ test('accessory cards expose tier selection without restoring Recombobulator or 
   assert.doesNotMatch(source, /Strength Enrichment/);
   assert.match(source, /Accessory selection/);
   assert.match(source, /data-accessory-select=/);
+  assert.match(source, /data-accessory-tier-select=/);
   assert.match(source, /function setAccessorySelection/);
+  assert.match(source, /function setAccessoryGroupSelection/);
   assert.match(source, /accessory-upgrade-line/);
   assert.equal(ACCESSORY_CAPABILITIES_VERIFIED, '2026-09-23');
 });
@@ -74,23 +76,28 @@ test('accessory cards are articles so nested controls remain valid interactive H
 
 
 
-test('Accessories section presents real upgrade families with one selectable tier per line', () => {
+test('Accessories section presents each upgrade family as one tier selector', () => {
   const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const start = source.indexOf('function accessoryItemState');
   const end = source.indexOf('function cropFocusCard', start);
   const block = source.slice(start, end);
-  assert.match(block, /Tier \$\{tierIndex \+ 1\}\/\$\{tierCount\}/);
-  assert.match(block, /upgrades previous tier/);
-  assert.match(block, /Select tier/);
-  assert.match(block, /aria-pressed=/);
-  assert.match(block, /function accessoryGroupSelection/);
-  assert.match(block, /current\.selected = enabled && item\.itemId === itemId/);
+  assert.match(block, /function accessoryUpgradeLineCard/);
+  assert.match(block, /<option value="">Not selected<\/option>/);
+  assert.match(block, /Current tier/);
+  assert.match(block, /data-accessory-tier-select=/);
+  assert.match(block, /data-accessory-tier-items=/);
+  assert.match(block, /Tier \$\{index \+ 1\}\/\$\{tierCount\} — \$\{esc\(item\.name\)\}/);
+  assert.match(block, /group\.upgradeLine\s*\? accessoryUpgradeLineCard\(group\)/);
+  assert.match(block, /function setAccessoryGroupSelection/);
+  assert.match(block, /current\.selected = false/);
+  assert.doesNotMatch(block, /upgrades previous tier/);
   assert.doesNotMatch(block, /Mooshroom Cow/);
   assert.doesNotMatch(block, /data-accessory-strength-enrichment/);
   assert.doesNotMatch(block, /data-accessory-recomb/);
+  assert.match(source, /dataset\.accessoryTierItems/);
 });
 
-test('shared progression accessories translate the selected tier into the existing calculator level', () => {
+test('shared progression accessories translate dropdown tiers into the existing calculator level', () => {
   const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const start = source.indexOf('function accessoryProgressionUpgrade');
   const end = source.indexOf('function accessoryCatalogCard', start);
@@ -98,8 +105,8 @@ test('shared progression accessories translate the selected tier into the existi
   assert.match(block, /Number\(upgrade\.max \|\| 1\) !== group\.items\.length/);
   assert.match(block, /setEntryLevel\(progression, enabled \? tier : 0\)/);
   assert.match(block, /setEntryLevel\(upgrade, active \? 1 : 0\)/);
+  assert.match(block, /setEntryLevel\(progression, 0\)/);
 });
-
 
 test('Shards page keeps Cow Strength shard planning optional and collapsible at the bottom', () => {
   const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
