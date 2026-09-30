@@ -256,8 +256,16 @@ function renderedIconNode(item, label) {
 }
 
 function nonSkullArtNode(item, label) {
-  const rendered = renderedIconNode(item, label);
-  if (rendered) return rendered;
+  // Known player-head items use one visual language everywhere: the flat
+  // Minecraft inventory portrait cropped from the skin sheet. If that remote
+  // texture fails, do not swap in a third-party isometric/3D render; that makes
+  // one Accessory suddenly huge and visually unrelated to its neighbouring
+  // tiers. The caller will continue to the flat pack/material/letter fallback.
+  const isKnownPlayerHead = Boolean(knownSkyblockHeadTexture(item?.id));
+  if (!isKnownPlayerHead) {
+    const rendered = renderedIconNode(item, label);
+    if (rendered) return rendered;
+  }
 
   // Hypixel does not currently ship Resource Pack models for armour. The
   // official item resource does publish the actual item material and leather

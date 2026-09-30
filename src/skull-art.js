@@ -106,9 +106,9 @@ export const KNOWN_ATTRIBUTE_SHARD_HEAD_TEXTURES = Object.freeze({
 });
 
 export const KNOWN_FARMING_EQUIPMENT_RENDERED_ICONS = Object.freeze({
-  // Exact rendered item icons, verified against the current item pages.
-  // These bypass player-skin cropping on clients where that route renders blank.
-  PESTHUNTER_BADGE: 'https://skyah.net/icons/items/pesthunter_badge.webp',
+  // Exact rendered equipment/armour icons. Player-head Accessories deliberately
+  // do not use these: their flat inventory portrait comes from the verified
+  // Mojang skin crop, matching the rest of the Accessory progression UI.
   PESTHUNTERS_NECKLACE: 'https://skyah.net/icons/items/pesthunters_necklace.webp',
   // SkyAH's Helianthus item pages use the underlying vanilla iron sprites for
   // these two pieces instead of a SkyBlock-id-specific icon path.
