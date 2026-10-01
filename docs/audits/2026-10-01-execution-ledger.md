@@ -50,3 +50,13 @@ A fresh validation job was requested through the GitHub connector on the exact a
 Browser limitations remain: the CI idempotence harness uses a 1280x1000 iframe and compares node count/markup length, not exact DOM equality or zero mutations. A success is useful for its declared scope but does not prove every enhancer's strict no-op invariant or real phone layout. The 390/412px matrix is not cleared by this CI job.
 
 Next: audit the sweep/overlay harnesses themselves, then independent model boundaries and remaining source gates.
+
+## CONT19 — test-harness blind spots and CI audit route
+
+SOURCE_REVIEW: scripts/overlay-audit.mjs scrolls window at 0/300/700 even though current app scroll ownership is main. Those three samples therefore do not establish nonzero main-scroll coverage. It also only audits default page content, not opened editors/menus, and does not fail its process when findings exist. Planned fixes: scroll the real main pane, verify actual landing/scroll position, open representative overlays/editors, and make the finding count affect the gate.
+
+SOURCE_REVIEW: scripts/sweep-all.sh prints FAIL/BUDGET/KILLED but run_one returns the successful echo status, and the final logs echo also succeeds. The wrapper can exit zero despite failed workers. sweep-area.mjs additionally reports collected page errors/crashes but computes failure only from a verdict regex or budget. Planned fixes: propagate aggregate worker status and page errors/crashes; pin deliberately failing workers so the gate cannot be silently green. No repository harness was modified by this audit.
+
+SOURCE_REVIEW: the idempotence harness only compares node/character counts; different markup of equal length or repeated equal-value writes can escape that comparison. Planned stronger regression: observe actual mutation count and canonical DOM equality after settlement, across populated representative editor states, without letting the test itself create the observed writes.
+
+A new audit-only workflow was added on the isolated documentation branch to invoke the existing sweep/overlay scripts in GitHub CI, where disposable browser contexts can have real 390/412px sizes. It has contents:read permission, no secrets, no deployment step, and verifies app source is unchanged against the audited SHA. Dependencies install outside the checkout. Supplemental mobile probe code will live under docs/audits, separate from application source. continue-on-error preserves evidence; overall workflow success must NOT be interpreted as audit acceptance. Individual logs and verdicts decide PASS/FAIL/BLOCKED.
