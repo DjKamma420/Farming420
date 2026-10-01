@@ -1,0 +1,32 @@
+{
+  "auditedSource": "bda761d81deb0be37af9fad31f5469efb992df82",
+  "manualOrigin": {
+    "preserved": true,
+    "positiveControlBoots": "Synced Boots",
+    "explicitOverwrite": "Synced Helmet",
+    "kept": {
+      "skyblockId": "MELON_HELMET",
+      "displayName": "My manual helmet",
+      "rarity": "RARE",
+      "rarityBasis": "base",
+      "petLevel": null,
+      "reforge": null,
+      "enchantments": {},
+      "gems": [],
+      "recombobulated": true,
+      "skullTexture": null,
+      "source": "manual",
+      "itemUuid": null,
+      "physicalItemId": null
+    },
+    "filled": [
+      "boots"
+    ]
+  },
+  "rarity": {
+    "base": "RARE",
+    "recombobulated": true,
+    "expected": "EPIC",
+    "actual": "EPIC"
+  }
+}
