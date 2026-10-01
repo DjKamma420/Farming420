@@ -223,6 +223,32 @@ try {
         const current = await page.evaluate(key => JSON.parse(localStorage.getItem(key)), STORAGE_KEY);
         add(name, 'backup-download-bytes-roundtrip', payload.state.auditSentinel === seed.auditSentinel && JSON.stringify(payload.state) === JSON.stringify(current) ? 'PASS' : 'FAIL',
           { filename: download.suggestedFilename(), bytes: Buffer.byteLength(raw), schemaVersion: payload.schemaVersion, sentinelPreserved: payload.state.auditSentinel === seed.auditSentinel, sameState: JSON.stringify(payload.state) === JSON.stringify(current) });
+
+        const beforeInvalid = await page.evaluate(key => localStorage.getItem(key), STORAGE_KEY);
+        await page.locator('[data-backup-restore]').setInputFiles({ name: 'invalid-audit.json', mimeType: 'application/json', buffer: Buffer.from('{broken') });
+        await page.waitForTimeout(150);
+        const afterInvalid = await page.evaluate(key => localStorage.getItem(key), STORAGE_KEY);
+        const invalidStatus = await page.locator('[data-settings-status]').textContent();
+        add(name, 'invalid-json-restore-keeps-storage', beforeInvalid === afterInvalid && /not valid JSON/i.test(invalidStatus) ? 'PASS' : 'FAIL',
+          { sameBytes: beforeInvalid === afterInvalid, message: invalidStatus });
+        const restoredPayload = structuredClone(payload);
+        restoredPayload.state.profile.name = 'Disposable restored audit fixture';
+        restoredPayload.state.auditRestoreSentinel = 'roundtrip-restored';
+        await page.locator('[data-backup-restore]').setInputFiles({ name: 'valid-audit.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(restoredPayload)) });
+        await page.waitForTimeout(300);
+        const restored = await page.evaluate(key => JSON.parse(localStorage.getItem(key)), STORAGE_KEY);
+        add(name, 'valid-backup-ui-restore', restored.auditRestoreSentinel === 'roundtrip-restored' && restored.profile.name === 'Disposable restored audit fixture' ? 'PASS' : 'FAIL',
+          { sentinel: restored.auditRestoreSentinel, profileName: restored.profile.name, schemaVersion: restored.schemaVersion });
+        const beforeFuture = await page.evaluate(key => localStorage.getItem(key), STORAGE_KEY);
+        const inconsistent = structuredClone(restoredPayload);
+        inconsistent.state.schemaVersion = DATA_SCHEMA_VERSION + 1;
+        await page.locator('[data-backup-restore]').setInputFiles({ name: 'future-envelope-mismatch.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(inconsistent)) });
+        await page.waitForTimeout(300);
+        const afterFuture = await page.evaluate(key => localStorage.getItem(key), STORAGE_KEY);
+        const futureStatus = await page.locator('[data-settings-status]').textContent();
+        add(name, 'future-envelope-mismatch-ui-rejection', beforeFuture === afterFuture && !/Backup restored/i.test(futureStatus) ? 'PASS' : 'FAIL',
+          { sameBytes: beforeFuture === afterFuture, message: futureStatus, incomingEnvelopeSchema: inconsistent.schemaVersion, incomingStateSchema: inconsistent.state.schemaVersion });
+
       }
     } catch (error) {
       add(name, 'probe-execution', 'BLOCKED', { message: String(error) });
