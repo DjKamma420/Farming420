@@ -36,3 +36,17 @@ User authorization: continue the audit until all checks are accounted for and sa
 Pinned current main was fetched again and remains `bda761d81deb0be37af9fad31f5469efb992df82`. AGENTS.md applies repository-wide; recursive tree contains no nested AGENTS.md. Current package declares Node tests, Python tests, sweep, overlay and farming-model audit commands, with no external package dependency declaration. The integrated backlog explicitly leaves complete regression and real phone flows open. Existing historical claims in tasks/todo.md do not replace a fresh execution.
 
 The source snapshot is being created separately for read-only test execution. Each materialized text file must match its recorded Git blob SHA before its results are accepted. This is not a Git clone; no local git-status pass is claimed. Test executions must not mutate the audited app source.
+
+## CONT18 — complete existing regression gates
+
+Source snapshot: 461 text files, 3,489,149 bytes, each verified against its immutable Git blob SHA before execution. No source modification was needed.
+
+Local Node run: 1,360 tests executed, 1,357 passed, 3 failed. Two failures are asset-integrity tests because the UTF-8-only GitHub reader cannot materialize PNG blobs (confirmed UnicodeDecodeError on a real PNG). They are snapshot limitations, not established repository defects. The third was mkdtemp ENOENT because /tmp is unavailable in this sandbox. Re-running only deploy-completeness.test.js with TMPDIR under the writable workspace passed. The unaffected full test results are retained; no failing fixture was weakened.
+
+Python: all 8 tests passed. Static local references and service-worker retirement checks passed.
+
+A fresh validation job was requested through the GitHub connector on the exact audited main commit: workflow run 36657388139, new job 110456575169. It completed success. JavaScript syntax, Python tooling, required files, static references, service-worker retirement, browser startup smoke, and the complete npm test step all concluded success on the original repository with its assets. This is current CI evidence, separate from the incomplete local PNG snapshot. No Pages/deployment job was rerun.
+
+Browser limitations remain: the CI idempotence harness uses a 1280x1000 iframe and compares node count/markup length, not exact DOM equality or zero mutations. A success is useful for its declared scope but does not prove every enhancer's strict no-op invariant or real phone layout. The 390/412px matrix is not cleared by this CI job.
+
+Next: audit the sweep/overlay harnesses themselves, then independent model boundaries and remaining source gates.
