@@ -1,0 +1,674 @@
+{
+  "auditedSource": "bda761d81deb0be37af9fad31f5469efb992df82",
+  "cropCount": 13,
+  "totalUpgradeRows": 98,
+  "statuses": {
+    "ACTIVE": 85,
+    "VERIFY": 13
+  },
+  "sections": {
+    "account": 10,
+    "accessories": 8,
+    "crops": 3,
+    "tools": 14,
+    "chips": 10,
+    "gear": 13,
+    "pets": 5,
+    "buffs": 10,
+    "shards": 25
+  },
+  "duplicateIds": [],
+  "rowsWithoutSource": [],
+  "shards": [
+    {
+      "id": "attribute-shard-fly-fortunate-farmer",
+      "max": 10,
+      "target": "farming-fortune",
+      "mode": "Any",
+      "crop": "Any",
+      "status": "ACTIVE",
+      "lastVerified": "2026-09-27",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Attributes"
+    },
+    {
+      "id": "attribute-shard-firefly-solar-power",
+      "max": 10,
+      "target": "farming-fortune",
+      "mode": "Any",
+      "crop": "Any",
+      "status": "ACTIVE",
+      "lastVerified": "2026-09-27",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Attributes"
+    },
+    {
+      "id": "attribute-shard-lunar-moth-lunar-power",
+      "max": 10,
+      "target": "farming-fortune",
+      "mode": "Any",
+      "crop": "Any",
+      "status": "ACTIVE",
+      "lastVerified": "2026-09-27",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Attributes"
+    },
+    {
+      "id": "attribute-shard-galaxy-fish-shard",
+      "max": 10,
+      "target": "farming-fortune",
+      "mode": "Any",
+      "crop": "Any",
+      "status": "ACTIVE",
+      "lastVerified": "2026-09-27",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Attributes"
+    },
+    {
+      "id": "attribute-shard-earthworm-shard-formerly-termite",
+      "max": 10,
+      "target": "farming-fortune",
+      "mode": "Any",
+      "crop": "Any",
+      "status": "ACTIVE",
+      "lastVerified": "2026-09-27",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Attributes"
+    },
+    {
+      "id": "attribute-shard-beetle-crop-bug",
+      "max": 10,
+      "target": "overbloom",
+      "mode": "Any",
+      "crop": "Any",
+      "status": "ACTIVE",
+      "lastVerified": "2026-09-27",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Attributes"
+    },
+    {
+      "id": "attribute-shard-field-mouse-shard-pest-overbloom",
+      "max": 10,
+      "target": "overbloom",
+      "mode": "Pest Vacuum Drops",
+      "crop": "Any",
+      "status": "ACTIVE",
+      "lastVerified": "2026-09-27",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Attributes"
+    },
+    {
+      "id": "attribute-shard-cricket-pest-fortune",
+      "max": 10,
+      "target": "farming-fortune",
+      "mode": "Pest Vacuum Drops",
+      "crop": "Any",
+      "status": "ACTIVE",
+      "lastVerified": "2026-09-27",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Attributes"
+    },
+    {
+      "id": "attribute-shard-keeled-slug-bonus-pest-chance",
+      "max": 10,
+      "target": "bonus-pest-chance",
+      "mode": "Pest Spawning",
+      "crop": "Any",
+      "status": "ACTIVE",
+      "lastVerified": "2026-09-27",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Attributes"
+    },
+    {
+      "id": "attribute-shard-moth-pest-cooldown",
+      "max": 10,
+      "target": "pest-cooldown",
+      "mode": "Pest Spawning",
+      "crop": "Any",
+      "status": "VERIFY",
+      "lastVerified": "2026-09-27",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Attributes"
+    },
+    {
+      "id": "attribute-shard-praying-mantis-pest-ruler",
+      "max": 10,
+      "target": "other",
+      "mode": "Pest Vacuum Drops",
+      "crop": "Any",
+      "status": "ACTIVE",
+      "lastVerified": "2026-09-27",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Attributes"
+    },
+    {
+      "id": "attribute-shard-rat-sprayonator-serendipity",
+      "max": 10,
+      "target": "other",
+      "mode": "Pest Vacuum Drops",
+      "crop": "Any",
+      "status": "ACTIVE",
+      "lastVerified": "2026-09-27",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Attributes"
+    },
+    {
+      "id": "attribute-shard-cocoaleech-groovy-radar",
+      "max": 10,
+      "target": "other",
+      "mode": "Pest Vacuum Drops",
+      "crop": "Any",
+      "status": "ACTIVE",
+      "lastVerified": "2026-09-27",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Attributes"
+    },
+    {
+      "id": "attribute-shard-mosquito-enchanted-farmer",
+      "max": 10,
+      "target": "other",
+      "mode": "Any",
+      "crop": "Any",
+      "status": "ACTIVE",
+      "lastVerified": "2026-09-27",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Attributes"
+    },
+    {
+      "id": "attribute-shard-locust-crop-speed",
+      "max": 10,
+      "target": "other",
+      "mode": "Any",
+      "crop": "Any",
+      "status": "ACTIVE",
+      "lastVerified": "2026-09-27",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Attributes"
+    },
+    {
+      "id": "attribute-shard-bayou-sludge-compost-speed",
+      "max": 10,
+      "target": "other",
+      "mode": "Any",
+      "crop": "Any",
+      "status": "ACTIVE",
+      "lastVerified": "2026-09-27",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Attributes"
+    },
+    {
+      "id": "attribute-shard-mudworm-visitor-bait",
+      "max": 10,
+      "target": "other",
+      "mode": "Any",
+      "crop": "Any",
+      "status": "ACTIVE",
+      "lastVerified": "2026-09-27",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Attributes"
+    },
+    {
+      "id": "attribute-shard-invisibug-fancy-visit",
+      "max": 10,
+      "target": "other",
+      "mode": "Any",
+      "crop": "Any",
+      "status": "ACTIVE",
+      "lastVerified": "2026-09-27",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Attributes"
+    },
+    {
+      "id": "attribute-shard-ladybug-pretty-clothes",
+      "max": 10,
+      "target": "other",
+      "mode": "Any",
+      "crop": "Any",
+      "status": "ACTIVE",
+      "lastVerified": "2026-09-27",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Attributes"
+    },
+    {
+      "id": "attribute-shard-honeybug-visitor-honey",
+      "max": 10,
+      "target": "other",
+      "mode": "Any",
+      "crop": "Any",
+      "status": "ACTIVE",
+      "lastVerified": "2026-09-27",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Attributes"
+    },
+    {
+      "id": "attribute-shard-parched-visitor-compost",
+      "max": 10,
+      "target": "other",
+      "mode": "Any",
+      "crop": "Any",
+      "status": "ACTIVE",
+      "lastVerified": "2026-09-27",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Attributes"
+    },
+    {
+      "id": "attribute-shard-woodlouse-visitor-cheese",
+      "max": 10,
+      "target": "other",
+      "mode": "Any",
+      "crop": "Any",
+      "status": "ACTIVE",
+      "lastVerified": "2026-09-27",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Attributes"
+    },
+    {
+      "id": "attribute-shard-red-panda-visitor-plant",
+      "max": 10,
+      "target": "other",
+      "mode": "Any",
+      "crop": "Any",
+      "status": "ACTIVE",
+      "lastVerified": "2026-09-27",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Attributes"
+    },
+    {
+      "id": "attribute-shard-dung-beetle-visitor-dung",
+      "max": 10,
+      "target": "other",
+      "mode": "Any",
+      "crop": "Any",
+      "status": "ACTIVE",
+      "lastVerified": "2026-09-27",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Attributes"
+    },
+    {
+      "id": "attribute-shard-dragonfly-garden-wisdom",
+      "max": 10,
+      "target": "other",
+      "mode": "Any",
+      "crop": "Any",
+      "status": "ACTIVE",
+      "lastVerified": "2026-09-27",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Attributes"
+    }
+  ],
+  "chips": {
+    "verminVaporizer": {
+      "id": "vermin-vaporizer",
+      "itemId": "VERMIN_VAPORIZER_GARDEN_CHIP",
+      "name": "Vermin Vaporizer Chip",
+      "status": "ACTIVE",
+      "effect": {
+        "axis": "bonusPestChance",
+        "rates": {
+          "RARE": 3,
+          "EPIC": 4,
+          "LEGENDARY": 5
+        }
+      },
+      "source": "https://hypixel-skyblock.fandom.com/wiki/Bonus_Pest_Chance"
+    },
+    "synthesis": {
+      "id": "synthesis",
+      "itemId": "SYNTHESIS_GARDEN_CHIP",
+      "name": "Synthesis Chip",
+      "status": "ACTIVE",
+      "effect": {
+        "axis": "cropAnalyzerBaseCopperPercent",
+        "rates": {
+          "RARE": 1,
+          "EPIC": 1.5,
+          "LEGENDARY": 2
+        }
+      },
+      "source": "https://hypixel-skyblock.fandom.com/wiki/Garden_Chips"
+    },
+    "sowledge": {
+      "id": "sowledge",
+      "itemId": "SOWLEDGE_GARDEN_CHIP",
+      "name": "Sowledge Chip",
+      "status": "ACTIVE",
+      "effect": {
+        "axis": "farmingWisdom",
+        "rates": {
+          "RARE": 1,
+          "EPIC": 1.25,
+          "LEGENDARY": 1.5
+        }
+      },
+      "source": "https://hypixel-skyblock.fandom.com/wiki/Garden_Chips"
+    },
+    "mechamind": {
+      "id": "mechamind",
+      "itemId": "MECHAMIND_GARDEN_CHIP",
+      "name": "Mechamind Chip",
+      "status": "ACTIVE",
+      "effect": {
+        "axis": "farmingToolXpPercent",
+        "rates": {
+          "RARE": 1.5,
+          "EPIC": 2,
+          "LEGENDARY": 2.5
+        }
+      },
+      "source": "https://hypixel-skyblock.fandom.com/wiki/Garden_Chips"
+    },
+    "hypercharge": {
+      "id": "hypercharge",
+      "itemId": "HYPERCHARGE_GARDEN_CHIP",
+      "name": "Hypercharge Chip",
+      "status": "ACTIVE",
+      "effect": {
+        "axis": "temporaryFarmingFortuneStrengthPercent",
+        "rates": {
+          "RARE": 3,
+          "EPIC": 4,
+          "LEGENDARY": 5
+        }
+      },
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Garden_Chips",
+      "lastVerified": "2026-09-27"
+    },
+    "evergreen": {
+      "id": "evergreen",
+      "itemId": "EVERGREEN_GARDEN_CHIP",
+      "name": "Evergreen Chip",
+      "status": "ACTIVE",
+      "effect": {
+        "axis": "greenhouseBaseCropYieldPercent",
+        "rates": {
+          "RARE": 2,
+          "EPIC": 2.5,
+          "LEGENDARY": 3
+        }
+      },
+      "source": "https://hypixel-skyblock.fandom.com/wiki/Garden_Chips"
+    },
+    "overdrive": {
+      "id": "overdrive",
+      "itemId": "OVERDRIVE_GARDEN_CHIP",
+      "name": "Overdrive Chip",
+      "status": "ACTIVE",
+      "effect": {
+        "axis": "activeContestCropFortune",
+        "rates": {
+          "RARE": 5,
+          "EPIC": 6,
+          "LEGENDARY": 7
+        },
+        "context": "jacob-contest"
+      },
+      "source": "https://hypixel-skyblock.fandom.com/wiki/Garden_Chips"
+    },
+    "cropshot": {
+      "id": "cropshot",
+      "itemId": "CROPSHOT_GARDEN_CHIP",
+      "tutorialItemId": "TUTORIAL_GARDEN_CHIP",
+      "name": "Cropshot Chip",
+      "status": "VERIFY_0_27",
+      "effect": {
+        "axis": "farmingFortune",
+        "rates": {
+          "RARE": 3,
+          "EPIC": null,
+          "LEGENDARY": null
+        },
+        "currentReportedLegendaryLevel20Total": 60,
+        "pre027Rates": {
+          "RARE": 3,
+          "EPIC": 4,
+          "LEGENDARY": 5
+        },
+        "reason": "0.27 live reports show the maxed chip changed from +100 to +60 FF; exact post-change EPIC/LEGENDARY per-level lore needs direct live item/profile verification."
+      },
+      "source": "https://hypixel.net/threads/random-farming-nerfs-not-mentioned-in-patch-notes.6128320/"
+    },
+    "quickdraw": {
+      "id": "quickdraw",
+      "itemId": "QUICKDRAW_GARDEN_CHIP",
+      "name": "Quickdraw Chip",
+      "status": "ACTIVE",
+      "effect": {
+        "axis": "visitorArrivalTimeReductionPercent",
+        "rates": {
+          "RARE": 1.5,
+          "EPIC": 2,
+          "LEGENDARY": 2.5
+        }
+      },
+      "source": "https://hypixel-skyblock.fandom.com/wiki/Garden_Chips"
+    },
+    "rarefinder": {
+      "id": "rarefinder",
+      "itemId": "RAREFINDER_CHIP",
+      "name": "Rarefinder Chip",
+      "status": "ACTIVE",
+      "effect": {
+        "axis": "overbloom",
+        "rates": {
+          "RARE": 2,
+          "EPIC": 2.5,
+          "LEGENDARY": 3
+        }
+      },
+      "baseDropProbabilityPerCropBreak": 0.0000015,
+      "source": "https://hypixel-skyblock.fandom.com/wiki/Garden_Chips"
+    }
+  },
+  "temporary": {
+    "cropFever": {
+      "id": "crop-fever",
+      "name": "Crop Fever",
+      "status": "ACTIVE",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Garden_Chips",
+      "triggerProbabilityPerBreakPerEnchantLevel": 0.00001,
+      "maxEnchantLevel": 5,
+      "durationSeconds": 60,
+      "effects": {
+        "farmingFortune": 100,
+        "overbloom": 15
+      },
+      "hyperchargeEligible": true,
+      "lastVerified": "2026-09-27"
+    },
+    "chocolateCenturyCake": {
+      "id": "chocolate-century-cake",
+      "name": "Chocolate Century Cake",
+      "status": "ACTIVE",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Garden_Chips",
+      "effects": {
+        "farmingFortune": 5
+      },
+      "hyperchargeEligible": true,
+      "lastVerified": "2026-09-27"
+    },
+    "pesthunterPhillip": {
+      "id": "pesthunter-phillip",
+      "name": "Pesthunter Phillip",
+      "status": "ACTIVE",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Garden_Chips",
+      "durationSeconds": 1800,
+      "currentPestCostForFullBuff": 80,
+      "effects": {
+        "farmingFortune": 200
+      },
+      "hyperchargeEligible": true,
+      "lastVerified": "2026-09-27"
+    },
+    "atmosphericFilter": {
+      "id": "atmospheric-filter",
+      "name": "Atmospheric Filter",
+      "status": "ACTIVE",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Garden_Chips",
+      "condition": "spring",
+      "effects": {
+        "farmingFortune": 25
+      },
+      "hyperchargeEligible": true,
+      "lastVerified": "2026-09-27"
+    },
+    "magic8Ball": {
+      "id": "magic-8-ball",
+      "name": "Magic 8 Ball",
+      "status": "ACTIVE",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Garden_Chips",
+      "condition": "farming-fortune-roll",
+      "effects": {
+        "farmingFortune": 25
+      },
+      "hyperchargeEligible": true,
+      "lastVerified": "2026-09-27"
+    },
+    "celestialMasonJar": {
+      "id": "celestial-mason-jar",
+      "name": "Celestial Mason Jar",
+      "status": "ACTIVE",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Celestial_Mason_Jar",
+      "effects": {
+        "farmingFortune": 15
+      },
+      "hyperchargeEligible": true,
+      "lastVerified": "2026-09-27"
+    },
+    "slugRepugnantAroma": {
+      "id": "slug-repugnant-aroma",
+      "name": "Slug Pet — Repugnant Aroma",
+      "status": "ACTIVE",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Slug_Pet",
+      "condition": "legendary-slug-pet-in-sprayonator-affected-plot",
+      "effects": {
+        "farmingFortunePerPetLevel": 1
+      },
+      "maxPetLevel": 100,
+      "hyperchargeEligible": true,
+      "lastVerified": "2026-09-27"
+    },
+    "melonJuiceMixin": {
+      "id": "melon-juice-mixin",
+      "name": "Melon Juice Mixin",
+      "status": "ACTIVE",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Melon_Juice_Mixin",
+      "effects": {
+        "farmingFortune": 15
+      },
+      "hyperchargeEligible": false,
+      "lastVerified": "2026-09-27"
+    },
+    "harvestHarbingerPotion": {
+      "id": "harvest-harbinger-potion",
+      "name": "Harvest Harbinger Potion V",
+      "status": "ACTIVE",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Harvest_Harbinger_Potion",
+      "durationSeconds": 1500,
+      "effects": {
+        "farmingFortune": 50
+      },
+      "hyperchargeEligible": false,
+      "lastVerified": "2026-09-27"
+    },
+    "refinedDarkCacaoTruffle": {
+      "id": "refined-dark-cacao-truffle",
+      "name": "Refined Dark Cacao Truffle",
+      "status": "ACTIVE",
+      "source": "https://hypixelskyblock.minecraft.wiki/w/Refined_Dark_Cacao_Truffle",
+      "durationSeconds": 3600,
+      "effects": {
+        "cocoaBeansFortune": 30
+      },
+      "hyperchargeEligible": false,
+      "notes": "Since 0.27 the temporary bonus is Cocoa Beans Fortune, not global Farming Fortune; Hypercharge explicitly does not affect it.",
+      "lastVerified": "2026-09-27"
+    }
+  },
+  "shardMechanics": {
+    "fieldMouse": {
+      "id": "field-mouse",
+      "name": "Field Mouse Shard",
+      "status": "ACTIVE_REPORTED_0_27",
+      "source": "https://hypixel.net/threads/random-farming-nerfs-not-mentioned-in-patch-notes.6128320/",
+      "effects": {
+        "pestOverbloom": 5
+      }
+    },
+    "cricket": {
+      "id": "cricket",
+      "name": "Cricket Shard",
+      "status": "ACTIVE_REPORTED_0_27",
+      "source": "https://hypixel.net/threads/outdated-more-farming-nerfs-on-alpha-including-math.6132043/",
+      "effects": {
+        "farmingFortuneOnPests": 50
+      }
+    },
+    "fly": {
+      "id": "fly",
+      "name": "Fly Shard",
+      "status": "ACTIVE_REPORTED_0_27",
+      "source": "https://hypixel.net/threads/outdated-more-farming-nerfs-on-alpha-including-math.6132043/",
+      "effects": {
+        "farmingFortune": 25
+      }
+    },
+    "keeledSlug": {
+      "id": "keeled-slug",
+      "name": "Keeled Slug Shard",
+      "status": "ACTIVE_REPORTED_0_27",
+      "source": "https://hypixel.net/threads/outdated-more-farming-nerfs-on-alpha-including-math.6132043/",
+      "effects": {
+        "bonusPestChance": 10
+      }
+    },
+    "moth": {
+      "id": "moth",
+      "name": "Moth Shard",
+      "status": "ACTIVE_REPORTED_0_27",
+      "source": "https://hypixel.net/threads/outdated-more-farming-nerfs-on-alpha-including-math.6132043/",
+      "effects": {
+        "pestSpawnCooldownSeconds": -5
+      }
+    },
+    "rat": {
+      "id": "rat",
+      "name": "Rat Shard",
+      "status": "ACTIVE_REPORTED_0_27",
+      "source": "https://hypixel.net/threads/outdated-more-farming-nerfs-on-alpha-including-math.6132043/",
+      "effects": {
+        "extraSprayonatorMaterialChance": 0.1
+      }
+    },
+    "mosquito": {
+      "id": "mosquito",
+      "name": "Mosquito Shard",
+      "status": "ACTIVE_REPORTED_0_27",
+      "source": "https://hypixel.net/threads/outdated-more-farming-nerfs-on-alpha-including-math.6132043/",
+      "effects": {
+        "enchantedCropDropProbabilityPerBreak": 0.0001
+      }
+    },
+    "mudworm": {
+      "id": "mudworm",
+      "name": "Mudworm Shard",
+      "status": "ACTIVE_REPORTED_0_27",
+      "source": "https://hypixel.net/threads/outdated-more-farming-nerfs-on-alpha-including-math.6132043/",
+      "effects": {
+        "visitorArrivalTimeReductionPercent": 10
+      },
+      "interactionStatus": "VERIFY_STACKING"
+    },
+    "ladybug": {
+      "id": "ladybug",
+      "name": "Ladybug Shard",
+      "status": "ACTIVE",
+      "source": "https://hypixel-skyblock.fandom.com/wiki/Attributes/List/Rare",
+      "effects": {
+        "visitorCopperPercent": 10
+      }
+    },
+    "locust": {
+      "id": "locust",
+      "name": "Locust Shard",
+      "status": "ACTIVE_REPORTED_0_27",
+      "source": "https://hypixel.net/threads/outdated-more-farming-nerfs-on-alpha-including-math.6132043/",
+      "effects": {
+        "cropGrowth": 10
+      }
+    },
+    "timestalkClone": {
+      "id": "timestalk-clone",
+      "name": "Timestalk Clone Shard",
+      "status": "ACTIVE_REPORTED_0_27",
+      "source": "https://hypixel.net/threads/outdated-more-farming-nerfs-on-alpha-including-math.6132043/",
+      "effects": {
+        "greenhouseGrowthSpeedPercent": 5
+      },
+      "interactionStatus": "VERIFY_STACKING"
+    },
+    "mite": {
+      "id": "mite",
+      "name": "Mite Shard",
+      "status": "ACTIVE_REPORTED_0_27",
+      "source": "https://hypixel.net/threads/outdated-more-farming-nerfs-on-alpha-including-math.6132043/",
+      "effects": {
+        "atmosphericFilterStrengthPercent": 20
+      }
+    }
+  }
+}
