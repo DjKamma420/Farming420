@@ -1,0 +1,242 @@
+{
+  "auditedSource": "bda761d81deb0be37af9fad31f5469efb992df82",
+  "writes": [
+    {
+      "path": "src/activity-mode-ui.js",
+      "line": 38,
+      "target": "main-state",
+      "statement": "localStorage.setItem(STORAGE_KEY, JSON.stringify(raw));",
+      "hasFutureGuardSomewhere": false
+    },
+    {
+      "path": "src/app.js",
+      "line": 422,
+      "target": "main-state",
+      "statement": "localStorage.setItem(STORAGE_KEY, JSON.stringify(state));",
+      "hasFutureGuardSomewhere": true
+    },
+    {
+      "path": "src/app.js",
+      "line": 3487,
+      "target": "main-state",
+      "statement": "localStorage.setItem(STORAGE_KEY, JSON.stringify(restored.state));",
+      "hasFutureGuardSomewhere": true
+    },
+    {
+      "path": "src/computed-stats-ui.js",
+      "line": 13,
+      "target": "main-state",
+      "statement": "localStorage.setItem(STORAGE_KEY, JSON.stringify(raw));",
+      "hasFutureGuardSomewhere": false
+    },
+    {
+      "path": "src/credentials.js",
+      "line": 37,
+      "target": "auxiliary",
+      "statement": "storage()?.setItem(API_KEY_STORAGE_KEY, key);",
+      "hasFutureGuardSomewhere": false
+    },
+    {
+      "path": "src/direct-controls.js",
+      "line": 64,
+      "target": "main-state",
+      "statement": "localStorage.setItem(STORAGE_KEY, JSON.stringify(raw));",
+      "hasFutureGuardSomewhere": false
+    },
+    {
+      "path": "src/exact-item-capabilities-ui.js",
+      "line": 16,
+      "target": "main-state",
+      "statement": "function save(raw) { localStorage.setItem(STORAGE_KEY, JSON.stringify(raw)); }",
+      "hasFutureGuardSomewhere": false
+    },
+    {
+      "path": "src/foundation.js",
+      "line": 33,
+      "target": "main-state",
+      "statement": "localStorage.setItem(STORAGE_KEY, JSON.stringify(state));",
+      "hasFutureGuardSomewhere": false
+    },
+    {
+      "path": "src/hypixel-import.js",
+      "line": 54,
+      "target": "main-state",
+      "statement": "localStorage.setItem(STORAGE_KEY, JSON.stringify(state));",
+      "hasFutureGuardSomewhere": false
+    },
+    {
+      "path": "src/item-catalog.js",
+      "line": 363,
+      "target": "auxiliary",
+      "statement": "try { storage()?.setItem(CATALOG_STORAGE_KEY, JSON.stringify({ fetchedAt, items })); }",
+      "hasFutureGuardSomewhere": false
+    },
+    {
+      "path": "src/live-prices.js",
+      "line": 241,
+      "target": "auxiliary",
+      "statement": "try { storage()?.setItem(BAZAAR_CACHE_STORAGE_KEY, JSON.stringify(snapshot)); }",
+      "hasFutureGuardSomewhere": false
+    },
+    {
+      "path": "src/loadout-capabilities-ui.js",
+      "line": 25,
+      "target": "main-state",
+      "statement": "localStorage.setItem(STORAGE_KEY, JSON.stringify(raw));",
+      "hasFutureGuardSomewhere": false
+    },
+    {
+      "path": "src/market-average-prices.js",
+      "line": 68,
+      "target": "auxiliary",
+      "statement": "try { storage()?.setItem(MARKET_AVERAGE_CACHE_STORAGE_KEY, JSON.stringify(cache)); }",
+      "hasFutureGuardSomewhere": false
+    },
+    {
+      "path": "src/navigation-dedupe.js",
+      "line": 17,
+      "target": "main-state",
+      "statement": "storage.setItem(key, JSON.stringify({ ...state, page: next }));",
+      "hasFutureGuardSomewhere": false
+    },
+    {
+      "path": "src/phase-loadout-guide.js",
+      "line": 113,
+      "target": "auxiliary",
+      "statement": "try { localStorage.setItem(TIER_KEY, event.target.value); } catch { /* ignore */ }",
+      "hasFutureGuardSomewhere": false
+    },
+    {
+      "path": "src/planner-mode-ui.js",
+      "line": 28,
+      "target": "main-state",
+      "statement": "function save(raw) { localStorage.setItem(STORAGE_KEY, JSON.stringify(raw)); }",
+      "hasFutureGuardSomewhere": false
+    },
+    {
+      "path": "src/profile-sync.js",
+      "line": 31,
+      "target": "main-state",
+      "statement": "localStorage.setItem(STORAGE_KEY, JSON.stringify(state));",
+      "hasFutureGuardSomewhere": true
+    },
+    {
+      "path": "src/revenue-planner.js",
+      "line": 202,
+      "target": "main-state",
+      "statement": "localStorage.setItem(STORAGE_KEY, JSON.stringify(raw));",
+      "hasFutureGuardSomewhere": false
+    },
+    {
+      "path": "src/revenue-planner.js",
+      "line": 1051,
+      "target": "auxiliary",
+      "statement": "localStorage.setItem(FOCUS_SCOPE_KEY, event.target.value === 'crop' ? 'crop' : 'global');",
+      "hasFutureGuardSomewhere": false
+    },
+    {
+      "path": "src/revenue-planner.js",
+      "line": 1116,
+      "target": "auxiliary",
+      "statement": "localStorage.setItem(UPGRADE_FILTER_KEY, button.dataset.upgradeFilter || UPGRADE_FILTER.ALL);",
+      "hasFutureGuardSomewhere": false
+    },
+    {
+      "path": "src/revenue-planner.js",
+      "line": 1121,
+      "target": "auxiliary",
+      "statement": "if (event.target.checked) localStorage.setItem(EXCLUDE_TEMPORARY_UPGRADES_KEY, '1');",
+      "hasFutureGuardSomewhere": false
+    },
+    {
+      "path": "src/setup-selection-ui.js",
+      "line": 87,
+      "target": "main-state",
+      "statement": "globalThis.localStorage?.setItem(STORAGE_KEY, JSON.stringify(state));",
+      "hasFutureGuardSomewhere": true
+    },
+    {
+      "path": "src/skyblock-redesign-bridge.js",
+      "line": 42,
+      "target": "main-state",
+      "statement": "localStorage.setItem(STORAGE_KEY, JSON.stringify(raw));",
+      "hasFutureGuardSomewhere": false
+    },
+    {
+      "path": "src/skyblock-redesign-bridge.js",
+      "line": 55,
+      "target": "auxiliary",
+      "statement": "localStorage.setItem(GOAL_KEY, goal.dataset.sbGoal);",
+      "hasFutureGuardSomewhere": false
+    },
+    {
+      "path": "src/skyblock-redesign.js",
+      "line": 157,
+      "target": "main-state",
+      "statement": "localStorage.setItem(STORAGE_KEY, JSON.stringify(state));",
+      "hasFutureGuardSomewhere": false
+    },
+    {
+      "path": "src/skyblock-redesign.js",
+      "line": 582,
+      "target": "auxiliary",
+      "statement": "localStorage.setItem(GOAL_KEY, button.dataset.sbGoal);",
+      "hasFutureGuardSomewhere": false
+    },
+    {
+      "path": "src/update-manager.js",
+      "line": 60,
+      "target": "auxiliary",
+      "statement": "sessionStorage.setItem(RELOAD_ATTEMPT_KEY, build);",
+      "hasFutureGuardSomewhere": false
+    },
+    {
+      "path": "src/ux-simplify.js",
+      "line": 86,
+      "target": "auxiliary",
+      "statement": "localStorage.setItem(PLANNER_SCOPE_KEY, value);",
+      "hasFutureGuardSomewhere": false
+    },
+    {
+      "path": "src/vacuum-exact-ui.js",
+      "line": 43,
+      "target": "main-state",
+      "statement": "localStorage.setItem(STORAGE_KEY, JSON.stringify(raw));",
+      "hasFutureGuardSomewhere": false
+    },
+    {
+      "path": "src/workspace-ui.js",
+      "line": 38,
+      "target": "main-state",
+      "statement": "function writeState(state) { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }",
+      "hasFutureGuardSomewhere": false
+    }
+  ],
+  "observerFiles": [
+    "src/activity-mode-ui.js",
+    "src/app.js",
+    "src/computed-stats-ui.js",
+    "src/direct-controls.js",
+    "src/editor-dedupe.js",
+    "src/enhancements.js",
+    "src/exact-item-capabilities-ui.js",
+    "src/farming-tool-art-ui.js",
+    "src/foundation.js",
+    "src/item-art-coverage.js",
+    "src/item-art-ui.js",
+    "src/loadout-capabilities-ui.js",
+    "src/navigation-dedupe.js",
+    "src/pest-analysis-ui.js",
+    "src/phase-loadout-guide.js",
+    "src/planner-mode-ui.js",
+    "src/rarity-background-ui.js",
+    "src/revenue-planner.js",
+    "src/skyblock-redesign.js",
+    "src/tool-presentation-ui.js",
+    "src/ux-simplify.js",
+    "src/vacuum-exact-ui.js",
+    "src/workspace-direct-picker.js",
+    "src/workspace-ui.js"
+  ],
+  "note": "File-level guard presence is source inventory only, not proof that each writer is protected."
+}
