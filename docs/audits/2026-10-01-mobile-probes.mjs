@@ -33,6 +33,7 @@ const header = async page => page.evaluate(() => {
       const r = e.getBoundingClientRect();
       return { text: e.textContent.trim(), width: r.width, height: r.height,
         left: r.left, right: r.right, clippedText: e.scrollWidth - e.clientWidth,
+        canHit: (() => { const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!hit && (hit === e || e.contains(hit)); })(),
         insideHeader: r.left >= bar.getBoundingClientRect().left - 1 && r.right <= bar.getBoundingClientRect().right + 1 };
     }),
   };
@@ -76,8 +77,9 @@ try {
       await page.screenshot({ path: join(OUT, name + '-dashboard.png') });
 
       await navigate(page, 'setups');
-      await page.locator('.slot-card[data-slot="petItem"]').waitFor({ state: 'visible' });
+      await page.locator('.slot-card[data-slot="petItem"][data-setup-target="normal"]').waitFor({ state: 'visible' });
       const two = await header(page);
+      add(name, 'set-controls-readable', two.buttons.filter(e => /^(FF Set|BPC Set)$/.test(e.text)).some(e => e.clippedText > 2 || !e.canHit) ? 'FAIL' : 'PASS', two.buttons);
       add(name, 'two-set-header', two.pageSideways > 2 || two.buttons.some(e => !e.insideHeader) ? 'FAIL' : 'PASS', two);
 
       await page.locator('[data-add-physical-set]').tap();
@@ -101,12 +103,13 @@ try {
       await page.locator('dialog[open]').waitFor({ state: 'hidden' });
       const setCount = await page.locator('[data-physical-setup]').count();
       const three = await header(page);
+      add(name, 'three-set-controls-hit-test', three.buttons.some(e => !e.canHit) ? 'FAIL' : 'PASS', three.buttons);
       add(name, 'three-set-header', setCount !== 3 || three.pageSideways > 2 || three.buttons.some(e => !e.insideHeader) ? 'FAIL' : 'PASS',
         { setCount, ...three });
       await page.screenshot({ path: join(OUT, name + '-three-sets.png') });
       await page.locator('[data-physical-setup="normal"]').tap();
 
-      await page.locator('.slot-card[data-slot="petItem"]').tap();
+      await page.locator('.slot-card[data-slot="petItem"][data-setup-target="normal"]').tap();
       await page.locator('.sb-pet-item-editor').waitFor({ state: 'visible' });
       const editor = await page.evaluate(() => {
         const e = document.querySelector('.sb-pet-item-editor');
