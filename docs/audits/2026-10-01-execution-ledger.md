@@ -14,22 +14,25 @@ User authorization: continue the audit until all checks are accounted for and sa
 
 ## Work queue
 
-| Area | Current state | Next action |
-|---|---|---|
-| Current repository and deployed build | PASS: unchanged main and prior live build stamp match | Keep immutable source pin |
-| Repository checkpoints | PASS: mobile CONT12–16 saved in commit 2f6eaaa4249f4c037ee8d3d5bf5cc3f351e0f7e9 | Append checkpoints after each substantive check group |
-| Complete Node/Python tests | UNKNOWN | Materialize hash-verified source and execute |
-| Planner sweep | UNKNOWN | Run unchanged repository script; record scope and exit code |
-| Overlay audit | UNKNOWN | Run unchanged repository script; distinguish source audit from runtime DOM checks |
-| Browser startup/idempotence gate | UNKNOWN | Inspect harness and current CI evidence; browser interaction only through supported CUA |
-| Persistence/schema/migration/backup | SOURCE_REVIEW retained; not a fresh full pass | Review writers and tests, exercise safe fixtures |
-| Item identity, pet copies, rarity, origin, reforges, gemstones | SOURCE_REVIEW retained | Recheck owning models and independent boundary cases |
-| Normal/rare/Pest/Feast profit and cost routes | SOURCE_REVIEW retained | Check unknown/zero and current authoritative sources |
-| Chips, shards, effects, temporary/permanent scope | SOURCE_REVIEW retained | Check metadata, current source gates and planner filtering |
-| Greenhouse/Contest/Vacuum | Partial source verification retained | Finish unresolved mechanic boundaries; keep Alpha excluded |
-| UI controls, menus, art and scroll | Partial live desktop checks in CONT03–16 | Continue remaining representative paths and owner checks |
-| Phone 320/360/390/412px, rotation, touch, software keyboard | BLOCKED: current browser has no resize/emulation API | Do not claim live mobile acceptance; source matrix in mobile checkpoint |
-| Original full 109-version report bytes | BLOCKED: not available in this workspace/approved file references | Preserve identity and retained findings; do not overwrite or pretend recovery |
+Final classification supersedes the historical next-action entries. A completed review can contain FAIL or BLOCKED results.
+
+| Area | Final classification |
+|---|---|
+| Current repository/deployed build | PASS: pinned main still unchanged; previously checked live stamp matches |
+| Repository checkpoints | PASS: incremental CONT17–24 evidence, inventories and final fix plan committed |
+| Complete Node/Python tests | PASS in fresh full-checkout validation: 1,360 Node / 8 Python |
+| Planner/page sweep | PASS in all ten areas, limited by swallowed actions/errors and external request failures |
+| Existing overlay audit | Executed zero reported findings; SOURCE_REVIEW identifies owner/scope/exit-code gaps |
+| Browser startup/idempotence | PASS startup and approximate same-state checks; strict zero-mutation acceptance not established |
+| Persistence/schema/migration/backup | FAIL future startup/writers and inconsistent backup envelope; PASS ordinary migration/rejection and verified export; disposable restore final run pending below |
+| Item identity/rarity/origin/reforges/gems | FAIL duplicate Cow copy and competing legacy Tool Reforge flags; PASS documented identity/rarity/manual controls and existing regression; unresolved live rarity curves BLOCKED |
+| Normal/rare/Pest/Feast profit and cost | PASS explicit zero/unknown cost/active unpriced Feast boundaries; FAIL unknown Pest helper coercion; complete unsourced Pest economics stays UNMODELLED |
+| Chips/shards/effects | SOURCE_REVIEW complete inventory and current filtering; specific curves/stacking BLOCKED; Phillip/UI controls have retained fix plans |
+| Greenhouse/Contest/Vacuum | PASS 53-source-table match and current Vacuum damage; FAIL stale helper / missing Contest stat wrapper; complete gameplay economics BLOCKED |
+| UI/menus/art/scroll | FAIL Cancel/Escape/header/controlled manual scroll; tool-relative anchors and last-option reachability PASS; fallback art findings retained |
+| Phone matrix/landscape/taps | PASS execution across eight viewports; observed app failures recorded; physical keyboard/notch/pan/OS rotation/zoom BLOCKED |
+| Original full 109-version report | BLOCKED: unavailable approved bytes; historical identity/findings preserved |
+| Deployment | SOURCE_REVIEW completed; account Pages configuration endpoint BLOCKED; no deploy performed |
 
 ## CONT17 — checkpoint preservation
 
