@@ -1,0 +1,88 @@
+name: Final audit verification 2026-10-01
+
+on:
+  push:
+    branches: ["audit/final-verification-2026-10-01-cont17"]
+    paths:
+      - ".github/workflows/audit-verification-2026-10-01.yml"
+      - "docs/audits/2026-10-01-mobile-probes.mjs"
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      AUDITED_SHA: bda761d81deb0be37af9fad31f5469efb992df82
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Verify unchanged application source
+        run: git diff --exit-code "$AUDITED_SHA" HEAD -- src tests scripts research assets index.html manifest.webmanifest sw.js package.json
+      - name: Prepare isolated audit dependencies
+        run: |
+          npm install --prefix "$RUNNER_TEMP/farming420-audit-deps" playwright
+          "$RUNNER_TEMP/farming420-audit-deps/node_modules/.bin/playwright" install --with-deps chromium
+          mkdir -p "$RUNNER_TEMP/farming420-audit-results"
+          printf 'PLAYWRIGHT_MODULE=%s\n' "$RUNNER_TEMP/farming420-audit-deps/node_modules/playwright/index.mjs" >> "$GITHUB_ENV"
+          printf 'AUDIT_OUT=%s\n' "$RUNNER_TEMP/farming420-audit-results" >> "$GITHUB_ENV"
+          node -p 'require(process.argv[1]).version' "$RUNNER_TEMP/farming420-audit-deps/node_modules/playwright/package.json"
+      - name: Run repository sweep and overlay audit
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4173 --bind 127.0.0.1 > "$AUDIT_OUT/server.log" 2>&1 &
+          AUDIT_SERVER_PID=$!
+          trap 'kill "$AUDIT_SERVER_PID" 2>/dev/null || true' EXIT
+          for i in $(seq 1 40); do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then break; fi
+            sleep 0.25
+          done
+          export SWEEP_OUT="$AUDIT_OUT/sweep"
+          export SWEEP_JOBS=2
+          set +e
+          npm run sweep > "$AUDIT_OUT/sweep-summary.log" 2>&1
+          SWEEP_STATUS=$?
+          npm run audit:overlay > "$AUDIT_OUT/overlay.log" 2>&1
+          OVERLAY_STATUS=$?
+          set -e
+          cat "$AUDIT_OUT/sweep-summary.log"
+          cat "$AUDIT_OUT/overlay.log"
+          printf 'sweep_exit=%s overlay_exit=%s\n' "$SWEEP_STATUS" "$OVERLAY_STATUS" > "$AUDIT_OUT/existing-gates.txt"
+          if [ "$SWEEP_STATUS" -ne 0 ] || [ "$OVERLAY_STATUS" -ne 0 ]; then exit 1; fi
+          if grep -Eq '^(FAIL|BUDGET|KILLED) ' "$AUDIT_OUT/sweep-summary.log"; then exit 1; fi
+      - name: Run supplemental mobile probes
+        if: always()
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4173 --bind 127.0.0.1 > "$AUDIT_OUT/mobile-server.log" 2>&1 &
+          AUDIT_SERVER_PID=$!
+          trap 'kill "$AUDIT_SERVER_PID" 2>/dev/null || true' EXIT
+          for i in $(seq 1 40); do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then break; fi
+            sleep 0.25
+          done
+          if [ -f docs/audits/2026-10-01-mobile-probes.mjs ]; then
+            node docs/audits/2026-10-01-mobile-probes.mjs > "$AUDIT_OUT/mobile-probes.log" 2>&1
+            cat "$AUDIT_OUT/mobile-probes.log"
+          else
+            echo "BLOCKED: supplemental probe file not yet available" | tee "$AUDIT_OUT/mobile-probes.log"
+          fi
+      - name: Audit current official Farming item resource
+        if: always()
+        continue-on-error: true
+        run: node scripts/audit-farming-models.js --output "$AUDIT_OUT/current-farming-model-audit.json" > "$AUDIT_OUT/current-model-audit.log" 2>&1
+      - name: Upload audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: farming420-final-audit-2026-10-01
+          path: ${{ runner.temp }}/farming420-audit-results
+          retention-days: 30
