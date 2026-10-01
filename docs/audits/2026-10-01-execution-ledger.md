@@ -24,7 +24,7 @@ Final classification supersedes the historical next-action entries. A completed 
 | Planner/page sweep | PASS in all ten areas, limited by swallowed actions/errors and external request failures |
 | Existing overlay audit | Executed zero reported findings; SOURCE_REVIEW identifies owner/scope/exit-code gaps |
 | Browser startup/idempotence | PASS startup and approximate same-state checks; strict zero-mutation acceptance not established |
-| Persistence/schema/migration/backup | FAIL future startup/writers and inconsistent backup envelope; PASS ordinary migration/rejection and verified export; disposable restore final run pending below |
+| Persistence/schema/migration/backup | FAIL future startup/writers and inconsistent backup envelope; PASS ordinary migration/rejection, verified export, invalid-JSON no-write and valid disposable UI restore |
 | Item identity/rarity/origin/reforges/gems | FAIL duplicate Cow copy and competing legacy Tool Reforge flags; PASS documented identity/rarity/manual controls and existing regression; unresolved live rarity curves BLOCKED |
 | Normal/rare/Pest/Feast profit and cost | PASS explicit zero/unknown cost/active unpriced Feast boundaries; FAIL unknown Pest helper coercion; complete unsourced Pest economics stays UNMODELLED |
 | Chips/shards/effects | SOURCE_REVIEW complete inventory and current filtering; specific curves/stacking BLOCKED; Phillip/UI controls have retained fix plans |
@@ -143,3 +143,22 @@ Evidence committed in docs/audits/2026-10-01-mobile-evidence-CONT24.json. Artifa
 Additional B02 pure legacy regression: current Tool Reforge entry calculation with both Blessed/Bountiful level flags and explicit bucket.reforge=bountiful returns two cropFortune contributions totaling 30. Current UI selection/sync tests do not authorize stacking two modifiers on one physical tool. The source correctly enforces Beady/Buzzing exclusivity separately. Evidence: docs/audits/2026-10-01-legacy-reforge-evidence.json. Fix plan: resolve the selected physical tool/reforge as the sole stat authority, ignore incompatible legacy progression flags, preserve manual provenance and costs during reconciliation, and test stale flags with absent/known selected reforges, recomb rarity and shared Eclipse crop buckets.
 
 Additional portrait screenshot review shows overlapping activity labels in Dashboard as well as Loadouts. At 320px Farming/Spawning/Killing widths are approximately 37px with 24/35/12px text excess; Spawning remains 4px over its width at 412px. This extends the same topbar group-layout fix, not a new independent root cause. Geometry containment alone does not certify legibility.
+
+
+## CONT25 — final disposable restore and audit closure
+
+Final supplemental run 36899139361 / job 110493593612 used audit probe revision d2476f4da62e0cc0bcdf2879403af17be7724442, confirmed unchanged application source, completed all ten sweep areas and the eight-viewport probes, and uploaded evidence. Final raw case counts: 86 PASS, 31 FAIL, 8 NOTE, zero BLOCKED (125 cases). These are observations including deliberate defect regressions; they are not 31 independent bugs or an all-green app verdict.
+
+Actual backup UI, 390px disposable fixture:
+- Real export bytes/state equality: PASS, 12,486-byte JSON.
+- Invalid JSON file: PASS, rejection message and identical storage bytes.
+- Valid file: PASS, profile name and roundtrip-restored sentinel are restored through the actual Settings file input; schema stays 10.
+- Envelope schema 10 with inner state schema 11: FAIL, UI reports Backup restored instead of rejecting. In this fixture restamping happens to yield identical existing bytes; therefore this final case proves invalid acceptance, not new data loss. The pure CONT21 fixture separately proves version downgrade and the startup fixture proves mutation of newer state.
+
+Menu reachability results are instantaneous hit geometry after scrolling. Reviewed post-wheel screenshots can show a different/earlier scroll position, and no post-capture DOM geometry was recorded. Do not claim stable later visibility from those screenshots or a stable menu acceptance pass. B07's independently controlled late-mutation failure already proves the missing manual-scroll cancellation. Fix acceptance must require stable reachability and actual selection after the restore window, in addition to point-in-time hit tests.
+
+Durable final raw results: docs/audits/2026-10-01-mobile-evidence-CONT25.json. Final screenshot/log artifact: https://github.com/DjKamma420/Farming420/actions/runs/36899139361/artifacts/11181247797 (2,641,887 bytes, verified ZIP SHA256 22321031a8a2a828746e26772e9ef5987dda45d2681625e4f517ef86e84fa9de; expires 2026-10-31).
+
+All currently executable queued checks now have explicit outcomes. Unavailable physical-device/authenticated-source/original-report/Pages-account dependencies remain BLOCKED as listed; they are not marked passed. Main was rechecked and remains bda761d81deb0be37af9fad31f5469efb992df82. A connector compare confirms the isolated audit branch adds only audit documentation/evidence/probes and its audit workflow. No application code change, merge, PR or deployment was performed.
+
+The final review in docs/audits/2026-10-01-final-review.md provides seventeen ordered work packages, owners, concrete changes and acceptance checks. Earlier CONT findings superseded or narrowed by executed evidence are explicitly corrected. This closes the accessible audit work, with known failures ready for implementation and external checks honestly blocked.
