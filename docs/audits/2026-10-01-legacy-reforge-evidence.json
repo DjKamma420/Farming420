@@ -1,0 +1,57 @@
+{
+  "auditedSource": "bda761d81deb0be37af9fad31f5469efb992df82",
+  "fixture": {
+    "selectedCrop": "melon",
+    "profile": {
+      "levels": {},
+      "owned": {},
+      "costs": {},
+      "manualGain": {},
+      "cropProgress": {},
+      "toolProgress": {
+        "melon-dicer": {
+          "levels": {
+            "tool-reforge-blessed-reforge": 1,
+            "tool-reforge-bountiful-reforge": 1
+          },
+          "owned": {},
+          "costs": {},
+          "manualGain": {},
+          "reforge": "bountiful"
+        }
+      }
+    }
+  },
+  "entryIds": [
+    "tool-reforge-blessed-reforge",
+    "tool-reforge-bountiful-reforge"
+  ],
+  "expect": "At most one Tool Reforge contribution for explicit bountiful selection; no stale Blessed contribution",
+  "result": {
+    "globalFortune": 0,
+    "cropFortune": 30,
+    "pestFortune": 0,
+    "effectiveFortune": 30,
+    "overbloom": 0,
+    "bonusPestChance": 0,
+    "pestCooldownReductionPct": 0,
+    "incomplete": {
+      "globalFortune": [],
+      "cropFortune": [],
+      "pestFortune": [],
+      "overbloom": [],
+      "bonusPestChance": [],
+      "pestCooldownReductionPct": []
+    },
+    "sourceCount": {
+      "globalFortune": 0,
+      "cropFortune": 2,
+      "pestFortune": 0,
+      "overbloom": 0,
+      "bonusPestChance": 0,
+      "pestCooldownReductionPct": 0
+    }
+  },
+  "status": "FAIL",
+  "scope": "Pure legacy entry contribution path; not a claim that the current physical editor newly creates these flags."
+}
