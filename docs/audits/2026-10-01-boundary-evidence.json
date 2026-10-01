@@ -1,0 +1,295 @@
+{
+  "auditedSource": "bda761d81deb0be37af9fad31f5469efb992df82",
+  "rows": [
+    {
+      "name": "BPC input null",
+      "expect": null,
+      "actual": 1,
+      "status": "FAIL"
+    },
+    {
+      "name": "BPC input ",
+      "expect": null,
+      "actual": 1,
+      "status": "FAIL"
+    },
+    {
+      "name": "BPC input undefined",
+      "expect": null,
+      "actual": null,
+      "status": "PASS"
+    },
+    {
+      "name": "BPC input 0",
+      "expect": 1,
+      "actual": 1,
+      "status": "PASS"
+    },
+    {
+      "name": "BPC input 100",
+      "expect": 2,
+      "actual": 2,
+      "status": "PASS"
+    },
+    {
+      "name": "BPC input 250",
+      "expect": 3.5,
+      "actual": 3.5,
+      "status": "PASS"
+    },
+    {
+      "name": "fly guaranteed quantity null",
+      "expect": null,
+      "actual": 1,
+      "status": "FAIL"
+    },
+    {
+      "name": "fly guaranteed quantity blank",
+      "expect": null,
+      "actual": 1,
+      "status": "FAIL"
+    },
+    {
+      "name": "fly guaranteed quantity missing",
+      "expect": null,
+      "actual": null,
+      "status": "PASS"
+    },
+    {
+      "name": "fly guaranteed quantity zero",
+      "expect": 1,
+      "actual": 1,
+      "status": "PASS"
+    },
+    {
+      "name": "price null",
+      "expect": "incomplete",
+      "actual": {
+        "complete": false,
+        "net": null
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "price 0",
+      "expect": "known",
+      "actual": {
+        "complete": true,
+        "net": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "price 2",
+      "expect": "known",
+      "actual": {
+        "complete": true,
+        "net": 144000
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "direct engine throughput 0",
+      "expect": "complete with explicit throughput",
+      "actual": {
+        "complete": true,
+        "net": 0,
+        "missing": []
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "direct engine throughput 20",
+      "expect": "complete with explicit throughput",
+      "actual": {
+        "complete": true,
+        "net": 144000,
+        "missing": []
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "Feast enabled unknown material price",
+      "expect": "incomplete Feast stream retained",
+      "actual": {
+        "complete": false,
+        "net": null,
+        "missing": [
+          {
+            "path": "rareDrops[harvest-feast-pumpkin].unitValueCoins",
+            "reason": "required non-negative number is missing"
+          }
+        ]
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "upgrade cost null",
+      "expect": "unknown",
+      "actual": {
+        "complete": true,
+        "beforeNetCoinsPerHour": 144000,
+        "afterNetCoinsPerHour": 158400,
+        "profitDeltaPerHour": 14400,
+        "cashRequiredCoins": null,
+        "netAcquisitionCostCoins": null,
+        "paybackHours": null,
+        "activeGrindHours": 0,
+        "passiveWaitHours": 0,
+        "costKnown": false
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "upgrade cost 0",
+      "expect": "zero known",
+      "actual": {
+        "complete": true,
+        "beforeNetCoinsPerHour": 144000,
+        "afterNetCoinsPerHour": 158400,
+        "profitDeltaPerHour": 14400,
+        "cashRequiredCoins": 0,
+        "netAcquisitionCostCoins": 0,
+        "paybackHours": 0,
+        "activeGrindHours": 0,
+        "passiveWaitHours": 0,
+        "costKnown": true
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "future migration",
+      "expect": "clone untouched and isNewer",
+      "actual": {
+        "state": {
+          "schemaVersion": 11,
+          "page": "gear",
+          "sentinel": {
+            "futureField": "preserve"
+          }
+        },
+        "schemaVersion": 11,
+        "applied": [],
+        "warnings": [],
+        "isNewer": true
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "future navigation canonicalization",
+      "expect": "zero writes and identical bytes",
+      "actual": {
+        "changed": true,
+        "writes": 1,
+        "state": {
+          "schemaVersion": 11,
+          "page": "setups",
+          "sentinel": {
+            "futureField": "preserve"
+          }
+        }
+      },
+      "status": "FAIL"
+    },
+    {
+      "name": "future backup reject",
+      "expect": "throw",
+      "actual": "This backup uses a newer data schema. Update Farming420 before restoring it.",
+      "status": "PASS"
+    },
+    {
+      "name": "future inner/current envelope mismatch",
+      "expect": "reject inconsistent versions",
+      "actual": {
+        "state": {
+          "schemaVersion": 10,
+          "page": "gear",
+          "sentinel": {
+            "futureField": "preserve"
+          }
+        },
+        "applied": [],
+        "warnings": [],
+        "sourceSchemaVersion": 10
+      },
+      "status": "FAIL"
+    },
+    {
+      "name": "Contest wrapper missing Fortune stats",
+      "expect": "incomplete explicit stat input",
+      "actual": {
+        "complete": true,
+        "expectedCollection": 24000,
+        "participationReached": true,
+        "participationThreshold": 100,
+        "durationSeconds": 1200,
+        "contestCropFortune": 0,
+        "cropKnown": true,
+        "cropDataStatus": "VERIFIED",
+        "missing": [],
+        "bracketReason": "A crop score alone cannot determine a live/final percentile bracket. Supply a finalized percentile separately."
+      },
+      "status": "FAIL"
+    },
+    {
+      "name": "same-species cow copy identity",
+      "expect": "selected-copy",
+      "actual": {
+        "type": "MOOSHROOM_COW",
+        "uuid": "other-copy",
+        "rarity": "LEGENDARY",
+        "experience": 0,
+        "source": "setup+profile",
+        "petLevel": null
+      },
+      "status": "FAIL"
+    },
+    {
+      "name": "same-species cow derived level",
+      "expect": 100,
+      "actual": {
+        "active": true,
+        "source": "setup+profile",
+        "rarity": "LEGENDARY",
+        "level": 1,
+        "strength": 0,
+        "baseFortune": 1,
+        "strengthFortune": 0,
+        "value": 1,
+        "incomplete": false,
+        "reasons": []
+      },
+      "status": "FAIL"
+    },
+    {
+      "name": "legacy vacuum helper SKYMART_VACUUM",
+      "expect": 6,
+      "actual": 6,
+      "status": "PASS"
+    },
+    {
+      "name": "legacy vacuum helper SKYMART_TURBO_VACUUM",
+      "expect": 4,
+      "actual": 5,
+      "status": "FAIL"
+    },
+    {
+      "name": "legacy vacuum helper SKYMART_HYPER_VACUUM",
+      "expect": 3,
+      "actual": 4,
+      "status": "FAIL"
+    },
+    {
+      "name": "legacy vacuum helper INFINI_VACUUM",
+      "expect": 2,
+      "actual": 3,
+      "status": "FAIL"
+    },
+    {
+      "name": "legacy vacuum helper INFINI_VACUUM_HOOVERIUS",
+      "expect": 1.5,
+      "actual": 2.4,
+      "status": "FAIL"
+    }
+  ]
+}
