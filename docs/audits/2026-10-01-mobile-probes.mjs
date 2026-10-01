@@ -1,6 +1,8 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { DATA_SCHEMA_VERSION, STORAGE_KEY } from '../../src/config.js';
+import { CROPS } from '../../src/data.js';
+import { toolKeyForCropId } from '../../src/migrations.js';
 
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE);
 const BASE = process.env.SWEEP_URL || 'http://127.0.0.1:4173';
@@ -146,7 +148,9 @@ try {
 
       await navigate(page, 'tools');
       const crops = await page.locator('[data-sb-tool-crop]').evaluateAll(nodes => nodes.map(e => e.dataset.sbToolCrop));
-      add(name, 'tool-card-coverage', crops.length === 13 ? 'PASS' : 'FAIL', { count: crops.length, crops });
+      const expectedTools = [...new Set(CROPS.map(c => toolKeyForCropId(c.id)))];
+      const actualTools = crops.map(c => toolKeyForCropId(c));
+      add(name, 'tool-card-coverage', actualTools.length === expectedTools.length && expectedTools.every(k => actualTools.includes(k)) ? 'PASS' : 'FAIL', { physicalToolCount: crops.length, logicalCropCount: CROPS.length, crops, expectedTools, actualTools });
       const toolResults = [];
       for (const crop of crops) {
         const card = page.locator('[data-sb-tool-crop="' + crop + '"]');
@@ -163,6 +167,23 @@ try {
           status: Math.abs(drift) <= 3 || clamped ? 'PASS' : 'FAIL' });
       }
       add(name, 'all-tool-card-relative-scroll', toolResults.some(e => e.status === 'FAIL') ? 'FAIL' : 'PASS', toolResults);
+      
+      const anchorCard = page.locator('[data-sb-tool-crop="cactus"]');
+      await anchorCard.scrollIntoViewIfNeeded();
+      await anchorCard.tap();
+      await page.waitForTimeout(150);
+      const prior = await page.locator('main').evaluate(e => e.scrollTop);
+      const mainBox = await page.locator('main').boundingBox();
+      await page.mouse.move(mainBox.x + mainBox.width / 2, mainBox.y + mainBox.height / 2);
+      await page.mouse.wheel(0, 160);
+      await page.waitForTimeout(80);
+      const manual = await page.locator('main').evaluate(e => e.scrollTop);
+      await page.evaluate(() => document.getElementById('app').setAttribute('data-audit-harmless-mutation', String(Date.now())));
+      await page.waitForTimeout(180);
+      const late = await page.locator('main').evaluate(e => e.scrollTop);
+      add(name, 'manual-wheel-then-controlled-late-mutation', Math.abs(manual - prior) < 10 ? 'NOTE' : Math.abs(late - manual) > 3 ? 'FAIL' : 'PASS',
+        { prior, manual, late, controlledMutation: true, note: 'Audits cancellation when the real app observer receives a harmless late attribute mutation; not a spontaneous production image-load claim.' });
+
       add(name, 'runtime-page-errors', errors.length ? 'FAIL' : 'PASS', errors);
     } catch (error) {
       add(name, 'probe-execution', 'BLOCKED', { message: String(error), errors });
@@ -172,6 +193,45 @@ try {
     }
     await writeFile(join(OUT, 'mobile-probes.json'), JSON.stringify({ auditedSource: process.env.AUDITED_SHA, cases }, null, 2));
   }
+
+  for (const [name, seed] of [
+    ['backup-fixture', { ...baseline, page: 'dashboard', auditSentinel: 'backup-bytes-check' }],
+    ['future-schema-fixture', { ...baseline, schemaVersion: DATA_SCHEMA_VERSION + 1, page: 'gear', futureSentinel: { nested: ['keep', 420] } }],
+  ]) {
+    const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true });
+    const page = await context.newPage();
+    const original = JSON.stringify(seed);
+    await page.addInitScript(([key, raw]) => localStorage.setItem(key, raw), [STORAGE_KEY, original]);
+    try {
+      await page.goto(BASE, { waitUntil: 'domcontentloaded' });
+      await page.locator('[data-nav-toggle]').waitFor();
+      await page.waitForTimeout(500);
+      if (name === 'future-schema-fixture') {
+        const raw = await page.evaluate(key => localStorage.getItem(key), STORAGE_KEY);
+        add(name, 'future-schema-startup-storage-bytes', raw === original ? 'PASS' : 'FAIL', { sameBytes: raw === original, before: JSON.parse(original), after: JSON.parse(raw) });
+      } else {
+        const toggle = page.locator('[data-nav-toggle]');
+        if (await toggle.getAttribute('aria-expanded') !== 'true') await toggle.tap();
+        await page.locator('[data-open-settings]').tap();
+        await page.locator('[data-backup-download]').scrollIntoViewIfNeeded();
+        const downloadEvent = page.waitForEvent('download', { timeout: 10000 });
+        await page.locator('[data-backup-download]').tap();
+        const download = await downloadEvent;
+        const path = await download.path();
+        const raw = await readFile(path, 'utf8');
+        const payload = JSON.parse(raw);
+        const current = await page.evaluate(key => JSON.parse(localStorage.getItem(key)), STORAGE_KEY);
+        add(name, 'backup-download-bytes-roundtrip', payload.state.auditSentinel === seed.auditSentinel && JSON.stringify(payload.state) === JSON.stringify(current) ? 'PASS' : 'FAIL',
+          { filename: download.suggestedFilename(), bytes: Buffer.byteLength(raw), schemaVersion: payload.schemaVersion, sentinelPreserved: payload.state.auditSentinel === seed.auditSentinel, sameState: JSON.stringify(payload.state) === JSON.stringify(current) });
+      }
+    } catch (error) {
+      add(name, 'probe-execution', 'BLOCKED', { message: String(error) });
+    } finally {
+      await context.close();
+    }
+  }
+  await writeFile(join(OUT, 'mobile-probes.json'), JSON.stringify({ auditedSource: process.env.AUDITED_SHA, cases }, null, 2));
+
 } finally {
   await browser.close();
 }
