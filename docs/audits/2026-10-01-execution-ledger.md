@@ -89,3 +89,20 @@ Independent deterministic probes against the verified source produced 30 cases: 
 Current acquisition cost null remains unknown with null payback; explicit zero cost remains known. Crop price null remains incomplete, price zero is complete zero revenue. These correct behaviors require no proposed fix.
 
 Fresh source verification now also reaches the first-party September 30 0.27.2 Release Candidate in the Alpha Network forum: https://hypixel.net/threads/september-30-0-27-2-release-candidate.6158219/. Its Greenhouse/Minister changes are excluded from live numerical acceptance until released live. This resolves the prior inability to retrieve the official candidate; it does not promote Alpha mechanics.
+
+
+## CONT22 — eight-viewport runtime matrix completed
+
+Run 36890836600 / job 110465744798, audit source unchanged, executed all eight viewport fixtures without probe-execution BLOCKED cases. Raw counts were 75 PASS, 29 FAIL, 8 NOTE (112 cases). Eight FAIL were a probe expectation defect: 13 logical crops map to 12 physical tool cards because Sunflower/Moonflower share a tool. These are not application defects. The final probe now derives physical tool coverage from the current crop-to-tool map. Corrected interpretation of this run: 83 PASS, 21 genuine FAIL, 8 NOTE; do not alter the raw evidence JSON.
+
+Confirmed application failures: blank Add Set Cancel in all eight viewports; Pet Item menu Escape in all eight; fixed FF/BPC labels clipped at all four portrait widths; third-tab center obscured by Remove Set at 320px. These are four behavior categories, not 21 distinct defects.
+
+Normal tool changes completed for all twelve physical tools in all eight viewports. Non-clamped movement is at most 1.375px; 320px Wheat has -9px movement at an actual scroll boundary. It must not be repaired by forcing impossible scroll coordinates. Runtime pageerror arrays are empty. Every Pet Item menu's last option became hit-test reachable after scrolling. Initial menu placement below the viewport is recorded NOTE, not an unreachable-option defect.
+
+CONT13 correction: actual 320px editor expands to 270px, yielding 240px inner budget and a 240px grid; grid-vs-editor excess is zero. The CSS-only 234px budget prediction did not account for the expanded parent and is not a runtime grid-overflow failure. Main still reports clientWidth=280 and scrollWidth=287 (7px internal excess); this remains a narrow-width owner/spacing observation requiring exact clip/reachability acceptance in a fix, not an established 6px clipped Pet Item control. Other viewports fit their grid budgets within 0.375px.
+
+The eight viewport tuples are 320×568, 360×800, 390×844, 412×915, 568×320, 800×360, 844×390 and 915×412. They use hasTouch=true and tap controls in Chromium. Landscape dimensions are independently created contexts, not physical OS rotation. Menu reachability uses wheel scrolling, so it does not establish real finger-pan behavior.
+
+Evidence committed as docs/audits/2026-10-01-mobile-evidence-CONT22.json. Screenshots/log artifact: https://github.com/DjKamma420/Farming420/actions/runs/36890836600/artifacts/11176951464 (2,636,663 bytes, SHA256 512bda760a9533388e45cdff7197aa84a3cfccc5138d5cbcafacc7e9326b455a).
+
+Final supplemental revision 9d3f3893e7fd308bbe3f294ed9baa472d3b3ea55 adds downloaded-backup byte/state verification, newer-schema startup storage preservation, and controlled late-mutation behavior after manual wheel scrolling. The mutation case specifically exercises the real app observer with a harmless audit attribute; it is not claimed to be a spontaneous production snapback reproduction.
