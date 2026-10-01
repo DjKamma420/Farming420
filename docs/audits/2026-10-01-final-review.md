@@ -13,17 +13,19 @@ Application source: bda761d81deb0be37af9fad31f5469efb992df82 (current main check
 | Repository sweep | All ten areas PASS; external 403/429 requests and swallowed interaction failures limit the claim |
 | Existing overlay audit | Zero reported findings; wrong scroll owner/default-overlay scope limits acceptance |
 | Phone/landscape runtime | Eight viewport contexts, hasTouch and normal tap navigation; controls, Pet Item editor/menu and all twelve physical tools executed |
-| Manual scroll cancellation | FAIL in all eight controlled late-mutation cases |
+| Manual scroll cancellation | FAIL in all eight controlled late-mutation cases; point-in-time menu hit geometry is not stable post-capture reachability acceptance |
 | Future-schema preservation | FAIL in pure writer and real browser startup fixtures |
 | Economics/state boundaries | 30 pure cases: 17 PASS, 13 FAIL, plus separate competing-reforge case; case counts are not distinct-bug counts |
-| Backup export | Real downloaded JSON, 12,486 bytes, expected sentinel and complete state equality PASS |
+| Backup export/restore | Export bytes/state equality PASS; invalid JSON preserves bytes PASS; valid UI restore PASS; future inner/current envelope incorrectly accepted FAIL |
 | Manual origin and rarity | Automatic sync preserves manual helmet while filling boots; explicit overwrite works; RARE+recomb→EPIC PASS |
 | Current item model resolver | Official resource resolves 152/152 IDs: 43 direct, 109 fallback; semantic art accuracy remains separate |
 | Catalog completeness | 98 upgrade rows, zero duplicate IDs, zero missing source URLs; 85 ACTIVE, 13 VERIFY; 25 shard cards |
 | Greenhouse source table | 53 coefficients previously independently matched; no invented Coins/h model |
 | Application source delta | Audit branch comparison contains audit documentation/probes and one isolated audit workflow only |
 
-Full chronological evidence and corrections: [execution ledger](2026-10-01-execution-ledger.md). Raw durable fixtures: boundary-evidence.json, legacy-reforge-evidence.json, identity-positive-evidence.json and mobile-evidence-CONT22/CONT24.json. Source/catalog inventories are included in the same directory. CI screenshots expire after 30 days; the probes and extracted geometry/results remain committed.
+Full chronological evidence and corrections: [execution ledger](2026-10-01-execution-ledger.md). Raw durable fixtures: boundary-evidence.json, legacy-reforge-evidence.json, identity-positive-evidence.json and mobile-evidence-CONT22/CONT24/CONT25.json. Source/catalog inventories are included in the same directory. CI screenshots expire after 30 days; the probes and extracted geometry/results remain committed.
+
+Final supplemental result: 125 cases, 86 PASS / 31 FAIL / 8 NOTE / zero BLOCKED. Run 36899139361. Physical/external dependencies below remain BLOCKED. These case totals include repeated known defects across viewports and must not be read as 31 distinct bugs. Complete documented fix plans are ready for implementation; no release acceptance is asserted.
 
 ## Prioritized implementation work
 
