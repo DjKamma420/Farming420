@@ -245,18 +245,18 @@ function injectPhysicalSetHeader(raw, topbar, main, control) {
   const name = hasThirdSet ? thirdSetupName(setups) : '';
   const signature = [hasThirdSet ? 3 : 2, activeId, name].join(':');
 
-  topbar.classList.remove('activity-mode-topbar-shared');
-  topbar.classList.add('activity-mode-topbar-controls');
-  main?.classList.remove('activity-mode-page-shared');
+  topbar.classList.toggle('activity-mode-topbar-shared', false);
+  topbar.classList.toggle('activity-mode-topbar-controls', true);
+  main?.classList.toggle('activity-mode-page-shared', false);
 
   if (!control) {
     control = document.createElement('div');
     const anchor = topbar.querySelector('.search-wrap');
     topbar.insertBefore(control, anchor || null);
   }
+  if (control.dataset.physicalSignature === signature) return;
   control.className = 'activity-mode-switch physical-set-switch';
   control.setAttribute('aria-label', 'Physical farming sets');
-  if (control.dataset.physicalSignature === signature) return;
 
   delete control.dataset.mode;
   control.dataset.physicalSignature = signature;
@@ -302,15 +302,15 @@ function injectHeaderSwitch(raw) {
   // Add Set naming flow above.
   if (!MODE_SWITCH_PAGES.has(page)) {
     control?.remove();
-    topbar.classList.remove('activity-mode-topbar-controls');
-    topbar.classList.add('activity-mode-topbar-shared');
-    main?.classList.add('activity-mode-page-shared');
+    topbar.classList.toggle('activity-mode-topbar-controls', false);
+    topbar.classList.toggle('activity-mode-topbar-shared', true);
+    main?.classList.toggle('activity-mode-page-shared', true);
     return;
   }
 
-  topbar.classList.remove('activity-mode-topbar-shared');
-  topbar.classList.add('activity-mode-topbar-controls');
-  main?.classList.remove('activity-mode-page-shared');
+  topbar.classList.toggle('activity-mode-topbar-shared', false);
+  topbar.classList.toggle('activity-mode-topbar-controls', true);
+  main?.classList.toggle('activity-mode-page-shared', false);
 
   const mode = activityModeForState(raw);
   if (control?.classList.contains('physical-set-switch')) {

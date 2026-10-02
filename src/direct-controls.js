@@ -1,4 +1,5 @@
 import { readStoredAppState, writeStoredAppState } from './app-storage.js';
+import { applyComputedStatsToState } from './computed-stats.js';
 import { UPGRADES } from './data.js';
 import { applyFarmingToolReforge, FARMING_TOOL_REFORGE_ENTRY_IDS, selectedFarmingToolReforge } from './item-capabilities.js';
 import { STORAGE_KEY } from './config.js';
@@ -63,6 +64,7 @@ function writeLevel(raw, item, value) {
   const reforge = Object.entries(FARMING_TOOL_REFORGE_ENTRY_IDS).find(([, id]) => id === item.id)?.[0];
   if (reforge) {
     applyFarmingToolReforge(target, next > 0 ? reforge : null);
+    applyComputedStatsToState(raw);
     return writeStoredAppState(raw);
   }
   if (next > 0) {
@@ -73,6 +75,7 @@ function writeLevel(raw, item, value) {
     delete target.levels[item.id];
     delete target.owned[item.id];
   }
+  applyComputedStatsToState(raw);
   return writeStoredAppState(raw);
 }
 

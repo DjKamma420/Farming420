@@ -4,7 +4,7 @@ Goal: implement and verify the eighteen ordered audit work packages, without mer
 Branch: `fix/audit-2026-10-02`.
 Application baseline: `bda761d81deb0be37af9fad31f5469efb992df82`.
 Audit baseline: `e666096b55d1a2a887374feb7c7cd743e8cbe111`.
-Last secured remote commit: `bbe5671b4dcc7b80115c6b71d608e277b26de47c` (diagnostic checkpoint). Local checkpoint: `66cffc1`. CLI push is unavailable; GitHub API mirrors verified local trees without force updates.
+Last secured remote commit: `1e5b65cefe95cdfc99cdb5b8b0d67aae0742bdd5` (implementation checkpoint). Local checkpoint: `2860093`. CLI push is unavailable; GitHub API mirrors verified local trees without force updates.
 
 ## Actual repository state
 
@@ -93,3 +93,17 @@ Last secured remote commit: `bbe5671b4dcc7b80115c6b71d608e277b26de47c` (diagnost
 - Current interruption: none; UI/art/new strict gates still require browser acceptance and expanded future-schema/backup/manual-scroll fixtures.
 - Running processes: none at checkpoint. Latest sessions 88936/28021 completed; no rerun of a still-running job.
 - Next executable step: sync this checkpoint; inspect strict CI mutation/failure evidence; extend retained browser probe with future raw bytes, schema disagreement, controlled late mutation, Home/End/Tab, drawer and Cropshot one-action checks. Complete final gates against final secured remote commit.
+
+## Strict mutation and browser regression checkpoint (incomplete)
+
+- Remote 1e5b65c: Validate run **36950721341**, job **110662833872**, FAILURE. Syntax, Python tooling, required files, static references and service-worker gates PASS. Startup FAIL in the strengthened idempotence probe; full npm tests skipped in CI. Locally at that checkpoint 1,377 Node + 8 Python tests PASS, exit 0.
+- Browser run **36950721335** at 1e5b65c: retained UI probe PASS in Chromium job 110662833917, Firefox 110662834287 and WebKit 110662834094 (zero failed/blocked cases). Chromium strict overlay step FAILED; shell implicit errexit hid its diagnostic log and skipped the sweep/negative controls. No strict-gate acceptance claimed.
+- Exact DOM/mutation probe found repeated navigation label/class writes, tool context classes, rarity remove/readd, and header attributes. Guards now avoid writing unchanged attributes/classes; rarity applies only changed tokens. Baseline waits for actual startup quiet, while all mutations during same-state announcements still fail.
+- Cropshot direct writes now compute the existing derived cache before its single guarded persistence operation. The browser fixture counts main-state writes and verifies the persisted level.
+- Expanded browser probe: future formatted raw schema 11 plus opaque sentinel stays byte-identical with zero writes across startup/edit/sync/reset; invalid JSON and future independent backup versions preserve saved bytes; normal export/restore; all picker Home/End/Tab/Escape/outside focus; Effects drawer keyboard/focus; controlled late DOM mutation after manual wheel.
+- Strict workflow disables implicit shell errexit while collecting diagnostics, prints actual overlay/sweep exits, runs independent negative pageerror control even after a gate failure, and returns the combined failure.
+- Idempotence negative controls now inject both a redundant attribute write (exact DOM unchanged) and a changed attribute of equal byte length; both pass through the same acceptance function and must return nonzero. These faults are confined to test harness query parameters.
+- Changed files: src/{skyblock-redesign,activity-mode-ui,rarity-background-ui,direct-controls}.js; scripts/{audit-fix-browser.mjs,browser-idempotence-smoke.html,browser-startup-smoke.sh}; browser workflow; four old class-operation source contracts updated to the same-value no-op contract.
+- Validation: session 25238 completed, **1,377 Node + 8 Python PASS**, exit 0. Node probe syntax, shell syntax, static audit (462 references), service-worker shim PASS, exit 0. Browser results for these new changes remain pending.
+- No running local process. Previous remote jobs completed; a new run is justified by the code/diagnostic changes. Current error: strict browser acceptance is not complete; draft PR #301 remains incomplete. Account Pages settings and unresolved live numeric lore remain blocked as above.
+- Next executable step: secure this checkpoint, inspect its new exact-head CI runs and printed overlay/sweep/mutation/probe failures, fix each actual regression, then run all final gates against the final secured commit.

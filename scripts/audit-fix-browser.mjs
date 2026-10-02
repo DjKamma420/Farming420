@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { DATA_SCHEMA_VERSION, STORAGE_KEY } from '../src/config.js';
 
@@ -9,12 +9,28 @@ if (!engines[engine] || !out) throw new Error('Browser engine and AUDIT_OUT are 
 await mkdir(out, { recursive: true });
 const cases = [];
 const add = (viewport, check, status, evidence) => cases.push({ engine, viewport, check, status, evidence });
+const CATALOG_KEY='farming420-item-catalog-v5';
+const testCatalog=[{id:'FERMENTO_HELMET',name:'Fermento Helmet',category:'HELMET',tier:'LEGENDARY',material:'LEATHER_HELMET',skin:null}];
 const seed = {
   schemaVersion: DATA_SCHEMA_VERSION, page: 'dashboard', selectedCrop: 'melon', search: '', drawer: null,
   profile: { name: 'Disposable cross-browser audit', globalFortune: 0, cropFortune: {},
     levels: {}, owned: {}, costs: {}, manualGain: {}, toolProgress: {}, cropProgress: {} },
 };
 const browser = await engines[engine].launch();
+const navigate = async (page,id) => {
+  const toggle=page.locator('[data-nav-toggle]');
+  if(await toggle.getAttribute('aria-expanded')!=='true') await toggle.tap();
+  await page.locator(`.sidebar [data-page="${id}"]`).tap();
+  await page.waitForTimeout(250);
+};
+const instrument = async (page,value) => page.addInitScript(([key,raw,catalogKey,items])=>{
+  localStorage.setItem(key,raw);
+  localStorage.setItem(catalogKey,JSON.stringify({fetchedAt:new Date().toISOString(),items}));
+  window.auditMainWrites=[];
+  const put=Storage.prototype.setItem,remove=Storage.prototype.removeItem;
+  Storage.prototype.setItem=function(k,v){if(k===key)window.auditMainWrites.push({kind:'set',value:String(v)});return put.call(this,k,v);};
+  Storage.prototype.removeItem=function(k){if(k===key)window.auditMainWrites.push({kind:'remove'});return remove.call(this,k);};
+},[STORAGE_KEY,value,CATALOG_KEY,testCatalog]);
 const geometry = page => page.evaluate(() => {
   const details = document.querySelector('details[data-pet-item-dropdown]');
   const menu = details?.querySelector('.sb-pet-dropdown-menu');
@@ -50,7 +66,7 @@ try {
     const errors = [], httpErrors = [];
     page.on('pageerror', e => errors.push(String(e)));
     page.on('response', r => { if (r.status() >= 400) httpErrors.push({ status: r.status(), path: new URL(r.url()).pathname }); });
-    await page.addInitScript(([key, value]) => localStorage.setItem(key, JSON.stringify(value)), [STORAGE_KEY, seed]);
+    await instrument(page,JSON.stringify(seed));
     try {
       await page.goto('http://127.0.0.1:4173', { waitUntil: 'domcontentloaded' });
       await page.locator('[data-activity-mode="farm"]').waitFor({ timeout: 15000 });
@@ -150,6 +166,58 @@ try {
       } else {
         add(name, 'last-option-actual-touch-selection-after-recovery', 'BLOCKED', { reason: 'No visible hit target after wheel recovery.', ready });
       }
+      for(const [slot,selector] of [['petItem','details[data-pet-item-dropdown]'],['pet','details[data-farming-pet-dropdown]'],['helmet','details[data-closed-item-dropdown="helmet"]']]) {
+        await page.locator(`.slot-card[data-slot="${slot}"][data-setup-target="normal"]`).tap();
+        const picker=page.locator(selector),trigger=picker.locator('summary');
+        await trigger.waitFor({state:'visible'});
+        await trigger.focus();
+        await page.keyboard.press('End');
+        const end=await picker.evaluate(e=>document.activeElement===e.querySelector('[role="option"]:last-child'));
+        await page.keyboard.press('Home');
+        const home=await picker.evaluate(e=>document.activeElement===e.querySelector('[role="option"]'));
+        await page.keyboard.press('Escape');
+        const escape=await picker.evaluate(e=>!e.open&&document.activeElement===e.querySelector('summary'));
+        await page.keyboard.press('ArrowDown');
+        await page.keyboard.press('Tab');
+        const tab=await picker.evaluate(e=>!e.open&&!e.contains(document.activeElement));
+        await trigger.tap();
+        await page.locator('#search').tap();
+        const outside=await picker.evaluate(e=>!e.open);
+        add(name,`picker-${slot}-home-end-tab-outside-focus`,end&&home&&escape&&tab&&outside?'PASS':'FAIL',{end,home,escape,tab,outside});
+      }
+      await navigate(page,'buffs');
+      const detailsButton=page.locator('button[data-open="temporary-buff-pesthunter-phillip-buff"]');
+      await detailsButton.tap();
+      await page.keyboard.press('Tab');
+      const tabInDrawer=await page.evaluate(()=>!!document.activeElement?.closest('.drawer'));
+      await page.keyboard.press('Escape');
+      const drawer=await page.evaluate(()=>({closed:!document.querySelector('.drawer'),focus:document.activeElement?.dataset?.open}));
+      add(name,'effects-drawer-escape-focus-tab',tabInDrawer&&drawer.closed&&drawer.focus==='temporary-buff-pesthunter-phillip-buff'?'PASS':'FAIL',{tabInDrawer,...drawer});
+      await navigate(page,'shards');
+      const cropshot=page.locator('article[data-open="garden-chip-cropshot-chip"]');
+      if(await cropshot.count()) {
+        const nested=await cropshot.locator('button button').count();
+        await page.evaluate(()=>{window.auditMainWrites=[];});
+        await cropshot.locator('[data-direct-value="1"]').tap();
+        await page.waitForTimeout(350);
+        const action=await page.evaluate(key=>({writes:window.auditMainWrites.length,level:JSON.parse(localStorage.getItem(key)).profile.levels['garden-chip-cropshot-chip']}),STORAGE_KEY);
+        add(name,'cropshot-valid-tree-one-write',nested===0&&action.writes===1&&action.level===1?'PASS':'FAIL',{nested,...action});
+      } else add(name,'cropshot-valid-tree-one-write','BLOCKED',{reason:'Cropshot card absent from canonical workspace'});
+      await navigate(page,'tools');
+      const anchor=page.locator('[data-sb-tool-crop="cactus"]');
+      await anchor.scrollIntoViewIfNeeded();
+      await anchor.tap();
+      await page.waitForTimeout(150);
+      const box=await page.locator('main').boundingBox();
+      const prior=await page.locator('main').evaluate(e=>e.scrollTop);
+      await page.mouse.move(box.x+box.width/2,box.y+box.height/2);
+      await page.mouse.wheel(0,160);
+      await page.waitForTimeout(100);
+      const manual=await page.locator('main').evaluate(e=>e.scrollTop);
+      await page.evaluate(()=>document.getElementById('app').setAttribute('data-audit-harmless-mutation',String(Date.now())));
+      await page.waitForTimeout(2200);
+      const late=await page.locator('main').evaluate(e=>e.scrollTop);
+      add(name,'manual-wheel-controlled-late-mutation',Math.abs(manual-prior)<10?'BLOCKED':Math.abs(late-manual)<=3?'PASS':'FAIL',{prior,manual,late,controlledMutation:true});
       add(name, 'runtime-page-errors', errors.length ? 'FAIL' : 'PASS', errors);
       add(name, 'external-http-errors', httpErrors.length ? 'NOTE' : 'PASS', [...new Map(httpErrors.map(r => [r.status + r.path, r])).values()]);
     } catch (e) {
@@ -165,6 +233,56 @@ try {
       await context.close();
     }
     await writeFile(join(out, 'browser-followup.json'), JSON.stringify({ auditedSource: process.env.AUDITED_SHA, engine, cases }, null, 2));
+  }
+  for(const future of [false,true]) {
+    const name=future?'future-schema':'backup';
+    const fixture={...seed,schemaVersion:future?DATA_SCHEMA_VERSION+1:DATA_SCHEMA_VERSION,auditSentinel:{opaque:['preserve',420],format:'disposable'}};
+    const original=JSON.stringify(fixture,null,2)+'\n';
+    const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true});
+    const page=await context.newPage();
+    page.setDefaultTimeout(8000);
+    const errors=[];page.on('pageerror',e=>errors.push(String(e)));
+    await instrument(page,original);
+    try {
+      await page.goto('http://127.0.0.1:4173',{waitUntil:'domcontentloaded'});
+      await page.locator('[data-nav-toggle]').waitFor();
+      await page.waitForTimeout(2200);
+      await navigate(page,'setups');
+      await page.locator('.slot-card[data-slot="petItem"][data-setup-target="normal"]').tap();
+      const toggle=page.locator('[data-nav-toggle]');
+      if(await toggle.getAttribute('aria-expanded')!=='true')await toggle.tap();
+      await page.locator('[data-open-settings]').tap();
+      if(future) {
+        await page.locator('[data-sync-now]').tap();
+        await page.locator('[data-reset-app]').tap();
+        const state=await page.evaluate(key=>({raw:localStorage.getItem(key),writes:window.auditMainWrites.length}),STORAGE_KEY);
+        add(name,'future-raw-bytes-zero-writes-startup-navigation-editors-settings-sync',state.raw===original&&state.writes===0?'PASS':'FAIL',{sameBytes:state.raw===original,writes:state.writes,errors});
+      } else {
+        await page.locator('[data-backup-download]').scrollIntoViewIfNeeded();
+        const downloading=page.waitForEvent('download');
+        await page.locator('[data-backup-download]').tap();
+        const download=await downloading;
+        const payload=JSON.parse(await readFile(await download.path(),'utf8'));
+        const current=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),STORAGE_KEY);
+        add(name,'export-preserves-actual-state',JSON.stringify(payload.state)===JSON.stringify(current)?'PASS':'FAIL',{sentinel:payload.state.auditSentinel,filename:download.suggestedFilename()});
+        for(const [check,value] of [['invalid-json','{broken'],['future-inner',JSON.stringify({...payload,state:{...payload.state,schemaVersion:DATA_SCHEMA_VERSION+1}})],['future-envelope',JSON.stringify({...payload,schemaVersion:DATA_SCHEMA_VERSION+1})]]) {
+          const before=await page.evaluate(key=>localStorage.getItem(key),STORAGE_KEY);
+          await page.locator('[data-backup-restore]').setInputFiles({name:check+'.json',mimeType:'application/json',buffer:Buffer.from(value)});
+          await page.waitForTimeout(250);
+          const after=await page.evaluate(key=>localStorage.getItem(key),STORAGE_KEY);
+          const status=await page.locator('[data-settings-status]').textContent();
+          add(name,check+'-ui-rejection',before===after&&!/Backup restored/i.test(status)?'PASS':'FAIL',{sameBytes:before===after,status});
+        }
+        const restoring={...payload,state:{...payload.state,profile:{...payload.state.profile,name:'Disposable restored backup'}}};
+        await page.locator('[data-backup-restore]').setInputFiles({name:'valid.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(restoring))});
+        await page.waitForTimeout(300);
+        const restored=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),STORAGE_KEY);
+        const status=await page.locator('[data-settings-status]').textContent();
+        add(name,'valid-current-ui-restore',restored.profile.name==='Disposable restored backup'&&/Backup restored/i.test(status)?'PASS':'FAIL',{name:restored.profile.name,status});
+      }
+      add(name,'runtime-page-errors',errors.length?'FAIL':'PASS',errors);
+    }catch(error){add(name,'probe-execution','BLOCKED',{message:String(error),errors});}
+    finally{await context.close();}
   }
 } finally { await browser.close(); }
 const counts = Object.fromEntries(['PASS', 'FAIL', 'NOTE', 'BLOCKED'].map(s => [s, cases.filter(c => c.status === s).length]));

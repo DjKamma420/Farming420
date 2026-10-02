@@ -309,11 +309,11 @@ function storeVacuumReforge(reforgeId) {
 function decorateNavigation() {
   const sidebar = document.querySelector('.sidebar');
   if (!sidebar) return;
-  sidebar.classList.add('sb-rail');
+  sidebar.classList.toggle('sb-rail', true);
   sidebar.querySelectorAll('.nav-link').forEach(button => {
     const page = button.dataset.page || button.dataset.navId;
     const label = button.textContent.trim();
-    button.dataset.label = label;
+    if (button.dataset.label !== label) button.dataset.label = label;
     if (button.querySelector('.sb-nav-icon')) return;
     const icon = document.createElement('span');
     icon.className = 'sb-nav-icon';
@@ -421,11 +421,11 @@ function toolPicker() {
   if (!content) return;
   const head = content.querySelector('.page-head');
   if (!head) return;
-  content.classList.add('sb-tools-page');
+  content.classList.toggle('sb-tools-page', true);
   // Hidden, never removed. enhancements.js recreates this strip whenever it is
   // missing, so removing it starts a fight between two observers that rebuild
   // and delete the same node until the tab dies.
-  content.querySelector('.tool-context-addon')?.classList.add('sb-hidden-context');
+  content.querySelector('.tool-context-addon')?.classList.toggle('sb-hidden-context', true);
 
   const cropId = activeCropId();
   const state = readState();
@@ -506,10 +506,10 @@ function dockToolEditor() {
   });
 
   if (inactiveEditor) {
-    if (!inactiveEditor.classList.contains('sb-docked-editor')) inactiveEditor.classList.add('sb-docked-editor');
-    if (!inactiveEditor.classList.contains('sb-tool-editor-collapsed')) inactiveEditor.classList.add('sb-tool-editor-collapsed');
+    if (!inactiveEditor.classList.contains('sb-docked-editor')) inactiveEditor.classList.toggle('sb-docked-editor', true);
+    if (!inactiveEditor.classList.contains('sb-tool-editor-collapsed')) inactiveEditor.classList.toggle('sb-tool-editor-collapsed', true);
   }
-  if (!editor.classList.contains('sb-docked-editor')) editor.classList.add('sb-docked-editor');
+  if (!editor.classList.contains('sb-docked-editor')) editor.classList.toggle('sb-docked-editor', true);
   if (editor.classList.contains('sb-tool-editor-collapsed') !== collapsed) {
     editor.classList.toggle('sb-tool-editor-collapsed', collapsed);
   }
@@ -631,8 +631,8 @@ function toolPortrait() {
 }
 
 function restyleCards() {
-  document.querySelectorAll('.item-card').forEach(card => card.classList.add('sb-inventory-card'));
-  document.querySelectorAll('.lever').forEach(lever => lever.classList.add('sb-toggle'));
+  document.querySelectorAll('.item-card').forEach(card => card.classList.toggle('sb-inventory-card', true));
+  document.querySelectorAll('.lever').forEach(lever => lever.classList.toggle('sb-toggle', true));
 }
 
 function apply() {
@@ -648,7 +648,7 @@ function apply() {
     vacuumReforgePanel();
     toolPortrait();
     restyleCards();
-    document.documentElement.classList.add('skyblock-redesign');
+    document.documentElement.classList.toggle('skyblock-redesign', true);
   } finally {
     applying = false;
   }

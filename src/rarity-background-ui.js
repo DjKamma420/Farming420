@@ -33,12 +33,12 @@ function setupFromState(state, setupId = null) {
 
 function applyRarityClass(node, rarity) {
   if (!node?.classList) return;
-  node.classList.remove(...RARITY_CLASSES);
   const normalized = normalizeRarity(rarity);
-  node.classList.add(rarityClass(normalized));
-  node.classList.add('rarity-surface');
-  if (normalized) node.dataset.effectiveRarity = normalized;
-  else delete node.dataset.effectiveRarity;
+  const wanted = rarityClass(normalized);
+  for(const token of RARITY_CLASSES) node.classList.toggle(token, token === wanted);
+  node.classList.toggle('rarity-surface', true);
+  if (normalized && node.dataset.effectiveRarity !== normalized) node.dataset.effectiveRarity = normalized;
+  else if (!normalized && node.hasAttribute('data-effective-rarity')) delete node.dataset.effectiveRarity;
 }
 
 function setupItemRarity(item, catalog) {
@@ -113,7 +113,7 @@ function catalogItemById(catalog, id) {
 
 function clearRarityClass(node) {
   if (!node?.classList) return;
-  node.classList.remove(...RARITY_CLASSES, 'rarity-surface');
+  for(const token of [...RARITY_CLASSES,'rarity-surface']) node.classList.toggle(token,false);
   delete node.dataset.effectiveRarity;
 }
 

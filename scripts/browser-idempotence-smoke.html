@@ -28,6 +28,8 @@
 
   const SETTLE_MS = 120;
   const REAPPLY_PASSES = 3;
+  // Test-only faults prove same-byte-length drift and transient writes are detected.
+  const fault = new URLSearchParams(location.search).get("auditFault");
 
   // A profile with real content. An empty one renders far fewer branches, and a
   // non-idempotent writer usually lives in a branch that only filled data takes.
@@ -124,11 +126,22 @@
       return app.innerHTML;
     };
 
+    const waitForQuiet = async () => {
+      let lastMutation=Date.now();
+      const observer=new win.MutationObserver(()=>{lastMutation=Date.now();});
+      observer.observe(doc.querySelector('#app'),{subtree:true,childList:true,attributes:true,characterData:true});
+      const deadline=Date.now()+1200;
+      while(Date.now()<deadline && Date.now()-lastMutation<SETTLE_MS*2) await wait(SETTLE_MS);
+      observer.disconnect();
+      if(Date.now()-lastMutation<SETTLE_MS*2) throw new Error('DOM never settled before reapply');
+    };
     const drifted = [];
     for (const page of pages) {
       doc.querySelector(`.sidebar [data-page="${page}"]`)?.click();
       await wait(SETTLE_MS * 2);
 
+      if (fault === "mutation" || fault === "equal-length") doc.querySelector(".sidebar").setAttribute("data-audit-fault", "ab");
+      await waitForQuiet();
       const before = measure();
       let mutations = 0;
       const samples=[];
@@ -140,13 +153,15 @@
       // Re-announce the *same* state. Nothing changed, so nothing may change.
       for (let pass = 0; pass < REAPPLY_PASSES; pass++) {
         win.dispatchEvent(new win.Event('farming420:state-changed'));
+        if (pass === 0 && fault === 'mutation') doc.querySelector('.sidebar').setAttribute('data-audit-fault', 'ab');
+        if (pass === 0 && fault === 'equal-length') doc.querySelector('.sidebar').setAttribute('data-audit-fault', 'cd');
         await wait(SETTLE_MS);
       }
       const after = measure();
 
       observer.disconnect();
       if (after !== before || mutations !== 0) {
-        drifted.push(`${page}: exact DOM equal=${after===before}, mutations=${mutations}, samples=${samples.join(';')}`);
+        drifted.push(`${page}: exact DOM equal=${after===before}, equal length=${after.length===before.length}, mutations=${mutations}, samples=${samples.join(';')}`);
       }
     }
 

@@ -166,30 +166,44 @@ echo "Browser smoke test passed: Dashboard, Loadouts picker, and canonical recom
 IDEMPOTENCE_DOM="${RUNNER_TEMP:-/tmp}/farming420-idempotence-dom.html"
 run_chrome_dump "${BASE_URL}scripts/browser-idempotence-smoke.html" "$IDEMPOTENCE_DOM" 30000
 
-# The harness reports the page count it actually drove. A verdict without one,
-# or with too few pages, means it fell over before testing anything -- which
-# must fail rather than read as a pass.
-IDEMPOTENCE_VERDICT="$(grep -o 'IDEMPOTENCE_[A-Z]* pages=[0-9]*' "$IDEMPOTENCE_DOM" | head -n 1 || true)"
-if [[ -z "$IDEMPOTENCE_VERDICT" ]]; then
-  echo "The idempotence harness produced no verdict; it did not finish" >&2
-  sed -n '1,80p' "$IDEMPOTENCE_DOM" >&2 || true
-  exit 1
-fi
+check_idempotence_verdict() {
+  local dom="$1"
+  local verdict pages
+  verdict="$(grep -o 'IDEMPOTENCE_[A-Z]* pages=[0-9]*' "$dom" | head -n 1 || true)"
+  if [[ -z "$verdict" ]]; then
+    echo "The idempotence harness produced no verdict; it did not finish" >&2
+    sed -n '1,80p' "$dom" >&2 || true
+    return 1
+  fi
+  pages="${verdict##*pages=}"
+  if (( pages < 5 )); then
+    echo "The idempotence harness reached too few pages: $pages" >&2
+    return 1
+  fi
+  if [[ "$verdict" != IDEMPOTENCE_OK* ]]; then
+    echo "Re-applying the same UI state changed the DOM -- docs/RENDER_FREEZE_SAFETY.md" >&2
+    sed -n '1,80p' "$dom" >&2 || true
+    return 1
+  fi
+  echo "Idempotence smoke passed: same state on $pages pages produced zero mutations."
+}
 
-IDEMPOTENCE_PAGES="${IDEMPOTENCE_VERDICT##*pages=}"
-if (( IDEMPOTENCE_PAGES < 5 )); then
-  echo "The idempotence harness only reached $IDEMPOTENCE_PAGES page(s); it is not testing the app" >&2
-  sed -n '1,80p' "$IDEMPOTENCE_DOM" >&2 || true
-  exit 1
-fi
-
-if [[ "$IDEMPOTENCE_VERDICT" != IDEMPOTENCE_OK* ]]; then
-  echo "Re-applying the same UI state changed the DOM -- docs/RENDER_FREEZE_SAFETY.md" >&2
-  sed -n '1,80p' "$IDEMPOTENCE_DOM" >&2 || true
-  exit 1
-fi
-
-echo "Idempotence smoke test passed: re-applying the same state on $IDEMPOTENCE_PAGES pages changed nothing."
+check_idempotence_verdict "$IDEMPOTENCE_DOM"
+# Pass both injected failures through the SAME acceptance function. A green
+# result here would prove the real gate can silently accept a known regression.
+for fault in mutation equal-length; do
+  FAULT_DOM="${RUNNER_TEMP:-/tmp}/farming420-idempotence-$fault.html"
+  run_chrome_dump "${BASE_URL}scripts/browser-idempotence-smoke.html?auditFault=$fault" "$FAULT_DOM" 30000
+  if check_idempotence_verdict "$FAULT_DOM"; then
+    echo "Idempotence gate incorrectly accepted injected $fault failure" >&2
+    exit 1
+  fi
+  if ! grep -q 'IDEMPOTENCE_DRIFT pages=' "$FAULT_DOM" || ! grep -q 'equal length=true, mutations=[1-9]' "$FAULT_DOM"; then
+    echo "Injected $fault never reached the measured DOM; negative control invalid" >&2
+    exit 1
+  fi
+  echo "Idempotence negative control $fault: acceptance returned nonzero for equal-length DOM mutation."
+done
 
 ITEM_ART_DOM="${RUNNER_TEMP:-/tmp}/farming420-item-art-dom.html"
 run_chrome_dump "${BASE_URL}scripts/browser-item-art-smoke.html" "$ITEM_ART_DOM" 20000
