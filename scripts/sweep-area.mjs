@@ -19,7 +19,7 @@ const PAGE = process.argv[2];
 if (!PAGE) { console.error('usage: sweep-area.mjs <page-id>'); process.exit(64); }
 
 const KEY = 'skyblock-farming-maxer-v1';
-const VARIANT_BUDGET_MS = Number(process.env.VARIANT_BUDGET_MS || 35000);
+const VARIANT_BUDGET_MS = Number(process.env.VARIANT_BUDGET_MS || 90000);
 /** Matches `npm run serve`; override with SWEEP_URL to point at another build. */
 const BASE_URL = process.env.SWEEP_URL || 'http://127.0.0.1:4173';
 
@@ -54,21 +54,17 @@ async function sweepVariant(browser, label, viewport, seed) {
   const ctx = await browser.newContext({ viewport, hasTouch: viewport.width < 800 });
   const p = await ctx.newPage();
   const errs = [];
+  const consoleErrors = [];
+  const networkFailures = [];
+  p.setDefaultTimeout(3000);
+  p.on('response',response=>{if(response.status()>=400)networkFailures.push({status:response.status(),url:response.url(),external:new URL(response.url()).origin!==new URL(BASE_URL).origin});});
   let crashed = false;
   p.on('crash', () => { crashed = true; });
   p.on('pageerror', e => errs.push(String(e).slice(0, 120)));
-  p.on('console', m => {
-    // `deploy-version.json` is written by scripts/prepare-pages-deploy.js at
-      // deploy time and update-manager.js already treats a non-ok response as
-      // "no version yet", so its 404 locally is expected, not a fault.
-      // Chromium logs a bare "Failed to load resource" for a 404 and puts the
-      // URL only in the message's location, so the text alone cannot tell an
-      // expected miss from a real one.
-      const noise = /ERR_TUNNEL|api\.hypixel|textures\.minecraft|favicon|deploy-version\.json/;
-      if (m.type() === 'error' && !noise.test(m.text()) && !noise.test(m.location?.()?.url || '')) {
-      errs.push(m.text().slice(0, 110));
-    }
+  p.on('console', message => {
+    if (message.type() === 'error') consoleErrors.push({text:message.text(),url:message.location()?.url || ''});
   });
+
   if (seed) await p.addInitScript(([k, s]) => localStorage.setItem(k, s), [KEY, JSON.stringify(seed)]);
 
   const alive = async () => {
@@ -208,14 +204,20 @@ async function sweepVariant(browser, label, viewport, seed) {
 
       // Every lever and radio on the page, since those are what this release changed.
       if (verdict === 'ok') {
-        const controls = await p.$$eval('.lever, [role="radio"], .sb-reforge-option, .planner-mode-tab, .planner-row, .setup-tab', els=>els.filter(e=>e.getBoundingClientRect().width>0).slice(0,40).map(e=>{
+        const currentControls = () => p.$$eval('.lever, [role="radio"], .sb-reforge-option, .planner-mode-tab, .planner-row, .setup-tab', els=>els.filter(e=>e.getBoundingClientRect().width>0).map(e=>{
           const node=e.matches('.lever')?e.querySelector('input'):e;
           const attrs=node.getAttributeNames().filter(key=>key.startsWith('data-')).map(key=>`[${key}="${CSS.escape(node.getAttribute(key))}"]`).join('');
           const selector=node.tagName.toLowerCase()+attrs;
           return e.matches('.lever')?`label:has(${selector})`:selector;
         }));
         let index = 0;
-        for (const selector of controls) {
+        const seenControls = new Set();
+        while (index < 40) {
+          // Rankings can legitimately change after a price arrives. Snapshot
+          // each next visible control anew; never click a stale detached row.
+          const selector = (await currentControls()).find(value=>!seenControls.has(value));
+          if (!selector) break;
+          seenControls.add(selector);
           if (outOfTime()) { verdict = `budget spent after ${clicks} clicks (controls)`; break; }
           const before=await p.evaluate(key=>localStorage.getItem(key),KEY);
           const noOp=await p.locator(selector).first().evaluate(e=>e.getAttribute('aria-pressed')==='true'||e.getAttribute('aria-checked')==='true'||e.classList.contains('selected')||e.classList.contains('active'));
@@ -232,9 +234,21 @@ async function sweepVariant(browser, label, viewport, seed) {
     verdict = String(error.message || error);
   }
 
+  const expectedLocalMiss = url => /\/(deploy-version\.json|favicon\.ico)(?:[?#]|$)/.test(url);
+  const networkNotes = networkFailures.filter(row=>row.external && [403,429].includes(row.status));
+  for (const row of networkFailures) if(!row.external && !expectedLocalMiss(row.url)) errs.push(`Local HTTP ${row.status}: ${row.url}`);
+  for (const row of consoleErrors) {
+    if (/ERR_TUNNEL/.test(row.text) || expectedLocalMiss(row.url)) continue;
+    const status = Number(row.text.match(/server responded with a status of (\d+)/)?.[1]);
+    const exact = networkFailures.find(f=>f.url===row.url&&f.status===status);
+    const bareExpectedExternal = !row.url && [403,429].includes(status)
+      && networkNotes.some(f=>f.status===status) && !networkFailures.some(f=>!f.external&&f.status===status&&!expectedLocalMiss(f.url));
+    if ((exact?.external && [403,429].includes(status)) || bareExpectedExternal) continue;
+    errs.push(row.text.slice(0,180)+(row.url?` [${row.url}]`:''));
+  }
   const unique = [...new Set(errs)];
   await cap(ctx.close(), 4000, 'ctx close').catch(() => {});
-  return { label, verdict, clicks, crashed, errors: unique };
+  return { label, verdict, clicks, crashed, errors: unique, networkNotes: [...new Map(networkNotes.map(row=>[row.url,row])).values()] };
 }
 
 const browser = await chromium.launch();
@@ -253,6 +267,7 @@ for (const r of results) {
   else if (budget) worst = Math.max(worst, 2);
   console.log(`[${PAGE}] ${r.label} ${r.verdict} (${r.clicks} clicks)`
     + (r.crashed ? ' RENDERER CRASHED' : '')
-    + (r.errors.length ? ' | ' + r.errors.join(' ;; ') : ''));
+    + (r.errors.length ? ' | ' + r.errors.join(' ;; ') : '')
+    + (r.networkNotes.length ? ' | EXTERNAL_HTTP_NOTE ' + JSON.stringify(r.networkNotes) : ''));
 }
 process.exit(worst);

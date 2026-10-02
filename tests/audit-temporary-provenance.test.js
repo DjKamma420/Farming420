@@ -5,6 +5,7 @@ import { computeTotalsFromEntries } from '../src/computed-stats.js';
 import { GARDEN_CHIPS, CHIP_LEVEL_CAP, gardenChipEffect, phillipBuffEffect, temporaryModifierEffect, FARMING_SHARDS_027 } from '../src/farming-modifiers-data.js';
 import { PESTS, VACUUMS, idealVacuumPullCount, idealVacuumKillSeconds, guaranteedPestCropDropInput } from '../src/pest-mechanics-data.js';
 import { GARDEN_VACUUM_ITEMS } from '../src/exact-farming-items.js';
+import { petLevelFromExperience, mooshroomStrengthFortune, mooshroomStrengthRequirement, mooshroomCowContribution } from '../src/mooshroom-cow.js';
 import { VACUUM_BOOKWORM_BOOK } from '../src/vacuum-data-patches.js';
 
 test('Phillip count is partial/capped, one activation expires, and Alpha preview cannot become complete', () => {
@@ -70,4 +71,19 @@ test('historical Pest and Alpha/community shard evidence stays incomplete in run
     const item=UPGRADES.find(row=>row.section==='shards'&&row.name.startsWith(shard.name));
     if(item) assert.equal(item.status,'VERIFY',item.id);
   }
+});
+
+test('Cow unknown numeric inputs and unverified rarity/level curves stay unknown', () => {
+  for (const input of [null,undefined,'',' ',false,true,[],[1000],{}]) {
+    assert.equal(petLevelFromExperience(input,'LEGENDARY'),null);
+    assert.equal(mooshroomStrengthFortune(input,100,'LEGENDARY'),null);
+    assert.equal(mooshroomStrengthRequirement(input),null);
+  }
+  assert.equal(petLevelFromExperience(0,'LEGENDARY'),1);
+  assert.equal(mooshroomStrengthFortune(0,100,'LEGENDARY'),0);
+  assert.equal(mooshroomStrengthFortune(1000,100,'LEGENDARY'),35);
+  for (const rarity of ['RARE','EPIC','MYTHIC','UNKNOWN',null]) assert.equal(mooshroomStrengthFortune(1000,100,rarity),null);
+  assert.equal(mooshroomStrengthFortune(1000,50,'LEGENDARY'),null);
+  const state={profile:{inputs:{strength:1000},setups:{activeId:'normal',list:[{id:'normal',slots:{pet:{skyblockId:'MOOSHROOM_COW',rarity:'MYTHIC',petLevel:100}}}]}}};
+  assert.equal(mooshroomCowContribution(state).incomplete,true);
 });

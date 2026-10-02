@@ -1,11 +1,10 @@
 import { activeSetup } from './setups.js';
 import { syncedPetForSetup } from './pet-identity.js';
+import { finiteNumber, finiteNonNegative } from './finite-number.js';
 
-// Mooshroom Cow mechanics used by the computed-stat coverage check.
-// Current post-0.26.1 base Farming Fortune is 1 -> 100 by pet level.
-// RARE and higher Farming Strength grants +0.7 Farming Fortune per X Strength,
-// where X scales from 39.8 at level 1 to 20 at level 100. Current NEU item
-// definitions expose the perk on RARE, EPIC and LEGENDARY Mooshroom Cow pets.
+// The current Legendary level-100 Cow lore is pinned in VERIFIED_MECHANICS.
+// Other Farming Strength rarity/level curves are unresolved, so that endpoint
+// must not be interpolated or copied to a different rarity.
 
 const PET_LEVEL_XP = Object.freeze([
   100, 110, 120, 130, 145, 160, 175, 190, 210, 230, 250, 275, 300, 330, 360, 400, 440, 490, 540, 600, 660, 730, 800,
@@ -28,16 +27,9 @@ const PET_RARITY_OFFSET = Object.freeze({
   MYTHIC: 20,
 });
 
-function finiteNonNegative(value) {
-  if (value === null || value === undefined || value === '') return null;
-  const number = Number(value);
-  return Number.isFinite(number) && number >= 0 ? number : null;
-}
-
 function explicitPetLevel(value) {
-  if (value === null || value === undefined || value === '') return null;
-  const number = Number(value);
-  if (!Number.isFinite(number)) return null;
+  const number = finiteNumber(value);
+  if (number === null) return null;
   return Math.max(1, Math.min(100, Math.floor(number)));
 }
 
@@ -63,17 +55,17 @@ export function petLevelFromExperience(experience, rarity = 'COMMON', {
 }
 
 export function mooshroomStrengthRequirement(level) {
-  const safeLevel = Math.max(1, Math.min(100, Math.floor(Number(level) || 1)));
-  return 40 - (0.2 * safeLevel);
+  return finiteNumber(level) === 100 ? 20 : null;
 }
 
 export function mooshroomStrengthFortune(strength, level = 100, rarity = 'LEGENDARY') {
   const safeStrength = finiteNonNegative(strength);
   if (safeStrength === null) return null;
-  if (!FARMING_STRENGTH_RARITIES.has(String(rarity || '').toUpperCase())) return 0;
+  if (['COMMON', 'UNCOMMON'].includes(String(rarity || '').toUpperCase())) return 0;
+  if (!FARMING_STRENGTH_RARITIES.has(String(rarity || '').toUpperCase())) return null;
   // The current level-100 Legendary lore is pinned; other rarity/level perk
   // curves remain unresolved and must not be inferred from that endpoint.
-  if (String(rarity).toUpperCase() !== 'LEGENDARY' || Number(level) !== 100) return null;
+  if (String(rarity).toUpperCase() !== 'LEGENDARY' || finiteNumber(level) !== 100) return null;
   const requirement = mooshroomStrengthRequirement(level);
   return Math.floor((safeStrength / requirement) * 0.7);
 }
@@ -144,8 +136,8 @@ export function mooshroomCowContribution(state) {
       if (value === null) reasons.push('Farming Strength rarity/level curve lacks current live lore verification');
       else strengthFortune = value;
     }
-  } else if (!rarity) {
-    reasons.push('Mooshroom Cow rarity is unavailable');
+  } else if (!['COMMON', 'UNCOMMON'].includes(rarity)) {
+    reasons.push('Mooshroom Cow rarity is unavailable or unsupported');
   }
 
   return {

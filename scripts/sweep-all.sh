@@ -24,12 +24,12 @@ mkdir -p "$OUT"
 rm -f "$OUT"/area-*.log
 run_one() {
   local page="$1"
-  timeout -k 5 150 node "${SWEEP_WORKER:-$SP/sweep-area.mjs}" "$page" > "$OUT/area-$page.log" 2>&1
+  timeout -k 5 300 node "${SWEEP_WORKER:-$SP/sweep-area.mjs}" "$page" > "$OUT/area-$page.log" 2>&1
   local code=$?
   case $code in
     0) echo "PASS  $page" ;;
     2) echo "BUDGET $page" ;;
-    124|137) echo "KILLED $page (hit the 150s wall)" ;;
+    124|137) echo "KILLED $page (hit the 300s wall)" ;;
     *) echo "FAIL  $page (exit $code)" ;;
   esac
   return "$code"

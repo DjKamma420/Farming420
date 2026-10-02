@@ -967,4 +967,7 @@ if (typeof document !== 'undefined') {
     if (matchesEventTarget(event, REAPPLY_CHANGE_SELECTOR)) schedule();
   });
   globalThis.addEventListener?.('farming420:state-changed', schedule);
+  // Value/cache completion can repaint an open editor without changing saved
+  // state. Rebuild its existing controls from the core's explicit render hook.
+  globalThis.addEventListener?.('farming420:rendered', schedule);
 }

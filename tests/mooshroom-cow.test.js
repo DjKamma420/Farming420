@@ -36,8 +36,8 @@ test('the shared pet XP helper supports a verified level-200 extension without c
   assert.equal(petLevelFromExperience(214_023_230, 'LEGENDARY'), 100);
 });
 
-test('Farming Strength threshold scales from 39.8 at level 1 to 20 at level 100', () => {
-  assert.equal(mooshroomStrengthRequirement(1), 39.8);
+test('Farming Strength threshold is known only at the pinned level-100 endpoint', () => {
+  assert.equal(mooshroomStrengthRequirement(1), null);
   assert.equal(mooshroomStrengthRequirement(100), 20);
 });
 

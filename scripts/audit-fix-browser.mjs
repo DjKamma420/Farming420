@@ -218,6 +218,30 @@ try {
       await page.waitForTimeout(2200);
       const late=await page.locator('main').evaluate(e=>e.scrollTop);
       add(name,'manual-wheel-controlled-late-mutation',Math.abs(manual-prior)<10?'BLOCKED':Math.abs(late-manual)<=3?'PASS':'FAIL',{prior,manual,late,controlledMutation:true});
+      await anchor.tap();
+      await page.waitForTimeout(150);
+      await page.locator('main').evaluate(e=>{e.tabIndex=-1;e.focus({preventScroll:true});});
+      const keyBefore=await page.locator('main').evaluate(e=>e.scrollTop);
+      await page.keyboard.press('PageUp');
+      await page.waitForTimeout(300);
+      const keyManual=await page.locator('main').evaluate(e=>e.scrollTop);
+      await page.evaluate(()=>document.getElementById('app').setAttribute('data-audit-key-mutation',String(Date.now())));
+      await page.waitForTimeout(2200);
+      const keyLate=await page.locator('main').evaluate(e=>e.scrollTop);
+      add(name,'manual-key-controlled-late-mutation',Math.abs(keyBefore-keyManual)<10?'BLOCKED':Math.abs(keyLate-keyManual)<=3?'PASS':'FAIL',{keyBefore,keyManual,keyLate,key:'PageUp',controlledPaneFocus:true});
+      await anchor.tap();
+      await page.waitForTimeout(150);
+      const touch=await page.locator('main').evaluate(e=>{
+        const before=e.scrollTop;
+        e.dispatchEvent(new Event('touchstart',{bubbles:true}));
+        e.dispatchEvent(new Event('touchmove',{bubbles:true}));
+        e.scrollTop=before>=120?before-120:before+120;
+        return {before,manual:e.scrollTop};
+      });
+      await page.evaluate(()=>document.getElementById('app').setAttribute('data-audit-touch-mutation',String(Date.now())));
+      await page.waitForTimeout(2200);
+      const touchLate=await page.locator('main').evaluate(e=>e.scrollTop);
+      add(name,'touch-intent-controlled-late-mutation',Math.abs(touch.before-touch.manual)<10?'BLOCKED':Math.abs(touchLate-touch.manual)<=3?'PASS':'FAIL',{...touch,late:touchLate,syntheticIntentAndControlledScroll:true,physicalDevice:false});
       add(name, 'runtime-page-errors', errors.length ? 'FAIL' : 'PASS', errors);
       add(name, 'external-http-errors', httpErrors.length ? 'NOTE' : 'PASS', [...new Map(httpErrors.map(r => [r.status + r.path, r])).values()]);
     } catch (e) {

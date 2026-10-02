@@ -4,7 +4,7 @@ Goal: implement and verify the eighteen ordered audit work packages, without mer
 Branch: `fix/audit-2026-10-02`.
 Application baseline: `bda761d81deb0be37af9fad31f5469efb992df82`.
 Audit baseline: `e666096b55d1a2a887374feb7c7cd743e8cbe111`.
-Last secured remote commit: `2ccba151da5bebe691a5cad7461ed98ab797b038` (strict-gate checkpoint). Local checkpoint: `6a05540`. CLI push is unavailable; GitHub API mirrors verified local trees without force updates.
+Last secured remote commit: `717a6bd17ea22e550967766d5786a7e25c9821ab` (persisted-state checkpoint). Local checkpoint: `150caa0`. CLI push is unavailable; GitHub API mirrors verified local trees without force updates.
 
 ## Actual repository state
 
@@ -18,15 +18,15 @@ Last secured remote commit: `2ccba151da5bebe691a5cad7461ed98ab797b038` (strict-g
 
 | Order | Work | Status |
 |---|---|---|
-| 1 | Future-schema storage protection | implemented; browser verification pending |
-| 2 | Backup envelope/state validation | implemented; browser verification pending |
+| 1 | Future-schema storage protection | tested (717a6bd); final-head verification pending |
+| 2 | Backup envelope/state validation | tested (717a6bd); final-head verification pending |
 | 3 | One physical tool reforge | implemented; regression tested |
 | 4 | Physical pet identity | implemented; regression tested |
 | 5 | Unknown numeric helper inputs | implemented; regression tested |
 | 6 | Contest missing Fortune | implemented; regression tested |
 | 7 | Manual scroll cancels restores | in progress; browser acceptance pending |
-| 8 | Mobile header/set layout | in progress; browser acceptance pending |
-| 9 | Add Set Cancel/focus | in progress; browser acceptance pending |
+| 8 | Mobile header/set layout | tested original acceptance; final-head verification pending |
+| 9 | Add Set Cancel/focus | tested original acceptance; final-head verification pending |
 | 10 | Menu/drawer keyboard ownership | in progress; browser acceptance pending |
 | 11 | Cropshot valid controls/idempotence | in progress; browser acceptance pending |
 | 12 | Phillip count/duration/expiry | implemented; live numeric curve blocked (Alpha-only) |
@@ -118,3 +118,15 @@ Last secured remote commit: `2ccba151da5bebe691a5cad7461ed98ab797b038` (strict-g
 - Two image-fallback routes replaced attempted identity with catalog/skull identity, retrying the failed original on identical apply. Both retain attempted identity. Added disposable offline-image fixture for Tater, four Pesthunter pieces and Clover, checking truthful nonempty art, no broken images, zero repeat mutations/requests. The fixture makes no network availability or physical-device claim.
 - Art tests 66/66 PASS; session 12964 full suite 1,377 Node + 8 Python PASS, exit 0. This suite ran before final probe/navigation/overlay harness corrections; syntax rechecked before securing. Updated render incident log with causes and strict negative-control contract.
 - No active local process; 2ccba15 jobs completed, no duplicate run started. Current failure: new browser/sweep coverage and zero-mutation acceptance still pending. Next: secure checkpoint; inspect new CI individual results, then resolve any remaining keyboard/action/scroll/gate regressions.
+
+## Render-hook / absence and strict interaction checkpoint (incomplete)
+
+- 717a6bd **Validate 36952429737 / 110668064526 SUCCESS**, all individual gates PASS: exact tested SHA, JavaScript/Python syntax/tooling, required files, static 464 references, SW retirement, Dashboard/Loadouts/rarity startup, exact DOM+zero mutations across ten pages, both injected equal-length/redundant-write negative controls, 11 art portraits, normal/trusted tool scroll across all 12 physical transitions, 1,377 Node and 8 Python tests. Maximum trusted tap anchor drift 1.42 px; no late displacement.
+- 717a6bd Browser **36952429771** jobs 110668064737 (Chromium), 110668064761 (Firefox), 110668064582 (WebKit): retained original cases and future schema/backup PASS; extended loop again BLOCKED (open editor exists but dropdown disappears after selection). Core's async value-refresh render announces `farming420:rendered`, while setup selection only listened to clicks/state changes. Existing selection owner now rebuilds from that explicit render hook; no broad observer re-enabled.
+- Chromium strict overlay PASS, exit 0, zero findings/errors, 120 actual main scroll requests and 16 opened overlays. Strict sweep FAIL exit 123: all pages capture external 403/429, planner stale-row snapshots time out, Shards budget incomplete. Injected runtime-error control did reach all three variants and return 1 with AUDIT_INJECTED_RUNTIME_ERROR; negative acceptance succeeds even though ordinary sweep remains red.
+- Sweep now records observed failed HTTP response URLs. External 403/429 is an explicit network note (not successful networking); local resource failures, other console errors, all pageerrors/crashes and failed action outcomes still fail. Planner refreshes visible targets after each action instead of clicking obsolete rank snapshots. Per-variant budget 90 seconds / worker wall 300 seconds; budget expiry still nonzero.
+- Added keyboard PageUp with controlled pane focus and synthetic touch intent/controlled scroll late-mutation fixtures. These do not claim physical touch-pan or OS rotation.
+- Cow helpers now share strict finite parsing for experience/Strength/manual level. Unknown inputs stay unknown, known zero remains valid. Removed unverified exported Strength threshold interpolation; only pinned Legendary level-100 endpoint is usable. Unsupported rarities remain incomplete. New regression covers blank/boolean/array/object, zero, endpoint and unresolved curves.
+- Session 54217: **1,378 Node + 8 Python PASS**, exit 0. Setup selection suite 22/22 PASS; injected-worker aggregation 1/1 PASS. Real resource model command session 28600 PASS **152/152**, 43 direct / 109 fallback; generated timestamp-only artifact delta was discarded, no coverage change or model invention.
+- Active local processes: none. 717a6bd remote jobs now complete. No same-commit blind rerun. Current error: extended picker/scroll acceptance and complete ordinary sweep pending. PR #301 remains a draft; live numeric/account/device limitations retained.
+- Next executable step: secure this implementation checkpoint, inspect its exact-head browser/gate cases (especially restored picker keyboard flow, one-write Cropshot, manual intent, offline art and full sweep), then resolve actual failures and finish final-commit validation.
