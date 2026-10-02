@@ -1,0 +1,153 @@
+{
+  "auditedSource": "bda761d81deb0be37af9fad31f5469efb992df82",
+  "contract": "docs/MATH_MODEL.md:45-47: unknown != 0; explicit zero is known. Omitted temporary modifier amplification defaults to zero by documented function API.",
+  "scope": "Pure exported lower helpers, not proof of active UI input reachability.",
+  "cases": [
+    {
+      "check": "unknown-chip-level",
+      "input": null,
+      "actual": 0,
+      "expected": null,
+      "status": "FAIL"
+    },
+    {
+      "check": "unknown-hypercharge-base",
+      "input": null,
+      "actual": 0,
+      "expected": null,
+      "status": "FAIL"
+    },
+    {
+      "check": "unknown-hypercharge-percent",
+      "input": null,
+      "actual": 100,
+      "expected": null,
+      "status": "FAIL"
+    },
+    {
+      "check": "unknown-chip-level",
+      "input": "",
+      "actual": 0,
+      "expected": null,
+      "status": "FAIL"
+    },
+    {
+      "check": "unknown-hypercharge-base",
+      "input": "",
+      "actual": 0,
+      "expected": null,
+      "status": "FAIL"
+    },
+    {
+      "check": "unknown-hypercharge-percent",
+      "input": "",
+      "actual": 100,
+      "expected": null,
+      "status": "FAIL"
+    },
+    {
+      "check": "unknown-chip-level",
+      "input": " ",
+      "actual": 0,
+      "expected": null,
+      "status": "FAIL"
+    },
+    {
+      "check": "unknown-hypercharge-base",
+      "input": " ",
+      "actual": 0,
+      "expected": null,
+      "status": "FAIL"
+    },
+    {
+      "check": "unknown-hypercharge-percent",
+      "input": " ",
+      "actual": 100,
+      "expected": null,
+      "status": "FAIL"
+    },
+    {
+      "check": "unknown-chip-level",
+      "input": false,
+      "actual": 0,
+      "expected": null,
+      "status": "FAIL"
+    },
+    {
+      "check": "unknown-hypercharge-base",
+      "input": false,
+      "actual": 0,
+      "expected": null,
+      "status": "FAIL"
+    },
+    {
+      "check": "unknown-hypercharge-percent",
+      "input": false,
+      "actual": 100,
+      "expected": null,
+      "status": "FAIL"
+    },
+    {
+      "check": "unknown-chip-level",
+      "input": [],
+      "actual": 0,
+      "expected": null,
+      "status": "FAIL"
+    },
+    {
+      "check": "unknown-hypercharge-base",
+      "input": [],
+      "actual": 0,
+      "expected": null,
+      "status": "FAIL"
+    },
+    {
+      "check": "unknown-hypercharge-percent",
+      "input": [],
+      "actual": 100,
+      "expected": null,
+      "status": "FAIL"
+    },
+    {
+      "check": "known-zero-chip-level",
+      "input": 0,
+      "actual": 0,
+      "expected": 0,
+      "status": "PASS"
+    },
+    {
+      "check": "known-zero-hypercharge-base",
+      "input": 0,
+      "actual": 0,
+      "expected": 0,
+      "status": "PASS"
+    },
+    {
+      "check": "known-zero-hypercharge-percent",
+      "input": 0,
+      "actual": 100,
+      "expected": 100,
+      "status": "PASS"
+    },
+    {
+      "check": "unknown-eligible-temporary-hypercharge",
+      "input": null,
+      "actual": 100,
+      "expected": null,
+      "status": "FAIL"
+    },
+    {
+      "check": "known-zero-eligible-temporary-hypercharge",
+      "input": 0,
+      "actual": 100,
+      "expected": 100,
+      "status": "PASS"
+    },
+    {
+      "check": "omitted-temporary-hypercharge-default",
+      "actual": 100,
+      "expected": 100,
+      "status": "PASS"
+    }
+  ]
+}
