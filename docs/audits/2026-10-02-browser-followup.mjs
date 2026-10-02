@@ -46,6 +46,7 @@ try {
   for (const [name, width, height] of [['320-portrait', 320, 568], ['390-portrait', 390, 844], ['800-landscape', 800, 360]]) {
     const context = await browser.newContext({ viewport: { width, height }, hasTouch: true });
     const page = await context.newPage();
+    page.setDefaultTimeout(8000);
     const errors = [], httpErrors = [];
     page.on('pageerror', e => errors.push(String(e)));
     page.on('response', r => { if (r.status() >= 400) httpErrors.push({ status: r.status(), path: new URL(r.url()).pathname }); });
@@ -53,8 +54,26 @@ try {
     try {
       await page.goto('http://127.0.0.1:4173', { waitUntil: 'domcontentloaded' });
       await page.locator('[data-activity-mode="farm"]').waitFor({ timeout: 15000 });
-      await page.locator('[data-nav-toggle]').tap();
-      await page.locator('.sidebar [data-page="setups"]').tap();
+      // Allow startup hydration before testing a normally opened navigation.
+      // Retain retries as evidence; never force hidden controls or mutate route state.
+      await page.waitForTimeout(2200);
+      const navigationAttempts = [];
+      for (let attempt = 0; attempt < 4; attempt++) {
+        const toggle = page.locator('[data-nav-toggle]');
+        if (await toggle.getAttribute('aria-expanded') !== 'true') await toggle.tap();
+        await page.waitForTimeout(250);
+        const expanded = await toggle.getAttribute('aria-expanded');
+        try {
+          await page.locator('.sidebar [data-page="setups"]').tap({ timeout: 1800 });
+          navigationAttempts.push({ attempt, expanded, selected: true });
+          break;
+        } catch (e) {
+          navigationAttempts.push({ attempt, expanded, selected: false, message: String(e).split('\\n')[0],
+            afterExpanded: await toggle.getAttribute('aria-expanded') });
+          await page.waitForTimeout(400);
+        }
+      }
+      add(name, 'settled-navigation-retries', navigationAttempts.some(a => !a.selected) ? 'NOTE' : 'PASS', navigationAttempts);
       await page.waitForTimeout(250);
       const landed = await page.evaluate(key => JSON.parse(localStorage.getItem(key)).page, STORAGE_KEY);
       add(name, 'normal-tap-navigation', landed === 'setups' ? 'PASS' : 'FAIL', { landed });
@@ -86,7 +105,12 @@ try {
       } else {
         add(name, 'last-option-actual-touch-selection-after-recovery', 'BLOCKED', { reason: 'No visible hit target after wheel recovery.', ready });
       }
-      await summary.tap();
+      // Selection may close/rebuild the editor. Reopen through its normal card.
+      if (!await summary.isVisible()) {
+        await page.locator('.slot-card[data-slot="petItem"][data-setup-target="normal"]').tap();
+        await summary.waitFor({ state: 'visible' });
+      }
+      if (!await page.locator('details[data-pet-item-dropdown]').evaluate(e => e.open)) await summary.tap();
       await summary.focus();
       await page.keyboard.press('Escape');
       const escaped = await geometry(page);
@@ -103,7 +127,13 @@ try {
       add(name, 'runtime-page-errors', errors.length ? 'FAIL' : 'PASS', errors);
       add(name, 'external-http-errors', httpErrors.length ? 'NOTE' : 'PASS', [...new Map(httpErrors.map(r => [r.status + r.path, r])).values()]);
     } catch (e) {
-      add(name, 'probe-execution', 'BLOCKED', { message: String(e), errors });
+      const state = await page.evaluate(key => ({
+        page: JSON.parse(localStorage.getItem(key) || '{}').page,
+        navigationExpanded: document.querySelector('[data-nav-toggle]')?.getAttribute('aria-expanded'),
+        editorCount: document.querySelectorAll('[data-item-editor]').length,
+        dropdownCount: document.querySelectorAll('[data-pet-item-dropdown]').length,
+      }), STORAGE_KEY).catch(() => null);
+      add(name, 'probe-execution', 'BLOCKED', { message: String(e), errors, state });
       await page.screenshot({ path: join(out, name + '-blocked.png') }).catch(() => {});
     } finally {
       await context.close();
