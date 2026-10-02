@@ -52,3 +52,22 @@ Raw second-run evidence: 2026-10-02-browser-evidence-CONT29.json. Artifact ZIPs,
 Independent pure helper boundaries add 21 cases, 5 PASS / 16 FAIL. gardenChipEffect and hyperchargedFarmingFortune accept explicit null, blank/whitespace strings, false and [] through Number(), producing known 0 or unamplified 100. temporaryModifierEffect likewise treats an explicit unknown Hypercharge percent as zero. The required unknown-versus-known-zero contract is docs/MATH_MODEL.md:45–47. Explicit numeric zero and the temporary helper's intentional omitted-option default are PASS controls; the default is not silently removed from the fix plan. These are exported lower-helper failures, without asserting an active UI input route. Evidence: 2026-10-02-helper-boundary-CONT29.json.
 
 Extend work packages 5–6 to shared absence/type validation for these helpers: preserve explicit unknown input, reject nonnumeric boolean/array coercion, and accept explicit finite zero. Retain documented optional defaults only at the caller/API boundary. No new live coefficient is needed for this data-contract fix. Rarefinder's separately sourced stale-rate mismatch remains the canonical-table fix described in CONT27.
+
+## CONT30 — completed supplemental audit
+
+Final run 36944792468, trigger commit 788792e7fb103822214d36f2ee8526904889f2e5, completes all 81 cases: 45 PASS / 27 FAIL / 9 NOTE / zero BLOCKED. Every engine independently yields 15 PASS / 9 FAIL / 3 NOTE. All three jobs are correctly red because known application failures affect the gate; installation, source-identity verification and artifact upload succeed. Full results: 2026-10-02-browser-evidence-CONT30.json.
+
+Across Chromium, Firefox and WebKit at 320×568, 390×844 and 800×360:
+- Normal tap navigation after hydration, no-retry navigation, immediate last-option hit, actual coordinate-touch selection after recovery, and empty pageerror checks all PASS.
+- Stable last-option visibility after capture/2.1s settlement, Escape-close and declared-listbox ArrowDown focus each FAIL in every context. These are three repeated behavior categories, not 27 independent bugs.
+- Main scroll retreats between 217 and 287px; the option is no longer hit-test reachable until manually scrolled back. The probe contains no injected DOM mutation in this scenario. Keyboard is checked before selection changes the editor lifecycle, so no continuation is blocked.
+- HTTP NOTES retain external API 429 responses, one external 400 response, and the expected /deploy-version.json 404 in an unstamped local CI checkout. They do not establish a broken production deployment or missing canonical art. Online service availability is separate from local runtime correctness.
+
+Final artifact ZIP digests, expires November 1, 2026:
+- Chromium 11200778763: 8a0637f7c4feaf5bc08ff76112bc26f2dabb91bc3298344a3b0d6f175c86b349.
+- Firefox 11201717431: 1fe7cf1a79f48f7488b8677d7d1b48cb4421f3716f5ed6a168be09e5c6ac41ed.
+- WebKit 11201374565: e1992c46e9863da7d79d1bec5d6b2a63f7ecf7c434e6a7f8c663016b8d354598.
+
+A full ten-family duplicate-chip comparison finds seven matching flat Legendary maxima, one deliberately different Hypercharge formula, the independently sourced Rarefinder rate mismatch, and one unresolved Cropshot confidence contradiction. Lower Cropshot reports VERIFY_0_27 and no Legendary rate, while visible data is ACTIVE +5/level, +100 maximum with a verification date. This is a confirmed cross-table confidence conflict, not independent proof that the reported +60 is the correct live replacement. Acceptance requires coherent confidence across all consumers and a current authoritative/lore curve before active numeric ranking. Matching duplicate tables alone do not verify live mechanics. Evidence: 2026-10-02-chip-consistency-CONT30.json.
+
+Final source recheck: main still bda761d81deb0be37af9fad31f5469efb992df82. Accessible follow-up checks are complete. Physical devices/OS behavior, safe authenticated live sync, exact remaining live mechanics, Pages account configuration and original report bytes remain dependent on unavailable evidence as recorded in the October 1 review. No app fix, test-expected-value change, PR, merge or deployment was made. Update the consolidated review with canonical-chip and lower-helper acceptance; keep all raw earlier blocked results immutable.
