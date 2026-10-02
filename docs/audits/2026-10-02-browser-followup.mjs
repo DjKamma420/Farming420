@@ -91,25 +91,7 @@ try {
       add(name, 'last-option-stable-after-capture-and-anchor-expiry', settled.options?.at(-1)?.canHit ? 'PASS' : 'FAIL',
         { immediate, postCapture, settled, note: 'No injected DOM mutation in this scenario.' });
       await page.screenshot({ path: join(out, name + '-settled.png') });
-      const ready = await wheelToLast(page);
-      const last = ready.options?.at(-1);
-      if (last?.canHit) {
-        await page.touchscreen.tap(last.x, last.y);
-        await page.waitForTimeout(350);
-        const selected = await page.evaluate(key => {
-          const raw = JSON.parse(localStorage.getItem(key));
-          return raw.profile?.setups?.list?.find(s => s.id === 'normal')?.slots?.petItem?.skyblockId ?? null;
-        }, STORAGE_KEY);
-        add(name, 'last-option-actual-touch-selection-after-recovery', selected === last.id ? 'PASS' : 'FAIL',
-          { intended: last.id, persisted: selected, locatorAutoscroll: false });
-      } else {
-        add(name, 'last-option-actual-touch-selection-after-recovery', 'BLOCKED', { reason: 'No visible hit target after wheel recovery.', ready });
-      }
-      // Selection may close/rebuild the editor. Reopen through its normal card.
-      if (!await summary.isVisible()) {
-        await page.locator('.slot-card[data-slot="petItem"][data-setup-target="normal"]').tap();
-        await summary.waitFor({ state: 'visible' });
-      }
+      // Keyboard behavior is independent of selection's editor lifecycle.
       if (!await page.locator('details[data-pet-item-dropdown]').evaluate(e => e.open)) await summary.tap();
       await summary.focus();
       await page.keyboard.press('Escape');
@@ -123,6 +105,22 @@ try {
           inOptions: !!document.activeElement?.matches('[data-pet-item-option]'),
         }));
         add(name, 'declared-listbox-arrow-focus', focus.inOptions ? 'PASS' : 'FAIL', focus);
+      }
+      if (!await page.locator('details[data-pet-item-dropdown]').evaluate(e => e.open)) await summary.tap();
+      await page.waitForTimeout(2100);
+      const ready = await wheelToLast(page);
+      const last = ready.options?.at(-1);
+      if (last?.canHit) {
+        await page.touchscreen.tap(last.x, last.y);
+        await page.waitForTimeout(350);
+        const selected = await page.evaluate(key => {
+          const raw = JSON.parse(localStorage.getItem(key));
+          return raw.profile?.setups?.list?.find(s => s.id === 'normal')?.slots?.petItem?.skyblockId ?? null;
+        }, STORAGE_KEY);
+        add(name, 'last-option-actual-touch-selection-after-recovery', selected === last.id ? 'PASS' : 'FAIL',
+          { intended: last.id, persisted: selected, locatorAutoscroll: false });
+      } else {
+        add(name, 'last-option-actual-touch-selection-after-recovery', 'BLOCKED', { reason: 'No visible hit target after wheel recovery.', ready });
       }
       add(name, 'runtime-page-errors', errors.length ? 'FAIL' : 'PASS', errors);
       add(name, 'external-http-errors', httpErrors.length ? 'NOTE' : 'PASS', [...new Map(httpErrors.map(r => [r.status + r.path, r])).values()]);
