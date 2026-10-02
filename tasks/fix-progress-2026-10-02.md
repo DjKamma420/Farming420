@@ -1,50 +1,98 @@
 # Audit fixes — 2026-10-02
 
-Goal: implement and verify the eighteen ordered audit work packages, without merge or deployment.
-Branch: `fix/audit-2026-10-02`.
+Goal: implement and verify the eighteen ordered audit work packages without merge or deployment.
+Branch: `fix/audit-2026-10-02`. PR: [#301](https://github.com/DjKamma420/Farming420/pull/301).
 Application baseline: `bda761d81deb0be37af9fad31f5469efb992df82`.
 Audit baseline: `e666096b55d1a2a887374feb7c7cd743e8cbe111`.
-Last secured remote commit: `36e076755ed4ffaf1c47da112dc2fdc6d57900fd` (focus checkpoint). Last available local checkpoint: `1f0e678`. Local execution is currently offline; subsequent changes use GitHub Git objects without force updates. CLI push is unavailable; GitHub API mirrors verified local trees without force updates.
+Last secured implementation commit: `fb5a1a834081d54a0108a77648e50b16b6ebf0fb`.
+This ledger/artifact-gate checkpoint is a descendant; resolve its exact secured SHA from the branch ref or `git rev-parse HEAD`. A file cannot contain its own Git commit hash. Final-checkpoint run IDs/results are recorded on PR #301 and queryable by its exact head SHA.
+Last available local checkpoint: `1f0e67888e30ca910eecddfde49838fc0fc7c31f`, tree equal to remote `36e0767`. Later connector commits have not been materialized locally.
 
-## Actual repository state
+## Current actual state
 
-- Real Git clone is available. Initial `--no-checkout` staging deletions were the unmaterialized clone, not existing user work. Switching the new branch materialized all files; `git status --short` was empty.
-- Remote main and the audit branch match the supplied baselines; no newer application delta.
-- Only open PR found: #108, stale enchant branch. No audit fix branch existed.
-- Current user authorization overrides AGENTS.md's historical automatic merge instruction: no merge/deployment.
-- Read repository AGENTS.md, product/profile/math specifications, render safety, task queue and continuation records. Audit handover documents copied byte-for-byte from the pinned audit branch.
+- The real clone was initially inspected with Git. Initial `--no-checkout` deletions were the unmaterialized clone, not user changes; after materialization, status was empty. That historical observation is **not a current clean status claim**.
+- Local execution subsequently failed **before process creation** with `409 environment_offline`, “Environment is not connected.” No hung local process exists. Continue through GitHub exact-file reads/Git trees without force updates until execution returns.
+- Main was checked again before fb5a1a8 and still equals the application baseline. Initially only stale PR #108 existed; this work created draft PR #301 on a previously unused fix branch. No foreign branch changes overwritten.
+- Read AGENTS.md, relevant product/profile/math/render specifications, tasks/todo.md, previous progress and all three pinned handovers. Their copies are byte-identical. User authorization explicitly supersedes historical automatic merge instructions.
+- Available fixes have executable acceptance at fb5a1a8. The final checkpoint adds an isolated immutable artifact gate and must pass exact-head Validate/browser runs before closing. No merge/deployment performed.
 
-## Work packages
+## Ordered package status
 
-| Order | Work | Status |
+Statuses below are supported by the fb5a1a8 acceptance; final-checkpoint repeat is pending at this save. “Blocked” identifies only the remaining evidence/access-dependent part, not a reason to defer implemented independent fixes.
+
+| Order | Work | Status | Evidence / remaining boundary |
+|---|---|---|---|
+| 1 | Future-schema storage protection | tested | Raw schema-11 bytes and unknown fields survive; zero writes across startup/navigation/editors/settings/sync. |
+| 2 | Backup envelope/state validation | tested | Independent version validation before migration; current/legacy restores and rejected future/disagreement fixtures. |
+| 3 | One physical tool reforge | tested | One contribution in either stale-flag order; shared Eclipse crops, rarity and metadata preserved. |
+| 4 | Physical pet identity | tested | UUID-first selection, both snapshot orders, missing UUID/duplicate species and explicit manual level. |
+| 5 | Unknown numeric helper inputs | tested | Absence/type guard reused; null/blank/bool/array unknown, known zero and documented omitted default retained. |
+| 6 | Contest missing Fortune | tested | Missing/null/blank incomplete; measured zero valid; no medal inference. |
+| 7 | Manual scroll cancels restores | tested | Trusted tool changes remain anchored; wheel/key/synthetic touch intent survives controlled late mutations. |
+| 8 | Mobile header/set layout | tested | Eight emulated phone/landscape contexts, two/three sets and 48-character names; no obscured tab centers. |
+| 9 | Add Set Cancel/focus | tested | Blank/filled Cancel and Escape close without new set, focus returns. |
+| 10 | Menu/drawer keyboard ownership | tested | Stable last option, actual coordinate touch selection, Arrow/Home/End/Tab/Escape/outside and delayed value-refresh focus. |
+| 11 | Cropshot valid controls/idempotence | tested | Valid sibling controls, one logical write, ten-page and 24 open-picker exact-DOM/zero-mutation cases. |
+| 12 | Phillip count/duration/expiry | blocked (partial implementation tested) | Count, duration, activation/expiry/deactivation and Alpha preview implemented; no first-party live curve established. |
+| 13 | Canonical Vacuum helper | tested | Five canonical damage values/legal modifiers; unsourced elapsed handling remains unknown. |
+| 14 | Canonical chip rates/confidence | blocked (canonical fixes tested) | All ten families share rarity/provenance; Rarefinder 15/30/50 confirmed; live Cropshot curve unresolved. |
+| 15 | Numerical provenance/incompleteness | blocked (safeguards tested) | Historical Pest divisors and unsupported pet/shard curves stay visible, incomplete and unranked; missing live lore is not fabricated. |
+| 16 | Canonical art ownership | tested | Tater/Pesthunter/Clover identity preserved; offline fallback has no broken-icon leaks or repeated retries. |
+| 17 | Validated single Pages publisher | blocked (workflow tested) | Immutable validated main SHA, stale-completion guard and stamped artifact gate added (final repeat pending); account setting/deployed marker requires access and release authorization. |
+| 18 | Honest browser/sweep gates | tested | Actual main scroll/open overlays/action outcomes; runtime errors, worker failures/budgets and exact mutation drift propagate nonzero exits. |
+
+## Executed acceptance
+
+| Tested commit | Run / job | Actual result |
 |---|---|---|
-| 1 | Future-schema storage protection | tested (717a6bd); final-head verification pending |
-| 2 | Backup envelope/state validation | tested (717a6bd); final-head verification pending |
-| 3 | One physical tool reforge | implemented; regression tested |
-| 4 | Physical pet identity | implemented; regression tested |
-| 5 | Unknown numeric helper inputs | implemented; regression tested |
-| 6 | Contest missing Fortune | implemented; regression tested |
-| 7 | Manual scroll cancels restores | in progress; browser acceptance pending |
-| 8 | Mobile header/set layout | tested original acceptance; final-head verification pending |
-| 9 | Add Set Cancel/focus | tested original acceptance; final-head verification pending |
-| 10 | Menu/drawer keyboard ownership | in progress; browser acceptance pending |
-| 11 | Cropshot valid controls/idempotence | in progress; browser acceptance pending |
-| 12 | Phillip count/duration/expiry | implemented; live numeric curve blocked (Alpha-only) |
-| 13 | Canonical Vacuum helper | implemented; regression tested |
-| 14 | Canonical chip rates/confidence | implemented; regression tested |
-| 15 | Numerical provenance/incompleteness | implemented safeguards; remaining live lore blocked |
-| 16 | Canonical art ownership | implemented; browser acceptance pending |
-| 17 | Validated single Pages publisher | implemented workflow; account settings/deployment blocked |
-| 18 | Honest browser/sweep gates | in progress; strict CI/negative acceptance pending |
+| fb5a1a834081d54a0108a77648e50b16b6ebf0fb | Validate 36956406576 / 110680207480 | SUCCESS; each individual step reviewed. 1,379 Node + 8 Python tests PASS, syntax/required files/466 static references/SW retirement PASS. |
+| same | Chrome startup in Validate | Every native dump exit 0; raw Dashboard 17 s, subsequent dumps 5–6 s. Application virtual budget stays 5 s; outer process limit 90 s. Earlier 45 s timeout remains a failure, not retroactively a pass. |
+| same | Strict idempotence / tool scroll in Validate | Ten pages × three reapplies, exact DOM and zero mutations PASS. Both transient-mutation and equal-length-change controls return nonzero acceptance. All 12 trusted tool transitions PASS, max drift 1.42 px, no late drift/scroll. |
+| same | Browser 36956406582; Chromium 110680207625, Firefox 110680207819, WebKit 110680207821 | Each 194 PASS / 0 FAIL / 8 NOTE / 0 BLOCKED. No bare workflow green used in place of case results. |
+| same | Chromium strict overlay/sweep step | Overlay exit 0, zero findings/errors, 120 actual main scroll targets and 16 opened overlays. All ten ordinary sweep areas PASS, aggregate exit 0. Injected runtime-error control exit 1 with marker in all three variants. |
+| 1ba9c8abc7996ddd40bff4f91d84fe98a0f0ae94 | Isolated offline stamped artifact | Exact build marker/index match commit; 465 local references resolve. New final-head CI artifact gate repeats this at the current immutable SHA. |
+| local bde7569 / equivalent remote 1ba9c8a source | Official item-model audit | 152/152 resolve: 43 direct and 109 fallback. Resolver availability is not semantic art/device acceptance. |
 
-## Changes, evidence and validation
+Durable extracted results: [fb5a1a8 acceptance](../docs/audits/fix-browser-fb5a1a8-2026-10-02.json). Prior failed runs/evidence remain in the history below and are not counted as passes.
 
-- Confirmed main-state writes in sixteen modules bypass the core app guard, including startup derived-stat/capability adapters.
-- Confirmed backup validator selects envelope version with `||` and overwrites the inner version before migration.
-- Tests: not yet run in this checkout. Historical audit passes are not fix acceptance.
-- Running CI/processes: none. Clone session 32815 completed with exit 0.
-- Current interruption/error: none; implementation has started, this checkpoint is incomplete.
-- Next executable step: route all main-state writes through one guard, add future-schema raw-byte and backup disagreement regressions, then run targeted tests.
+CI/process state at this save: runs 36956406576 and 36956406582 **completed successfully** at fb5a1a8; no active local process. Saving the new checkpoint automatically starts exact-head Validate and browser runs; inspect the branch SHA and their existing IDs before any retry. Final workflow/artifact checks are not claimed before those results.
+
+## Concrete additional findings and resolutions
+
+- Independent startup/editor/sync writers bypassed the original future-schema guard. All sixteen runtime owners now route through app-storage.js; writes recheck disk for cross-tab upgrades. Browser fixtures retain formatted schema-11 bytes and opaque sentinel fields with zero writes.
+- Backup validation used a fallback version then restamped inner data. Both declarations now reject invalid/newer/disagreeing versions before migration; supported legacy/current backup counterexamples pass.
+- UUID ambiguity, stale competing reforges and numeric coercion were actual calculation defects; pure regressions cover both physical-copy orders, metadata/rarity, missing versus explicit zero and unknown economics.
+- Price-only renders replaced focused picker nodes. Existing render/interaction ownership now defers that repaint while a menu/drawer/picker owns focus; a controlled late refresh preserves the actual focused node.
+- Same saved state was compared with render-normalized in-memory state. The current stored-input comparison and unchanged DOM guards eliminate repeat mutation churn, including open editors.
+- WebKit's native wheel animation required a settled-scroll measurement before controlled late mutation; final measured movement survives. This does not claim native Android/iOS touch-pan.
+- Native Chrome runner startup exceeded an outer wall once; diagnostic output records wall/exit while retaining app virtual budgets and strict failure/negative controls.
+- Rarefinder history HTTP 400 is a rejected unknown price, not evidence for changing a canonical item ID. New regression proves no zero quote/cache and UNKNOWN acquisition despite old manual price. Only known SkyCofl history-400 paths become explicit URL/status notes; local/other 400 and all runtime/action failures still fail.
+- The final artifact gate archives exact HEAD into an isolated temporary directory, stamps it with the tested SHA, checks marker/entrypoint stamps/all static references, then asserts the original checkout was not modified. It does not publish an artifact or deploy.
+
+## Changed files
+
+- CI and browser probes: `.github/workflows/audit-fixes-browser.yml`, `.github/workflows/pages.yml`, `.github/workflows/validate.yml`, `scripts/audit-fix-browser.mjs`, `scripts/browser-idempotence-smoke.html`, `scripts/browser-startup-smoke.sh`, `scripts/overlay-audit.mjs`, `scripts/sweep-all.sh`, `scripts/sweep-area.mjs`.
+- Documentation and handover: `docs/RENDER_FREEZE_SAFETY.md`, `docs/VERIFIED_MECHANICS.md`, `docs/audits/2026-10-01-execution-ledger.md`, `docs/audits/2026-10-01-final-review.md`, `docs/audits/2026-10-02-continuation.md`, `docs/audits/fix-browser-1ba9c8a-2026-10-02.json`, `docs/audits/fix-browser-36e0767-2026-10-02.json`, `docs/audits/fix-browser-checkpoint-2026-10-02.json`, `tasks/fix-progress-2026-10-02.md`, `tasks/todo.md`.
+- Application: `src/activity-mode-ui.css`, `src/activity-mode-ui.js`, `src/app-storage.js`, `src/app.js`, `src/backup.js`, `src/computed-stats-ui.js`, `src/computed-stats.js`, `src/contest-estimate.js`, `src/data.js`, `src/direct-controls.js`, `src/dropdown-controls.js`, `src/exact-item-capabilities-ui.js`, `src/farming-modifiers-data.js`, `src/farming-tool-art-ui.js`, `src/finite-number.js`, `src/foundation.js`, `src/hypixel-import.js`, `src/item-art-coverage.js`, `src/item-art-ui.js`, `src/item-capabilities.js`, `src/loadout-capabilities-ui.js`, `src/mooshroom-cow.js`, `src/pest-analysis-ui.js`, `src/pest-mechanics-data.js`, `src/pest-model.js`, `src/pest-spawn-pets.js`, `src/pet-identity.js`, `src/planner-mode-ui.js`, `src/profile-sync.js`, `src/rarity-background-ui.js`, `src/revenue-planner.js`, `src/rose-dragon.js`, `src/runtime-data-patches.js`, `src/setup-item-art-map.js`, `src/setup-selection-ui.js`, `src/skyblock-redesign-bridge.js`, `src/skyblock-redesign.js`, `src/tool-presentation-ui.js`, `src/ux-simplify.js`, `src/vacuum-exact-ui.js`, `src/workspace-ui.js`.
+- Regression tests: `tests/accessories-ui.test.js`, `tests/activity-mode.test.js`, `tests/activity-surface-scope.test.js`, `tests/app-storage.test.js`, `tests/audit-identity-numeric.test.js`, `tests/audit-temporary-provenance.test.js`, `tests/backup.test.js`, `tests/farming-mechanics-data.test.js`, `tests/farming-modifiers-data.test.js`, `tests/ff-bpc-loadouts.test.js`, `tests/market-average-prices.test.js`, `tests/mooshroom-cow.test.js`, `tests/no-ui-reloads.test.js`, `tests/pest-model.test.js`, `tests/smooth-state-updates.test.js`, `tests/sweep-exit-codes.test.js`, `tests/tool-presentation.test.js`, `tests/tools-accordion.test.js`, `tests/tools-page-dedupe.test.js`, `tests/update-delivery.test.js`, `tests/vacuum-tool-system.test.js`.
+
+## Remaining concrete blocks
+
+- Package 12 live Phillip curve and package 14 live Cropshot curve: August 3 evidence is explicitly Alpha; August 4 live release does not establish those numeric curves. Count/duration/expiry and common rarity/provenance fixes are implemented; unknown live values remain incomplete.
+- Package 15: remaining current Pest drops, shard effects and non-endpoint pet perk curves lack authoritative live/lore provenance. Historical/community/Alpha values cannot produce complete Coins/h or ranked comparisons. Existing confirmed endpoint/lore data is not extended by interpolation.
+- Package 17 account Pages settings: connector rejects the settings endpoint through its allowlist (HTTP 400). Actual deployed marker/assets require a release that is outside the authorized task. Workflow ordering, immutable SHA and artifact verification continue independently.
+- Physical Android/iOS rotation, OS keyboard/touch-pan/notches/accessibility zoom and authenticated safe live-profile sync were unavailable. Executed evidence is Linux engines with emulated viewports/coordinate touch and deterministic storage/profile fixtures.
+- External live market requests returned 403/429 and previously 400; handled unknown-price behavior is tested, successful live price acquisition is not asserted. No credentials or personal profile fixtures committed.
+
+## Current interruption and next executable step
+
+Current interruption: local environment offline; final-checkpoint CI acceptance (including the new isolated artifact gate) must be inspected. The available implementation is secured, not an unverified local worktree.
+Next: fetch the exact fix-branch head and its existing Actions runs, read individual results/exit codes; fix any actual failure without blind reruns. Record final head/run results on PR #301 after completion. Only then report implemented/tested available packages with the blocks above. Do not merge/deploy.
+For a later “continue”: read this current section and actual branch files/PR CI before using chronological checkpoints. Resume only a still-open failure or a numeric/access-dependent block after new evidence arrives; do not restart at package 1 or duplicate completed tests.
+
+## Historical checkpoints
+
+These preserve the implementation chain and failed-run diagnosis. Their “pending”/“next” statements apply to their historical source only; the current sections above supersede them.
 
 ## Packages 1–2 checkpoint
 

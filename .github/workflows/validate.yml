@@ -60,6 +60,42 @@ jobs:
       - name: Validate service-worker retirement mode
         run: node scripts/check-sw-manifest.js
 
+      - name: Verify stamped immutable Pages artifact
+        env:
+          ARTIFACT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          AUDIT_ARTIFACT_DIR="$(mktemp -d "$RUNNER_TEMP/farming420-artifact.XXXXXX")"
+          export AUDIT_ARTIFACT_DIR
+          trap 'rm -rf "$AUDIT_ARTIFACT_DIR"' EXIT
+          test "$(git rev-parse HEAD)" = "$ARTIFACT_SHA"
+          git archive --format=tar HEAD | tar -x -C "$AUDIT_ARTIFACT_DIR"
+          BUILD_ID="$ARTIFACT_SHA" node "$AUDIT_ARTIFACT_DIR/scripts/prepare-pages-deploy.js"
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { readFileSync } from 'node:fs';
+          import { join } from 'node:path';
+          import { pathToFileURL } from 'node:url';
+          const root = process.env.AUDIT_ARTIFACT_DIR;
+          const sha = process.env.ARTIFACT_SHA;
+          const { auditStaticReferences } = await import(pathToFileURL(join(root, 'scripts/check-static-references.js')));
+          const marker = JSON.parse(readFileSync(join(root, 'deploy-version.json'), 'utf8'));
+          assert.equal(marker.build, sha);
+          const html = readFileSync(join(root, 'index.html'), 'utf8');
+          assert.ok(html.includes('name="app-build" content="' + sha + '"'));
+          let stamped = 0;
+          for (const [, ref] of html.matchAll(/\b(?:src|href)="([^"]+)"/g)) {
+            if (!/^(?:src\/|assets\/|manifest\.webmanifest(?:[?#]|$))/.test(ref)) continue;
+            assert.equal(new URL(ref, 'https://artifact.invalid/').searchParams.get('build'), sha, ref);
+            stamped++;
+          }
+          assert.ok(stamped > 0, 'entrypoint assets must be stamped');
+          const result = auditStaticReferences(root);
+          assert.deepEqual(result.missing, []);
+          console.log('Immutable artifact PASS: build=' + sha + ', stamped entrypoints=' + stamped + ', resolved references=' + result.checked);
+          NODE
+          test -z "$(git status --porcelain)"
+
       - name: Browser startup smoke test
         run: bash scripts/browser-startup-smoke.sh
 
