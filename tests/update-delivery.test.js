@@ -82,6 +82,9 @@ test('Pages publishes only a successful main push validation and stamps its exac
   assert.match(workflow,/BUILD_ID: \$\{\{ github.event.workflow_run.head_sha \}\}/);
   assert.match(workflow,/node scripts\/prepare-pages-deploy\.js/);
   assert.doesNotMatch(workflow,/sleep 70|workflow_dispatch:/);
+  assert.match(workflow,/git fetch --no-tags --depth=1 origin main/);
+  assert.match(workflow,/git rev-parse FETCH_HEAD/);
+  assert.equal((workflow.match(/if: steps.validated.outputs.current == 'true'/g)||[]).length,4);
 });
 
 test('raw branch Pages output also cache-busts the accessory art entrypoints', () => {

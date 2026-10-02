@@ -232,6 +232,8 @@ let state = loadState();
 // Render helpers may normalize an in-memory projection. Compare announcements
 // against persisted input so an unchanged disk state cannot repaint that projection.
 let lastObservedStoredState = JSON.stringify(readStoredAppState(null));
+let pendingPriceRender = false;
+let priceRenderTimer;
 
 let activeScrollAnchor = null;
 let scrollAnchorRestoreFrame = 0;
@@ -426,8 +428,8 @@ if (typeof document !== 'undefined') {
     document.addEventListener(type, clearScrollAnchor, { capture: true, passive: true });
   }
   document.addEventListener('keydown', event => {
-    if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(event.key)
-      && !event.target?.matches?.('input, textarea, [contenteditable="true"]')) clearScrollAnchor();
+    if (event.key === 'Tab' || (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(event.key)
+      && !event.target?.matches?.('input, textarea, [contenteditable="true"]'))) clearScrollAnchor();
   }, true);
   for (const type of ['click', 'change', 'input']) {
     document.addEventListener(type, preventUnsupportedMutation, true);
@@ -3271,6 +3273,7 @@ function restoreActiveSearchFocus(snapshot) {
 }
 
 function render({ preserveScroll = true } = {}) {
+  pendingPriceRender = false;
   const searchFocusSnapshot = preserveScroll ? activeSearchFocusSnapshot() : null;
   // Most state changes only alter a control/card. Replacing #app is still the
   // core render model, but it must not behave like navigation: keep the right
@@ -3640,13 +3643,36 @@ window.addEventListener('farming420:state-changed', () => {
   restoreInteraction(interaction);
 });
 
+// Background prices must not replace a picker while its keyboard/focus owner
+// is active. A normal state render consumes the cache; otherwise flush after
+// the user leaves/closes the interactive overlay through its normal event.
+function priceRenderBlockedByInteraction() {
+  return Boolean(document.querySelector('details[data-keyboard-bound="1"][open], .drawer, .sidebar.nav-open')
+    || document.activeElement?.closest?.('details[data-keyboard-bound="1"]'));
+}
+function flushPriceRender() {
+  if (!pendingPriceRender || priceRenderBlockedByInteraction()) return;
+  const interaction = captureInteraction();
+  render();
+  restoreInteraction(interaction);
+}
+function requestPriceRender() {
+  pendingPriceRender = true;
+  flushPriceRender();
+}
+for (const event of ['focusin', 'toggle']) document.addEventListener(event, () => {
+  if (!pendingPriceRender) return;
+  clearTimeout(priceRenderTimer);
+  priceRenderTimer = setTimeout(flushPriceRender, 0);
+}, true);
+
 // Market refresh changes only the price cache, not profile state. Do not
 // globally repaint editors/setups when background market requests finish:
 // that would replace interactive DOM under the user. The Dashboard is the one
 // core-rendered surface that needs an immediate repaint for its price cards.
 window.addEventListener('farming420:market-average-updated', () => {
   const safePricePages = new Set(['dashboard', 'accessories', 'crops', 'gear', 'pets', 'chips', 'shards', 'buffs', 'pests', 'qol', 'planner', 'focus']);
-  if (safePricePages.has(state.page)) render();
+  if (safePricePages.has(state.page)) requestPriceRender();
 });
 
 window.addEventListener('farming420:item-value-updated', () => {
@@ -3657,7 +3683,5 @@ window.addEventListener('farming420:item-value-updated', () => {
   // same interaction/slot restore path as a direct state change. Without it,
   // item-dependent price refreshes can move the page even though the original
   // selection itself was scroll-safe.
-  const interaction = captureInteraction();
-  render();
-  restoreInteraction(interaction);
+  requestPriceRender();
 });

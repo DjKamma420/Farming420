@@ -173,17 +173,39 @@ try {
         await trigger.focus();
         await page.keyboard.press('End');
         const end=await picker.evaluate(e=>document.activeElement===e.querySelector('[role="option"]:last-child'));
+        const stableOnValueRefresh=await picker.evaluate(e=>{
+          const focused=document.activeElement;
+          window.dispatchEvent(new Event('farming420:item-value-updated'));
+          return e.isConnected&&focused===document.activeElement&&e.contains(focused);
+        });
         await page.keyboard.press('Home');
         const home=await picker.evaluate(e=>document.activeElement===e.querySelector('[role="option"]'));
         await page.keyboard.press('Escape');
         const escape=await picker.evaluate(e=>!e.open&&document.activeElement===e.querySelector('summary'));
         await page.keyboard.press('ArrowDown');
         await page.keyboard.press('Tab');
+        await page.waitForTimeout(50);
         const tab=await picker.evaluate(e=>!e.open&&!e.contains(document.activeElement));
         await trigger.tap();
         await page.locator('#search').tap();
         const outside=await picker.evaluate(e=>!e.open);
-        add(name,`picker-${slot}-home-end-tab-outside-focus`,end&&home&&escape&&tab&&outside?'PASS':'FAIL',{end,home,escape,tab,outside});
+        add(name,`picker-${slot}-home-end-tab-outside-focus`,end&&home&&escape&&tab&&outside&&stableOnValueRefresh?'PASS':'FAIL',{end,home,escape,tab,outside,stableOnValueRefresh});
+        const reapplied=await page.evaluate(async()=>{
+          const root=document.getElementById('app');
+          let last=Date.now();
+          const quiet=new MutationObserver(()=>last=Date.now());
+          quiet.observe(root,{subtree:true,attributes:true,childList:true,characterData:true});
+          const deadline=Date.now()+2500;
+          while(Date.now()<deadline&&Date.now()-last<250)await new Promise(r=>setTimeout(r,100));
+          quiet.disconnect();
+          if(Date.now()-last<250)throw new Error('Open picker did not settle before reapply');
+          const before=root.innerHTML;let mutations=0;
+          const observer=new MutationObserver(rows=>mutations+=rows.length);
+          observer.observe(root,{subtree:true,attributes:true,childList:true,characterData:true});
+          for(let i=0;i<3;i++){window.dispatchEvent(new Event('farming420:state-changed'));await new Promise(r=>setTimeout(r,120));}
+          observer.disconnect();return {equal:before===root.innerHTML,mutations};
+        });
+        add(name,`picker-${slot}-same-state-zero-mutations`,reapplied.equal&&reapplied.mutations===0?'PASS':'FAIL',reapplied);
       }
       await navigate(page,'buffs');
       const detailsButton=page.locator('button[data-open="temporary-buff-pesthunter-phillip-buff"]');
@@ -212,8 +234,18 @@ try {
       const prior=await page.locator('main').evaluate(e=>e.scrollTop);
       await page.mouse.move(box.x+box.width/2,box.y+box.height/2);
       await page.mouse.wheel(0,160);
-      await page.waitForTimeout(100);
-      const manual=await page.locator('main').evaluate(e=>e.scrollTop);
+      // WebKit animates one wheel delta over several frames. Capture the
+      // settled manual position within the active anchor window, not the
+      // intermediate animation position; displacement afterward still fails.
+      const manual=await page.locator('main').evaluate(async e=>{
+        let last=e.scrollTop,changed=Date.now();const deadline=Date.now()+1500;
+        while(Date.now()<deadline&&Date.now()-changed<200){
+          await new Promise(r=>setTimeout(r,30));
+          if(Math.abs(e.scrollTop-last)>0.5){last=e.scrollTop;changed=Date.now();}
+        }
+        if(Date.now()-changed<200)throw new Error('Manual wheel did not settle within active anchor window');
+        return e.scrollTop;
+      });
       await page.evaluate(()=>document.getElementById('app').setAttribute('data-audit-harmless-mutation',String(Date.now())));
       await page.waitForTimeout(2200);
       const late=await page.locator('main').evaluate(e=>e.scrollTop);

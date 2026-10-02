@@ -4,7 +4,7 @@ Goal: implement and verify the eighteen ordered audit work packages, without mer
 Branch: `fix/audit-2026-10-02`.
 Application baseline: `bda761d81deb0be37af9fad31f5469efb992df82`.
 Audit baseline: `e666096b55d1a2a887374feb7c7cd743e8cbe111`.
-Last secured remote commit: `717a6bd17ea22e550967766d5786a7e25c9821ab` (persisted-state checkpoint). Local checkpoint: `150caa0`. CLI push is unavailable; GitHub API mirrors verified local trees without force updates.
+Last secured remote commit: `1ba9c8abc7996ddd40bff4f91d84fe98a0f0ae94` (picker/absence checkpoint). Local checkpoint: `bde7569`. CLI push is unavailable; GitHub API mirrors verified local trees without force updates.
 
 ## Actual repository state
 
@@ -130,3 +130,16 @@ Last secured remote commit: `717a6bd17ea22e550967766d5786a7e25c9821ab` (persiste
 - Session 54217: **1,378 Node + 8 Python PASS**, exit 0. Setup selection suite 22/22 PASS; injected-worker aggregation 1/1 PASS. Real resource model command session 28600 PASS **152/152**, 43 direct / 109 fallback; generated timestamp-only artifact delta was discarded, no coverage change or model invention.
 - Active local processes: none. 717a6bd remote jobs now complete. No same-commit blind rerun. Current error: extended picker/scroll acceptance and complete ordinary sweep pending. PR #301 remains a draft; live numeric/account/device limitations retained.
 - Next executable step: secure this implementation checkpoint, inspect its exact-head browser/gate cases (especially restored picker keyboard flow, one-write Cropshot, manual intent, offline art and full sweep), then resolve actual failures and finish final-commit validation.
+
+## Active picker focus and final acceptance expansion (incomplete)
+
+- **1ba9c8a Validate 36953329823 / 110670811971 SUCCESS**, every individual gate PASS, including 1,378 Node + 8 Python tests and strict positive/negative browser smoke. Latest browser jobs all completed; no rerun of a live process.
+- **1ba9c8a Browser 36953329817**: Chromium 169 PASS / 1 FAIL / 8 NOTE; Firefox 168 PASS / 2 FAIL / 8 NOTE; WebKit 162 PASS / 8 FAIL / 8 NOTE; **zero BLOCKED**. All future-schema/backup, Cancel/layout, drawer, Cropshot exactly-one-write, offline physical-art and controlled keyboard/touch-intent cases PASS. Remaining: Chromium helmet focus during late price repaint; Firefox two Pet Item Tab exits; WebKit manual wheel sampled mid-native animation (all final deltas exactly requested +160, not a reverse anchor restore). Extracted evidence: [1ba9c8a browser evidence](../docs/audits/fix-browser-1ba9c8a-2026-10-02.json).
+- Strict Chromium overlay PASS exit 0, zero findings/runtime errors, 120 main scroll targets / 16 opened overlays. Ordinary sweep **all ten areas PASS, exit 0** with external 403/429 URL notes. Negative pageerror sweep returns **1** with explicit injected marker in all three variants. No pageerrors/crashes hidden.
+- Tab closes in a task after the browser's native focus action, rather than a microtask that could hide its target early. Tab also invalidates old queued interaction focus/scroll restorations, including inside editable controls.
+- Price-only core renders defer while navigation/drawer/listbox is open or picker owns focus; leaving/closing it flushes through the existing render/interaction owner. Added a deterministic value-refresh event while an option is focused; its node/focus must survive. Expanded exact-DOM/zero-mutation acceptance to each open Pet/Pet Item/helmet editor; guarded unchanged editor classes.
+- WebKit wheel fixture now waits for 200 ms of settled scrolling within the still-active anchor window before injecting a delayed DOM mutation; it still rejects a subsequent displacement. Known native scroll animation is not labeled an app restore defect.
+- Pages rejects obsolete validation completion after main advances. It checks current main before configure/stamp/upload/deploy and skips obsolete source; exact validated SHA remains immutable. Fresh public main fetch still bda761d; no foreign delta. Account Pages publishing setting remains unreadable via connector; no deploy.
+- Offline immutable artifact check at secured 1ba9c8a PASS: prepared marker/index match exact SHA, all 465 static references resolve. This is artifact validation, not deployment verification.
+- Full suite session 14143 PASS 1,378 Node + 8 Python. A subsequent run (7542) found one outdated source contract for immediate price rendering; contract now requires deferred owner plus blocked-interaction guard/capture/render/restore. Session 80623 rerun PASS (exit 0). Node syntax and diff whitespace checks pass.
+- Current interruption: none; implementation continues, draft PR #301 incomplete until new head's relevant browser matrix and full repository gates pass. Active local processes: none. Next: secure these focused corrections, inspect new exact-head CI, resolve any open-picker mutation/focus regressions, then update final status and run final-commit gates.

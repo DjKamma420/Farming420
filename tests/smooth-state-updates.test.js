@@ -61,9 +61,12 @@ test('tool selection relies on the shared scroll anchor instead of a second manu
 test('late physical value renders preserve the active selection position', () => {
   const source = read('app.js');
   const handler = source.match(/window\.addEventListener\('farming420:item-value-updated',[\s\S]*?\n\}\);/)?.[0] || '';
-  assert.match(handler, /const interaction = captureInteraction\(\)/);
-  assert.match(handler, /render\(\)/);
-  assert.match(handler, /restoreInteraction\(interaction\)/);
+  assert.match(handler, /requestPriceRender\(\)/);
+  const flush = source.match(/function flushPriceRender\(\)[\s\S]*?\n\}/)?.[0] || '';
+  assert.match(flush, /priceRenderBlockedByInteraction\(\)/);
+  assert.match(flush, /const interaction = captureInteraction\(\)/);
+  assert.match(flush, /render\(\)/);
+  assert.match(flush, /restoreInteraction\(interaction\)/);
 });
 
 test('relative scroll anchoring survives repeated renders from one interaction', () => {

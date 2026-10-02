@@ -26,7 +26,9 @@ export function bindDropdownControls(dropdown, id) {
     }
     if (event.key === 'Tab') {
       // Let the browser move focus normally; closing must not redirect it.
-      queueMicrotask(() => { dropdown.open = false; update(); });
+      // A task runs after the native Tab default action. A microtask can hide
+      // the focused option before Firefox resolves its next focus target.
+      setTimeout(() => { dropdown.open = false; update(); }, 0);
       return;
     }
     if (!['ArrowDown','ArrowUp','Home','End'].includes(event.key)) return;

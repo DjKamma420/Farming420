@@ -904,7 +904,7 @@ export function dockSetupEditor(root = document, setupTargetId = null) {
       && (!setupTargetId || card.dataset.setupTarget === setupTargetId));
   const grid = selected?.closest('.slot-grid');
   if (!selected || !grid) return false;
-  editor.classList.add('sb-docked-setup-editor');
+  if (!editor.classList.contains('sb-docked-setup-editor')) editor.classList.add('sb-docked-setup-editor');
   if (selected.nextElementSibling !== editor) selected.insertAdjacentElement('afterend', editor);
   return true;
 }
@@ -937,7 +937,9 @@ export function applySetupSelectionUi(root = document) {
     buildPetPicker(editor, item);
   } else {
     buildClosedItemPicker(editor, slotId, item, targetId);
-    if (slotId === 'petItem') editor.classList.add('sb-pet-item-editor');
+    if (slotId === 'petItem') {
+      if (!editor.classList.contains('sb-pet-item-editor')) editor.classList.add('sb-pet-item-editor');
+    }
     else closeReforgePicker(editor, slotId, item);
     ensurePickerCatalog();
   }
