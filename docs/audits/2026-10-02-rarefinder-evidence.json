@@ -1,0 +1,35 @@
+{
+  "auditedSource": "bda761d81deb0be37af9fad31f5469efb992df82",
+  "verifiedAgainst": "https://hypixel.net/threads/hypixel-skyblock-0-26-1-new-player-improvements-harvest-feast-changes-healing-revamp-and-more.6127383/",
+  "patchDate": "2026-07-22",
+  "rows": [
+    {
+      "rarity": "RARE",
+      "level": 10,
+      "expected": 15,
+      "actual": 20,
+      "status": "FAIL"
+    },
+    {
+      "rarity": "EPIC",
+      "level": 15,
+      "expected": 30,
+      "actual": 37.5,
+      "status": "FAIL"
+    },
+    {
+      "rarity": "LEGENDARY",
+      "level": 20,
+      "expected": 50,
+      "actual": 60,
+      "status": "FAIL"
+    }
+  ],
+  "visibleEntry": {
+    "max": 20,
+    "stepGain": 2.5,
+    "notes": "0.26.1 max is +50 Overbloom. Adjust marginal step for current rarity.",
+    "legendaryMaximum": 50
+  },
+  "scope": "Exported lower-level helper differs from official live patch and current visible entry; no claim that the Dashboard directly calls this helper."
+}
