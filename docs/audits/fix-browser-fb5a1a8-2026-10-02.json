@@ -1058,5 +1058,17 @@
     "negativeMarker": "AUDIT_INJECTED_RUNTIME_ERROR",
     "negativeVariants": 3,
     "marketScope": "External HTTP 403/429 and handled history 400 notes retain unknown market inputs; successful live-price delivery not claimed."
+  },
+  "additionalArtifactValidation": {
+    "commit": "b45d67413142ebd71c71cca754b6b087c094c991",
+    "run": 36957189235,
+    "job": 110682662088,
+    "result": "success",
+    "node": 1379,
+    "python": 8,
+    "buildMarker": "b45d67413142ebd71c71cca754b6b087c094c991",
+    "stampedEntrypoints": 52,
+    "resolvedReferences": 466,
+    "originalCheckoutUnchanged": true
   }
 }

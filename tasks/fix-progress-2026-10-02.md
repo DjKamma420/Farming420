@@ -5,7 +5,8 @@ Branch: `fix/audit-2026-10-02`. PR: [#301](https://github.com/DjKamma420/Farming
 Application baseline: `bda761d81deb0be37af9fad31f5469efb992df82`.
 Audit baseline: `e666096b55d1a2a887374feb7c7cd743e8cbe111`.
 Last secured implementation commit: `fb5a1a834081d54a0108a77648e50b16b6ebf0fb`.
-This ledger/artifact-gate checkpoint is a descendant; resolve its exact secured SHA from the branch ref or `git rev-parse HEAD`. A file cannot contain its own Git commit hash. Final-checkpoint run IDs/results are recorded on PR #301 and queryable by its exact head SHA.
+Last secured artifact/gate checkpoint: `b45d67413142ebd71c71cca754b6b087c094c991`.
+This documentation checkpoint is a descendant; resolve its exact secured SHA from the branch ref or `git rev-parse HEAD`. A file cannot contain its own Git commit hash. Final-checkpoint run IDs/results are recorded on PR #301 and queryable by its exact head SHA.
 Last available local checkpoint: `1f0e67888e30ca910eecddfde49838fc0fc7c31f`, tree equal to remote `36e0767`. Later connector commits have not been materialized locally.
 
 ## Current actual state
@@ -14,7 +15,7 @@ Last available local checkpoint: `1f0e67888e30ca910eecddfde49838fc0fc7c31f`, tre
 - Local execution subsequently failed **before process creation** with `409 environment_offline`, “Environment is not connected.” No hung local process exists. Continue through GitHub exact-file reads/Git trees without force updates until execution returns.
 - Main was checked again before fb5a1a8 and still equals the application baseline. Initially only stale PR #108 existed; this work created draft PR #301 on a previously unused fix branch. No foreign branch changes overwritten.
 - Read AGENTS.md, relevant product/profile/math/render specifications, tasks/todo.md, previous progress and all three pinned handovers. Their copies are byte-identical. User authorization explicitly supersedes historical automatic merge instructions.
-- Available fixes have executable acceptance at fb5a1a8. The final checkpoint adds an isolated immutable artifact gate and must pass exact-head Validate/browser runs before closing. No merge/deployment performed.
+- Available fixes have executable acceptance at fb5a1a8. The isolated immutable artifact gate passes at b45d674. Its Validate run passes all gates; exact-head browser repeats are still running at this save. No merge/deployment performed.
 
 ## Ordered package status
 
@@ -38,7 +39,7 @@ Statuses below are supported by the fb5a1a8 acceptance; final-checkpoint repeat 
 | 14 | Canonical chip rates/confidence | blocked (canonical fixes tested) | All ten families share rarity/provenance; Rarefinder 15/30/50 confirmed; live Cropshot curve unresolved. |
 | 15 | Numerical provenance/incompleteness | blocked (safeguards tested) | Historical Pest divisors and unsupported pet/shard curves stay visible, incomplete and unranked; missing live lore is not fabricated. |
 | 16 | Canonical art ownership | tested | Tater/Pesthunter/Clover identity preserved; offline fallback has no broken-icon leaks or repeated retries. |
-| 17 | Validated single Pages publisher | blocked (workflow tested) | Immutable validated main SHA, stale-completion guard and stamped artifact gate added (final repeat pending); account setting/deployed marker requires access and release authorization. |
+| 17 | Validated single Pages publisher | blocked (workflow tested) | Immutable validated main SHA, stale-completion guard and stamped complete artifact tested at b45d674; account setting/deployed marker requires access and release authorization. |
 | 18 | Honest browser/sweep gates | tested | Actual main scroll/open overlays/action outcomes; runtime errors, worker failures/budgets and exact mutation drift propagate nonzero exits. |
 
 ## Executed acceptance
@@ -50,12 +51,12 @@ Statuses below are supported by the fb5a1a8 acceptance; final-checkpoint repeat 
 | same | Strict idempotence / tool scroll in Validate | Ten pages × three reapplies, exact DOM and zero mutations PASS. Both transient-mutation and equal-length-change controls return nonzero acceptance. All 12 trusted tool transitions PASS, max drift 1.42 px, no late drift/scroll. |
 | same | Browser 36956406582; Chromium 110680207625, Firefox 110680207819, WebKit 110680207821 | Each 194 PASS / 0 FAIL / 8 NOTE / 0 BLOCKED. No bare workflow green used in place of case results. |
 | same | Chromium strict overlay/sweep step | Overlay exit 0, zero findings/errors, 120 actual main scroll targets and 16 opened overlays. All ten ordinary sweep areas PASS, aggregate exit 0. Injected runtime-error control exit 1 with marker in all three variants. |
-| 1ba9c8abc7996ddd40bff4f91d84fe98a0f0ae94 | Isolated offline stamped artifact | Exact build marker/index match commit; 465 local references resolve. New final-head CI artifact gate repeats this at the current immutable SHA. |
+| b45d67413142ebd71c71cca754b6b087c094c991 | Validate 36957189235 / 110682662088 | SUCCESS; all steps reviewed, 1,379 Node + 8 Python tests. Isolated artifact marker matches exact SHA, 52 entrypoints stamped, 466 references resolve; source checkout unchanged. Startup/idempotence/fault controls/12 trusted transitions also PASS. |
 | local bde7569 / equivalent remote 1ba9c8a source | Official item-model audit | 152/152 resolve: 43 direct and 109 fallback. Resolver availability is not semantic art/device acceptance. |
 
 Durable extracted results: [fb5a1a8 acceptance](../docs/audits/fix-browser-fb5a1a8-2026-10-02.json). Prior failed runs/evidence remain in the history below and are not counted as passes.
 
-CI/process state at this save: runs 36956406576 and 36956406582 **completed successfully** at fb5a1a8; no active local process. Saving the new checkpoint automatically starts exact-head Validate and browser runs; inspect the branch SHA and their existing IDs before any retry. Final workflow/artifact checks are not claimed before those results.
+CI/process state at this save: runs 36956406576 and 36956406582 **completed successfully** at fb5a1a8. Validate 36957189235 / 110682662088 **completed successfully** at b45d674. Browser 36957189270 is **in progress** at b45d674, jobs Chromium 110682662311, WebKit 110682662580, Firefox 110682662679; inspect these existing jobs before any retry. No active local process. This documentation-only checkpoint automatically receives its own exact-head final runs; their IDs and individual results are recorded on PR #301 after creation. Its application/scripts/workflows are byte-identical to b45d674. No final browser repeat is claimed before results.
 
 ## Concrete additional findings and resolutions
 
@@ -86,8 +87,8 @@ CI/process state at this save: runs 36956406576 and 36956406582 **completed succ
 
 ## Current interruption and next executable step
 
-Current interruption: local environment offline; final-checkpoint CI acceptance (including the new isolated artifact gate) must be inspected. The available implementation is secured, not an unverified local worktree.
-Next: fetch the exact fix-branch head and its existing Actions runs, read individual results/exit codes; fix any actual failure without blind reruns. Record final head/run results on PR #301 after completion. Only then report implemented/tested available packages with the blocks above. Do not merge/deploy.
+Current interruption at save: local environment offline; final-checkpoint browser CI acceptance must be inspected. The new isolated artifact and full repository gates already PASS at b45d674. The available implementation is secured, not an unverified local worktree.
+Next: fetch the exact fix-branch head and its existing Actions runs, read individual results/exit codes; fix any actual failure without blind reruns. Record final head/run results on PR #301 after completion. Only then report implemented/tested available packages with the blocks above. If final gates pass, no independently executable package remains open: continuation is limited to the documented live-evidence/account/device blocks when capabilities or evidence become available. Do not merge/deploy.
 For a later “continue”: read this current section and actual branch files/PR CI before using chronological checkpoints. Resume only a still-open failure or a numeric/access-dependent block after new evidence arrives; do not restart at package 1 or duplicate completed tests.
 
 ## Historical checkpoints
