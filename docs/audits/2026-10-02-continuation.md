@@ -26,3 +26,16 @@ Primary sources:
 - https://hypixel.net/threads/may-14-harvest-feast-changes.6096831/
 
 The July 22 patch confirms Cow perk changes and a base-Fortune scaling change, but does not specify every exact rarity/level/Farming-Strength curve. That remaining acceptance still needs suitable current live evidence; no missing coefficient is invented. All findings are audit-only.
+
+## CONT28 — first cross-browser evidence and harness correction
+
+Run 36943884775 completed in all three installed engines with uploaded evidence. Chromium 320×568, WebKit 390×844 and WebKit 800×360 each independently show the last option reachable immediately, then out of view after capture/settlement. Main scrollTop moves 2826→2565, 2303→2062 and 1846→1629 respectively, without an injected DOM mutation. The measured coordinate touch selects and persists YELLOW_BANDANA after recovery in all three. Thus a point-in-time hit is not stable acceptance; the manual-scroll/anchor cancellation work package remains required. Chromium 320 and WebKit 390 also reproduce Escape remaining open and ArrowDown leaving focus on SUMMARY.
+
+Six viewport fixtures were blocked at navigation during startup DOM replacement, and WebKit landscape's post-selection keyboard continuation waited for an editor that had been removed/rebuilt. These are retained as probe limitations, not new proven browser incompatibilities. Probe correction commit 520cc38a966f935e5b711e002eb78abc2a31d0da allows startup hydration, conditionally opens navigation through normal taps, records bounded retries, and reopens a removed editor through its normal card. It does not force hidden controls, rewrite route state, or change app code. Follow-up run 36944520331 is pending.
+
+Initial artifacts expire November 1, 2026; raw JSON remains retained locally and will be committed alongside final evidence. Artifact ZIP identity:
+- Chromium: 11201621297, SHA256 adb207620c5ecfbd93ee7deec6be2a6e5d99b5e00f4601a810ef448bd8a72de5.
+- WebKit: 11201596514, SHA256 e258ca800518ca2318d60e7544ea6985ef840794c264e2157f2900e9b091bc41.
+- Firefox: 11200892542, SHA256 d0b30d8dda2ba8f472e10f53823eba4ece54995513b16b8f7eaa7f17bd52f001.
+
+The Rarefinder mismatch is additionally encoded in tests/farming-modifiers-data.test.js:19, which asserts maxGardenChipEffect('rarefinder') === 60. A green existing test therefore cannot establish current mechanical correctness. The fix acceptance must replace that stale expected value using the cited live source and independently cover the rarity-specific caps. No source/test fix is included in this audit branch.
