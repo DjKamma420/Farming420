@@ -7,7 +7,7 @@ HTTP_LOG="${RUNNER_TEMP:-/tmp}/farming420-http.log"
 CHROME_LOG="${RUNNER_TEMP:-/tmp}/farming420-chrome.log"
 DASHBOARD_DOM="${RUNNER_TEMP:-/tmp}/farming420-dashboard-dom.html"
 SETUPS_DOM="${RUNNER_TEMP:-/tmp}/farming420-setups-dom.html"
-CHROME_PROCESS_TIMEOUT_SECONDS="${FARMING420_CHROME_TIMEOUT_SECONDS:-45}"
+CHROME_PROCESS_TIMEOUT_SECONDS="${FARMING420_CHROME_TIMEOUT_SECONDS:-90}"
 
 if ! command -v google-chrome >/dev/null 2>&1; then
   echo "google-chrome is required for the browser startup smoke test" >&2
@@ -42,6 +42,8 @@ run_chrome_dump() {
   # truncating it would dump a half-finished verdict that still greps as OK.
   local virtual_time="${3:-5000}"
   : >"$CHROME_LOG"
+  local started="$SECONDS"
+  echo "Chrome dump: $url (virtual budget ${virtual_time}ms, wall limit ${CHROME_PROCESS_TIMEOUT_SECONDS}s)"
   set +e
   # GitHub's hosted runner can spend more than 20 seconds cold-starting Chrome
   # before the page receives any virtual time. The page itself still gets only
@@ -66,6 +68,7 @@ run_chrome_dump() {
     --dump-dom "$url" >"$output" 2>"$CHROME_LOG"
   local status=$?
   set -e
+  echo "Chrome dump exit=$status wall=$((SECONDS - started))s for $url"
 
   if [[ "$status" -eq 124 ]]; then
     echo "Browser smoke test timed out for $url after ${CHROME_PROCESS_TIMEOUT_SECONDS}s; the app may be stuck in a render/event-loop freeze" >&2

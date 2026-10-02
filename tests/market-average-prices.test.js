@@ -5,6 +5,7 @@ import {
   MARKET_KIND,
   MARKET_SIDE,
   fetchMarketAverage,
+  loadMarketAverage,
   marketAverageTimestampLabel,
   timeWeightedAverage,
   volumeWeightedAuctionAverage,
@@ -112,5 +113,23 @@ test('missing 90-day history is unknown rather than a stale research price', asy
     assert.equal(resolved.origin, 'unknown');
     assert.equal(resolved.acquisitionMode, 'UNKNOWN');
     assert.match(resolved.reason, /90-day market average/);
+  });
+});
+
+test('rejected Rarefinder market history stays unknown and cannot become a free upgrade', async () => {
+  await withStorage(async map => {
+    let bodyReads=0;
+    const result=await loadMarketAverage(
+      {market:MARKET_KIND.AUCTION_HOUSE,itemTag:'RAREFINDER_CHIP',side:MARKET_SIDE.ACQUIRE},
+      {fetchImpl:async()=>({ok:false,status:400,json:async()=>{bodyReads++;return [{avg:0,volume:1}];}}),nowMs:NOW},
+    );
+    assert.equal(result.quote,null);
+    assert.match(result.error,/400/);
+    assert.equal(bodyReads,0);
+    assert.equal(map.size,0,'rejected price is not cached as a known zero');
+    const cost=resolveUpgradeCost({costs:{'garden-chip-rarefinder-chip':1}},'garden-chip-rarefinder-chip');
+    assert.equal(cost.origin,'unknown');
+    assert.equal(cost.acquisitionMode,'UNKNOWN');
+    assert.match(cost.reason,/90-day market average/);
   });
 });

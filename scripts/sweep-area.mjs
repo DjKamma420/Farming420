@@ -235,15 +235,24 @@ async function sweepVariant(browser, label, viewport, seed) {
   }
 
   const expectedLocalMiss = url => /\/(deploy-version\.json|favicon\.ico)(?:[?#]|$)/.test(url);
-  const networkNotes = networkFailures.filter(row=>row.external && [403,429].includes(row.status));
+  // A rejected SkyCofl history request is a handled unknown-price input,
+  // tested in market-average-prices.test.js. Retain its URL/status as evidence;
+  // a local 400 or a 400 from another endpoint remains an error.
+  const handledMarketHistory400 = row => row.external && row.status===400
+    && new URL(row.url).hostname==='sky.coflnet.com'
+    && /^\/api\/(?:bazaar\/[^/]+\/history|item\/price\/[^/]+\/history\/full)$/.test(new URL(row.url).pathname);
+  const expectedExternal = row => row.external && ([403,429].includes(row.status) || handledMarketHistory400(row));
+  const networkNotes = networkFailures.filter(expectedExternal);
   for (const row of networkFailures) if(!row.external && !expectedLocalMiss(row.url)) errs.push(`Local HTTP ${row.status}: ${row.url}`);
   for (const row of consoleErrors) {
     if (/ERR_TUNNEL/.test(row.text) || expectedLocalMiss(row.url)) continue;
     const status = Number(row.text.match(/server responded with a status of (\d+)/)?.[1]);
     const exact = networkFailures.find(f=>f.url===row.url&&f.status===status);
-    const bareExpectedExternal = !row.url && [403,429].includes(status)
-      && networkNotes.some(f=>f.status===status) && !networkFailures.some(f=>!f.external&&f.status===status&&!expectedLocalMiss(f.url));
-    if ((exact?.external && [403,429].includes(status)) || bareExpectedExternal) continue;
+    const bareExpectedExternal = !row.url && [400,403,429].includes(status)
+      && networkNotes.some(f=>f.status===status)
+      && (status!==400 || networkFailures.filter(f=>f.status===400).every(handledMarketHistory400))
+      && !networkFailures.some(f=>!f.external&&f.status===status&&!expectedLocalMiss(f.url));
+    if ((exact && expectedExternal(exact)) || bareExpectedExternal) continue;
     errs.push(row.text.slice(0,180)+(row.url?` [${row.url}]`:''));
   }
   const unique = [...new Set(errs)];

@@ -1,6 +1,7 @@
 import { DATA_SCHEMA_VERSION, STORAGE_KEY } from './config.js';
 import { readStoredAppState, writeStoredAppState } from './app-storage.js';
 import { bindDropdownControls } from './dropdown-controls.js';
+import { finiteNumber, finiteNonNegative } from './finite-number.js';
 import {
   createEmptyItem,
   ITEM_SOURCE,
@@ -121,22 +122,15 @@ function writeProfileStrength(value) {
   if (!state) return false;
   state.profile ||= {};
   state.profile.inputs ||= {};
-  if (value === '' || value === null || value === undefined) {
-    delete state.profile.inputs.strength;
-  } else {
-    const strength = Number(value);
-    if (!Number.isFinite(strength) || strength < 0) delete state.profile.inputs.strength;
-    else state.profile.inputs.strength = strength;
-  }
+  const strength = finiteNonNegative(value);
+  if (strength === null) delete state.profile.inputs.strength;
+  else state.profile.inputs.strength = strength;
   return writeState(state);
 }
 
 function currentProfileStrength() {
   const state = readState();
-  const raw = state?.profile?.inputs?.strength;
-  if (raw === '' || raw === null || raw === undefined) return null;
-  const strength = Number(raw);
-  return Number.isFinite(strength) && strength >= 0 ? strength : null;
+  return finiteNonNegative(state?.profile?.inputs?.strength);
 }
 
 function element(tag, attrs = {}, text = null) {
@@ -339,7 +333,7 @@ function buildLevelSelect(petId, currentLevel) {
   for (let level = bounds.min; level <= bounds.max; level += 1) {
     select.append(element('option', { value: String(level) }, `Level ${level}`));
   }
-  const numeric = Number(currentLevel);
+  const numeric = finiteNumber(currentLevel);
   select.value = Number.isFinite(numeric) && numeric >= bounds.min && numeric <= bounds.max
     ? String(Math.floor(numeric))
     : '';
@@ -466,8 +460,8 @@ function closedItemPickerSignature(options, item) {
 function currentGardenLevelForRecommendation() {
   const state = readState();
   const garden = state?.profile?.normalizedSnapshot?.garden || {};
-  const direct = Number(garden.level);
-  if (Number.isFinite(direct) && direct >= 0) return Math.floor(direct);
+  const direct = finiteNonNegative(garden.level);
+  if (direct !== null) return Math.floor(direct);
   return gardenLevelFromExperience(garden.experience);
 }
 
