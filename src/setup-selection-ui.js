@@ -1,4 +1,7 @@
 import { DATA_SCHEMA_VERSION, STORAGE_KEY } from './config.js';
+import { readStoredAppState, writeStoredAppState } from './app-storage.js';
+import { bindDropdownControls } from './dropdown-controls.js';
+import { finiteNumber, finiteNonNegative } from './finite-number.js';
 import {
   createEmptyItem,
   ITEM_SOURCE,
@@ -70,9 +73,7 @@ function normalizedRarity(value) {
 
 function readState() {
   try {
-    const raw = globalThis.localStorage?.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
+    const parsed = readStoredAppState(null);
     if (!parsed || typeof parsed !== 'object') return null;
     if (Number(parsed.schemaVersion || 0) > DATA_SCHEMA_VERSION) return null;
     return parsed;
@@ -83,8 +84,7 @@ function readState() {
 
 function writeState(state) {
   try {
-    state.schemaVersion = DATA_SCHEMA_VERSION;
-    globalThis.localStorage?.setItem(STORAGE_KEY, JSON.stringify(state));
+    if (!writeStoredAppState(state)) return false;
     globalThis.dispatchEvent?.(new Event('farming420:state-changed'));
     return true;
   } catch {
@@ -122,22 +122,15 @@ function writeProfileStrength(value) {
   if (!state) return false;
   state.profile ||= {};
   state.profile.inputs ||= {};
-  if (value === '' || value === null || value === undefined) {
-    delete state.profile.inputs.strength;
-  } else {
-    const strength = Number(value);
-    if (!Number.isFinite(strength) || strength < 0) delete state.profile.inputs.strength;
-    else state.profile.inputs.strength = strength;
-  }
+  const strength = finiteNonNegative(value);
+  if (strength === null) delete state.profile.inputs.strength;
+  else state.profile.inputs.strength = strength;
   return writeState(state);
 }
 
 function currentProfileStrength() {
   const state = readState();
-  const raw = state?.profile?.inputs?.strength;
-  if (raw === '' || raw === null || raw === undefined) return null;
-  const strength = Number(raw);
-  return Number.isFinite(strength) && strength >= 0 ? strength : null;
+  return finiteNonNegative(state?.profile?.inputs?.strength);
 }
 
 function element(tag, attrs = {}, text = null) {
@@ -325,6 +318,7 @@ function buildPetDropdown(currentId, item) {
   addOption(null, '', 'No pet', !currentId);
   for (const pet of FARMING_PETS) addOption(pet, pet.id, pet.name, currentId === pet.id);
   dropdown.append(trigger, menu);
+  bindDropdownControls(dropdown, 'farming-pet');
   return dropdown;
 }
 
@@ -339,7 +333,7 @@ function buildLevelSelect(petId, currentLevel) {
   for (let level = bounds.min; level <= bounds.max; level += 1) {
     select.append(element('option', { value: String(level) }, `Level ${level}`));
   }
-  const numeric = Number(currentLevel);
+  const numeric = finiteNumber(currentLevel);
   select.value = Number.isFinite(numeric) && numeric >= bounds.min && numeric <= bounds.max
     ? String(Math.floor(numeric))
     : '';
@@ -466,8 +460,8 @@ function closedItemPickerSignature(options, item) {
 function currentGardenLevelForRecommendation() {
   const state = readState();
   const garden = state?.profile?.normalizedSnapshot?.garden || {};
-  const direct = Number(garden.level);
-  if (Number.isFinite(direct) && direct >= 0) return Math.floor(direct);
+  const direct = finiteNonNegative(garden.level);
+  if (direct !== null) return Math.floor(direct);
   return gardenLevelFromExperience(garden.experience);
 }
 
@@ -599,6 +593,7 @@ function buildPetItemPicker(editor, item, setupId = null) {
   for (const option of options) addOption(option, currentId === String(option.id || '').toUpperCase());
 
   dropdown.append(trigger, menu);
+  bindDropdownControls(dropdown, 'pet-item');
   const closedField = element('div', { className: 'settings-field sb-closed-item-field sb-pet-item-dropdown-field' });
   const recommendationText = recommendation.item
     ? `Recommended: ${recommendation.item.name} · ${recommendation.reason}`
@@ -797,6 +792,7 @@ function buildArmorItemPicker(editor, slotId, item) {
   }
 
   dropdown.append(trigger, menu);
+  bindDropdownControls(dropdown, `gear-${slotId}`);
   const closedField = element('div', {
     className: 'settings-field sb-closed-item-field sb-gear-dropdown-field',
   });
@@ -902,7 +898,7 @@ export function dockSetupEditor(root = document, setupTargetId = null) {
       && (!setupTargetId || card.dataset.setupTarget === setupTargetId));
   const grid = selected?.closest('.slot-grid');
   if (!selected || !grid) return false;
-  editor.classList.add('sb-docked-setup-editor');
+  if (!editor.classList.contains('sb-docked-setup-editor')) editor.classList.add('sb-docked-setup-editor');
   if (selected.nextElementSibling !== editor) selected.insertAdjacentElement('afterend', editor);
   return true;
 }
@@ -935,7 +931,9 @@ export function applySetupSelectionUi(root = document) {
     buildPetPicker(editor, item);
   } else {
     buildClosedItemPicker(editor, slotId, item, targetId);
-    if (slotId === 'petItem') editor.classList.add('sb-pet-item-editor');
+    if (slotId === 'petItem') {
+      if (!editor.classList.contains('sb-pet-item-editor')) editor.classList.add('sb-pet-item-editor');
+    }
     else closeReforgePicker(editor, slotId, item);
     ensurePickerCatalog();
   }
@@ -965,4 +963,7 @@ if (typeof document !== 'undefined') {
     if (matchesEventTarget(event, REAPPLY_CHANGE_SELECTOR)) schedule();
   });
   globalThis.addEventListener?.('farming420:state-changed', schedule);
+  // Value/cache completion can repaint an open editor without changing saved
+  // state. Rebuild its existing controls from the core's explicit render hook.
+  globalThis.addEventListener?.('farming420:rendered', schedule);
 }

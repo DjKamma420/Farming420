@@ -1,3 +1,5 @@
+import { gardenChipForEntry } from './farming-modifiers-data.js';
+
 export const CROPS = [
   {
     "id": "wheat",
@@ -2442,3 +2444,23 @@ export const COMING_SOON = [
     "notes": "Do not pre-value the shard until released."
   }
 ];
+
+// Generated planner rows consume the same rarity table as numerical helpers.
+for (const item of UPGRADES) {
+  const chip = gardenChipForEntry(item);
+  if (!chip) continue;
+  item.chipId = chip.id;
+  item.max = 20;
+  item.status = chip.status === 'ACTIVE' ? 'ACTIVE' : 'VERIFY';
+  item.source = chip.source;
+  item.confidence = chip.confidence || (chip.status === 'ACTIVE' ? 'SOURCED_TABLE' : 'UNRESOLVED_LIVE_CURVE');
+  if (chip.lastVerified) item.lastVerified = chip.lastVerified;
+  if (chip.sourceDate) item.sourceDate = chip.sourceDate;
+  if (item.status === 'VERIFY') { delete item.lastVerified; item.lastReviewed = '2026-10-02'; }
+  if (chip.id !== 'hypercharge') {
+    item.stepGain = item.status === 'ACTIVE' ? chip.effect.rates.LEGENDARY : null;
+    item.rawMarginal = item.stepGain;
+    item.manualDefault = null;
+    item.notes = chip.effect.reason || `Rarity-aware ${chip.effect.axis}: ${Object.entries(chip.effect.rates).map(([rarity, rate]) => `${rarity} +${rate} per level`).join(', ')}. Rarity caps: 10/15/20.`;
+  }
+}

@@ -27,10 +27,13 @@ test('the main navigation folds accessories, chips and shards into one workspace
 
 test('all generic drawer activation paths enforce exclusive accessory families', () => {
   const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
-  assert.match(source, /if \(nextLevel > 0\) clearExclusivePeers\(item\)/);
-  const maxHandler = source.slice(source.indexOf("document.querySelectorAll('[data-max]')"), source.indexOf("document.querySelectorAll('[data-owned]')"));
-  assert.match(maxHandler, /clearExclusivePeers\(item\)/);
-  assert.match(source, /if \(e\.target\.checked\) clearExclusivePeers\(item\)/);
+  for (const handler of ['data-step','data-max','data-owned']) {
+    const start=source.indexOf(`document.querySelectorAll('[${handler}]')`);
+    const end=source.indexOf('}));',start);
+    assert.match(source.slice(start,end),/setEntryLevel\(item,/);
+  }
+  const setter=source.slice(source.indexOf('function setEntryLevel'),source.indexOf('function clearExclusivePeers'));
+  assert.match(setter,/clearExclusivePeers\(item\)/);
 });
 
 test('conditional physical accessories stay in the accessories section', () => {

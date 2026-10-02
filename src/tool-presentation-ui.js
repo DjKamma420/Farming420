@@ -1,4 +1,6 @@
 import { CROPS } from './data.js';
+import { farmingToolPackKey } from './farming-tool-art.js';
+import { selectedFarmingToolReforge } from './item-capabilities.js';
 import { STORAGE_KEY } from './config.js';
 import { toolKeyForCropId } from './migrations.js';
 import { cropReforgeRecommendations, reforgeById } from './farming-reforges.js';
@@ -16,8 +18,8 @@ export const TOOL_TIER_ASSETS = Object.freeze({
   cactus: Object.freeze(['cactus_knife','cactus_knife_2','cactus_knife_3']),
   'cocoa-beans': Object.freeze(['coco_chopper','coco_chopper_2','coco_chopper_3']),
   mushroom: Object.freeze(['fungi_cutter','fungi_cutter_2','fungi_cutter_3']),
-  melon: Object.freeze(['melon_dicer','melon_dicer','melon_dicer']),
-  pumpkin: Object.freeze(['pumpkin_dicer','pumpkin_dicer','pumpkin_dicer']),
+  melon: Object.freeze([1, 2, 3].map(tier => farmingToolPackKey('Melon Dicer', tier))),
+  pumpkin: Object.freeze([1, 2, 3].map(tier => farmingToolPackKey('Pumpkin Dicer', tier))),
 });
 
 function readState(storage = globalThis.localStorage) {
@@ -43,11 +45,7 @@ export function recommendationRows(cropId) {
   ];
 }
 function selectedReforge(state,cropId) {
-  const bucket=bucketFor(state,cropId);
-  if (reforgeById(bucket.reforge)) return bucket.reforge;
-  if (bucket.owned?.['tool-reforge-bountiful-reforge']) return 'bountiful';
-  if (bucket.owned?.['tool-reforge-blessed-reforge']) return 'blessed';
-  return null;
+  return selectedFarmingToolReforge(bucketFor(state,cropId), state?.profile?.toolReforges?.[toolKeyForCropId(cropId)]);
 }
 function esc(value='') { return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])); }
 function renderRecommendations(root,crop,state) {

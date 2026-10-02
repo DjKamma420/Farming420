@@ -53,9 +53,9 @@ test('verified tiered hoe assets follow the selected tier', () => {
   assert.equal(toolAssetForTier('sugar-cane', 3), 'theoretical_hoe_cane_3');
 });
 
-test('single-texture Dicers still expose the selected tier through the Mk. label', () => {
+test('Dicer art follows the shared verified tier asset owner', () => {
   assert.equal(toolAssetForTier('melon', 1), 'melon_dicer');
-  assert.equal(toolAssetForTier('melon', 3), 'melon_dicer');
+  assert.equal(toolAssetForTier('melon', 3), 'melon_dicer_3');
   assert.equal(toolTierLabel(3), 'Mk. III');
 });
 

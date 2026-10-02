@@ -61,9 +61,12 @@ test('tool selection relies on the shared scroll anchor instead of a second manu
 test('late physical value renders preserve the active selection position', () => {
   const source = read('app.js');
   const handler = source.match(/window\.addEventListener\('farming420:item-value-updated',[\s\S]*?\n\}\);/)?.[0] || '';
-  assert.match(handler, /const interaction = captureInteraction\(\)/);
-  assert.match(handler, /render\(\)/);
-  assert.match(handler, /restoreInteraction\(interaction\)/);
+  assert.match(handler, /requestPriceRender\(\)/);
+  const flush = source.match(/function flushPriceRender\(\)[\s\S]*?\n\}/)?.[0] || '';
+  assert.match(flush, /priceRenderBlockedByInteraction\(\)/);
+  assert.match(flush, /const interaction = captureInteraction\(\)/);
+  assert.match(flush, /render\(\)/);
+  assert.match(flush, /restoreInteraction\(interaction\)/);
 });
 
 test('relative scroll anchoring survives repeated renders from one interaction', () => {
@@ -88,5 +91,5 @@ test('reforge goal changes re-render in place instead of faking Tools navigation
 test('real page navigation still starts the destination page at the top', () => {
   const source = read('app.js');
   assert.match(source, /\[data-page\][\s\S]*render\(\{ preserveScroll: false \}\)/);
-  assert.match(source, /addEventListener\('farming420:state-changed'[\s\S]*state = loadState\(\);[\s\S]*render\(\);/);
+  assert.match(source, /addEventListener\('farming420:state-changed'[\s\S]*const nextState = loadState\(\);[\s\S]*state = nextState;[\s\S]*render\(\);/);
 });

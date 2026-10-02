@@ -1,4 +1,18 @@
 import { UPGRADES } from './data.js';
+import { TEMPORARY_FARMING_MODIFIERS, FARMING_SHARDS_027 } from './farming-modifiers-data.js';
+
+const phillip = TEMPORARY_FARMING_MODIFIERS.pesthunterPhillip;
+Object.assign(UPGRADES.find(item => item.id === 'temporary-buff-pesthunter-phillip-buff'), {
+  status: 'VERIFY', stepGain: null, rawMarginal: null, confidence: phillip.confidence,
+  source: phillip.source, sourceDate: phillip.sourceDate, lastVerified: '2026-10-02',
+  notes: 'Single temporary activation with Pest count and expiry. Alpha preview: +5 per Pest capped at +200; current live curve remains unverified. No permanent or stacked +200 contribution.',
+});
+for (const shard of Object.values(FARMING_SHARDS_027)) {
+  if (!shard.status.includes('VERIFY')) continue;
+  const entry = UPGRADES.find(item => item.section === 'shards' && (item.name === shard.name || item.name.startsWith(`${shard.name} -`)));
+  if (entry) Object.assign(entry, { status: 'VERIFY', confidence: shard.confidence, source: shard.source, sourceDate: shard.sourceDate,
+    notes: `${entry.notes} Numerical effect is Alpha/community evidence; current live lore verification is required.` });
+}
 
 /**
  * Small verified runtime additions and corrections that are kept separate from

@@ -1,3 +1,5 @@
+import { TEMPORARY_FARMING_MODIFIERS } from './farming-modifiers-data.js';
+import { finiteNonNegative } from './finite-number.js';
 import { PESTS } from './pest-mechanics-data.js';
 
 /**
@@ -120,11 +122,12 @@ export const LOOT_PIPELINE = Object.freeze([
  * player on an older snapshot should be able to see which number they have.
  */
 export const PESTHUNTER_PHILIP = Object.freeze({
-  fortunePerPest: 5,
-  pestCap: 200,
-  maxFortune: 1000,
+  fortunePerPest: TEMPORARY_FARMING_MODIFIERS.pesthunterPhillip.farmingFortunePerPest,
+  pestCap: TEMPORARY_FARMING_MODIFIERS.pesthunterPhillip.currentPestCostForFullBuff,
+  maxFortune: TEMPORARY_FARMING_MODIFIERS.pesthunterPhillip.farmingFortuneCap,
   durationMinutes: 30,
-  version: '0.27',
+  version: 'Alpha 2026-08-03; live verification pending',
+  confidence: 'ALPHA_ONLY',
   supersededSnapshot: Object.freeze({ pestCap: 40, maxFortune: 200, source: 'research/VACUUM_RESEARCH.md' }),
   alternativeUseNote: 'Pest currency has other uses, so this is only worth its Fortune if you were going to spend it here.',
 });
@@ -136,12 +139,8 @@ export const PESTHUNTER_PHILIP = Object.freeze({
  * folding a bad input into a confident zero.
  */
 export function philipFortuneFor(pests, table = PESTHUNTER_PHILIP) {
-  // An empty input field is a real answer -- spend nothing, get nothing -- but
-  // `null` is an absent value, and `Number(null)` is 0, which would quietly
-  // turn "no data" into "I checked, it is zero".
-  if (pests === null) return null;
-  const requested = Number(pests);
-  if (!Number.isFinite(requested) || requested < 0) return null;
+  const requested = finiteNonNegative(pests);
+  if (requested === null) return null;
   const spent = Math.min(Math.floor(requested), table.pestCap);
   const fortune = Math.min(spent * table.fortunePerPest, table.maxFortune);
   return {

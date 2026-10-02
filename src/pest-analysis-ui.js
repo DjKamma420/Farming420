@@ -38,7 +38,7 @@ function philipMarkup(pests) {
       <input data-pest-philip type="number" min="0" step="1" value="${result ? result.requested : 0}">
     </label>
     <div class="pest-philip-result">
-      <strong data-pest-philip-out>${result ? `+${formatNumber(result.fortune)} Farming Fortune` : '—'}</strong>
+      <strong data-pest-philip-out>${result ? `+${formatNumber(result.fortune)} Farming Fortune (Alpha preview)` : '—'}</strong>
       <span data-pest-philip-note>${result
         ? `${formatNumber(result.spent)} pests for ${PESTHUNTER_PHILIP.durationMinutes} minutes${result.capped ? ` · capped at ${PESTHUNTER_PHILIP.pestCap}` : ''}`
         : 'Enter a pest count'}</span>
@@ -174,7 +174,7 @@ function applyPestAnalysis() {
     // observed subtree: assigning the same string still replaces the text node
     // and emits another childList mutation. That is rule 2 of
     // docs/RENDER_FREEZE_SAFETY.md and the exact shape of the PR #90 freeze.
-    setTextIfChanged(out, result ? `+${formatNumber(result.fortune)} Farming Fortune` : '—');
+    setTextIfChanged(out, result ? `+${formatNumber(result.fortune)} Farming Fortune (Alpha preview)` : '—');
     setTextIfChanged(note, result
       ? `${formatNumber(result.spent)} pests for ${PESTHUNTER_PHILIP.durationMinutes} minutes${result.capped ? ` · capped at ${PESTHUNTER_PHILIP.pestCap}` : ''}`
       : 'Enter a pest count');

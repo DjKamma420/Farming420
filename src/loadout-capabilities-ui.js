@@ -1,3 +1,5 @@
+import { syncedPetForSetup } from './pet-identity.js';
+import { readStoredAppState, writeStoredAppState } from './app-storage.js';
 import { STORAGE_KEY } from './config.js';
 import { UPGRADES } from './data.js';
 import { ACTIVITY_MODE, setActivityModeOnState } from './activity-mode.js';
@@ -18,11 +20,11 @@ let applying = false;
 let scheduled = false;
 
 function load() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
+  try { return readStoredAppState({}); } catch { return {}; }
 }
 
 function save(raw) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(raw));
+  return writeStoredAppState(raw);
 }
 
 function esc(value = '') {
@@ -59,13 +61,7 @@ function hideUnsupportedItemControls(editor) {
 }
 
 function matchingSyncedPet(raw, item) {
-  const pets = Array.isArray(raw?.profile?.normalizedSnapshot?.pets) ? raw.profile.normalizedSnapshot.pets : [];
-  const id = String(item?.skyblockId || '').toUpperCase().replace(/[^A-Z0-9]+/g, '_');
-  const name = String(item?.displayName || '').toUpperCase().replace(/[^A-Z0-9]+/g, '_');
-  return pets.find(pet => {
-    const type = String(pet?.type || '').toUpperCase().replace(/[^A-Z0-9]+/g, '_');
-    return type && (type === id || name.includes(type));
-  }) || null;
+  return syncedPetForSetup(raw, item);
 }
 
 function petDisplayLevel(raw, item) {

@@ -45,9 +45,9 @@ test('Vacuum totals are calculated in Killing context while configuration stays 
 
 
 test('shared mobile pages use Farming420 in the topbar instead of leaving a blank black strip', () => {
-  assert.match(activityUi, /topbar\.classList\.add\('activity-mode-topbar-shared'\)/);
-  assert.match(activityUi, /main\?\.classList\.add\('activity-mode-page-shared'\)/);
-  assert.match(activityUi, /topbar\.classList\.remove\('activity-mode-topbar-shared'\)/);
+  assert.match(activityUi, /topbar\.classList\.toggle\('activity-mode-topbar-shared', true\)/);
+  assert.match(activityUi, /main\?\.classList\.toggle\('activity-mode-page-shared', true\)/);
+  assert.match(activityUi, /topbar\.classList\.toggle\('activity-mode-topbar-shared', false\)/);
   assert.match(activityCss, /@media \(max-width: 780px\)[\s\S]*\.topbar \.mobile-title\s*\{[\s\S]*display:\s*block\s*!important;/);
   assert.match(activityCss, /\.activity-mode-topbar-shared\s*\{[\s\S]*display:\s*flex\s*!important;/);
   assert.match(activityCss, /\.activity-mode-page-shared \.content\s*\{[\s\S]*padding-top:\s*10px;/);

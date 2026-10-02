@@ -1,3 +1,5 @@
+import { applyFarmingToolReforge, selectedFarmingToolReforge } from './item-capabilities.js';
+import { readStoredAppState, writeStoredAppState } from './app-storage.js';
 import { deriveRarity, describeRarity } from './tool-rarity.js';
 import { CROPS } from './data.js';
 import { STORAGE_KEY } from './config.js';
@@ -34,8 +36,8 @@ let catalogRequested = false;
 function esc(value = '') {
   return String(value).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;' }[c]));
 }
-function readState() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch { return null; } }
-function writeState(state) { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+function readState() { try { return readStoredAppState(null); } catch { return null; } }
+function writeState(state) { return writeStoredAppState(state); }
 function announceStateChange() { window.dispatchEvent(new Event('farming420:state-changed')); }
 function cropForState(state) { return CROPS.find(crop => crop.id === state?.selectedCrop) || CROPS[0]; }
 function toolBucket(state, cropId) {
@@ -74,18 +76,11 @@ function setEntryLevel(bucket, id, value, max) {
 }
 function selectedReforge(state, cropId) {
   const bucket = toolBucket(state, cropId);
-  if (reforgeById(bucket.reforge)) return bucket.reforge;
-  if (bucket.owned[LEGACY_REFORGE_ENTRY_IDS.bountiful]) return 'bountiful';
-  if (bucket.owned[LEGACY_REFORGE_ENTRY_IDS.blessed]) return 'blessed';
-  return null;
+  return selectedFarmingToolReforge(bucket, state.profile?.toolReforges?.[toolKeyForCropId(cropId)]);
 }
 function setSelectedReforge(state, cropId, id) {
   const bucket = toolBucket(state, cropId);
-  const next = reforgeById(id)?.id || null;
-  bucket.reforge = next;
-  for (const legacy of Object.values(LEGACY_REFORGE_ENTRY_IDS)) { delete bucket.levels[legacy]; delete bucket.owned[legacy]; }
-  const legacy = LEGACY_REFORGE_ENTRY_IDS[next];
-  if (legacy) { bucket.levels[legacy] = 1; bucket.owned[legacy] = true; }
+  applyFarmingToolReforge(bucket, id);
 }
 function uniqueTools() {
   const map = new Map();

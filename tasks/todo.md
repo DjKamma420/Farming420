@@ -1,5 +1,7 @@
 # Farming420 — Foundation gap closure and current work
 
+Current audit implementation: [October 2 fix progress](fix-progress-2026-10-02.md). This ledger supersedes historical completion claims for the eighteen audited defects.
+
 This file records the concrete architecture/correctness gaps found during repository review and the work completed against them. It is intentionally kept in the repository so another development chat can resume from the actual code state instead of reconstructing context from conversation history.
 
 ## Foundation gaps found and closed

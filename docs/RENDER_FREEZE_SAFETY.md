@@ -40,7 +40,7 @@ If any answer is unclear, the change is not ready to merge.
 
 `scripts/browser-idempotence-smoke.html` drives every page in real headless
 Chrome, re-announces the **same** state three times per page, and compares the
-node count and markup length of `#app` before and after. Nothing changed, so
+exact `innerHTML` and every observed attribute, child or text mutation in `#app` before and after. Nothing changed, so
 nothing may change. `scripts/browser-startup-smoke.sh` runs it in CI and fails
 the build on any difference.
 
@@ -55,7 +55,7 @@ it before this was merged:
 | Violation | How it surfaces |
 |---|---|
 | an observer writes unconditionally into the subtree it watches | the harness never finishes; the existing freeze timeout fires |
-| a listener appends on every state change without a guard | `IDEMPOTENCE_DRIFT`, naming the page and the node delta |
+| a listener appends on every state change without a guard | `IDEMPOTENCE_DRIFT`, naming the page, exact equality and mutation count |
 
 The harness reports the number of pages it actually drove, and the shell rejects
 a verdict carrying fewer than five. A check that quietly tests nothing is worse
@@ -111,3 +111,21 @@ The entire `setup-selection-ui.js` runtime enhancer and its stylesheet were remo
 **Rule added**
 
 Restore availability first. A feature that needs a broad post-render DOM observer must not be re-enabled merely because unit tests are green. Rebuild the behavior in the owning `src/app.js` render/bind path and add a browser-level startup smoke test before putting it back into production boot.
+
+### 2026-10-02 — strict same-state mutation failures
+
+The final audit's node/markup-length comparison missed repeated navigation,
+header/rarity attribute writes and tool-art replacement. Strict browser evidence
+at fix commits 1e5b65c and 2ccba15 detected those writes and equal-length core
+repaints. Core rendering normalized its in-memory projection after saving; a
+later unchanged storage announcement compared against that projection and
+repainted it again. Tool art also had competing tier/fallback owners.
+
+The fix compares state announcements against the last persisted input, retains
+single canonical Dicer tier keys, leaves unverified-family fallbacks to their
+existing owner, guards unchanged hidden/class/rarity attributes, and preserves
+the attempted identity through every image-fallback route. The strict probe
+observes three identical announcements after startup settles; injected redundant
+writes and equal-length attribute changes must fail the same acceptance gate.
+Browser verification is pending; this entry records the regression and fix,
+not successful release acceptance.
