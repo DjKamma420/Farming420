@@ -1,0 +1,1497 @@
+{
+  "runId": 36943884775,
+  "auditedSource": "bda761d81deb0be37af9fad31f5469efb992df82",
+  "triggerCommit": "28a3c74a1a035a1892312807208d6b4ebc33ed21",
+  "note": "Original incomplete run; BLOCKED cases remain harness limitations. See continuation report for corrected follow-up.",
+  "cases": [
+    {
+      "engine": "webkit",
+      "viewport": "320-portrait",
+      "check": "probe-execution",
+      "status": "BLOCKED",
+      "evidence": {
+        "message": "TimeoutError: locator.tap: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('.sidebar [data-page=\"setups\"]')\n    - locator resolved to <button class=\"nav-link \" data-page=\"setups\" data-label=\"Loadouts / Farming System\">\u2026</button>\n  - attempting tap action\n    - waiting for element to be visible, enabled and stable\n    - element is not stable\n  - retrying tap action\n    - waiting for element to be visible, enabled and stable\n  - element was detached from the DOM, retrying\n    - locator resolved to <button class=\"nav-link \" data-page=\"setups\" data-label=\"Loadouts / Farming System\">\u2026</button>\n  - attempting tap action\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n    - waiting 20ms\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 100ms\n    55 \u00d7 waiting for element to be visible, enabled and stable\n       - element is not visible\n     - retrying tap action\n       - waiting 500ms\n",
+        "errors": []
+      }
+    },
+    {
+      "engine": "webkit",
+      "viewport": "390-portrait",
+      "check": "normal-tap-navigation",
+      "status": "PASS",
+      "evidence": {
+        "landed": "setups"
+      }
+    },
+    {
+      "engine": "webkit",
+      "viewport": "390-portrait",
+      "check": "last-option-point-in-time-hit",
+      "status": "PASS",
+      "evidence": {
+        "open": true,
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "mainTop": 2303,
+        "mainMax": 2303,
+        "menuTop": 550.328125,
+        "menuBottom": 844.328125,
+        "options": [
+          {
+            "id": "",
+            "label": "\u2014No Pet Item\u2713",
+            "x": 215,
+            "y": 585.328125,
+            "top": 557.328125,
+            "bottom": 613.328125,
+            "canHit": true
+          },
+          {
+            "id": "BROWN_BANDANA",
+            "label": "BBBrown BandanaEPIC \u00b7 +0.2 Bonus Pest Chance per eligible Pest Bestiary tier",
+            "x": 215,
+            "y": 641.328125,
+            "top": 613.328125,
+            "bottom": 669.328125,
+            "canHit": true
+          },
+          {
+            "id": "GREEN_BANDANA",
+            "label": "GBGreen BandanaEPIC \u00b7 +4 Farming Fortune per Garden level (max +60)",
+            "x": 215,
+            "y": 697.328125,
+            "top": 669.328125,
+            "bottom": 725.328125,
+            "canHit": true
+          },
+          {
+            "id": "POIGNANT_LUCKY_CLOVER",
+            "label": "PLPoignant Lucky CloverLEGENDARY \u00b7 +13 Overbloom",
+            "x": 215,
+            "y": 753.328125,
+            "top": 725.328125,
+            "bottom": 781.328125,
+            "canHit": true
+          },
+          {
+            "id": "YELLOW_BANDANA",
+            "label": "YBYellow BandanaRARE \u00b7 +30 Farming Fortune",
+            "x": 215,
+            "y": 809.328125,
+            "top": 781.328125,
+            "bottom": 837.328125,
+            "canHit": true
+          }
+        ]
+      }
+    },
+    {
+      "engine": "webkit",
+      "viewport": "390-portrait",
+      "check": "last-option-stable-after-capture-and-anchor-expiry",
+      "status": "FAIL",
+      "evidence": {
+        "immediate": {
+          "open": true,
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "mainTop": 2303,
+          "mainMax": 2303,
+          "menuTop": 550.328125,
+          "menuBottom": 844.328125,
+          "options": [
+            {
+              "id": "",
+              "label": "\u2014No Pet Item\u2713",
+              "x": 215,
+              "y": 585.328125,
+              "top": 557.328125,
+              "bottom": 613.328125,
+              "canHit": true
+            },
+            {
+              "id": "BROWN_BANDANA",
+              "label": "BBBrown BandanaEPIC \u00b7 +0.2 Bonus Pest Chance per eligible Pest Bestiary tier",
+              "x": 215,
+              "y": 641.328125,
+              "top": 613.328125,
+              "bottom": 669.328125,
+              "canHit": true
+            },
+            {
+              "id": "GREEN_BANDANA",
+              "label": "GBGreen BandanaEPIC \u00b7 +4 Farming Fortune per Garden level (max +60)",
+              "x": 215,
+              "y": 697.328125,
+              "top": 669.328125,
+              "bottom": 725.328125,
+              "canHit": true
+            },
+            {
+              "id": "POIGNANT_LUCKY_CLOVER",
+              "label": "PLPoignant Lucky CloverLEGENDARY \u00b7 +13 Overbloom",
+              "x": 215,
+              "y": 753.328125,
+              "top": 725.328125,
+              "bottom": 781.328125,
+              "canHit": true
+            },
+            {
+              "id": "YELLOW_BANDANA",
+              "label": "YBYellow BandanaRARE \u00b7 +30 Farming Fortune",
+              "x": 215,
+              "y": 809.328125,
+              "top": 781.328125,
+              "bottom": 837.328125,
+              "canHit": true
+            }
+          ]
+        },
+        "postCapture": {
+          "open": true,
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "mainTop": 2062,
+          "mainMax": 2303,
+          "menuTop": 791.328125,
+          "menuBottom": 1085.328125,
+          "options": [
+            {
+              "id": "",
+              "label": "\u2014No Pet Item\u2713",
+              "x": 215,
+              "y": 826.328125,
+              "top": 798.328125,
+              "bottom": 854.328125,
+              "canHit": false
+            },
+            {
+              "id": "BROWN_BANDANA",
+              "label": "BBBrown BandanaEPIC \u00b7 +0.2 Bonus Pest Chance per eligible Pest Bestiary tier",
+              "x": 215,
+              "y": 882.328125,
+              "top": 854.328125,
+              "bottom": 910.328125,
+              "canHit": false
+            },
+            {
+              "id": "GREEN_BANDANA",
+              "label": "GBGreen BandanaEPIC \u00b7 +4 Farming Fortune per Garden level (max +60)",
+              "x": 215,
+              "y": 938.328125,
+              "top": 910.328125,
+              "bottom": 966.328125,
+              "canHit": false
+            },
+            {
+              "id": "POIGNANT_LUCKY_CLOVER",
+              "label": "PLPoignant Lucky CloverLEGENDARY \u00b7 +13 Overbloom",
+              "x": 215,
+              "y": 994.328125,
+              "top": 966.328125,
+              "bottom": 1022.328125,
+              "canHit": false
+            },
+            {
+              "id": "YELLOW_BANDANA",
+              "label": "YBYellow BandanaRARE \u00b7 +30 Farming Fortune",
+              "x": 215,
+              "y": 1050.328125,
+              "top": 1022.328125,
+              "bottom": 1078.328125,
+              "canHit": false
+            }
+          ]
+        },
+        "settled": {
+          "open": true,
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "mainTop": 2062,
+          "mainMax": 2303,
+          "menuTop": 791.328125,
+          "menuBottom": 1085.328125,
+          "options": [
+            {
+              "id": "",
+              "label": "\u2014No Pet Item\u2713",
+              "x": 215,
+              "y": 826.328125,
+              "top": 798.328125,
+              "bottom": 854.328125,
+              "canHit": false
+            },
+            {
+              "id": "BROWN_BANDANA",
+              "label": "BBBrown BandanaEPIC \u00b7 +0.2 Bonus Pest Chance per eligible Pest Bestiary tier",
+              "x": 215,
+              "y": 882.328125,
+              "top": 854.328125,
+              "bottom": 910.328125,
+              "canHit": false
+            },
+            {
+              "id": "GREEN_BANDANA",
+              "label": "GBGreen BandanaEPIC \u00b7 +4 Farming Fortune per Garden level (max +60)",
+              "x": 215,
+              "y": 938.328125,
+              "top": 910.328125,
+              "bottom": 966.328125,
+              "canHit": false
+            },
+            {
+              "id": "POIGNANT_LUCKY_CLOVER",
+              "label": "PLPoignant Lucky CloverLEGENDARY \u00b7 +13 Overbloom",
+              "x": 215,
+              "y": 994.328125,
+              "top": 966.328125,
+              "bottom": 1022.328125,
+              "canHit": false
+            },
+            {
+              "id": "YELLOW_BANDANA",
+              "label": "YBYellow BandanaRARE \u00b7 +30 Farming Fortune",
+              "x": 215,
+              "y": 1050.328125,
+              "top": 1022.328125,
+              "bottom": 1078.328125,
+              "canHit": false
+            }
+          ]
+        },
+        "note": "No injected DOM mutation in this scenario."
+      }
+    },
+    {
+      "engine": "webkit",
+      "viewport": "390-portrait",
+      "check": "last-option-actual-touch-selection-after-recovery",
+      "status": "PASS",
+      "evidence": {
+        "intended": "YELLOW_BANDANA",
+        "persisted": "YELLOW_BANDANA",
+        "locatorAutoscroll": false
+      }
+    },
+    {
+      "engine": "webkit",
+      "viewport": "390-portrait",
+      "check": "pet-item-escape-close",
+      "status": "FAIL",
+      "evidence": {
+        "remainsOpen": true
+      }
+    },
+    {
+      "engine": "webkit",
+      "viewport": "390-portrait",
+      "check": "declared-listbox-arrow-focus",
+      "status": "FAIL",
+      "evidence": {
+        "tag": "SUMMARY",
+        "optionId": null,
+        "inOptions": false
+      }
+    },
+    {
+      "engine": "webkit",
+      "viewport": "390-portrait",
+      "check": "runtime-page-errors",
+      "status": "PASS",
+      "evidence": []
+    },
+    {
+      "engine": "webkit",
+      "viewport": "390-portrait",
+      "check": "external-http-errors",
+      "status": "NOTE",
+      "evidence": [
+        {
+          "status": 404,
+          "path": "/deploy-version.json"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/SHARD_KEELED_SLUG/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/SHARD_TERMITE/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/SHARD_RAT/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/SHARD_MOSQUITO/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/SHARD_MUDWORM/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/SHARD_INVISIBUG/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/SHARD_LADYBUG/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/SHARD_MOTH/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/SHARD_DRAGONFLY/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/FERMENTO_ARTIFACT/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/FERMENTO_ARTIFACT/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/ANITA_ARTIFACT/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/HELIANTHUS_RELIC/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/HELIANTHUS_RELIC/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/MAGIC_8_BALL/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/OVERCLOCKER_3000/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/OVERCLOCKER_3000/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/ATMOSPHERIC_FILTER/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/FARMING_FOR_DUMMIES/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/FARMING_FOR_DUMMIES/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/RECOMBOBULATOR_3000/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/RECOMBOBULATOR_3000/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/PERFECT_PERIDOT_GEM/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/PERFECT_PERIDOT_GEM/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/BLESSED_FRUIT/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/BLESSED_FRUIT/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/GOLDEN_BALL/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/GOLDEN_BALL/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/LARGE_WALNUT/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/LARGE_WALNUT/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/HASHBROWN/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/OVERPRICED_DRINK/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/HASHBROWN/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/BEADY_EYES/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/BEADY_EYES/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/OVERPRICED_DRINK/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/OVERGROWN_GRASS/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/BURROWING_SPORES/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/BURROWING_SPORES/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/OVERGROWN_GRASS/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/BLOOMING_THORNS/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/BLOOMING_THORNS/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/GREEN_BANDANA/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/GREEN_BANDANA/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/POIGNANT_LUCKY_CLOVER/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/POIGNANT_LUCKY_CLOVER/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/CROPSHOT_GARDEN_CHIP/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/CROPSHOT_GARDEN_CHIP/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/HYPERCHARGE_GARDEN_CHIP/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/RAREFINDER_CHIP/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/RAREFINDER_CHIP/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/HYPERCHARGE_GARDEN_CHIP/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/OVERDRIVE_GARDEN_CHIP/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/OVERDRIVE_GARDEN_CHIP/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/QUICKDRAW_GARDEN_CHIP/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/QUICKDRAW_GARDEN_CHIP/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/SYNTHESIS_GARDEN_CHIP/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/SYNTHESIS_GARDEN_CHIP/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/EVERGREEN_GARDEN_CHIP/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/EVERGREEN_GARDEN_CHIP/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/VERMIN_VAPORIZER_GARDEN_CHIP/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/VERMIN_VAPORIZER_GARDEN_CHIP/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/MECHAMIND_GARDEN_CHIP/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/SOWLEDGE_GARDEN_CHIP/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/SOWLEDGE_GARDEN_CHIP/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/MECHAMIND_GARDEN_CHIP/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/PESTHUNTING_GUIDE/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/HELIANTHUS_HELMET/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/ENCHANTMENT_SUNSET_5/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/HELIANTHUS_CHESTPLATE/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/HELIANTHUS_LEGGINGS/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/HELIANTHUS_BOOTS/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/REFINED_DARK_CACOA_TRUFFLE/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/FEAST_BURGER/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/FILLED_ROSEWATER_FLASK/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/BLOSSOM_NECKLACE/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/BLOSSOM_CLOAK/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/BLOSSOM_BELT/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/BLOSSOM_BRACELET/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/ZORROS_CAPE/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/ENCHANTMENT_CULTIVATING_1/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/ENCHANTMENT_GREEN_THUMB_5/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/ENCHANTMENT_DEDICATION_4/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/ENCHANTMENT_DEDICATION_2/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/ENCHANTMENT_HARVESTING_6/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/ENCHANTMENT_DEDICATION_1/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/YELLOW_BANDANA/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/YELLOW_BANDANA/history/full"
+        }
+      ]
+    },
+    {
+      "engine": "webkit",
+      "viewport": "800-landscape",
+      "check": "normal-tap-navigation",
+      "status": "PASS",
+      "evidence": {
+        "landed": "setups"
+      }
+    },
+    {
+      "engine": "webkit",
+      "viewport": "800-landscape",
+      "check": "last-option-point-in-time-hit",
+      "status": "PASS",
+      "evidence": {
+        "open": true,
+        "viewport": {
+          "width": 800,
+          "height": 360
+        },
+        "mainTop": 1846,
+        "mainMax": 1846,
+        "menuTop": 66.359375,
+        "menuBottom": 360.359375,
+        "options": [
+          {
+            "id": "",
+            "label": "\u2014No Pet Item\u2713",
+            "x": 422,
+            "y": 101.359375,
+            "top": 73.359375,
+            "bottom": 129.359375,
+            "canHit": true
+          },
+          {
+            "id": "BROWN_BANDANA",
+            "label": "BBBrown BandanaEPIC \u00b7 +0.2 Bonus Pest Chance per eligible Pest Bestiary tier",
+            "x": 422,
+            "y": 157.359375,
+            "top": 129.359375,
+            "bottom": 185.359375,
+            "canHit": true
+          },
+          {
+            "id": "GREEN_BANDANA",
+            "label": "GBGreen BandanaEPIC \u00b7 +4 Farming Fortune per Garden level (max +60)",
+            "x": 422,
+            "y": 213.359375,
+            "top": 185.359375,
+            "bottom": 241.359375,
+            "canHit": true
+          },
+          {
+            "id": "POIGNANT_LUCKY_CLOVER",
+            "label": "PLPoignant Lucky CloverLEGENDARY \u00b7 +13 Overbloom",
+            "x": 422,
+            "y": 269.359375,
+            "top": 241.359375,
+            "bottom": 297.359375,
+            "canHit": true
+          },
+          {
+            "id": "YELLOW_BANDANA",
+            "label": "YBYellow BandanaRARE \u00b7 +30 Farming Fortune",
+            "x": 422,
+            "y": 325.359375,
+            "top": 297.359375,
+            "bottom": 353.359375,
+            "canHit": true
+          }
+        ]
+      }
+    },
+    {
+      "engine": "webkit",
+      "viewport": "800-landscape",
+      "check": "last-option-stable-after-capture-and-anchor-expiry",
+      "status": "FAIL",
+      "evidence": {
+        "immediate": {
+          "open": true,
+          "viewport": {
+            "width": 800,
+            "height": 360
+          },
+          "mainTop": 1846,
+          "mainMax": 1846,
+          "menuTop": 66.359375,
+          "menuBottom": 360.359375,
+          "options": [
+            {
+              "id": "",
+              "label": "\u2014No Pet Item\u2713",
+              "x": 422,
+              "y": 101.359375,
+              "top": 73.359375,
+              "bottom": 129.359375,
+              "canHit": true
+            },
+            {
+              "id": "BROWN_BANDANA",
+              "label": "BBBrown BandanaEPIC \u00b7 +0.2 Bonus Pest Chance per eligible Pest Bestiary tier",
+              "x": 422,
+              "y": 157.359375,
+              "top": 129.359375,
+              "bottom": 185.359375,
+              "canHit": true
+            },
+            {
+              "id": "GREEN_BANDANA",
+              "label": "GBGreen BandanaEPIC \u00b7 +4 Farming Fortune per Garden level (max +60)",
+              "x": 422,
+              "y": 213.359375,
+              "top": 185.359375,
+              "bottom": 241.359375,
+              "canHit": true
+            },
+            {
+              "id": "POIGNANT_LUCKY_CLOVER",
+              "label": "PLPoignant Lucky CloverLEGENDARY \u00b7 +13 Overbloom",
+              "x": 422,
+              "y": 269.359375,
+              "top": 241.359375,
+              "bottom": 297.359375,
+              "canHit": true
+            },
+            {
+              "id": "YELLOW_BANDANA",
+              "label": "YBYellow BandanaRARE \u00b7 +30 Farming Fortune",
+              "x": 422,
+              "y": 325.359375,
+              "top": 297.359375,
+              "bottom": 353.359375,
+              "canHit": true
+            }
+          ]
+        },
+        "postCapture": {
+          "open": true,
+          "viewport": {
+            "width": 800,
+            "height": 360
+          },
+          "mainTop": 1629,
+          "mainMax": 1846,
+          "menuTop": 283.359375,
+          "menuBottom": 577.359375,
+          "options": [
+            {
+              "id": "",
+              "label": "\u2014No Pet Item\u2713",
+              "x": 422,
+              "y": 318.359375,
+              "top": 290.359375,
+              "bottom": 346.359375,
+              "canHit": true
+            },
+            {
+              "id": "BROWN_BANDANA",
+              "label": "BBBrown BandanaEPIC \u00b7 +0.2 Bonus Pest Chance per eligible Pest Bestiary tier",
+              "x": 422,
+              "y": 374.359375,
+              "top": 346.359375,
+              "bottom": 402.359375,
+              "canHit": false
+            },
+            {
+              "id": "GREEN_BANDANA",
+              "label": "GBGreen BandanaEPIC \u00b7 +4 Farming Fortune per Garden level (max +60)",
+              "x": 422,
+              "y": 430.359375,
+              "top": 402.359375,
+              "bottom": 458.359375,
+              "canHit": false
+            },
+            {
+              "id": "POIGNANT_LUCKY_CLOVER",
+              "label": "PLPoignant Lucky CloverLEGENDARY \u00b7 +13 Overbloom",
+              "x": 422,
+              "y": 486.359375,
+              "top": 458.359375,
+              "bottom": 514.359375,
+              "canHit": false
+            },
+            {
+              "id": "YELLOW_BANDANA",
+              "label": "YBYellow BandanaRARE \u00b7 +30 Farming Fortune",
+              "x": 422,
+              "y": 542.359375,
+              "top": 514.359375,
+              "bottom": 570.359375,
+              "canHit": false
+            }
+          ]
+        },
+        "settled": {
+          "open": true,
+          "viewport": {
+            "width": 800,
+            "height": 360
+          },
+          "mainTop": 1629,
+          "mainMax": 1846,
+          "menuTop": 283.359375,
+          "menuBottom": 577.359375,
+          "options": [
+            {
+              "id": "",
+              "label": "\u2014No Pet Item\u2713",
+              "x": 422,
+              "y": 318.359375,
+              "top": 290.359375,
+              "bottom": 346.359375,
+              "canHit": true
+            },
+            {
+              "id": "BROWN_BANDANA",
+              "label": "BBBrown BandanaEPIC \u00b7 +0.2 Bonus Pest Chance per eligible Pest Bestiary tier",
+              "x": 422,
+              "y": 374.359375,
+              "top": 346.359375,
+              "bottom": 402.359375,
+              "canHit": false
+            },
+            {
+              "id": "GREEN_BANDANA",
+              "label": "GBGreen BandanaEPIC \u00b7 +4 Farming Fortune per Garden level (max +60)",
+              "x": 422,
+              "y": 430.359375,
+              "top": 402.359375,
+              "bottom": 458.359375,
+              "canHit": false
+            },
+            {
+              "id": "POIGNANT_LUCKY_CLOVER",
+              "label": "PLPoignant Lucky CloverLEGENDARY \u00b7 +13 Overbloom",
+              "x": 422,
+              "y": 486.359375,
+              "top": 458.359375,
+              "bottom": 514.359375,
+              "canHit": false
+            },
+            {
+              "id": "YELLOW_BANDANA",
+              "label": "YBYellow BandanaRARE \u00b7 +30 Farming Fortune",
+              "x": 422,
+              "y": 542.359375,
+              "top": 514.359375,
+              "bottom": 570.359375,
+              "canHit": false
+            }
+          ]
+        },
+        "note": "No injected DOM mutation in this scenario."
+      }
+    },
+    {
+      "engine": "webkit",
+      "viewport": "800-landscape",
+      "check": "last-option-actual-touch-selection-after-recovery",
+      "status": "PASS",
+      "evidence": {
+        "intended": "YELLOW_BANDANA",
+        "persisted": "YELLOW_BANDANA",
+        "locatorAutoscroll": false
+      }
+    },
+    {
+      "engine": "webkit",
+      "viewport": "800-landscape",
+      "check": "probe-execution",
+      "status": "BLOCKED",
+      "evidence": {
+        "message": "TimeoutError: locator.tap: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('details[data-pet-item-dropdown] > summary')\n",
+        "errors": []
+      }
+    },
+    {
+      "engine": "firefox",
+      "viewport": "320-portrait",
+      "check": "probe-execution",
+      "status": "BLOCKED",
+      "evidence": {
+        "message": "TimeoutError: locator.tap: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('.sidebar [data-page=\"setups\"]')\n    - locator resolved to <button class=\"nav-link \" data-page=\"setups\" data-label=\"Loadouts / Farming System\">\u2026</button>\n  - attempting tap action\n    2 \u00d7 waiting for element to be visible, enabled and stable\n    - element was detached from the DOM, retrying\n      - locator resolved to <button class=\"nav-link \" data-page=\"setups\" data-label=\"Loadouts / Farming System\">\u2026</button>\n    - attempting tap action\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 20ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 100ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 100ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 500ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 500ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 500ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 500ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 500ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 500ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 500ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 500ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 500ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 500ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 500ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 500ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 500ms\n    32 \u00d7 waiting for element to be visible, enabled and stable\n       - element is not visible\n     - retrying tap action\n       - waiting 500ms\n",
+        "errors": []
+      }
+    },
+    {
+      "engine": "firefox",
+      "viewport": "390-portrait",
+      "check": "probe-execution",
+      "status": "BLOCKED",
+      "evidence": {
+        "message": "TimeoutError: locator.tap: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('.sidebar [data-page=\"setups\"]')\n    - locator resolved to <button class=\"nav-link \" data-page=\"setups\" data-label=\"Loadouts / Farming System\">\u2026</button>\n  - attempting tap action\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n    - waiting 20ms\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 100ms\n    11 \u00d7 waiting for element to be visible, enabled and stable\n       - element is not visible\n     - retrying tap action\n       - waiting 500ms\n    - waiting for element to be visible, enabled and stable\n  - element was detached from the DOM, retrying\n    - locator resolved to <button class=\"nav-link \" data-page=\"setups\" data-label=\"Loadouts / Farming System\">\u2026</button>\n  - attempting tap action\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n    - waiting 20ms\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 100ms\n    47 \u00d7 waiting for element to be visible, enabled and stable\n       - element is not visible\n     - retrying tap action\n       - waiting 500ms\n",
+        "errors": []
+      }
+    },
+    {
+      "engine": "firefox",
+      "viewport": "800-landscape",
+      "check": "probe-execution",
+      "status": "BLOCKED",
+      "evidence": {
+        "message": "TimeoutError: locator.tap: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('.sidebar [data-page=\"setups\"]')\n    - locator resolved to <button class=\"nav-link \" data-page=\"setups\" data-label=\"Loadouts / Farming System\">\u2026</button>\n  - attempting tap action\n    2 \u00d7 waiting for element to be visible, enabled and stable\n    - element was detached from the DOM, retrying\n      - locator resolved to <button class=\"nav-link \" data-page=\"setups\" data-label=\"Loadouts / Farming System\">\u2026</button>\n    - attempting tap action\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 20ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 100ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 100ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 500ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 500ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 500ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 500ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 500ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 500ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 500ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 500ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 500ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 500ms\n    37 \u00d7 waiting for element to be visible, enabled and stable\n       - element is not visible\n     - retrying tap action\n       - waiting 500ms\n",
+        "errors": []
+      }
+    },
+    {
+      "engine": "chromium",
+      "viewport": "320-portrait",
+      "check": "normal-tap-navigation",
+      "status": "PASS",
+      "evidence": {
+        "landed": "setups"
+      }
+    },
+    {
+      "engine": "chromium",
+      "viewport": "320-portrait",
+      "check": "last-option-point-in-time-hit",
+      "status": "PASS",
+      "evidence": {
+        "open": true,
+        "viewport": {
+          "width": 320,
+          "height": 568
+        },
+        "mainTop": 2826,
+        "mainMax": 2826,
+        "menuTop": 254.109375,
+        "menuBottom": 568.109375,
+        "options": [
+          {
+            "id": "",
+            "label": "\u2014No Pet Item\u2713",
+            "x": 183,
+            "y": 289.109375,
+            "top": 261.109375,
+            "bottom": 317.109375,
+            "canHit": true
+          },
+          {
+            "id": "BROWN_BANDANA",
+            "label": "BBBrown BandanaEPIC \u00b7 +0.2 Bonus Pest Chance per eligible Pest Bestiary tier",
+            "x": 183,
+            "y": 350.109375,
+            "top": 317.109375,
+            "bottom": 383.109375,
+            "canHit": true
+          },
+          {
+            "id": "GREEN_BANDANA",
+            "label": "GBGreen BandanaEPIC \u00b7 +4 Farming Fortune per Garden level (max +60)",
+            "x": 183,
+            "y": 416.109375,
+            "top": 383.109375,
+            "bottom": 449.109375,
+            "canHit": true
+          },
+          {
+            "id": "POIGNANT_LUCKY_CLOVER",
+            "label": "PLPoignant Lucky CloverLEGENDARY \u00b7 +13 Overbloom",
+            "x": 183,
+            "y": 477.109375,
+            "top": 449.109375,
+            "bottom": 505.109375,
+            "canHit": true
+          },
+          {
+            "id": "YELLOW_BANDANA",
+            "label": "YBYellow BandanaRARE \u00b7 +30 Farming Fortune",
+            "x": 183,
+            "y": 533.109375,
+            "top": 505.109375,
+            "bottom": 561.109375,
+            "canHit": true
+          }
+        ]
+      }
+    },
+    {
+      "engine": "chromium",
+      "viewport": "320-portrait",
+      "check": "last-option-stable-after-capture-and-anchor-expiry",
+      "status": "FAIL",
+      "evidence": {
+        "immediate": {
+          "open": true,
+          "viewport": {
+            "width": 320,
+            "height": 568
+          },
+          "mainTop": 2826,
+          "mainMax": 2826,
+          "menuTop": 254.109375,
+          "menuBottom": 568.109375,
+          "options": [
+            {
+              "id": "",
+              "label": "\u2014No Pet Item\u2713",
+              "x": 183,
+              "y": 289.109375,
+              "top": 261.109375,
+              "bottom": 317.109375,
+              "canHit": true
+            },
+            {
+              "id": "BROWN_BANDANA",
+              "label": "BBBrown BandanaEPIC \u00b7 +0.2 Bonus Pest Chance per eligible Pest Bestiary tier",
+              "x": 183,
+              "y": 350.109375,
+              "top": 317.109375,
+              "bottom": 383.109375,
+              "canHit": true
+            },
+            {
+              "id": "GREEN_BANDANA",
+              "label": "GBGreen BandanaEPIC \u00b7 +4 Farming Fortune per Garden level (max +60)",
+              "x": 183,
+              "y": 416.109375,
+              "top": 383.109375,
+              "bottom": 449.109375,
+              "canHit": true
+            },
+            {
+              "id": "POIGNANT_LUCKY_CLOVER",
+              "label": "PLPoignant Lucky CloverLEGENDARY \u00b7 +13 Overbloom",
+              "x": 183,
+              "y": 477.109375,
+              "top": 449.109375,
+              "bottom": 505.109375,
+              "canHit": true
+            },
+            {
+              "id": "YELLOW_BANDANA",
+              "label": "YBYellow BandanaRARE \u00b7 +30 Farming Fortune",
+              "x": 183,
+              "y": 533.109375,
+              "top": 505.109375,
+              "bottom": 561.109375,
+              "canHit": true
+            }
+          ]
+        },
+        "postCapture": {
+          "open": true,
+          "viewport": {
+            "width": 320,
+            "height": 568
+          },
+          "mainTop": 2565,
+          "mainMax": 2826,
+          "menuTop": 515.109375,
+          "menuBottom": 829.109375,
+          "options": [
+            {
+              "id": "",
+              "label": "\u2014No Pet Item\u2713",
+              "x": 183,
+              "y": 550.109375,
+              "top": 522.109375,
+              "bottom": 578.109375,
+              "canHit": false
+            },
+            {
+              "id": "BROWN_BANDANA",
+              "label": "BBBrown BandanaEPIC \u00b7 +0.2 Bonus Pest Chance per eligible Pest Bestiary tier",
+              "x": 183,
+              "y": 611.109375,
+              "top": 578.109375,
+              "bottom": 644.109375,
+              "canHit": false
+            },
+            {
+              "id": "GREEN_BANDANA",
+              "label": "GBGreen BandanaEPIC \u00b7 +4 Farming Fortune per Garden level (max +60)",
+              "x": 183,
+              "y": 677.109375,
+              "top": 644.109375,
+              "bottom": 710.109375,
+              "canHit": false
+            },
+            {
+              "id": "POIGNANT_LUCKY_CLOVER",
+              "label": "PLPoignant Lucky CloverLEGENDARY \u00b7 +13 Overbloom",
+              "x": 183,
+              "y": 738.109375,
+              "top": 710.109375,
+              "bottom": 766.109375,
+              "canHit": false
+            },
+            {
+              "id": "YELLOW_BANDANA",
+              "label": "YBYellow BandanaRARE \u00b7 +30 Farming Fortune",
+              "x": 183,
+              "y": 794.109375,
+              "top": 766.109375,
+              "bottom": 822.109375,
+              "canHit": false
+            }
+          ]
+        },
+        "settled": {
+          "open": true,
+          "viewport": {
+            "width": 320,
+            "height": 568
+          },
+          "mainTop": 2565,
+          "mainMax": 2826,
+          "menuTop": 515.109375,
+          "menuBottom": 829.109375,
+          "options": [
+            {
+              "id": "",
+              "label": "\u2014No Pet Item\u2713",
+              "x": 183,
+              "y": 550.109375,
+              "top": 522.109375,
+              "bottom": 578.109375,
+              "canHit": false
+            },
+            {
+              "id": "BROWN_BANDANA",
+              "label": "BBBrown BandanaEPIC \u00b7 +0.2 Bonus Pest Chance per eligible Pest Bestiary tier",
+              "x": 183,
+              "y": 611.109375,
+              "top": 578.109375,
+              "bottom": 644.109375,
+              "canHit": false
+            },
+            {
+              "id": "GREEN_BANDANA",
+              "label": "GBGreen BandanaEPIC \u00b7 +4 Farming Fortune per Garden level (max +60)",
+              "x": 183,
+              "y": 677.109375,
+              "top": 644.109375,
+              "bottom": 710.109375,
+              "canHit": false
+            },
+            {
+              "id": "POIGNANT_LUCKY_CLOVER",
+              "label": "PLPoignant Lucky CloverLEGENDARY \u00b7 +13 Overbloom",
+              "x": 183,
+              "y": 738.109375,
+              "top": 710.109375,
+              "bottom": 766.109375,
+              "canHit": false
+            },
+            {
+              "id": "YELLOW_BANDANA",
+              "label": "YBYellow BandanaRARE \u00b7 +30 Farming Fortune",
+              "x": 183,
+              "y": 794.109375,
+              "top": 766.109375,
+              "bottom": 822.109375,
+              "canHit": false
+            }
+          ]
+        },
+        "note": "No injected DOM mutation in this scenario."
+      }
+    },
+    {
+      "engine": "chromium",
+      "viewport": "320-portrait",
+      "check": "last-option-actual-touch-selection-after-recovery",
+      "status": "PASS",
+      "evidence": {
+        "intended": "YELLOW_BANDANA",
+        "persisted": "YELLOW_BANDANA",
+        "locatorAutoscroll": false
+      }
+    },
+    {
+      "engine": "chromium",
+      "viewport": "320-portrait",
+      "check": "pet-item-escape-close",
+      "status": "FAIL",
+      "evidence": {
+        "remainsOpen": true
+      }
+    },
+    {
+      "engine": "chromium",
+      "viewport": "320-portrait",
+      "check": "declared-listbox-arrow-focus",
+      "status": "FAIL",
+      "evidence": {
+        "tag": "SUMMARY",
+        "optionId": null,
+        "inOptions": false
+      }
+    },
+    {
+      "engine": "chromium",
+      "viewport": "320-portrait",
+      "check": "runtime-page-errors",
+      "status": "PASS",
+      "evidence": []
+    },
+    {
+      "engine": "chromium",
+      "viewport": "320-portrait",
+      "check": "external-http-errors",
+      "status": "NOTE",
+      "evidence": [
+        {
+          "status": 404,
+          "path": "/deploy-version.json"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/SHARD_CRICKET/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/SHARD_KEELED_SLUG/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/SHARD_RAT/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/SHARD_MOSQUITO/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/SHARD_MUDWORM/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/SHARD_INVISIBUG/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/SHARD_LADYBUG/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/SHARD_DRAGONFLY/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/FERMENTO_ARTIFACT/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/SHARD_MOTH/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/FERMENTO_ARTIFACT/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/HELIANTHUS_RELIC/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/ANITA_ARTIFACT/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/HELIANTHUS_RELIC/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/ATMOSPHERIC_FILTER/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/MAGIC_8_BALL/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/OVERCLOCKER_3000/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/OVERCLOCKER_3000/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/FARMING_FOR_DUMMIES/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/FARMING_FOR_DUMMIES/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/RECOMBOBULATOR_3000/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/RECOMBOBULATOR_3000/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/PERFECT_PERIDOT_GEM/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/PERFECT_PERIDOT_GEM/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/BLESSED_FRUIT/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/BLESSED_FRUIT/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/GOLDEN_BALL/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/GOLDEN_BALL/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/LARGE_WALNUT/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/HASHBROWN/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/HASHBROWN/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/OVERPRICED_DRINK/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/OVERPRICED_DRINK/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/BEADY_EYES/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/LARGE_WALNUT/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/BEADY_EYES/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/OVERGROWN_GRASS/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/YELLOW_BANDANA/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/YELLOW_BANDANA/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/OVERGROWN_GRASS/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/BURROWING_SPORES/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/BURROWING_SPORES/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/BLOOMING_THORNS/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/BLOOMING_THORNS/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/item/price/GREEN_BANDANA/history/full"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/GREEN_BANDANA/history"
+        },
+        {
+          "status": 429,
+          "path": "/api/bazaar/POIGNANT_LUCKY_CLOVER/history"
+        }
+      ]
+    },
+    {
+      "engine": "chromium",
+      "viewport": "390-portrait",
+      "check": "probe-execution",
+      "status": "BLOCKED",
+      "evidence": {
+        "message": "TimeoutError: locator.tap: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('.sidebar [data-page=\"setups\"]')\n    - locator resolved to <button class=\"nav-link \" data-page=\"setups\" data-label=\"Loadouts / Farming System\">\u2026</button>\n  - attempting tap action\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is not stable\n    - retrying tap action\n    - waiting 20ms\n    - waiting for element to be visible, enabled and stable\n  - element was detached from the DOM, retrying\n    - locator resolved to <button class=\"nav-link \" data-page=\"setups\" data-label=\"Loadouts / Farming System\">\u2026</button>\n  - attempting tap action\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n    - waiting 20ms\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 100ms\n    57 \u00d7 waiting for element to be visible, enabled and stable\n       - element is not visible\n     - retrying tap action\n       - waiting 500ms\n",
+        "errors": []
+      }
+    },
+    {
+      "engine": "chromium",
+      "viewport": "800-landscape",
+      "check": "probe-execution",
+      "status": "BLOCKED",
+      "evidence": {
+        "message": "TimeoutError: locator.tap: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('.sidebar [data-page=\"setups\"]')\n    - locator resolved to <button class=\"nav-link \" data-page=\"setups\" data-label=\"Loadouts / Farming System\">\u2026</button>\n  - attempting tap action\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is not stable\n    - retrying tap action\n    - waiting 20ms\n    2 \u00d7 waiting for element to be visible, enabled and stable\n    - element was detached from the DOM, retrying\n      - locator resolved to <button class=\"nav-link \" data-page=\"setups\" data-label=\"Loadouts / Farming System\">\u2026</button>\n    - attempting tap action\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 20ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 100ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 100ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 500ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 500ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 500ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 500ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 500ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 500ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 500ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 500ms\n      - waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying tap action\n      - waiting 500ms\n    38 \u00d7 waiting for element to be visible, enabled and stable\n       - element is not visible\n     - retrying tap action\n       - waiting 500ms\n",
+        "errors": []
+      }
+    }
+  ]
+}
