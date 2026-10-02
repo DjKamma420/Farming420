@@ -1,0 +1,59 @@
+name: Cross-browser audit follow-up 2026-10-02
+on:
+  push:
+    branches: ["audit/final-verification-2026-10-01-cont17"]
+    paths:
+      - ".github/workflows/audit-browser-followup-2026-10-02.yml"
+      - "docs/audits/2026-10-02-browser-followup.mjs"
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    env:
+      AUDITED_SHA: bda761d81deb0be37af9fad31f5469efb992df82
+      AUDIT_BROWSER: ${{ matrix.browser }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Verify unchanged application source
+        run: git diff --exit-code "$AUDITED_SHA" HEAD -- src tests scripts research assets index.html manifest.webmanifest sw.js package.json
+      - name: Prepare isolated browser dependency
+        run: |
+          npm install --prefix "$RUNNER_TEMP/farming420-browser-audit-deps" playwright@1.63.0
+          "$RUNNER_TEMP/farming420-browser-audit-deps/node_modules/.bin/playwright" install --with-deps "$AUDIT_BROWSER"
+          mkdir -p "$RUNNER_TEMP/farming420-browser-audit-results"
+          printf 'PLAYWRIGHT_MODULE=%s\n' "$RUNNER_TEMP/farming420-browser-audit-deps/node_modules/playwright/index.mjs" >> "$GITHUB_ENV"
+          printf 'AUDIT_OUT=%s\n' "$RUNNER_TEMP/farming420-browser-audit-results" >> "$GITHUB_ENV"
+      - name: Execute menu follow-up
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4173 --bind 127.0.0.1 > "$AUDIT_OUT/server.log" 2>&1 &
+          AUDIT_SERVER_PID=$!
+          trap 'kill "$AUDIT_SERVER_PID" 2>/dev/null || true' EXIT
+          for i in $(seq 1 40); do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then break; fi
+            sleep 0.25
+          done
+          set +e
+          node docs/audits/2026-10-02-browser-followup.mjs > "$AUDIT_OUT/browser-followup.log" 2>&1
+          AUDIT_RESULT=$?
+          set -e
+          cat "$AUDIT_OUT/browser-followup.log"
+          exit "$AUDIT_RESULT"
+      - name: Upload audit evidence even when defects fail checks
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: farming420-browser-audit-${{ matrix.browser }}-2026-10-02
+          path: ${{ runner.temp }}/farming420-browser-audit-results
+          retention-days: 30
