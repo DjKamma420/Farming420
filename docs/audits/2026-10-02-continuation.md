@@ -39,3 +39,16 @@ Initial artifacts expire November 1, 2026; raw JSON remains retained locally and
 - Firefox: 11200892542, SHA256 d0b30d8dda2ba8f472e10f53823eba4ece54995513b16b8f7eaa7f17bd52f001.
 
 The Rarefinder mismatch is additionally encoded in tests/farming-modifiers-data.test.js:19, which asserts maxGardenChipEffect('rarefinder') === 60. A green existing test therefore cannot establish current mechanical correctness. The fix acceptance must replace that stale expected value using the cited live source and independently cover the rarity-specific caps. No source/test fix is included in this audit branch.
+
+## CONT29 — nine-engine/viewport stability and helper boundaries
+
+Corrected run 36944520331 completed all three engines. Each engine has 12 PASS, 3 FAIL and 3 BLOCKED cases: all nine normal navigation and no-retry checks PASS; all nine immediate last-option hits PASS; all nine stable-after-capture/anchor-expiry checks FAIL; all nine measured-coordinate touch selections after recovery PASS. Keyboard continuation alone remained BLOCKED because its visibility check raced editor reconstruction and a card tap toggled the still-current slot closed. Final probe commit 788792e7fb103822214d36f2ee8526904889f2e5 isolates keyboard checks before selection changes the editor, followed by a fresh anchor-expiry wait and actual touch recovery. Run 36944792468 is pending. The initial/revised raw evidence is not reclassified as all-green.
+
+Raw second-run evidence: 2026-10-02-browser-evidence-CONT29.json. Artifact ZIPs, expiry November 1:
+- Chromium 11201064873: c59712d483e1594b63a087b5dc7da96678efdb5bb48be9eb8251aec0585babc4.
+- Firefox 11201314485: 242c7aca08648f092418c25e959167dbdf55a38315043a486c6191dcb3072467.
+- WebKit 11201413507: f66b24b8b6e90773fdbaf08ec76c4e75ec5cf914900373a019be5f499fa89d64.
+
+Independent pure helper boundaries add 21 cases, 5 PASS / 16 FAIL. gardenChipEffect and hyperchargedFarmingFortune accept explicit null, blank/whitespace strings, false and [] through Number(), producing known 0 or unamplified 100. temporaryModifierEffect likewise treats an explicit unknown Hypercharge percent as zero. The required unknown-versus-known-zero contract is docs/MATH_MODEL.md:45–47. Explicit numeric zero and the temporary helper's intentional omitted-option default are PASS controls; the default is not silently removed from the fix plan. These are exported lower-helper failures, without asserting an active UI input route. Evidence: 2026-10-02-helper-boundary-CONT29.json.
+
+Extend work packages 5–6 to shared absence/type validation for these helpers: preserve explicit unknown input, reject nonnumeric boolean/array coercion, and accept explicit finite zero. Retain documented optional defaults only at the caller/API boundary. No new live coefficient is needed for this data-contract fix. Rarefinder's separately sourced stale-rate mismatch remains the canonical-table fix described in CONT27.
