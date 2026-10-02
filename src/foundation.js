@@ -1,3 +1,4 @@
+import { assertSupportedStorage, readStoredAppState, resetStoredAppState, writeStoredAppState } from './app-storage.js';
 import {
   APP_VERSION,
   DATA_SCHEMA_VERSION,
@@ -20,7 +21,7 @@ let settingsDialog = null;
 function readState() {
   let stored = {};
   try {
-    stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    stored = readStoredAppState({});
   } catch {
     stored = {};
   }
@@ -30,7 +31,7 @@ function readState() {
 }
 
 function writeState(state) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  return writeStoredAppState(state, { strict: true });
 }
 
 function formatTime(value) {
@@ -221,6 +222,7 @@ function syncIsConfigured(state = readState()) {
 }
 
 async function handleLiveSync() {
+  assertSupportedStorage();
   const state = readState();
   const uuid = settingsDialog.querySelector('[data-player-uuid]')?.value?.trim() || state.profile?.playerUuid || '';
   const profileId = settingsDialog.querySelector('[data-profile-select]')?.value || '';
@@ -349,7 +351,7 @@ function bindSettings() {
 
   settingsDialog.querySelector('[data-reset-app]')?.addEventListener('click', () => {
     if (!confirm('Delete all locally stored Farming420 profile data on this device? Download a backup first if you need it.')) return;
-    localStorage.removeItem(STORAGE_KEY);
+    try { resetStoredAppState(); } catch (error) { setStatus(error.message, 'error'); return; }
     window.dispatchEvent(new Event('farming420:state-changed'));
     settingsDialog.innerHTML = settingsMarkup();
     bindSettings();

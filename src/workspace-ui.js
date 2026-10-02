@@ -1,3 +1,4 @@
+import { readStoredAppState, writeStoredAppState } from './app-storage.js';
 import { deriveRarity, describeRarity } from './tool-rarity.js';
 import { CROPS } from './data.js';
 import { STORAGE_KEY } from './config.js';
@@ -34,8 +35,8 @@ let catalogRequested = false;
 function esc(value = '') {
   return String(value).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;' }[c]));
 }
-function readState() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch { return null; } }
-function writeState(state) { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+function readState() { try { return readStoredAppState(null); } catch { return null; } }
+function writeState(state) { return writeStoredAppState(state); }
 function announceStateChange() { window.dispatchEvent(new Event('farming420:state-changed')); }
 function cropForState(state) { return CROPS.find(crop => crop.id === state?.selectedCrop) || CROPS[0]; }
 function toolBucket(state, cropId) {

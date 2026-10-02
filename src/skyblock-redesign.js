@@ -1,3 +1,4 @@
+import { readStoredAppState, writeStoredAppState } from './app-storage.js';
 import { CROPS } from './data.js';
 import { STORAGE_KEY } from './config.js';
 import { toolKeyForCropId } from './migrations.js';
@@ -150,11 +151,11 @@ let activeToolSurface = 'tool';
 let vacuumCollapsed = false;
 
 function readState() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
+  try { return readStoredAppState({}); } catch { return {}; }
 }
 
 function writeState(state) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  if (!writeStoredAppState(state)) return;
   window.dispatchEvent(new Event('farming420:state-changed'));
 }
 

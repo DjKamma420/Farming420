@@ -1,3 +1,4 @@
+import { isUnsupportedState, readStoredAppState, writeStoredAppState } from './app-storage.js';
 import { CROPS, UPGRADES } from './data.js';
 import { INFO_ENTRIES, INFO_SECTIONS, allInfoEntries, cropStrategyInfo } from './info-content.js';
 import { FARMING_ACCESSORY_GROUPS } from './farming-accessories.js';
@@ -191,11 +192,12 @@ const defaultState = {
 };
 
 function loadState() {
+  readOnlyState = false;
+  migrationApplied = false;
   let saved;
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return structuredClone(defaultState);
-    saved = JSON.parse(raw);
+    saved = readStoredAppState(null);
+    if (!saved) return structuredClone(defaultState);
   } catch {
     return structuredClone(defaultState);
   }
@@ -401,8 +403,20 @@ function captureInteractionScrollAnchor(event) {
   rememberScrollAnchor(event.target);
 }
 
+function preventUnsupportedMutation(event) {
+  if (!isUnsupportedState(readStoredAppState())) return;
+  const target = event.target?.closest?.('button, input, select, textarea, summary, a, [role="button"]');
+  if (!target) return;
+  // Navigation, raw backup export and update delivery remain available. The
+  // older build cannot safely interpret dependent editor/sync actions.
+  if (target.matches('[data-page], [data-open-settings], [data-nav-toggle], [data-nav-close], [data-settings-close], [data-backup-download], [data-check-update], #exportBtn, a')) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+}
+
 if (typeof document !== 'undefined') {
   for (const type of ['click', 'change', 'input']) {
+    document.addEventListener(type, preventUnsupportedMutation, true);
     document.addEventListener(type, captureInteractionScrollAnchor, true);
   }
 
@@ -418,8 +432,7 @@ if (typeof document !== 'undefined') {
 
 function saveState() {
   if (readOnlyState) return;
-  state.schemaVersion = DATA_SCHEMA_VERSION;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  return writeStoredAppState(state);
 }
 
 // Persist the migrated shape once, so the next load starts from the new schema.
@@ -1120,7 +1133,7 @@ function shell(content) {
           <div id="searchResults" class="search-results" role="listbox" ${state.search.trim() ? '' : 'hidden'}>${searchResultsMarkup(state.search)}</div>
         </div>
       </header>
-      <section class="content">${content}</section>
+      <section class="content">${readOnlyState ? '<p role="status" class="hint">Stored data uses a newer schema. Editing is disabled; the saved bytes remain untouched. Export a backup or reload a newer Farming420 build.</p>' : ''}${content}</section>
     </main>
     ${drawer()}
   </div>`;
@@ -3478,13 +3491,13 @@ function bind() {
   // so there is exactly one on-disk contract for user data.
   const exportBtn=document.getElementById('exportBtn');
   if(exportBtn) exportBtn.addEventListener('click',()=>{
-    downloadJson(backupFilename(), createBackupPayload(state));
+    downloadJson(backupFilename(), createBackupPayload(readStoredAppState(state)));
   });
   const importInput=document.getElementById('importInput');
   if(importInput) importInput.addEventListener('change', async e=>{
     try {
       const restored = validateBackupPayload(await readJsonFile(e.target.files?.[0]));
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(restored.state));
+      writeStoredAppState(restored.state, { strict: true });
       window.dispatchEvent(new Event('farming420:state-changed'));
     } catch (error) {
       alert(error.message);
@@ -3504,7 +3517,7 @@ function bind() {
 //
 // `saveState` is a no-op while the stored data came from a newer app version,
 // so this cannot write over state this build does not understand.
-applyComputedStatsToState(state);
+if (!readOnlyState) applyComputedStatsToState(state);
 saveState();
 
 render();

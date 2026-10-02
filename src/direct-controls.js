@@ -1,3 +1,4 @@
+import { readStoredAppState, writeStoredAppState } from './app-storage.js';
 import { UPGRADES } from './data.js';
 import { STORAGE_KEY } from './config.js';
 import { toolKeyForCropId } from './migrations.js';
@@ -6,7 +7,7 @@ import { EXCLUSIVE_ENTRY_GROUPS } from './exclusivity.js';
 const DERIVED_ONLY_SECTIONS = new Set(['gear']);
 
 function load() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
+  try { return readStoredAppState({}); } catch { return {}; }
 }
 
 function cropId(raw) {
@@ -61,7 +62,7 @@ function writeLevel(raw, item, value) {
     delete target.levels[item.id];
     delete target.owned[item.id];
   }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(raw));
+  return writeStoredAppState(raw);
 }
 
 function commit(item, updater) {

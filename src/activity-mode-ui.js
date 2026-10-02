@@ -1,3 +1,4 @@
+import { readStoredAppState, writeStoredAppState } from './app-storage.js';
 import { STORAGE_KEY } from './config.js';
 import { CROPS, UPGRADES } from './data.js';
 import { toolKeyForCropId } from './migrations.js';
@@ -31,11 +32,11 @@ const MODE_SWITCH_PAGES = new Set(['dashboard', 'focus', 'planner']);
 const PHYSICAL_SET_SWITCH_PAGE = 'setups';
 
 function load() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
+  try { return readStoredAppState({}); } catch { return {}; }
 }
 
 function save(raw) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(raw));
+  return writeStoredAppState(raw);
 }
 
 function esc(value = '') {

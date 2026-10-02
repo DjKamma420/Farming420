@@ -1,3 +1,4 @@
+import { readStoredAppState, writeStoredAppState } from './app-storage.js';
 import { STORAGE_KEY } from './config.js';
 import { toolKeyForCropId } from './migrations.js';
 
@@ -11,7 +12,7 @@ const REFORGE_ENTRY = Object.freeze({
 });
 
 function state() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
+  try { return readStoredAppState({}); } catch { return {}; }
 }
 
 function cropId(raw) {
@@ -39,7 +40,7 @@ function selectReforge(reforgeId) {
     bucket.owned[selectedEntry] = true;
     raw.profile.toolReforges[key] = reforgeId;
   }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(raw));
+  return writeStoredAppState(raw);
 }
 
 // Capture before the redesign's target listener. This makes all five visible

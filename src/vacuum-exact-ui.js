@@ -1,3 +1,4 @@
+import { readStoredAppState, writeStoredAppState } from './app-storage.js';
 import { STORAGE_KEY } from './config.js';
 import { loadItemCatalog, readCachedCatalog } from './item-catalog.js';
 import { itemAssetForSkyblockId, loadItemAssetManifest } from './item-assets.js';
@@ -36,11 +37,11 @@ function esc(value = '') {
 }
 
 function load() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
+  try { return readStoredAppState({}); } catch { return {}; }
 }
 
 function save(raw) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(raw));
+  return writeStoredAppState(raw);
 }
 
 function bucketOf(raw) {

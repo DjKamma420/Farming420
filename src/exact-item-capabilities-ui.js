@@ -1,3 +1,4 @@
+import { readStoredAppState, writeStoredAppState } from './app-storage.js';
 import { STORAGE_KEY } from './config.js';
 import { readCachedCatalog } from './item-catalog.js';
 import { gemValuesForSlotType, itemCapabilities } from './item-capabilities.js';
@@ -11,9 +12,9 @@ let applying = false;
 let scheduled = false;
 
 function load() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
+  try { return readStoredAppState({}); } catch { return {}; }
 }
-function save(raw) { localStorage.setItem(STORAGE_KEY, JSON.stringify(raw)); }
+function save(raw) { return writeStoredAppState(raw); }
 function activeSetup(raw) {
   const setups = raw?.profile?.setups;
   const list = Array.isArray(setups?.list) ? setups.list : [];
