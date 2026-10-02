@@ -59,6 +59,16 @@ const audit = () => {
     const parent = el.parentElement;
     if (!parent || parent === document.body) continue;
     const ps = getComputedStyle(parent);
+    // An open anchored listbox intentionally escapes its compact trigger.
+    // Check its horizontal reach against the viewport instead of treating the
+    // containing <details> height as a clipping boundary (overflow is visible).
+    const es = getComputedStyle(el);
+    if (el.matches('[role="listbox"]') && el.closest('details[open]')
+      && ['absolute', 'fixed'].includes(es.position) && ps.overflow === 'visible') {
+      const r = box(el);
+      if (r.left < -2 || r.right > innerWidth + 2) findings.push({kind:'overlay-crosses-viewport',el:name(el),by:Math.ceil(Math.max(-r.left,r.right-innerWidth))});
+      continue;
+    }
     if (ps.overflow !== 'visible' || ps.position === 'static') continue;
     const r = box(el), pr = box(parent);
     if (pr.width < 8 || pr.height < 8) continue;

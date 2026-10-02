@@ -23,14 +23,14 @@ const navigate = async (page,id) => {
   await page.locator(`.sidebar [data-page="${id}"]`).tap();
   await page.waitForTimeout(250);
 };
-const instrument = async (page,value) => page.addInitScript(([key,raw,catalogKey,items])=>{
+const instrument = async (page,value,catalogItems=testCatalog) => page.addInitScript(([key,raw,catalogKey,items])=>{
   localStorage.setItem(key,raw);
   localStorage.setItem(catalogKey,JSON.stringify({fetchedAt:new Date().toISOString(),items}));
   window.auditMainWrites=[];
   const put=Storage.prototype.setItem,remove=Storage.prototype.removeItem;
   Storage.prototype.setItem=function(k,v){if(k===key)window.auditMainWrites.push({kind:'set',value:String(v)});return put.call(this,k,v);};
   Storage.prototype.removeItem=function(k){if(k===key)window.auditMainWrites.push({kind:'remove'});return remove.call(this,k);};
-},[STORAGE_KEY,value,CATALOG_KEY,testCatalog]);
+},[STORAGE_KEY,value,CATALOG_KEY,catalogItems]);
 const geometry = page => page.evaluate(() => {
   const details = document.querySelector('details[data-pet-item-dropdown]');
   const menu = details?.querySelector('.sb-pet-dropdown-menu');
@@ -167,7 +167,7 @@ try {
         add(name, 'last-option-actual-touch-selection-after-recovery', 'BLOCKED', { reason: 'No visible hit target after wheel recovery.', ready });
       }
       for(const [slot,selector] of [['petItem','details[data-pet-item-dropdown]'],['pet','details[data-farming-pet-dropdown]'],['helmet','details[data-closed-item-dropdown="helmet"]']]) {
-        await page.locator(`.slot-card[data-slot="${slot}"][data-setup-target="normal"]`).tap();
+        if(!await page.locator(`[data-item-editor="${slot}"]`).count()) await page.locator(`.slot-card[data-slot="${slot}"][data-setup-target="normal"]`).tap();
         const picker=page.locator(selector),trigger=picker.locator('summary');
         await trigger.waitFor({state:'visible'});
         await trigger.focus();
@@ -233,6 +233,47 @@ try {
       await context.close();
     }
     await writeFile(join(out, 'browser-followup.json'), JSON.stringify({ auditedSource: process.env.AUDITED_SHA, engine, cases }, null, 2));
+  }
+  {
+    const name='physical-art-offline';
+    const identities={helmet:'TATER_HELMET',equipment1:'PESTHUNTERS_NECKLACE',equipment2:'PESTHUNTERS_CLOAK',equipment3:'PESTHUNTERS_BELT',equipment4:'PESTHUNTERS_GLOVES',petItem:'POIGNANT_LUCKY_CLOVER'};
+    const slots=Object.fromEntries(Object.entries(identities).map(([slot,id])=>[slot,{skyblockId:id,displayName:id,rarity:'LEGENDARY',source:'manual',reforge:null,enchantments:{},gems:[],recombobulated:false}]));
+    const fixture={...seed,profile:{...seed.profile,setups:{modelVersion:1,activeId:'normal',list:[{id:'normal',name:'FF (Farming Fortune) Set',slots}]}}};
+    const context=await browser.newContext({viewport:{width:320,height:568},hasTouch:true});
+    const page=await context.newPage();
+    const errors=[];page.on('pageerror',e=>errors.push(String(e)));
+    let imageAttempts=0;
+    await page.route('**/*',route=>{
+      const request=route.request();
+      if(request.resourceType()==='image'&&new URL(request.url()).origin!=='http://127.0.0.1:4173'){imageAttempts++;return route.abort();}
+      return route.continue();
+    });
+    await instrument(page,JSON.stringify(fixture),[...testCatalog,...Object.values(identities).map(id=>({id,name:id,category:id.endsWith('HELMET')?'HELMET':id.endsWith('CLOVER')?'PET_ITEM':'EQUIPMENT',tier:'LEGENDARY',material:'SKULL_ITEM',skin:null}))]);
+    try {
+      await page.goto('http://127.0.0.1:4173',{waitUntil:'domcontentloaded'});
+      await page.waitForTimeout(2200);
+      await navigate(page,'setups');
+      await page.waitForTimeout(1800);
+      const attemptsBefore=imageAttempts;
+      const art=await page.evaluate(async identities=>{
+        const {renderSetupItemArt}=await import('./src/item-art-ui.js');
+        const portraits=Object.entries(identities).map(([slot,id])=>{
+          const card=document.querySelector(`.slot-card[data-slot="${slot}"][data-setup-target="normal"]`);
+          const portrait=card?.querySelector('.slot-portrait');
+          return {slot,id,portrait};
+        });
+        let mutations=0;
+        const observer=new MutationObserver(rows=>mutations+=rows.length);
+        for(const {portrait} of portraits)if(portrait)observer.observe(portrait,{subtree:true,attributes:true,characterData:true,childList:true});
+        const rendered=[];
+        for(let i=0;i<3;i++){rendered.push(renderSetupItemArt());await new Promise(r=>setTimeout(r,120));}
+        observer.disconnect();
+        return {mutations,rendered,portraits:portraits.map(({slot,id,portrait})=>({slot,id,actual:portrait?.dataset.skyblockItemId,identity:portrait?.dataset.renderedItemArt,filled:!!portrait?.querySelector('.official-item-art,.skull-art,.item-art-fallback'),broken:[...portrait?.querySelectorAll('img')||[]].some(img=>img.complete&&img.naturalWidth===0)}))};
+      },identities);
+      add(name,'tater-pesthunter-clover-truthful-stable-fallback',art.mutations===0&&art.portraits.every(p=>p.actual===p.id&&p.filled&&!p.broken)&&imageAttempts===attemptsBefore?'PASS':'FAIL',{...art,attemptsBefore,attemptsAfter:imageAttempts,externalImages:'deliberately aborted; no real asset availability claim'});
+      add(name,'runtime-page-errors',errors.length?'FAIL':'PASS',errors);
+    }catch(error){add(name,'probe-execution','BLOCKED',{message:String(error),errors});}
+    finally{await context.close();}
   }
   for(const future of [false,true]) {
     const name=future?'future-schema':'backup';

@@ -109,7 +109,7 @@ async function sweepVariant(browser, label, viewport, seed) {
      * investigation, and the same check had just found a genuine one.
      */
     await cap(
-      p.waitForSelector('.sidebar [data-page]', { state: 'visible', timeout: 8000 }),
+      p.waitForSelector('[data-nav-toggle]', { state: 'visible', timeout: 8000 }),
       9000,
       'nav ready',
     );

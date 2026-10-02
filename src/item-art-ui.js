@@ -255,7 +255,7 @@ function showCatalogOrLetterFallback(container, item, itemId, slotId, identity) 
   removeRenderedArt(container);
   container.prepend(node);
   container.classList.add('has-official-item-art');
-  container.dataset.renderedItemArt = `catalog:${itemId}`;
+  container.dataset.renderedItemArt = identity;
   return node;
 }
 
@@ -380,7 +380,7 @@ export function renderSetupItemArt({ root = document, rawState = readState(), ma
         if (skullFallback) {
           card.prepend(skullFallback);
           card.classList.add('has-official-item-art');
-          card.dataset.renderedItemArt = `skull:${textureId}`;
+          card.dataset.renderedItemArt = identity;
         } else {
           showCatalogOrLetterFallback(card, item, itemId, slotId, identity);
         }

@@ -229,6 +229,9 @@ function loadState() {
 let readOnlyState = false;
 let migrationApplied = false;
 let state = loadState();
+// Render helpers may normalize an in-memory projection. Compare announcements
+// against persisted input so an unchanged disk state cannot repaint that projection.
+let lastObservedStoredState = JSON.stringify(readStoredAppState(null));
 
 let activeScrollAnchor = null;
 let scrollAnchorRestoreFrame = 0;
@@ -443,7 +446,9 @@ if (typeof document !== 'undefined') {
 
 function saveState() {
   if (readOnlyState) return;
-  return writeStoredAppState(state);
+  const written = writeStoredAppState(state);
+  if (written) lastObservedStoredState = JSON.stringify(readStoredAppState(null));
+  return written;
 }
 
 // Persist the migrated shape once, so the next load starts from the new schema.
@@ -3624,6 +3629,9 @@ render();
 // Settings writes synced values straight to storage; re-read and repaint so the
 // cards show them without a manual reload.
 window.addEventListener('farming420:state-changed', () => {
+  const storedState = JSON.stringify(readStoredAppState(null));
+  if (storedState === lastObservedStoredState) return;
+  lastObservedStoredState = storedState;
   const nextState = loadState();
   if (JSON.stringify(nextState) === JSON.stringify(state)) return;
   const interaction = captureInteraction();

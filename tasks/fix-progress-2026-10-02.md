@@ -4,7 +4,7 @@ Goal: implement and verify the eighteen ordered audit work packages, without mer
 Branch: `fix/audit-2026-10-02`.
 Application baseline: `bda761d81deb0be37af9fad31f5469efb992df82`.
 Audit baseline: `e666096b55d1a2a887374feb7c7cd743e8cbe111`.
-Last secured remote commit: `1e5b65cefe95cdfc99cdb5b8b0d67aae0742bdd5` (implementation checkpoint). Local checkpoint: `2860093`. CLI push is unavailable; GitHub API mirrors verified local trees without force updates.
+Last secured remote commit: `2ccba151da5bebe691a5cad7461ed98ab797b038` (strict-gate checkpoint). Local checkpoint: `6a05540`. CLI push is unavailable; GitHub API mirrors verified local trees without force updates.
 
 ## Actual repository state
 
@@ -107,3 +107,14 @@ Last secured remote commit: `1e5b65cefe95cdfc99cdb5b8b0d67aae0742bdd5` (implemen
 - Validation: session 25238 completed, **1,377 Node + 8 Python PASS**, exit 0. Node probe syntax, shell syntax, static audit (462 references), service-worker shim PASS, exit 0. Browser results for these new changes remain pending.
 - No running local process. Previous remote jobs completed; a new run is justified by the code/diagnostic changes. Current error: strict browser acceptance is not complete; draft PR #301 remains incomplete. Account Pages settings and unresolved live numeric lore remain blocked as above.
 - Next executable step: secure this checkpoint, inspect its new exact-head CI runs and printed overlay/sweep/mutation/probe failures, fix each actual regression, then run all final gates against the final secured commit.
+
+## Persisted-state / art ownership checkpoint (incomplete)
+
+- 2ccba15 Validate **36951800679 / 110666146885 FAILURE**: all pre-startup gates PASS; strict idempotence still fails only Setups (261 mutations, equal length), Crops (393, equal length) and Tools (60). Core render mutates its transient projection after saving; unchanged announcements incorrectly repaint. Core now compares the last observed persisted input before considering a repaint. UX hidden/class writes are conditional.
+- 2ccba15 Browser **36951800721**: all engines 96 PASS / 0 FAIL / 0 NOTE / 8 BLOCKED. Original menu/layout plus separate future-schema/backup fixtures pass, but extended keyboard loop accidentally toggled an already-open editor closed. Probe now opens an editor only when absent. BLOCKED remains a failed job, not accepted coverage.
+- Chromium strict overlay inspected: one finding, intentionally absolute listbox escapes its compact details trigger (overflow visible), no runtime errors; all 120 main scroll requests recorded, 20 real overlays opened. Gate now evaluates intentional anchored listbox horizontal bounds against viewport; it retains generic overflow findings and all other checks.
+- Sweep really failed all navigation-ready checks: it waited for hidden links before opening the collapsed navigation. It now waits for the visible navigation trigger then opens and verifies the real links/landed page. Negative pageerror control previously did not reach injection; no negative acceptance claimed yet.
+- Tool presentation and canonical farming-tool-art disagreed on Dicer tier and the latter removed another family's existing legacy fallback. Dicer variants derive from the existing verified pack table; unverified families leave their existing fallback owner intact. No new item art or live identity guessed. Tool recommendation display now also uses the shared physical reforge authority (explicit none/conflicts handled consistently).
+- Two image-fallback routes replaced attempted identity with catalog/skull identity, retrying the failed original on identical apply. Both retain attempted identity. Added disposable offline-image fixture for Tater, four Pesthunter pieces and Clover, checking truthful nonempty art, no broken images, zero repeat mutations/requests. The fixture makes no network availability or physical-device claim.
+- Art tests 66/66 PASS; session 12964 full suite 1,377 Node + 8 Python PASS, exit 0. This suite ran before final probe/navigation/overlay harness corrections; syntax rechecked before securing. Updated render incident log with causes and strict negative-control contract.
+- No active local process; 2ccba15 jobs completed, no duplicate run started. Current failure: new browser/sweep coverage and zero-mutation acceptance still pending. Next: secure checkpoint; inspect new CI individual results, then resolve any remaining keyboard/action/scroll/gate regressions.
