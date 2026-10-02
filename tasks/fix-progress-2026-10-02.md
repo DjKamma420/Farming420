@@ -4,7 +4,7 @@ Goal: implement and verify the eighteen ordered audit work packages, without mer
 Branch: `fix/audit-2026-10-02`.
 Application baseline: `bda761d81deb0be37af9fad31f5469efb992df82`.
 Audit baseline: `e666096b55d1a2a887374feb7c7cd743e8cbe111`.
-Last secured remote commit: `657a4fd0130a189d872968f043f256c9cbe64551` (packages 1–2). Local checkpoint: `a12cb5b`. CLI push is unavailable; GitHub API mirrors verified local trees without force updates.
+Last secured remote commit: `baae1a5a5ed09d78f4389f705a87af44a3ca02c4` (packages 3–11, incomplete). Local checkpoint: `dd7295a`. CLI push is unavailable; GitHub API mirrors verified local trees without force updates.
 
 ## Actual repository state
 
@@ -70,3 +70,10 @@ Last secured remote commit: `657a4fd0130a189d872968f043f256c9cbe64551` (packages
 - New three-engine workflow and probe based on the immutable October 2 audit, expanded to eight phone/landscape contexts and cancel/48-character-name scenarios. It checks exact PR head and propagates probe failure.
 - Active local processes: none. Latest full-suite session 93202 completed exit 1 with the CSS assertion described above.
 - Next: sync this incomplete working checkpoint to PR #301, inspect browser CI evidence, then implement packages 12–18 and expand final browser/gate acceptance.
+
+## Browser gate diagnostic checkpoint
+
+- Validation run 36948511791: success on remote baae1a5. Browser run 36948511845: FAILURE in Chromium job 110655961365, Firefox 110655961100, WebKit 110655961320; probe exits 1, no acceptance claimed.
+- Detail JSON/screenshots are retained as binary artifacts; the available GitHub connector cannot download binaries. The workflow now also prints the probe log while preserving its exit code, so subsequent failures are diagnosable. This is an intentional new diagnostic run, not a blind rerun.
+- Pages settings GET is rejected by the connector endpoint allowlist (HTTP 400); account publishing authority remains externally blocked.
+- Next: inspect text evidence from the diagnostic commit while implementing count/duration and canonical numeric tables.

@@ -41,7 +41,12 @@ jobs:
             if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then break; fi
             sleep 0.25
           done
+          set +e
           node scripts/audit-fix-browser.mjs > "$AUDIT_OUT/browser.log" 2>&1
+          FIX_PROBE_EXIT=$?
+          set -e
+          cat "$AUDIT_OUT/browser.log"
+          exit "$FIX_PROBE_EXIT"
       - name: Upload evidence including failed cases
         if: always()
         uses: actions/upload-artifact@v4
