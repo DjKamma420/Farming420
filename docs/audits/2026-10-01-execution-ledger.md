@@ -27,9 +27,9 @@ Final classification supersedes the historical next-action entries. A completed 
 | Persistence/schema/migration/backup | FAIL future startup/writers and inconsistent backup envelope; PASS ordinary migration/rejection, verified export, invalid-JSON no-write and valid disposable UI restore |
 | Item identity/rarity/origin/reforges/gems | FAIL duplicate Cow copy and competing legacy Tool Reforge flags; PASS documented identity/rarity/manual controls and existing regression; unresolved live rarity curves BLOCKED |
 | Normal/rare/Pest/Feast profit and cost | PASS explicit zero/unknown cost/active unpriced Feast boundaries; FAIL unknown Pest helper coercion; complete unsourced Pest economics stays UNMODELLED |
-| Chips/shards/effects | SOURCE_REVIEW complete inventory and current filtering; specific curves/stacking BLOCKED; Phillip/UI controls have retained fix plans |
+| Chips/shards/effects | FAIL Rarefinder canonical drift, Cropshot confidence conflict and lower-helper unknown coercion; ten-family comparison complete; unresolved live curves/stacking BLOCKED; Phillip/UI plans retained |
 | Greenhouse/Contest/Vacuum | PASS 53-source-table match and current Vacuum damage; FAIL stale helper / missing Contest stat wrapper; complete gameplay economics BLOCKED |
-| UI/menus/art/scroll | FAIL Cancel/Escape/header/controlled manual scroll; tool-relative anchors and last-option reachability PASS; fallback art findings retained |
+| UI/menus/art/scroll | FAIL Cancel/Escape/header/controlled manual scroll and nine cross-browser stable visibility/ArrowDown cases; normal anchors and recovered actual menu selection PASS; fallback art findings retained |
 | Phone matrix/landscape/taps | PASS execution across eight viewports; observed app failures recorded; physical keyboard/notch/pan/OS rotation/zoom BLOCKED |
 | Original full 109-version report | BLOCKED: unavailable approved bytes; historical identity/findings preserved |
 | Deployment | SOURCE_REVIEW completed; account Pages configuration endpoint BLOCKED; no deploy performed |
@@ -162,3 +162,15 @@ Durable final raw results: docs/audits/2026-10-01-mobile-evidence-CONT25.json. F
 All currently executable queued checks now have explicit outcomes. Unavailable physical-device/authenticated-source/original-report/Pages-account dependencies remain BLOCKED as listed; they are not marked passed. Main was rechecked and remains bda761d81deb0be37af9fad31f5469efb992df82. A connector compare confirms the isolated audit branch adds only audit documentation/evidence/probes and its audit workflow. No application code change, merge, PR or deployment was performed.
 
 The final review in docs/audits/2026-10-01-final-review.md provides seventeen ordered work packages, owners, concrete changes and acceptance checks. Earlier CONT findings superseded or narrowed by executed evidence are explicitly corrected. This closes the accessible audit work, with known failures ready for implementation and external checks honestly blocked.
+
+## CONT26–30 — completed October 2 continuation
+
+The user requested further feasible checks after the October 1 closure. See [October 2 continuation](2026-10-02-continuation.md) for full source chronology, intermediate probe limitations, artifact identities and raw evidence links. Main was rechecked and remains the same pin; app/test source stays unchanged.
+
+Final three-engine run 36944792468 executes 81 cases across Chromium/Firefox/WebKit and 320×568, 390×844, 800×360: 45 PASS / 27 FAIL / 9 NOTE / zero BLOCKED. Each engine reproduces stable visibility failure, Escape failure and ArrowDown focus failure at each viewport. Normal navigation after hydration, actual last-option coordinate selection after recovery, and pageerror checks pass. The nine spontaneous settlement samples contain no injected DOM mutation; the earlier controlled mutation fixture remains independent evidence. Final jobs fail deliberately on those defects and upload all evidence.
+
+Independent mechanical/data follow-up: Rarefinder lower rarity maxima disagree with the official live July patch and correct visible entry; an existing test asserts the stale maximum 60. Ten-family comparison additionally finds lower Cropshot unresolved but visible ACTIVE +100, a confidence conflict rather than acceptance of the reported replacement curve. Twenty-one helper boundary cases yield 5 PASS / 16 FAIL for missing versus explicit zero and nonnumeric coercion. Seven other flat Legendary chip comparisons agree internally; Hypercharge intentionally uses a different formula. Internal agreement is not live gameplay verification.
+
+The 2024 Pest divisor source is an Alpha announcement with superseded earlier tables; the live April 2026 patch halves Fortune-derived drops. Remaining complete live formula/rounding cannot be accepted from the unchanged historical table. No replacement formula or pet curve was invented.
+
+The consolidated review now contains eighteen ordered work packages, including canonical chips, shared lower-helper validation and nine-engine/viewport keyboard/stability acceptance. Every executable follow-up has an outcome; unchanged external/device/account/original-report dependencies remain BLOCKED. Audit docs, extracted evidence, probes and two isolated workflows are the only branch additions. No application implementation, PR, merge or deployment is included.
