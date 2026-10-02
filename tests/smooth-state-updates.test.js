@@ -88,5 +88,5 @@ test('reforge goal changes re-render in place instead of faking Tools navigation
 test('real page navigation still starts the destination page at the top', () => {
   const source = read('app.js');
   assert.match(source, /\[data-page\][\s\S]*render\(\{ preserveScroll: false \}\)/);
-  assert.match(source, /addEventListener\('farming420:state-changed'[\s\S]*state = loadState\(\);[\s\S]*render\(\);/);
+  assert.match(source, /addEventListener\('farming420:state-changed'[\s\S]*const nextState = loadState\(\);[\s\S]*state = nextState;[\s\S]*render\(\);/);
 });

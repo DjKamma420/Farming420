@@ -64,15 +64,15 @@ test('missing Strength keeps known base Cow Fortune but marks the total incomple
   assert.ok(cow.reasons.includes('Strength input is missing'));
 });
 
-test('current Cow Farming Strength perk is active from Rare through Legendary', () => {
-  for (const rarity of ['RARE', 'EPIC', 'LEGENDARY']) {
-    const cow = mooshroomCowContribution(stateWithCow({ rarity, strength: 1000 }));
-    assert.equal(cow.baseFortune, 100);
-    assert.equal(cow.strengthFortune, 35, `${rarity} should apply Farming Strength`);
-    assert.equal(cow.value, 135);
-    assert.equal(cow.incomplete, false);
-    assert.equal(mooshroomStrengthFortune(1000, 100, rarity), 35);
+test('unverified Cow rarity curves cannot borrow the Legendary endpoint', () => {
+  for (const rarity of ['RARE','EPIC']) {
+    const cow=mooshroomCowContribution(stateWithCow({rarity,strength:1000}));
+    assert.equal(cow.baseFortune,100);
+    assert.equal(cow.strengthFortune,0);
+    assert.equal(cow.incomplete,true);
+    assert.equal(mooshroomStrengthFortune(1000,100,rarity),null);
   }
+  assert.equal(mooshroomStrengthFortune(1000,50,'LEGENDARY'),null);
 });
 
 test('Common and Uncommon Cow do not expose Farming Strength', () => {

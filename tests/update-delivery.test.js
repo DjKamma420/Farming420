@@ -70,14 +70,18 @@ test('deployment version file contains the exact immutable build id', () => {
   });
 });
 
-test('pages deployment runs automatically for main, waits out the branch publisher, and prepares a build marker', () => {
-  const workflow = readFileSync(new URL('../.github/workflows/pages.yml', import.meta.url), 'utf8');
-  assert.match(workflow, /push:\s*\n\s+branches: \["main"\]/);
-  assert.match(workflow, /node scripts\/prepare-pages-deploy\.js/);
-  assert.match(workflow, /BUILD_ID: \$\{\{ github\.sha \}\}/);
-  assert.match(workflow, /group:\s*farming420-stamped-pages/);
-  assert.match(workflow, /cancel-in-progress:\s*true/);
-  assert.match(workflow, /Wait for branch Pages publisher[\s\S]*?sleep 70[\s\S]*?name: Deploy/);
+test('Pages publishes only a successful main push validation and stamps its exact SHA', () => {
+  const workflow=readFileSync(new URL('../.github/workflows/pages.yml',import.meta.url),'utf8');
+  assert.match(workflow,/workflow_run:/);
+  assert.match(workflow,/workflows: \["Validate Farming420"\]/);
+  assert.match(workflow,/conclusion == 'success'/);
+  assert.match(workflow,/event == 'push'/);
+  assert.match(workflow,/head_branch == 'main'/);
+  assert.match(workflow,/head_repository.full_name == github.repository/);
+  assert.match(workflow,/ref: \$\{\{ github.event.workflow_run.head_sha \}\}/);
+  assert.match(workflow,/BUILD_ID: \$\{\{ github.event.workflow_run.head_sha \}\}/);
+  assert.match(workflow,/node scripts\/prepare-pages-deploy\.js/);
+  assert.doesNotMatch(workflow,/sleep 70|workflow_dispatch:/);
 });
 
 test('raw branch Pages output also cache-busts the accessory art entrypoints', () => {

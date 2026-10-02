@@ -14,13 +14,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Verify exact tested commit
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$TESTED_SHA"
       - uses: actions/setup-node@v4
         with:
           node-version: 24
 
       - name: Validate JavaScript syntax
         run: |
-          for file in src/*.js tests/*.js scripts/*.js sw.js; do
+          for file in src/*.js tests/*.js scripts/*.js scripts/*.mjs sw.js; do
             node --check "$file"
           done
 

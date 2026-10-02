@@ -71,6 +71,9 @@ export function mooshroomStrengthFortune(strength, level = 100, rarity = 'LEGEND
   const safeStrength = finiteNonNegative(strength);
   if (safeStrength === null) return null;
   if (!FARMING_STRENGTH_RARITIES.has(String(rarity || '').toUpperCase())) return 0;
+  // The current level-100 Legendary lore is pinned; other rarity/level perk
+  // curves remain unresolved and must not be inferred from that endpoint.
+  if (String(rarity).toUpperCase() !== 'LEGENDARY' || Number(level) !== 100) return null;
   const requirement = mooshroomStrengthRequirement(level);
   return Math.floor((safeStrength / requirement) * 0.7);
 }
@@ -137,7 +140,9 @@ export function mooshroomCowContribution(state) {
     if (level === null) reasons.push('Farming Strength needs the Mooshroom Cow level');
     if (strength === null) reasons.push('Strength input is missing');
     if (level !== null && strength !== null) {
-      strengthFortune = mooshroomStrengthFortune(strength, level, rarity);
+      const value = mooshroomStrengthFortune(strength, level, rarity);
+      if (value === null) reasons.push('Farming Strength rarity/level curve lacks current live lore verification');
+      else strengthFortune = value;
     }
   } else if (!rarity) {
     reasons.push('Mooshroom Cow rarity is unavailable');

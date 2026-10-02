@@ -75,7 +75,7 @@ async function sweepVariant(browser, label, viewport, seed) {
     try { await cap(p.evaluate(() => new Promise(r => requestAnimationFrame(() => r(1)))), 2500, 'raf'); return true; }
     catch { return false; }
   };
-  const tap = async sel => { try { await cap(p.click(sel, { timeout: 2000 }), 3000, sel); } catch {} };
+  const tap = async sel => cap(p.click(sel, { timeout: 3000 }), 4000, sel);
 
   /**
    * Only elements with a layout box. The planner keeps its old list in the DOM
@@ -92,7 +92,7 @@ async function sweepVariant(browser, label, viewport, seed) {
     }
     return keep;
   };
-  const clickHandle = async h => { try { await cap(h.click({ timeout: 2000 }), 3000, 'click'); } catch {} };
+  const clickHandle = async h => cap(h.click({ timeout: 3000 }), 4000, 'click');
 
   let clicks = 0;
   let verdict = 'ok';
@@ -112,8 +112,9 @@ async function sweepVariant(browser, label, viewport, seed) {
       p.waitForSelector('.sidebar [data-page]', { state: 'visible', timeout: 8000 }),
       9000,
       'nav ready',
-    ).catch(() => {});
+    );
     await p.waitForTimeout(400);
+    if (process.env.SWEEP_INJECT_ERROR === '1') await p.evaluate(() => setTimeout(()=>{throw new Error('AUDIT_INJECTED_RUNTIME_ERROR');},0));
     if (!await alive()) throw new Error('FROZE on load');
 
     /**
@@ -142,7 +143,7 @@ async function sweepVariant(browser, label, viewport, seed) {
         if (open) return;
         const toggle = await p.$('[data-nav-toggle]');
         if (!toggle) return;
-        await cap(toggle.click({ timeout: 2000 }), 3000, 'nav toggle').catch(() => {});
+        await cap(toggle.click({ timeout: 2000 }), 3000, 'nav toggle');
         await p.waitForTimeout(250);
       };
       await openNavigation();
@@ -152,8 +153,7 @@ async function sweepVariant(browser, label, viewport, seed) {
        * bounded chance to appear before calling the page unreachable. A page
        * genuinely hidden by CSS never becomes visible and still fails here.
        */
-      await p.waitForSelector(`.sidebar [data-page="${PAGE}"]`, { state: 'visible', timeout: 3000 })
-        .catch(() => {});
+      await p.waitForSelector(`.sidebar [data-page="${PAGE}"]`, { state: 'visible', timeout: 5000 });
       const navButton = await p.$(`[data-page="${PAGE}"]`);
       if (navButton && await navButton.isVisible()) {
         await tap(`[data-page="${PAGE}"]`);
@@ -165,7 +165,7 @@ async function sweepVariant(browser, label, viewport, seed) {
         ? await select.$$eval('option', (os, want) => os.some(o => o.value === want), PAGE)
         : false;
       if (inSelect) {
-        await cap(select.selectOption(PAGE), 4000, 'selectOption').catch(() => {});
+        await cap(select.selectOption(PAGE), 4000, 'selectOption');
         await p.waitForTimeout(250);
         return true;
       }
@@ -183,40 +183,46 @@ async function sweepVariant(browser, label, viewport, seed) {
         try { return JSON.parse(localStorage.getItem('skyblock-farming-maxer-v1'))?.page ?? null; }
         catch { return null; }
       });
-      if (landed && landed !== PAGE) { verdict = `navigated to ${landed} instead`; }
+      if (landed !== PAGE) { verdict = `navigated to ${landed} instead`; }
 
-      const drawerTriggers = verdict !== 'ok' ? [] : await visibleHandles('[data-open]');
-      for (const trigger of drawerTriggers) {
+      const drawerIds = verdict !== 'ok' ? [] : await p.$$eval('button[data-open]', els=>els.filter(e=>e.getBoundingClientRect().width>0).map(e=>e.dataset.open));
+      for (const id of drawerIds) {
         if (outOfTime()) { verdict = `budget spent after ${clicks} clicks (drawers)`; break; }
-        const id = await trigger.evaluate(e => e.dataset.open).catch(() => '?');
-        await clickHandle(trigger);
+        await tap(`button[data-open="${id}"]`);
         await p.waitForTimeout(80); clicks++;
         if (!await alive()) throw new Error(`FROZE opening ${id}`);
-        if (await p.$('.drawer .close')) await tap('.drawer .close');
-        await p.waitForTimeout(60);
-        if (!await alive()) throw new Error(`FROZE closing ${id}`);
+        if (!await p.$('.drawer .close')) throw new Error(`Drawer ${id} did not open`);
+        await tap('.drawer .close');
+        if (await p.$('.drawer')) throw new Error(`Drawer ${id} did not close`);
       }
-
       if (verdict === 'ok') {
-        for (const slot of await visibleHandles('.slot-card')) {
+        const slots = await p.$$eval('.slot-card', els=>els.filter(e=>e.getBoundingClientRect().width>0).map(e=>({name:e.dataset.slot,target:e.dataset.setupTarget||'normal'})));
+        for (const {name,target} of slots) {
           if (outOfTime()) { verdict = `budget spent after ${clicks} clicks (slots)`; break; }
-          const name = await slot.evaluate(e => e.dataset.slot).catch(() => '?');
-          await clickHandle(slot);
+          await tap(`.slot-card[data-slot="${name}"][data-setup-target="${target}"]`);
           await p.waitForTimeout(110); clicks++;
+          if (!await p.$(`[data-item-editor="${name}"]`)) throw new Error(`Slot ${name} did not open`);
           if (!await alive()) throw new Error(`FROZE on slot ${name}`);
         }
       }
 
       // Every lever and radio on the page, since those are what this release changed.
       if (verdict === 'ok') {
-        const controls = await visibleHandles(
-          '.lever, [role="radio"], .sb-reforge-option, .planner-mode-tab, .planner-row, .setup-tab',
-        );
+        const controls = await p.$$eval('.lever, [role="radio"], .sb-reforge-option, .planner-mode-tab, .planner-row, .setup-tab', els=>els.filter(e=>e.getBoundingClientRect().width>0).slice(0,40).map(e=>{
+          const node=e.matches('.lever')?e.querySelector('input'):e;
+          const attrs=node.getAttributeNames().filter(key=>key.startsWith('data-')).map(key=>`[${key}="${CSS.escape(node.getAttribute(key))}"]`).join('');
+          const selector=node.tagName.toLowerCase()+attrs;
+          return e.matches('.lever')?`label:has(${selector})`:selector;
+        }));
         let index = 0;
-        for (const control of controls.slice(0, 40)) {
+        for (const selector of controls) {
           if (outOfTime()) { verdict = `budget spent after ${clicks} clicks (controls)`; break; }
-          await clickHandle(control);
+          const before=await p.evaluate(key=>localStorage.getItem(key),KEY);
+          const noOp=await p.locator(selector).first().evaluate(e=>e.getAttribute('aria-pressed')==='true'||e.getAttribute('aria-checked')==='true'||e.classList.contains('selected')||e.classList.contains('active'));
+          await tap(selector);
           await p.waitForTimeout(70); clicks++; index++;
+          const after=await p.evaluate(key=>localStorage.getItem(key),KEY);
+          if (before===after && !noOp && !await p.$('.drawer')) throw new Error(`Control #${index} had no observable outcome: ${selector}`);
           if (!await alive()) throw new Error(`FROZE on control #${index}`);
           if (await p.$('.drawer .close')) await tap('.drawer .close');
         }
@@ -226,12 +232,13 @@ async function sweepVariant(browser, label, viewport, seed) {
     verdict = String(error.message || error);
   }
 
-  const unique = [...new Set(errs)].slice(0, 2);
+  const unique = [...new Set(errs)];
   await cap(ctx.close(), 4000, 'ctx close').catch(() => {});
   return { label, verdict, clicks, crashed, errors: unique };
 }
 
 const browser = await chromium.launch();
+if (process.env.SWEEP_INJECT_ERROR === '1') filled.injectAuditError = true;
 const results = [];
 for (const [label, viewport, seed] of VARIANTS) {
   results.push(await sweepVariant(browser, label, viewport, seed));
@@ -240,7 +247,7 @@ await cap(browser.close(), 5000, 'browser close').catch(() => {});
 
 let worst = 0;
 for (const r of results) {
-  const bad = /FROZE|timeout|Error|UNREACHABLE|instead/.test(r.verdict);
+  const bad = r.crashed || r.errors.length > 0 || (r.verdict !== 'ok' && !r.verdict.startsWith('budget'));
   const budget = r.verdict.startsWith('budget');
   if (bad) worst = Math.max(worst, 1);
   else if (budget) worst = Math.max(worst, 2);

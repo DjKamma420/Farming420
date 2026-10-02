@@ -35,7 +35,12 @@ function bucket(raw, item) {
 }
 
 function level(raw, item) {
-  return Math.max(0, Math.min(Number(item.max || 1), Number(bucket(raw, item).levels[item.id] || 0)));
+  const target = bucket(raw, item);
+  if (Object.values(FARMING_TOOL_REFORGE_ENTRY_IDS).includes(item.id)) {
+    const selected = selectedFarmingToolReforge(target, raw.profile?.toolReforges?.[toolKeyForCropId(cropId(raw))]);
+    return selected && FARMING_TOOL_REFORGE_ENTRY_IDS[selected] === item.id ? 1 : 0;
+  }
+  return Math.max(0, Math.min(Number(item.max || 1), Number(target.levels[item.id] || 0)));
 }
 
 function clearExclusivePeers(raw, item) {

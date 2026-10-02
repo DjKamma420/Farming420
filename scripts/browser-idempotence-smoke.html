@@ -26,7 +26,7 @@
   import { DATA_SCHEMA_VERSION, STORAGE_KEY } from '../src/config.js';
   import { CATALOG_STORAGE_KEY } from '../src/item-catalog.js';
 
-  const SETTLE_MS = 60;
+  const SETTLE_MS = 120;
   const REAPPLY_PASSES = 3;
 
   // A profile with real content. An empty one renders far fewer branches, and a
@@ -121,7 +121,7 @@
     const measure = () => {
       const app = doc.querySelector('#app');
       if (!app) throw new Error('#app disappeared');
-      return { nodes: app.querySelectorAll('*').length, chars: app.innerHTML.length };
+      return app.innerHTML;
     };
 
     const drifted = [];
@@ -130,6 +130,13 @@
       await wait(SETTLE_MS * 2);
 
       const before = measure();
+      let mutations = 0;
+      const samples=[];
+      const observer=new win.MutationObserver(records=>{
+        mutations+=records.length;
+        for(const record of records.slice(0,4)) if(samples.length<12) samples.push(`${record.type}:${record.target.nodeName}.${record.target.className || ''}:${record.attributeName || ''}`);
+      });
+      observer.observe(doc.querySelector('#app'),{subtree:true,childList:true,attributes:true,characterData:true});
       // Re-announce the *same* state. Nothing changed, so nothing may change.
       for (let pass = 0; pass < REAPPLY_PASSES; pass++) {
         win.dispatchEvent(new win.Event('farming420:state-changed'));
@@ -137,8 +144,9 @@
       }
       const after = measure();
 
-      if (after.nodes !== before.nodes || after.chars !== before.chars) {
-        drifted.push(`${page}: nodes ${before.nodes}->${after.nodes}, chars ${before.chars}->${after.chars}`);
+      observer.disconnect();
+      if (after !== before || mutations !== 0) {
+        drifted.push(`${page}: exact DOM equal=${after===before}, mutations=${mutations}, samples=${samples.join(';')}`);
       }
     }
 

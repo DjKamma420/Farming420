@@ -90,7 +90,7 @@
   }
 
   /* Pages with a phase/set selector use one deterministic header grid:
-     title + selector on row one, search across row two. */
+     title, selector and search on separate rows. */
   .activity-mode-topbar-controls {
     display: grid !important;
     grid-template-columns: max-content minmax(0, 1fr);
@@ -232,10 +232,8 @@
   gap: 8px;
 }
 
-@media (max-width: 760px) {
-  /* Keep Loadouts on the same two-row mobile header as Dashboard/Planner:
-     title + selector first, search second. A 100% flex-basis here used to force
-     the physical-set selector onto its own third row. */
+@media (max-width: 760px), (max-width: 900px) and (max-height: 480px) {
+  /* Keep the physical tabs readable in narrow portrait and short landscape. */
   .physical-set-switch {
     flex: 1 1 0;
     min-width: 0;

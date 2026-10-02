@@ -47,6 +47,34 @@ jobs:
           set -e
           cat "$AUDIT_OUT/browser.log"
           exit "$FIX_PROBE_EXIT"
+      - name: Execute strict overlay and interaction gates with negative controls
+        if: always() && matrix.browser == 'chromium'
+        run: |
+          set -uo pipefail
+          python3 -m http.server 4173 --bind 127.0.0.1 > "$AUDIT_OUT/gates-server.log" 2>&1 &
+          FIX_GATE_SERVER_PID=$!
+          trap 'kill "$FIX_GATE_SERVER_PID" 2>/dev/null || true' EXIT
+          for i in $(seq 1 40); do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then break; fi
+            sleep 0.25
+          done
+          FIX_GATE_FAILURE=0
+          timeout 180 node scripts/overlay-audit.mjs > "$AUDIT_OUT/overlay.log" 2>&1
+          FIX_OVERLAY_EXIT=$?
+          cat "$AUDIT_OUT/overlay.log"
+          echo "Overlay exit: $FIX_OVERLAY_EXIT"
+          if [ "$FIX_OVERLAY_EXIT" -ne 0 ]; then FIX_GATE_FAILURE=1; fi
+          SWEEP_OUT="$AUDIT_OUT/sweep" timeout 600 bash scripts/sweep-all.sh > "$AUDIT_OUT/sweep.log" 2>&1
+          FIX_SWEEP_EXIT=$?
+          cat "$AUDIT_OUT/sweep.log"
+          cat "$AUDIT_OUT"/sweep/area-*.log
+          echo "Sweep exit: $FIX_SWEEP_EXIT"
+          if [ "$FIX_SWEEP_EXIT" -ne 0 ]; then FIX_GATE_FAILURE=1; fi
+          SWEEP_INJECT_ERROR=1 timeout 150 node scripts/sweep-area.mjs dashboard > "$AUDIT_OUT/negative-sweep.log" 2>&1
+          FIX_NEGATIVE_EXIT=$?
+          cat "$AUDIT_OUT/negative-sweep.log"
+          if [ "$FIX_NEGATIVE_EXIT" -ne 1 ] || ! grep -q AUDIT_INJECTED_RUNTIME_ERROR "$AUDIT_OUT/negative-sweep.log"; then FIX_GATE_FAILURE=1; fi
+          exit "$FIX_GATE_FAILURE"
       - name: Upload evidence including failed cases
         if: always()
         uses: actions/upload-artifact@v4

@@ -17,6 +17,21 @@ repository came to carry them.
 
 Pass date: **2026-09-16**.
 
+## October 2 audit corrections (authoritative for conflicting older notes)
+
+- The July 22 **live** 0.26.1 Rarefinder patch gives rarity rates 1.5/2/2.5, caps 10/15/20 and totals 15/30/50. Runtime planner rows and helpers now consume one table.
+- Cropshot reports conflict with the August 3 **Alpha** curve. Its current live rarity curve remains `VERIFY`; historical values and the reported +60 maximum are evidence, not accepted calculator values.
+- Phillip uses one Pest count and one observed activation/expiry. The August 3 Alpha curve previews +5 per Pest capped at +200; that curve remains incomplete until live lore is verified. There is no +1000 live cap, flat owned +200, or effect stacking.
+- The November 13, 2024 Alpha Pest divisors remain historical metadata. The April 28, 2026 live patch changed Fortune-derived crops; no complete current divisor/rounding table is established here. Guaranteed-drop revenue remains unknown.
+- Alpha/community shard rows remain visible `VERIFY` and excluded from complete totals/rankings. Cow perk interpolation outside the pinned level-100 Legendary lore remains unknown.
+- Vacuum helpers reuse the physical models (100/150/200/300/400 damage units, Bookworm +20). Damage units/pull counts do not establish real seconds or throughput.
+
+Sources reviewed 2026-10-02:
+<https://hypixel.net/threads/hypixel-skyblock-0-26-1-new-player-improvements-harvest-feast-changes-healing-revamp-and-more.6127383/>,
+<https://hypixel.net/threads/aug-3-0-27-alpha-changes-2.6134812/>,
+<https://hypixel.net/threads/hypixel-skyblock-0-24-4-harvest-feast-event-fossil-essence-shop-and-more.6089392/>.
+These distinctions supersede the broad ACTIVE claims in the historical notes below.
+
 ## Follow-up verification — 2026-09-23
 
 A targeted live-source pass rechecked the Garden Chip table and the two gear

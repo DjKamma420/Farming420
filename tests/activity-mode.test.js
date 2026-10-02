@@ -189,8 +189,9 @@ test('manual pet level and rarity drive Mooshroom Cow perk values', () => {
   assert.equal(contribution.level, 50);
   assert.equal(contribution.rarity, 'LEGENDARY');
   assert.equal(contribution.baseFortune, 50);
-  assert.ok(contribution.strengthFortune > 0);
-  assert.equal(contribution.incomplete, false);
+  assert.equal(contribution.strengthFortune, 0);
+  assert.equal(contribution.incomplete, true);
+  assert.ok(contribution.reasons.some(reason=>reason.includes('live lore')));
 });
 
 

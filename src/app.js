@@ -1,6 +1,7 @@
 import { isUnsupportedState, readStoredAppState, writeStoredAppState } from './app-storage.js';
 import { applyFarmingToolReforge, FARMING_TOOL_REFORGE_ENTRY_IDS, selectedFarmingToolReforge } from './item-capabilities.js';
 import { CROPS, UPGRADES } from './data.js';
+import { CHIP_LEVEL_CAP, gardenChipForEntry, phillipBuffEffect } from './farming-modifiers-data.js';
 import { INFO_ENTRIES, INFO_SECTIONS, allInfoEntries, cropStrategyInfo } from './info-content.js';
 import { FARMING_ACCESSORY_GROUPS } from './farming-accessories.js';
 import { FARMING_PETS } from './setup-pet-catalog.js';
@@ -1874,6 +1875,7 @@ function setEntryLevel(item, level) {
     delete store.owned[item.id];
     return;
   }
+  clearExclusivePeers(item);
   store.levels[item.id] = value;
   store.owned[item.id] = true;
 }
@@ -2268,13 +2270,24 @@ function drawer() {
   ].filter(Boolean).join(' · ');
   const isShard = item.section === 'shards' || item.category === 'Attribute Shard';
   const manual = store.manualGain[item.id] ?? '';
+  const chip = gardenChipForEntry(item);
+  const phillip = item.id === 'temporary-buff-pesthunter-phillip-buff';
+  const activation = state.profile.temporaryEffects?.pesthunterPhillip || {};
+  const effect = phillip ? phillipBuffEffect(activation) : null;
   return `<div class="drawer-backdrop" data-close-drawer><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" tabindex="-1">
     <div class="drawer-top"><div><div class="eyebrow">${esc(item.category)}</div><h2 id="drawer-title">${esc(item.name)}</h2></div><button type="button" class="close" data-close-drawer aria-label="Close details">×</button></div>
     <div class="drawer-badges">${badge(item.status,item.status==='VERIFY'?'verify':'soft')} ${isCropScopedItem(item)?badge(crop().name,'soft'):(item.cropScope!=='Any'?badge(item.cropScope,'soft'):'')} ${item.modeScope!=='Any'?badge(item.modeScope,'soft'):''}</div>
     ${isSynced(item) ? '<div class="drawer-synced">Farming420 worked this value out for you, from your profile sync and your active loadout. Editing it here overrides it until the next sync or loadout change.</div>' : ''}
     <div class="drawer-section"><h3>Ownership & Level</h3>
+      ${chip ? `<label>Chip rarity<select data-chip-rarity="${chip.id}">${Object.keys(CHIP_LEVEL_CAP).map(rarity => `<option value="${rarity}" ${(state.profile.chipRarities?.[chip.id] || 'LEGENDARY') === rarity ? 'selected' : ''}>${rarity} (cap ${CHIP_LEVEL_CAP[rarity]})</option>`).join('')}</select></label>` : ''}
       ${max>1 ? `<div class="stepper"><button data-step="-1" data-id="${item.id}">−</button><strong>${level}/${max}</strong><button data-step="1" data-id="${item.id}">+</button><button class="ghost small" data-max="${item.id}">Max</button></div>` : `<label class="switch-row"><span>Owned</span><input type="checkbox" data-owned="${item.id}" ${isOwned(item)?'checked':''}></label>`}
     </div>
+    ${phillip ? `<div class="drawer-section"><h3>Temporary activation</h3>
+      <label>Pests handed in<input type="number" min="0" step="1" data-phillip-count value="${esc(activation.pestCount ?? '')}"></label>
+      <label>Observed duration (minutes)<input type="number" min="1" step="1" data-phillip-duration placeholder="Read the active potion duration"></label>
+      <button type="button" data-phillip-activate>Activate / replace timer</button><button type="button" data-phillip-deactivate>Deactivate</button>
+      <p>Alpha preview: ${effect.baseFarmingFortune === null ? 'unknown' : `+${effect.baseFarmingFortune}`} FF. Live curve verification pending; excluded from complete totals.</p>
+      <p>${effect.remainingSeconds === null ? 'Expiry unknown' : `${effect.remainingSeconds} seconds remaining`}. One activation; no stacking.</p></div>` : ''}
     <div class="drawer-section"><h3>Evaluation</h3><div class="detail-grid"><div><span>Next step</span><strong>+${formatNumber(gainFor(item))}</strong></div><div><span>Relative effect</span><strong>${relativeGainPct(item).toFixed(2)}%</strong></div></div>
       <div class="detail-grid">
         <div><span>Next cost</span><strong>${esc(costText)}</strong><small>${esc(costOriginNote(costSource))}</small></div>
@@ -3314,6 +3327,20 @@ function render({ preserveScroll = true } = {}) {
     restoreRelativeScrollAnchor(relativeAnchor);
     scheduleScrollAnchorRestore(relativeAnchor);
   }
+  scheduleTemporaryExpiry();
+}
+
+let temporaryExpiryTimer;
+function scheduleTemporaryExpiry() {
+  clearTimeout(temporaryExpiryTimer);
+  if (readOnlyState) return;
+  const expiry = state.profile.temporaryEffects?.pesthunterPhillip?.activeUntilMs;
+  if (typeof expiry !== 'number' || !Number.isFinite(expiry) || expiry <= Date.now()) return;
+  temporaryExpiryTimer = setTimeout(() => {
+    state = loadState();
+    if (!readOnlyState) { applyComputedStatsToState(state); saveState(); }
+    render();
+  }, Math.min(2147483647, expiry - Date.now() + 10));
 }
 
 function closeNavigation() {
@@ -3352,6 +3379,39 @@ document.addEventListener('keydown', event => {
 });
 
 function bind() {
+  document.querySelector('[data-chip-rarity]')?.addEventListener('change', event => {
+    const id = event.target.dataset.chipRarity, rarity = event.target.value;
+    if (!CHIP_LEVEL_CAP[rarity]) return;
+    state.profile.chipRarities ||= {};
+    state.profile.chipRarities[id] = rarity;
+    const item = UPGRADES.find(row => row.chipId === id);
+    if (item && currentLevel(item) > CHIP_LEVEL_CAP[rarity]) setEntryLevel(item, CHIP_LEVEL_CAP[rarity]);
+    applyComputedStatsToState(state); saveState(); render();
+  });
+  document.querySelector('[data-phillip-count]')?.addEventListener('change', event => {
+    const count = event.target.value === '' ? null : Number(event.target.value);
+    if (count !== null && (!Number.isInteger(count) || count < 0)) { event.target.reportValidity(); return; }
+    state.profile.temporaryEffects ||= {};
+    state.profile.temporaryEffects.pesthunterPhillip ||= {};
+    state.profile.temporaryEffects.pesthunterPhillip.pestCount = count;
+    applyComputedStatsToState(state); saveState(); render();
+  });
+  document.querySelector('[data-phillip-activate]')?.addEventListener('click', () => {
+    const input = document.querySelector('[data-phillip-duration]');
+    const minutes = Number(input?.value);
+    if (!Number.isFinite(minutes) || minutes <= 0) { input?.setCustomValidity('Enter the observed potion duration.'); input?.reportValidity(); return; }
+    state.profile.temporaryEffects ||= {};
+    const record = state.profile.temporaryEffects.pesthunterPhillip ||= {};
+    record.active = true; record.activeUntilMs = Date.now() + minutes * 60000;
+    record.durationSeconds = minutes * 60;
+    setEntryLevel(UPGRADES.find(row => row.id === 'temporary-buff-pesthunter-phillip-buff'), 1);
+    applyComputedStatsToState(state); saveState(); render();
+  });
+  document.querySelector('[data-phillip-deactivate]')?.addEventListener('click', () => {
+    state.profile.temporaryEffects ||= {};
+    state.profile.temporaryEffects.pesthunterPhillip = { ...(state.profile.temporaryEffects.pesthunterPhillip || {}), active: false };
+    applyComputedStatsToState(state); saveState(); render();
+  });
   document.querySelectorAll('[data-progress]').forEach(el => { el.style.width = `${el.dataset.progress}%`; });
 
   const sidebar = document.querySelector('#app .sidebar');
@@ -3509,23 +3569,16 @@ function bind() {
     const item = UPGRADES.find(x=>x.id===el.dataset.id); if (!item) return;
     const store = itemStore(item);
     const nextLevel = Math.max(0, Math.min(Number(item.max||1), currentLevel(item)+Number(el.dataset.step)));
-    if (nextLevel > 0) clearExclusivePeers(item);
-    store.levels[item.id] = nextLevel;
-    store.owned[item.id] = nextLevel > 0;
+    setEntryLevel(item, nextLevel);
     saveState(); render();
   }));
   document.querySelectorAll('[data-max]').forEach(el => el.addEventListener('click', () => {
     const item = UPGRADES.find(x=>x.id===el.dataset.max); if (!item) return;
-    clearExclusivePeers(item);
-    const store = itemStore(item);
-    store.levels[item.id]=Number(item.max||1); store.owned[item.id]=true; saveState(); render();
+    setEntryLevel(item, Number(item.max||1)); saveState(); render();
   }));
   document.querySelectorAll('[data-owned]').forEach(el => el.addEventListener('change', e => {
     const item = UPGRADES.find(x=>x.id===e.target.dataset.owned); if (!item) return;
-    if (e.target.checked) clearExclusivePeers(item);
-    const store = itemStore(item);
-    store.owned[item.id]=e.target.checked;
-    store.levels[item.id]=e.target.checked?1:0; saveState(); render();
+    setEntryLevel(item, e.target.checked ? 1 : 0); saveState(); render();
   }));
   document.querySelectorAll('[data-manual]').forEach(el => el.addEventListener('change', e => {
     const item = UPGRADES.find(x=>x.id===e.target.dataset.manual); if (!item) return;
@@ -3571,8 +3624,10 @@ render();
 // Settings writes synced values straight to storage; re-read and repaint so the
 // cards show them without a manual reload.
 window.addEventListener('farming420:state-changed', () => {
+  const nextState = loadState();
+  if (JSON.stringify(nextState) === JSON.stringify(state)) return;
   const interaction = captureInteraction();
-  state = loadState();
+  state = nextState;
   render();
   restoreInteraction(interaction);
 });

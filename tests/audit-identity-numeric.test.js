@@ -85,7 +85,7 @@ test('numeric absence and nonnumeric types never become known Pest/Chip/Hypercha
     assert.equal(temporaryModifierEffect('crop-fever',{ hyperchargePercent:value }).farmingFortune,null);
   }
   assert.equal(expectedPestsPerSpawnFromBonusPestChance(0),1);
-  assert.equal(expectedGuaranteedPestCropQuantity('fly',{ farmingFortune:0,cropFortune:0 }),1);
+  assert.equal(expectedGuaranteedPestCropQuantity('fly',{ farmingFortune:0,cropFortune:0 }),null);
   assert.equal(gardenChipEffect('hypercharge',{ level:0,rarity:'LEGENDARY' }),0);
   assert.equal(hyperchargedFarmingFortune(100,0),100);
   assert.equal(temporaryModifierEffect('crop-fever').farmingFortune,100);

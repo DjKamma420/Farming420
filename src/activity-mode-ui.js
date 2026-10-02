@@ -221,6 +221,10 @@ function openAddSetDialog() {
 
   input?.addEventListener('input', () => input.setCustomValidity(''));
   dialog.querySelector('[data-add-set-cancel]')?.addEventListener('click', () => closeAddSetDialog(dialog));
+  dialog.addEventListener('cancel', event => {
+    event.preventDefault();
+    closeAddSetDialog(dialog);
+  });
   dialog.addEventListener('close', () => {
     dialog.remove();
     const currentTrigger = trigger?.isConnected ? trigger : document.querySelector('[data-add-physical-set]');

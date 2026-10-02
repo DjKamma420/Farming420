@@ -1,3 +1,5 @@
+import { GARDEN_VACUUM_ITEMS } from './exact-farming-items.js';
+import { vacuumPhysicalStats } from './vacuum-state.js';
 import { DROP_SCALING } from './profit-engine.js';
 import { finiteNonNegative } from './finite-number.js';
 
@@ -23,25 +25,22 @@ export const ACTIVE_PEST_SPAWN = Object.freeze({
   source: SOURCE.pestCurrent,
 });
 
-export const VACUUMS = Object.freeze({
-  SKYMART_VACUUM: Object.freeze({ name: 'SkyMart Vacuum', damagePerSecond: 100, rarity: 'COMMON', tracker: false, stereoHarmony: false }),
-  SKYMART_TURBO_VACUUM: Object.freeze({ name: 'SkyMart Turbo Vacuum', damagePerSecond: 120, rarity: 'UNCOMMON', tracker: true, stereoHarmony: false }),
-  SKYMART_HYPER_VACUUM: Object.freeze({ name: 'SkyMart Hyper Vacuum', damagePerSecond: 150, rarity: 'RARE', tracker: true, stereoHarmony: false }),
-  INFINI_VACUUM: Object.freeze({ name: 'InfiniVacuum™', damagePerSecond: 200, rarity: 'EPIC', tracker: true, stereoHarmony: false }),
-  INFINI_VACUUM_HOOVERIUS: Object.freeze({ name: 'InfiniVacuum™ Hooverius', damagePerSecond: 250, rarity: 'LEGENDARY', tracker: true, stereoHarmony: true }),
-});
+export const VACUUMS = Object.freeze(Object.fromEntries(GARDEN_VACUUM_ITEMS.map(record => [record.id, Object.freeze({
+  name: record.name, damagePerPull: record.baseDamage, rarity: record.rarity,
+  tracker: record.tier > 1, stereoHarmony: record.tier === 5,
+})])));
 
 export const PESTS = Object.freeze({
-  fly: Object.freeze({ cropId: 'wheat', baseItemId: 'ENCHANTED_WHEAT', baseQuantity: 1, fortunePerExtraUnit: 35, status: 'VERIFIED' }),
-  rat: Object.freeze({ cropId: 'pumpkin', baseItemId: 'ENCHANTED_PUMPKIN', baseQuantity: 1, fortunePerExtraUnit: 35, status: 'VERIFIED' }),
-  slug: Object.freeze({ cropId: 'mushroom', baseItemId: 'ENCHANTED_MUSHROOM', baseQuantity: 1, fortunePerExtraUnit: 35, status: 'VERIFIED', notes: 'Red/Brown mushroom outcome is pest-state dependent.' }),
-  mite: Object.freeze({ cropId: 'cactus', baseItemId: 'ENCHANTED_CACTUS_GREEN', baseQuantity: 2, fortunePerExtraUnit: 17.5, status: 'VERIFIED' }),
-  mosquito: Object.freeze({ cropId: 'sugar-cane', baseItemId: 'ENCHANTED_SUGAR', baseQuantity: 2, fortunePerExtraUnit: 17.5, status: 'VERIFIED' }),
-  moth: Object.freeze({ cropId: 'cocoa-beans', baseItemId: 'ENCHANTED_COCOA', baseQuantity: 3, fortunePerExtraUnit: 12, status: 'VERIFIED' }),
-  beetle: Object.freeze({ cropId: 'nether-wart', baseItemId: 'ENCHANTED_NETHER_STALK', baseQuantity: 3, fortunePerExtraUnit: 12, status: 'VERIFIED' }),
-  cricket: Object.freeze({ cropId: 'carrot', baseItemId: 'ENCHANTED_CARROT', baseQuantity: 3, fortunePerExtraUnit: 10.5, status: 'VERIFIED' }),
-  locust: Object.freeze({ cropId: 'potato', baseItemId: 'ENCHANTED_POTATO', baseQuantity: 3, fortunePerExtraUnit: 10.5, status: 'VERIFIED' }),
-  earthworm: Object.freeze({ cropId: 'melon', baseItemId: 'ENCHANTED_MELON', baseQuantity: 5, fortunePerExtraUnit: 7, status: 'VERIFIED' }),
+  fly: Object.freeze({ cropId: 'wheat', baseItemId: 'ENCHANTED_WHEAT', baseQuantity: 1, fortunePerExtraUnit: null, historicalFortunePerExtraUnit: 35, status: 'VERIFY', sourceDate: '2024-11-13', confidence: 'HISTORICAL_ALPHA', source: SOURCE.pestWaresDay3 }),
+  rat: Object.freeze({ cropId: 'pumpkin', baseItemId: 'ENCHANTED_PUMPKIN', baseQuantity: 1, fortunePerExtraUnit: null, historicalFortunePerExtraUnit: 35, status: 'VERIFY', sourceDate: '2024-11-13', confidence: 'HISTORICAL_ALPHA', source: SOURCE.pestWaresDay3 }),
+  slug: Object.freeze({ cropId: 'mushroom', baseItemId: 'ENCHANTED_MUSHROOM', baseQuantity: 1, fortunePerExtraUnit: null, historicalFortunePerExtraUnit: 35, status: 'VERIFY', sourceDate: '2024-11-13', confidence: 'HISTORICAL_ALPHA', source: SOURCE.pestWaresDay3, notes: 'Red/Brown mushroom outcome is pest-state dependent.' }),
+  mite: Object.freeze({ cropId: 'cactus', baseItemId: 'ENCHANTED_CACTUS_GREEN', baseQuantity: 2, fortunePerExtraUnit: null, historicalFortunePerExtraUnit: 17.5, status: 'VERIFY', sourceDate: '2024-11-13', confidence: 'HISTORICAL_ALPHA', source: SOURCE.pestWaresDay3 }),
+  mosquito: Object.freeze({ cropId: 'sugar-cane', baseItemId: 'ENCHANTED_SUGAR', baseQuantity: 2, fortunePerExtraUnit: null, historicalFortunePerExtraUnit: 17.5, status: 'VERIFY', sourceDate: '2024-11-13', confidence: 'HISTORICAL_ALPHA', source: SOURCE.pestWaresDay3 }),
+  moth: Object.freeze({ cropId: 'cocoa-beans', baseItemId: 'ENCHANTED_COCOA', baseQuantity: 3, fortunePerExtraUnit: null, historicalFortunePerExtraUnit: 12, status: 'VERIFY', sourceDate: '2024-11-13', confidence: 'HISTORICAL_ALPHA', source: SOURCE.pestWaresDay3 }),
+  beetle: Object.freeze({ cropId: 'nether-wart', baseItemId: 'ENCHANTED_NETHER_STALK', baseQuantity: 3, fortunePerExtraUnit: null, historicalFortunePerExtraUnit: 12, status: 'VERIFY', sourceDate: '2024-11-13', confidence: 'HISTORICAL_ALPHA', source: SOURCE.pestWaresDay3 }),
+  cricket: Object.freeze({ cropId: 'carrot', baseItemId: 'ENCHANTED_CARROT', baseQuantity: 3, fortunePerExtraUnit: null, historicalFortunePerExtraUnit: 10.5, status: 'VERIFY', sourceDate: '2024-11-13', confidence: 'HISTORICAL_ALPHA', source: SOURCE.pestWaresDay3 }),
+  locust: Object.freeze({ cropId: 'potato', baseItemId: 'ENCHANTED_POTATO', baseQuantity: 3, fortunePerExtraUnit: null, historicalFortunePerExtraUnit: 10.5, status: 'VERIFY', sourceDate: '2024-11-13', confidence: 'HISTORICAL_ALPHA', source: SOURCE.pestWaresDay3 }),
+  earthworm: Object.freeze({ cropId: 'melon', baseItemId: 'ENCHANTED_MELON', baseQuantity: 5, fortunePerExtraUnit: null, historicalFortunePerExtraUnit: 7, status: 'VERIFY', sourceDate: '2024-11-13', confidence: 'HISTORICAL_ALPHA', source: SOURCE.pestWaresDay3 }),
   dragonfly: Object.freeze({ cropId: 'sunflower', baseItemId: 'ENCHANTED_SUNFLOWER', baseQuantity: 2, fortunePerExtraUnit: null, status: 'VERIFY', notes: 'Greenhouse pest exists; exact live scaling divisor still needs a first-party/current table.' }),
   firefly: Object.freeze({ cropId: 'moonflower', baseItemId: 'ENCHANTED_MOONFLOWER', baseQuantity: 2, fortunePerExtraUnit: null, status: 'VERIFY', notes: 'Greenhouse pest exists; exact live scaling divisor still needs a first-party/current table.' }),
   'praying-mantis': Object.freeze({ cropId: 'wild-rose', baseItemId: 'ENCHANTED_WILD_ROSE', baseQuantity: 2, fortunePerExtraUnit: null, status: 'VERIFY', notes: 'Greenhouse pest exists; exact live scaling divisor still needs a first-party/current table.' }),
@@ -79,9 +78,8 @@ export function activePestSpawnInput({
 }
 
 /**
- * Current guaranteed crop-drop expectation from a normal Pest.
- * Official Day-3 balancing defined base + Fortune/divisor and the current Pest
- * page still documents Farming + crop-specific Fortune as the relevant stats.
+ * Guaranteed crop-drop expectation requires a verified current divisor.
+ * The historical 2024 Alpha divisors are retained as evidence, not live formulas.
  */
 export function expectedGuaranteedPestCropQuantity(pestId, { farmingFortune, cropFortune } = {}) {
   const pest = PESTS[pestId];
@@ -140,12 +138,17 @@ export function feastPestRareCropDropInput(pestId, unitValueCoins = null) {
   };
 }
 
-export function idealVacuumKillSeconds(vacuumId, pestHealth = 600) {
-  const vacuum = VACUUMS[vacuumId];
+/** Ideal damage-unit count only. Travel, latency and pull frequency are unknown. */
+export function idealVacuumPullCount(vacuumOrBucket, pestHealth = 600) {
+  const bucket = typeof vacuumOrBucket === 'string' ? { skyblockId: vacuumOrBucket } : vacuumOrBucket;
+  const stats = vacuumPhysicalStats(bucket);
   const health = finiteNonNegative(pestHealth);
-  if (!vacuum || health === null) return null;
-  return health / vacuum.damagePerSecond;
+  if (!stats.selected || health === null || !(stats.damage > 0)) return null;
+  return Math.ceil(health / stats.damage);
 }
+
+/** @deprecated No sourced damage-unit cadence or real handling duration exists. */
+export function idealVacuumKillSeconds() { return null; }
 
 export function pestDataCoverage() {
   const normal = Object.entries(PESTS).filter(([id]) => id !== 'field-mouse');

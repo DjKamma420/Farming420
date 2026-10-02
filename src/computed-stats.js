@@ -4,6 +4,7 @@ import { CROPS, UPGRADES } from './data.js';
 import { toolKeyForCropId } from './migrations.js';
 import { mooshroomCowContribution } from './mooshroom-cow.js';
 import { roseDragonContribution } from './rose-dragon.js';
+import { gardenChipForEntry, gardenChipEffect, phillipBuffEffect } from './farming-modifiers-data.js';
 import { pestSpawnPetContribution } from './pest-spawn-pets.js';
 import { FARMING_TOOL_REFORGE_ENTRY_IDS, selectedFarmingToolReforge, VACUUM_REFORGE_EFFECT_ENTRY_IDS, selectedVacuumReforge } from './item-capabilities.js';
 import {
@@ -179,7 +180,17 @@ function contributionFor(state, item, cropId, mode = null, activeContextScope = 
   }
 
   if (item.status !== 'ACTIVE') {
+    if (item.id === 'temporary-buff-pesthunter-phillip-buff') {
+      const effect = phillipBuffEffect(profile.temporaryEffects?.pesthunterPhillip);
+      return { axis, value: effect.farmingFortune ?? 0, incomplete: !effect.complete, id: item.id, reason: effect.reasons.join('; ') };
+    }
     return { axis, value: 0, incomplete: true, id: item.id, reason: 'not verified' };
+  }
+
+  const chip = gardenChipForEntry(item);
+  if (chip && chip.id !== 'hypercharge') {
+    const value = gardenChipEffect(chip.id, { level, rarity: profile.chipRarities?.[chip.id] || 'LEGENDARY' });
+    return { axis, value: value ?? 0, incomplete: value === null, id: item.id, reason: 'chip level/rarity curve unavailable' };
   }
 
   if (item.id === 'armor-enchant-sunset-v-day-overbloom') {

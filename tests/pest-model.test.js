@@ -132,7 +132,7 @@ test('a bad pest count is no answer, not zero Fortune', () => {
     assert.equal(philipFortuneFor(bad), null, String(bad));
   }
   // '' coerces to 0, which is a real answer: spending nothing buys nothing.
-  assert.equal(philipFortuneFor('').fortune, 0);
+  assert.equal(philipFortuneFor(''), null);
 });
 
 test('the superseded cap is kept visible rather than dropped', () => {
@@ -143,7 +143,8 @@ test('the superseded cap is kept visible rather than dropped', () => {
   assert.equal(older.pestCap, 40);
   assert.equal(older.maxFortune, 200);
   assert.ok(older.source, 'a superseded figure without its source is folklore');
-  assert.ok(PESTHUNTER_PHILIP.maxFortune > older.maxFortune);
+  assert.equal(PESTHUNTER_PHILIP.maxFortune, 200);
+  assert.equal(PESTHUNTER_PHILIP.confidence,'ALPHA_ONLY');
   assert.match(read('pest-analysis-ui.js'), /supersededSnapshot/);
 });
 

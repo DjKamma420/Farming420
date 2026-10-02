@@ -8,7 +8,15 @@
  * Reforges such as Mossy never change the identity, so every phase renders the
  * same physical item model.
  */
+import { knownSkyblockHeadTexture } from './skull-art.js';
+
 export const EXACT_SETUP_ITEM_ART = Object.freeze({
+  // Reuse the canonical physical equipment skins instead of preferring a
+  // third-party rendered necklace icon in one phase and a head in another.
+  ...Object.fromEntries(['NECKLACE','CLOAK','BELT','GLOVES'].map(slot => {
+    const id = `PESTHUNTERS_${slot}`;
+    return [id, Object.freeze({ kind: 'head', textureId: knownSkyblockHeadTexture(id) })];
+  })),
   // Farming pet heads from current NEU item NBT, verified 2026-09-28
   // against commit 392fd5db2afc4f5020eb9bd379d140a1f6df2011.
   BEE: Object.freeze({ kind: 'head', textureId: '9c72c132073ec5a058218d6fbfb4a9970652ced9214d53f4f614b3902fd99a7a' }),
@@ -78,6 +86,6 @@ export const EXACT_SETUP_ITEM_ART = Object.freeze({
 });
 
 export function exactSetupItemArt(skyblockId) {
-  const id = String(skyblockId || '').trim().toUpperCase();
+  const id = String(skyblockId || '').trim().toUpperCase().replace(/^PESTHUNTER_/, 'PESTHUNTERS_');
   return id ? EXACT_SETUP_ITEM_ART[id] || null : null;
 }
