@@ -1,0 +1,216 @@
+{
+  "auditedSource": "bda761d81deb0be37af9fad31f5469efb992df82",
+  "scope": "Ten chip families compared at Legendary cap. No live correctness claim from matching source duplicates.",
+  "rows": [
+    {
+      "chipId": "vermin-vaporizer",
+      "lower": {
+        "axis": "bonusPestChance",
+        "status": "ACTIVE",
+        "legendaryMax": 100,
+        "source": "https://hypixel-skyblock.fandom.com/wiki/Bonus_Pest_Chance"
+      },
+      "visible": {
+        "id": "garden-chip-vermin-vaporizer-chip",
+        "status": "ACTIVE",
+        "max": 20,
+        "stepGain": 5,
+        "displayedProduct": 100,
+        "notes": "Legendary in-menu scaling: +5 Bonus Pest Chance per level; max +100 BPC.",
+        "source": "https://hypixelskyblock.minecraft.wiki/w/Garden_Chips"
+      },
+      "comparison": "MATCH",
+      "confidenceConsistent": true,
+      "note": "Internal agreement alone does not verify live mechanics."
+    },
+    {
+      "chipId": "synthesis",
+      "lower": {
+        "axis": "cropAnalyzerBaseCopperPercent",
+        "status": "ACTIVE",
+        "legendaryMax": 40,
+        "source": "https://hypixel-skyblock.fandom.com/wiki/Garden_Chips"
+      },
+      "visible": {
+        "id": "garden-chip-synthesis-chip",
+        "status": "ACTIVE",
+        "max": 20,
+        "stepGain": 2,
+        "displayedProduct": 40,
+        "notes": "Legendary in-menu scaling: +2% base Copper rewards from the Crop Analyzer per level.",
+        "source": "https://hypixelskyblock.minecraft.wiki/w/Garden_Chips"
+      },
+      "comparison": "MATCH",
+      "confidenceConsistent": true,
+      "note": "Internal agreement alone does not verify live mechanics."
+    },
+    {
+      "chipId": "sowledge",
+      "lower": {
+        "axis": "farmingWisdom",
+        "status": "ACTIVE",
+        "legendaryMax": 30,
+        "source": "https://hypixel-skyblock.fandom.com/wiki/Garden_Chips"
+      },
+      "visible": {
+        "id": "garden-chip-sowledge-chip",
+        "status": "ACTIVE",
+        "max": 20,
+        "stepGain": 1.5,
+        "displayedProduct": 30,
+        "notes": "Legendary in-menu scaling: +1.5 Farming Wisdom per level; max +30.",
+        "source": "https://hypixelskyblock.minecraft.wiki/w/Garden_Chips"
+      },
+      "comparison": "MATCH",
+      "confidenceConsistent": true,
+      "note": "Internal agreement alone does not verify live mechanics."
+    },
+    {
+      "chipId": "mechamind",
+      "lower": {
+        "axis": "farmingToolXpPercent",
+        "status": "ACTIVE",
+        "legendaryMax": 50,
+        "source": "https://hypixel-skyblock.fandom.com/wiki/Garden_Chips"
+      },
+      "visible": {
+        "id": "garden-chip-mechamind-chip",
+        "status": "ACTIVE",
+        "max": 20,
+        "stepGain": 2.5,
+        "displayedProduct": 50,
+        "notes": "Legendary in-menu scaling: +2.5% Farming Tool experience per level.",
+        "source": "https://hypixelskyblock.minecraft.wiki/w/Garden_Chips"
+      },
+      "comparison": "MATCH",
+      "confidenceConsistent": true,
+      "note": "Internal agreement alone does not verify live mechanics."
+    },
+    {
+      "chipId": "hypercharge",
+      "lower": {
+        "axis": "temporaryFarmingFortuneStrengthPercent",
+        "status": "ACTIVE",
+        "legendaryMax": 100,
+        "source": "https://hypixelskyblock.minecraft.wiki/w/Garden_Chips"
+      },
+      "visible": {
+        "id": "garden-chip-hypercharge-chip-next-level",
+        "status": "ACTIVE",
+        "max": 20,
+        "stepGain": 0,
+        "displayedProduct": 0,
+        "notes": "Special formula: marginal value equals active eligible temporary base FF × next chip percentage step.",
+        "source": "https://hypixelskyblock.minecraft.wiki/w/Garden_Chips"
+      },
+      "comparison": "SPECIAL_FORMULA",
+      "confidenceConsistent": true,
+      "note": "Percentage amplification is not comparable to a flat Fortune step."
+    },
+    {
+      "chipId": "evergreen",
+      "lower": {
+        "axis": "greenhouseBaseCropYieldPercent",
+        "status": "ACTIVE",
+        "legendaryMax": 60,
+        "source": "https://hypixel-skyblock.fandom.com/wiki/Garden_Chips"
+      },
+      "visible": {
+        "id": "garden-chip-evergreen-chip",
+        "status": "ACTIVE",
+        "max": 20,
+        "stepGain": 3,
+        "displayedProduct": 60,
+        "notes": "Legendary in-menu scaling: +3% base crop harvests from crops and mutations in the Greenhouse per level.",
+        "source": "https://hypixelskyblock.minecraft.wiki/w/Garden_Chips"
+      },
+      "comparison": "MATCH",
+      "confidenceConsistent": true,
+      "note": "Internal agreement alone does not verify live mechanics."
+    },
+    {
+      "chipId": "overdrive",
+      "lower": {
+        "axis": "activeContestCropFortune",
+        "status": "ACTIVE",
+        "legendaryMax": 140,
+        "source": "https://hypixel-skyblock.fandom.com/wiki/Garden_Chips"
+      },
+      "visible": {
+        "id": "garden-chip-overdrive-chip",
+        "status": "ACTIVE",
+        "max": 20,
+        "stepGain": 7,
+        "displayedProduct": 140,
+        "notes": "Legendary in-menu scaling: +7 Farming Fortune per level for crops active in the current Jacob's Contest; max level 20. Use manual override for Rare/Epic scaling.",
+        "source": "https://hypixelskyblock.minecraft.wiki/w/Garden_Chips"
+      },
+      "comparison": "MATCH",
+      "confidenceConsistent": true,
+      "note": "Internal agreement alone does not verify live mechanics."
+    },
+    {
+      "chipId": "cropshot",
+      "lower": {
+        "axis": "farmingFortune",
+        "status": "VERIFY_0_27",
+        "legendaryMax": null,
+        "source": "https://hypixel.net/threads/random-farming-nerfs-not-mentioned-in-patch-notes.6128320/"
+      },
+      "visible": {
+        "id": "garden-chip-cropshot-chip",
+        "status": "ACTIVE",
+        "max": 20,
+        "stepGain": 5,
+        "displayedProduct": 100,
+        "notes": "At Legendary: +5 FF per chip level, max +100. Adjust manual delta if current rarity uses +3/+4 per level.",
+        "source": "https://hypixelskyblock.minecraft.wiki/w/Garden_Chips"
+      },
+      "comparison": "UNRESOLVED",
+      "confidenceConsistent": false,
+      "note": "This is a confidence contradiction; neither old +100 nor reported +60 is independently accepted here."
+    },
+    {
+      "chipId": "quickdraw",
+      "lower": {
+        "axis": "visitorArrivalTimeReductionPercent",
+        "status": "ACTIVE",
+        "legendaryMax": 50,
+        "source": "https://hypixel-skyblock.fandom.com/wiki/Garden_Chips"
+      },
+      "visible": {
+        "id": "garden-chip-quickdraw-chip",
+        "status": "ACTIVE",
+        "max": 20,
+        "stepGain": 2.5,
+        "displayedProduct": 50,
+        "notes": "Legendary in-menu scaling: -2.5% Visitor cooldown per level. Visitor-rate gain is non-linear and is calculated from current cooldown reduction.",
+        "source": "https://hypixelskyblock.minecraft.wiki/w/Garden_Chips"
+      },
+      "comparison": "MATCH",
+      "confidenceConsistent": true,
+      "note": "Internal agreement alone does not verify live mechanics."
+    },
+    {
+      "chipId": "rarefinder",
+      "lower": {
+        "axis": "overbloom",
+        "status": "ACTIVE",
+        "legendaryMax": 60,
+        "source": "https://hypixel-skyblock.fandom.com/wiki/Garden_Chips"
+      },
+      "visible": {
+        "id": "garden-chip-rarefinder-chip",
+        "status": "ACTIVE",
+        "max": 20,
+        "stepGain": 2.5,
+        "displayedProduct": 50,
+        "notes": "0.26.1 max is +50 Overbloom. Adjust marginal step for current rarity.",
+        "source": "https://hypixelskyblock.minecraft.wiki/w/Garden_Chips"
+      },
+      "comparison": "MISMATCH",
+      "confidenceConsistent": true,
+      "note": "Internal agreement alone does not verify live mechanics."
+    }
+  ]
+}
