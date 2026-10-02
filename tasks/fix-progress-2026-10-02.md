@@ -5,7 +5,7 @@ Branch: `fix/audit-2026-10-02`. PR: [#301](https://github.com/DjKamma420/Farming
 Application baseline: `bda761d81deb0be37af9fad31f5469efb992df82`.
 Audit baseline: `e666096b55d1a2a887374feb7c7cd743e8cbe111`.
 Last secured implementation commit: `fb5a1a834081d54a0108a77648e50b16b6ebf0fb`.
-Last secured artifact/gate checkpoint: `b45d67413142ebd71c71cca754b6b087c094c991`.
+Last secured artifact/gate checkpoint: `0d2a208d5ecd100508d50ce3789d61e094fb2979` (Validate PASS; final browser WebKit FAIL).
 This documentation checkpoint is a descendant; resolve its exact secured SHA from the branch ref or `git rev-parse HEAD`. A file cannot contain its own Git commit hash. Final-checkpoint run IDs/results are recorded on PR #301 and queryable by its exact head SHA.
 Last available local checkpoint: `1f0e67888e30ca910eecddfde49838fc0fc7c31f`, tree equal to remote `36e0767`. Later connector commits have not been materialized locally.
 
@@ -40,7 +40,7 @@ Statuses below are supported by the fb5a1a8 acceptance; final-checkpoint repeat 
 | 15 | Numerical provenance/incompleteness | blocked (safeguards tested) | Historical Pest divisors and unsupported pet/shard curves stay visible, incomplete and unranked; missing live lore is not fabricated. |
 | 16 | Canonical art ownership | tested | Tater/Pesthunter/Clover identity preserved; offline fallback has no broken-icon leaks or repeated retries. |
 | 17 | Validated single Pages publisher | blocked (workflow tested) | Immutable validated main SHA, stale-completion guard and stamped complete artifact tested at b45d674; account setting/deployed marker requires access and release authorization. |
-| 18 | Honest browser/sweep gates | tested | Actual main scroll/open overlays/action outcomes; runtime errors, worker failures/budgets and exact mutation drift propagate nonzero exits. |
+| 18 | Honest browser/sweep gates | in progress (earlier strict acceptance tested) | Actual main scroll/open overlays/action outcomes; runtime errors, worker failures/budgets and exact mutation drift propagate nonzero exits. |
 
 ## Executed acceptance
 
@@ -203,3 +203,14 @@ These preserve the implementation chain and failed-run diagnosis. Their “pendi
 - Applied through the connector: existing Strength/Garden/level UI reads reuse finite-number.js so boolean/blank/array inputs cannot look known. No new mechanics or second data model.
 - Current error/interruption: local environment offline; native startup and updated market-error classification need remote validation. All previous CI jobs completed; no duplicate or hanging process rerun. Changes in this checkpoint have **not** been tested locally.
 - Next executable step: secure this connector checkpoint, inspect new exact-head Validate and three-engine runs; if startup still fails, diagnose its printed wall/DOM evidence instead of declaring success. Finish full final-head gates and ledger/PR update; no merge/deploy.
+
+## WebKit access-control diagnostic checkpoint (incomplete)
+
+- Exact head 0d2a208: Validate 36957427909 / 110683418760 PASS, every step reviewed; 1,379 Node + 8 Python, immutable marker/52 entrypoints/466 references, startup and positive/negative strict gates. Browser 36957427906: Chromium 110683418780 SUCCESS, Firefox 110683418879 SUCCESS (194 PASS / 0 FAIL / 8 NOTE), WebKit 110683418662 FAILURE (192 PASS / 2 FAIL / 8 NOTE / zero BLOCKED).
+- Both WebKit failures are runtime-page-errors at 667/800 landscape containing “Fetch API cannot load … due to access control checks” for SkyCofl market-history endpoints. All actual interaction/data cases pass. This run is **not** relabeled green. [Failure evidence](../docs/audits/fix-browser-0d2a208-2026-10-02.json). Preceding b45d674 Browser 36957189270 jobs all completed successfully.
+- Probe now retains requestfailed URL/reason and all raw pageerror messages. Only the exact WebKit access-control signature at HTTPS sky.coflnet.com history paths, correlated to the actual failed request, becomes an explicit market-transport note. Local/other-owner/non-history/uncorrelated messages and all real exceptions remain FAIL.
+- Added four pure classification regressions, a market CORS-rejection regression proving null quote/no cache/UNKNOWN acquisition, and an actual injected JavaScript exception in **each engine** whose same acceptance function must return 1. New changes parsed in V8; no Node or browser acceptance claimed before new CI.
+- Changed files: scripts/browser-error-classification.mjs, scripts/audit-fix-browser.mjs, tests/browser-error-classification.test.js, tests/market-average-prices.test.js, this ledger and failure evidence. No application code or game mechanics changed.
+- Current CI/process state: all 0d2a208/b45d674 jobs completed, no live local process and no same-commit retry. Local environment remains offline.
+- Current interruption: strict transport correlation needs exact-head validation; unmatched failures will remain visible, not be suppressed.
+- Next executable step: inspect the newly saved checkpoint's existing Validate/browser run IDs and full requestfailed evidence; require actual injected-error rejection and all UI/data cases. If transport cannot be correlated, retain it as an external block rather than widen the exception.

@@ -1,6 +1,7 @@
 import { mkdir, writeFile, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { DATA_SCHEMA_VERSION, STORAGE_KEY } from '../src/config.js';
+import { classifyBrowserErrors, probeExitCode } from './browser-error-classification.mjs';
 
 const engines = await import(process.env.PLAYWRIGHT_MODULE);
 const engine = process.env.AUDIT_BROWSER || 'chromium';
@@ -17,6 +18,20 @@ const seed = {
     levels: {}, owned: {}, costs: {}, manualGain: {}, toolProgress: {}, cropProgress: {} },
 };
 const browser = await engines[engine].launch();
+const captureErrors = page => {
+  const errors = [], requestFailures = [];
+  page.on('pageerror', error => errors.push(String(error)));
+  page.on('requestfailed', request => requestFailures.push({url:request.url(),error:request.failure()?.errorText || 'unspecified transport failure'}));
+  return { errors, requestFailures };
+};
+const runtimeCase = (name, capture) => {
+  const result = classifyBrowserErrors(engine, capture.errors, capture.requestFailures);
+  add(name, 'runtime-page-errors', result.runtimeErrors.length ? 'FAIL' : 'PASS', {
+    ...result, rawPageErrors:capture.errors, requestFailures:capture.requestFailures,
+  });
+  return result.marketTransportNotes;
+};
+
 const navigate = async (page,id) => {
   const toggle=page.locator('[data-nav-toggle]');
   if(await toggle.getAttribute('aria-expanded')!=='true') await toggle.tap();
@@ -59,13 +74,25 @@ const wheelToLast = async page => {
   return geometry(page);
 };
 try {
+  {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    const capture = captureErrors(page);
+    await page.evaluate(() => setTimeout(() => { throw new Error('AUDIT_INJECTED_RUNTIME_ERROR'); }, 0));
+    await page.waitForTimeout(100);
+    const result = classifyBrowserErrors(engine, capture.errors, capture.requestFailures);
+    const acceptanceExit = probeExitCode([{status:result.runtimeErrors.length?'FAIL':'PASS'}]);
+    add('negative-control', 'runtime-error-negative-control',
+      result.runtimeErrors.some(message=>message.includes('AUDIT_INJECTED_RUNTIME_ERROR')) && acceptanceExit===1 ? 'PASS':'FAIL',
+      {...result,acceptanceExit,rawPageErrors:capture.errors});
+    await context.close();
+  }
   for (const [name, width, height] of [['320-portrait',320,568],['360-portrait',360,640],['375-portrait',375,667],['390-portrait',390,844],['412-portrait',412,915],['568-landscape',568,320],['667-landscape',667,375],['800-landscape',800,360]]) {
     const context = await browser.newContext({ viewport: { width, height }, hasTouch: true });
     const page = await context.newPage();
     page.setDefaultTimeout(8000);
-    const errors = [], httpErrors = [];
-    page.on('pageerror', e => errors.push(String(e)));
-    page.on('response', r => { if (r.status() >= 400) httpErrors.push({ status: r.status(), path: new URL(r.url()).pathname }); });
+    const capture = captureErrors(page), errors = capture.errors, httpErrors = [];
+    page.on('response', r => { if (r.status() >= 400) httpErrors.push({ status:r.status(),url:r.url(),path:new URL(r.url()).pathname }); });
     await instrument(page,JSON.stringify(seed));
     try {
       await page.goto('http://127.0.0.1:4173', { waitUntil: 'domcontentloaded' });
@@ -274,8 +301,9 @@ try {
       await page.waitForTimeout(2200);
       const touchLate=await page.locator('main').evaluate(e=>e.scrollTop);
       add(name,'touch-intent-controlled-late-mutation',Math.abs(touch.before-touch.manual)<10?'BLOCKED':Math.abs(touchLate-touch.manual)<=3?'PASS':'FAIL',{...touch,late:touchLate,syntheticIntentAndControlledScroll:true,physicalDevice:false});
-      add(name, 'runtime-page-errors', errors.length ? 'FAIL' : 'PASS', errors);
-      add(name, 'external-http-errors', httpErrors.length ? 'NOTE' : 'PASS', [...new Map(httpErrors.map(r => [r.status + r.path, r])).values()]);
+      const marketTransportNotes = runtimeCase(name, capture);
+      const notes = [...httpErrors,...marketTransportNotes];
+      add(name, 'external-http-errors', notes.length ? 'NOTE' : 'PASS', [...new Map(notes.map(r => [String(r.status || r.kind) + r.url, r])).values()]);
     } catch (e) {
       const state = await page.evaluate(key => ({
         page: JSON.parse(localStorage.getItem(key) || '{}').page,
@@ -297,7 +325,7 @@ try {
     const fixture={...seed,profile:{...seed.profile,setups:{modelVersion:1,activeId:'normal',list:[{id:'normal',name:'FF (Farming Fortune) Set',slots}]}}};
     const context=await browser.newContext({viewport:{width:320,height:568},hasTouch:true});
     const page=await context.newPage();
-    const errors=[];page.on('pageerror',e=>errors.push(String(e)));
+    const capture=captureErrors(page),errors=capture.errors;
     let imageAttempts=0;
     await page.route('**/*',route=>{
       const request=route.request();
@@ -327,7 +355,8 @@ try {
         return {mutations,rendered,portraits:portraits.map(({slot,id,portrait})=>({slot,id,actual:portrait?.dataset.skyblockItemId,identity:portrait?.dataset.renderedItemArt,filled:!!portrait?.querySelector('.official-item-art,.skull-art,.item-art-fallback'),broken:[...portrait?.querySelectorAll('img')||[]].some(img=>img.complete&&img.naturalWidth===0)}))};
       },identities);
       add(name,'tater-pesthunter-clover-truthful-stable-fallback',art.mutations===0&&art.portraits.every(p=>p.actual===p.id&&p.filled&&!p.broken)&&imageAttempts===attemptsBefore?'PASS':'FAIL',{...art,attemptsBefore,attemptsAfter:imageAttempts,externalImages:'deliberately aborted; no real asset availability claim'});
-      add(name,'runtime-page-errors',errors.length?'FAIL':'PASS',errors);
+      const marketTransportNotes=runtimeCase(name,capture);
+      if(marketTransportNotes.length)add(name,'external-market-access-control','NOTE',marketTransportNotes);
     }catch(error){add(name,'probe-execution','BLOCKED',{message:String(error),errors});}
     finally{await context.close();}
   }
@@ -338,7 +367,7 @@ try {
     const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true});
     const page=await context.newPage();
     page.setDefaultTimeout(8000);
-    const errors=[];page.on('pageerror',e=>errors.push(String(e)));
+    const capture=captureErrors(page),errors=capture.errors;
     await instrument(page,original);
     try {
       await page.goto('http://127.0.0.1:4173',{waitUntil:'domcontentloaded'});
@@ -377,11 +406,12 @@ try {
         const status=await page.locator('[data-settings-status]').textContent();
         add(name,'valid-current-ui-restore',restored.profile.name==='Disposable restored backup'&&/Backup restored/i.test(status)?'PASS':'FAIL',{name:restored.profile.name,status});
       }
-      add(name,'runtime-page-errors',errors.length?'FAIL':'PASS',errors);
+      const marketTransportNotes=runtimeCase(name,capture);
+      if(marketTransportNotes.length)add(name,'external-market-access-control','NOTE',marketTransportNotes);
     }catch(error){add(name,'probe-execution','BLOCKED',{message:String(error),errors});}
     finally{await context.close();}
   }
 } finally { await browser.close(); }
 const counts = Object.fromEntries(['PASS', 'FAIL', 'NOTE', 'BLOCKED'].map(s => [s, cases.filter(c => c.status === s).length]));
 console.log(JSON.stringify({ engine, counts, cases }, null, 2));
-process.exitCode = counts.FAIL || counts.BLOCKED ? 1 : 0;
+process.exitCode = probeExitCode(cases);

@@ -133,3 +133,18 @@ test('rejected Rarefinder market history stays unknown and cannot become a free 
     assert.match(cost.reason,/90-day market average/);
   });
 });
+
+test('CORS transport rejection stays unknown and never caches a free market price', async () => {
+  await withStorage(async map => {
+    const result = await loadMarketAverage(
+      {market:MARKET_KIND.AUCTION_HOUSE,itemTag:'RAREFINDER_CHIP',side:MARKET_SIDE.ACQUIRE},
+      {fetchImpl:async()=>{throw new TypeError('Blocked by access control checks');},nowMs:NOW},
+    );
+    assert.equal(result.quote,null);
+    assert.match(result.error,/access control checks/);
+    assert.equal(map.size,0);
+    const cost=resolveUpgradeCost({costs:{'garden-chip-rarefinder-chip':1}},'garden-chip-rarefinder-chip');
+    assert.equal(cost.origin,'unknown');
+    assert.equal(cost.acquisitionMode,'UNKNOWN');
+  });
+});
