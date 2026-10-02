@@ -1,3 +1,4 @@
+import { applyFarmingToolReforge, selectedFarmingToolReforge } from './item-capabilities.js';
 import { readStoredAppState, writeStoredAppState } from './app-storage.js';
 import { CROPS } from './data.js';
 import { STORAGE_KEY } from './config.js';
@@ -267,12 +268,7 @@ function recommendation(cropId, goal) {
 }
 
 function selectedReforge(state, toolKey) {
-  const explicit = state?.profile?.toolReforges?.[toolKey];
-  if (REFORGES.some(reforge => reforge.id === explicit)) return explicit;
-  const bucket = state?.profile?.toolProgress?.[toolKey];
-  if (Number(bucket?.levels?.['tool-reforge-bountiful-reforge']) > 0 || bucket?.owned?.['tool-reforge-bountiful-reforge']) return 'bountiful';
-  if (Number(bucket?.levels?.['tool-reforge-blessed-reforge']) > 0 || bucket?.owned?.['tool-reforge-blessed-reforge']) return 'blessed';
-  return null;
+  return selectedFarmingToolReforge(state?.profile?.toolProgress?.[toolKey], state?.profile?.toolReforges?.[toolKey]);
 }
 
 function storeReforge(reforgeId) {
@@ -289,17 +285,8 @@ function storeReforge(reforgeId) {
   const bucket = state.profile.toolProgress[key];
   bucket.levels ||= {};
   bucket.owned ||= {};
-  for (const id of ['tool-reforge-bountiful-reforge', 'tool-reforge-blessed-reforge']) {
-    delete bucket.levels[id];
-    delete bucket.owned[id];
-  }
-  const scoredId = reforgeId === 'bountiful'
-    ? 'tool-reforge-bountiful-reforge'
-    : reforgeId === 'blessed' ? 'tool-reforge-blessed-reforge' : null;
-  if (scoredId) {
-    bucket.levels[scoredId] = 1;
-    bucket.owned[scoredId] = true;
-  }
+  applyFarmingToolReforge(bucket, reforgeId);
+  delete state.profile.toolReforges[key];
   writeState(state);
   window.dispatchEvent(new Event('farming420:state-changed'));
 }

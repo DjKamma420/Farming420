@@ -1,4 +1,5 @@
 import { DROP_SCALING } from './profit-engine.js';
+import { finiteNonNegative } from './finite-number.js';
 
 export const PEST_MECHANICS_DATA_VERSION = 1;
 
@@ -49,8 +50,8 @@ export const PESTS = Object.freeze({
 
 /** Expected pests from a successful spawn event. */
 export function expectedPestsPerSpawnFromBonusPestChance(bonusPestChance) {
-  const value = Number(bonusPestChance);
-  if (!Number.isFinite(value) || value < 0) return null;
+  const value = finiteNonNegative(bonusPestChance);
+  if (value === null) return null;
   return 1 + Math.floor(value / 100) + (value % 100) / 100;
 }
 
@@ -66,9 +67,9 @@ export function activePestSpawnInput({
   spawnOpportunitiesPerBreak = 1,
 } = {}) {
   const pestsPerSpawnExpected = expectedPestsPerSpawnFromBonusPestChance(bonusPestChance);
-  const multiplier = Number(spawnProbabilityMultiplier);
+  const multiplier = finiteNonNegative(spawnProbabilityMultiplier);
   return {
-    spawnProbability: Number.isFinite(multiplier) && multiplier >= 0
+    spawnProbability: multiplier !== null
       ? ACTIVE_PEST_SPAWN.baseProbabilityPerCropBreak * multiplier
       : null,
     spawnOpportunitiesPerBreak,
@@ -85,9 +86,9 @@ export function activePestSpawnInput({
 export function expectedGuaranteedPestCropQuantity(pestId, { farmingFortune, cropFortune } = {}) {
   const pest = PESTS[pestId];
   if (!pest || pest.status !== 'VERIFIED' || !Number.isFinite(pest.fortunePerExtraUnit)) return null;
-  const global = Number(farmingFortune);
-  const crop = Number(cropFortune);
-  if (!Number.isFinite(global) || global < 0 || !Number.isFinite(crop) || crop < 0) return null;
+  const global = finiteNonNegative(farmingFortune);
+  const crop = finiteNonNegative(cropFortune);
+  if (global === null || crop === null) return null;
   return pest.baseQuantity + (global + crop) / pest.fortunePerExtraUnit;
 }
 
@@ -141,8 +142,8 @@ export function feastPestRareCropDropInput(pestId, unitValueCoins = null) {
 
 export function idealVacuumKillSeconds(vacuumId, pestHealth = 600) {
   const vacuum = VACUUMS[vacuumId];
-  const health = Number(pestHealth);
-  if (!vacuum || !Number.isFinite(health) || health < 0) return null;
+  const health = finiteNonNegative(pestHealth);
+  if (!vacuum || health === null) return null;
   return health / vacuum.damagePerSecond;
 }
 

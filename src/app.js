@@ -1,4 +1,5 @@
 import { isUnsupportedState, readStoredAppState, writeStoredAppState } from './app-storage.js';
+import { applyFarmingToolReforge, FARMING_TOOL_REFORGE_ENTRY_IDS, selectedFarmingToolReforge } from './item-capabilities.js';
 import { CROPS, UPGRADES } from './data.js';
 import { INFO_ENTRIES, INFO_SECTIONS, allInfoEntries, cropStrategyInfo } from './info-content.js';
 import { FARMING_ACCESSORY_GROUPS } from './farming-accessories.js';
@@ -230,6 +231,7 @@ let state = loadState();
 
 let activeScrollAnchor = null;
 let scrollAnchorRestoreFrame = 0;
+let scrollIntentGeneration = 0;
 const SCROLL_ANCHOR_MAX_AGE_MS = 1800;
 const SCROLL_ANCHOR_CONTROL_SELECTOR = 'button, input, select, textarea, a, label, [role="button"], [role="radio"]';
 
@@ -333,6 +335,7 @@ function currentScrollAnchor() {
 }
 
 function clearScrollAnchor() {
+  scrollIntentGeneration += 1;
   activeScrollAnchor = null;
   if (scrollAnchorRestoreFrame) {
     cancelAnimationFrame(scrollAnchorRestoreFrame);
@@ -415,6 +418,13 @@ function preventUnsupportedMutation(event) {
 }
 
 if (typeof document !== 'undefined') {
+  for (const type of ['wheel', 'touchstart', 'touchmove', 'pointerdown']) {
+    document.addEventListener(type, clearScrollAnchor, { capture: true, passive: true });
+  }
+  document.addEventListener('keydown', event => {
+    if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(event.key)
+      && !event.target?.matches?.('input, textarea, [contenteditable="true"]')) clearScrollAnchor();
+  }, true);
   for (const type of ['click', 'change', 'input']) {
     document.addEventListener(type, preventUnsupportedMutation, true);
     document.addEventListener(type, captureInteractionScrollAnchor, true);
@@ -481,11 +491,14 @@ function itemStore(item) {
 
 function currentLevel(item) {
   const store = itemStore(item);
+  const reforge = Object.entries(FARMING_TOOL_REFORGE_ENTRY_IDS).find(([, id]) => id === item.id)?.[0];
+  if (reforge) return selectedFarmingToolReforge(store, state.profile.toolReforges?.[toolKeyForCropId(state.selectedCrop)]) === reforge ? 1 : 0;
   return Math.max(0, Math.min(Number(item.max || 1), Number(store.levels[item.id] || 0)));
 }
 
 function isOwned(item) {
   const store = itemStore(item);
+  if (Object.values(FARMING_TOOL_REFORGE_ENTRY_IDS).includes(item.id)) return currentLevel(item) > 0;
   return Boolean(store.owned[item.id]) || currentLevel(item) > 0;
 }
 
@@ -1072,7 +1085,7 @@ function card(item, compact=false, { showArt = true } = {}) {
       ? 'replacement'
       : pricing.costToMaxCoins != null ? 'to max' : 'item';
   return `
-    <button class="item-card ${status} ${isShard ? 'shard-card' : ''} ${compact ? 'compact' : ''}" data-open="${esc(item.id)}"${showArt ? '' : ' data-no-item-art="1"'}>
+    <article class="item-card ${status} ${isShard ? 'shard-card' : ''} ${compact ? 'compact' : ''}" data-open="${esc(item.id)}"${showArt ? '' : ' data-no-item-art="1"'}>
       <div class="card-layer"></div>
       <div class="card-head">
         ${showArt && (item.packAsset || isShard) ? `<span class="card-portrait${isShard ? ' shard-portrait' : ''}"${item.packAsset ? ` data-pack-asset="${esc(item.packAsset)}"` : ''}></span>` : ''}
@@ -1095,7 +1108,8 @@ function card(item, compact=false, { showArt = true } = {}) {
         ${item.hypercharge ? badge('Hypercharge', 'soft') : ''}
         ${item.modeScope !== 'Any' ? badge(item.modeScope, 'soft') : ''}
       </div>
-    </button>`;
+      <button type="button" class="ghost small card-open-button" data-open="${esc(item.id)}" aria-label="Details for ${esc(item.name)}">Details</button>
+    </article>`;
 }
 
 function shell(content) {
@@ -1850,6 +1864,11 @@ function setEntryLevel(item, level) {
   const store = itemStore(item);
   const max = Number(item.max || 1);
   const value = Math.max(0, Math.min(max, Math.floor(Number(level) || 0)));
+  const reforge = Object.entries(FARMING_TOOL_REFORGE_ENTRY_IDS).find(([, id]) => id === item.id)?.[0];
+  if (reforge && (value > 0 || selectedFarmingToolReforge(store) === reforge)) {
+    applyFarmingToolReforge(store, value > 0 ? reforge : null);
+    return;
+  }
   if (value <= 0) {
     delete store.levels[item.id];
     delete store.owned[item.id];
@@ -1876,10 +1895,7 @@ function currentToolBuildRecord() {
   const mk2 = TOOL_PANEL_ENTRIES.get('tool-mk-ii');
   const tier = mk3 && isOwned(mk3) ? 3 : mk2 && isOwned(mk2) ? 2 : 1;
   const skyblockId = farmingToolSkyblockId(crop().tool, tier);
-  const reforge = FARMING_TOOL_REFORGES.find(row => {
-    const entry = TOOL_PANEL_ENTRIES.get(`tool-reforge-${row.id}-reforge`);
-    return entry && isOwned(entry);
-  })?.id || null;
+  const reforge = selectedFarmingToolReforge(state.profile.toolProgress?.[toolKeyForCropId(state.selectedCrop)], state.profile.toolReforges?.[toolKeyForCropId(state.selectedCrop)]);
 
   const enchantments = {};
   const enchantRows = [
@@ -2252,8 +2268,8 @@ function drawer() {
   ].filter(Boolean).join(' · ');
   const isShard = item.section === 'shards' || item.category === 'Attribute Shard';
   const manual = store.manualGain[item.id] ?? '';
-  return `<div class="drawer-backdrop" data-close-drawer><aside class="drawer">
-    <div class="drawer-top"><div><div class="eyebrow">${esc(item.category)}</div><h2>${esc(item.name)}</h2></div><button class="close" data-close-drawer>×</button></div>
+  return `<div class="drawer-backdrop" data-close-drawer><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" tabindex="-1">
+    <div class="drawer-top"><div><div class="eyebrow">${esc(item.category)}</div><h2 id="drawer-title">${esc(item.name)}</h2></div><button type="button" class="close" data-close-drawer aria-label="Close details">×</button></div>
     <div class="drawer-badges">${badge(item.status,item.status==='VERIFY'?'verify':'soft')} ${isCropScopedItem(item)?badge(crop().name,'soft'):(item.cropScope!=='Any'?badge(item.cropScope,'soft'):'')} ${item.modeScope!=='Any'?badge(item.modeScope,'soft'):''}</div>
     ${isSynced(item) ? '<div class="drawer-synced">Farming420 worked this value out for you, from your profile sync and your active loadout. Editing it here overrides it until the next sync or loadout change.</div>' : ''}
     <div class="drawer-section"><h3>Ownership & Level</h3>
@@ -2751,6 +2767,8 @@ function restoreSetupSlotViewportAnchor(anchor) {
 
 function captureInteraction() {
   return {
+    generation: scrollIntentGeneration,
+    page: state.page,
     x: Number(window.scrollX || 0),
     y: Number(window.scrollY || 0),
     selector: interactionSelector(document.activeElement),
@@ -2760,11 +2778,13 @@ function captureInteraction() {
 
 function restoreInteraction(interaction) {
   if (!interaction) return;
+  const stillCurrent = () => interaction.generation === scrollIntentGeneration && interaction.page === state.page;
   const restoreBase = () => {
+    if (!stillCurrent()) return;
     window.scrollTo(interaction.x, interaction.y);
     if (interaction.selector) document.querySelector(interaction.selector)?.focus({ preventScroll: true });
   };
-  const restoreAnchor = () => restoreSetupSlotViewportAnchor(interaction.setupSlotAnchor);
+  const restoreAnchor = () => stillCurrent() && restoreSetupSlotViewportAnchor(interaction.setupSlotAnchor);
 
   restoreBase();
   restoreAnchor();
@@ -3305,6 +3325,32 @@ function closeNavigation() {
   toggle.setAttribute('aria-label', 'Open navigation');
 }
 
+function closeDrawer() {
+  const itemId = state.drawer;
+  state.drawer = null;
+  saveState();
+  render();
+  document.querySelector(`button[data-open="${CSS.escape(itemId || '')}"]`)?.focus({ preventScroll: true });
+}
+
+document.addEventListener('keydown', event => {
+  const dialog = document.querySelector('.drawer[role="dialog"]');
+  if (!dialog) return;
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    closeDrawer();
+  } else if (event.key === 'Tab') {
+    const targets = [...dialog.querySelectorAll('button, input, select, textarea, a[href], [tabindex="0"]')]
+      .filter(node => !node.disabled && node.getClientRects().length);
+    const first = targets[0], last = targets.at(-1);
+    if (event.shiftKey && (document.activeElement === first || !dialog.contains(document.activeElement))) {
+      event.preventDefault(); last?.focus({ preventScroll: true });
+    } else if (!event.shiftKey && (document.activeElement === last || !dialog.contains(document.activeElement))) {
+      event.preventDefault(); first?.focus({ preventScroll: true });
+    }
+  }
+});
+
 function bind() {
   document.querySelectorAll('[data-progress]').forEach(el => { el.style.width = `${el.dataset.progress}%`; });
 
@@ -3325,12 +3371,12 @@ function bind() {
     render({ preserveScroll: false });
   }));
   document.querySelectorAll('[data-open-settings]').forEach(el => el.addEventListener('click', closeNavigation));
-  document.querySelectorAll('[data-open]').forEach(el => el.addEventListener('click', () => { state.drawer=el.dataset.open; saveState(); render(); }));
+  document.querySelectorAll('button[data-open]').forEach(el => el.addEventListener('click', () => { state.drawer=el.dataset.open; saveState(); render(); document.querySelector('.drawer .close')?.focus({ preventScroll: true }); }));
   // The backdrop closes the drawer, but a click on the drawer itself must not:
   // it bubbles up to the backdrop, so the target is checked explicitly.
   document.querySelectorAll('[data-close-drawer]').forEach(el => el.addEventListener('click', event => {
     if (el.classList.contains('drawer-backdrop') && event.target !== el) return;
-    state.drawer=null; saveState(); render();
+    closeDrawer();
   }));
   document.querySelectorAll('[data-crop]').forEach(el => el.addEventListener('click', () => { state.selectedCrop=el.dataset.crop; saveState(); render(); }));
 

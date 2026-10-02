@@ -5,7 +5,7 @@ import { toolKeyForCropId } from './migrations.js';
 import { mooshroomCowContribution } from './mooshroom-cow.js';
 import { roseDragonContribution } from './rose-dragon.js';
 import { pestSpawnPetContribution } from './pest-spawn-pets.js';
-import { VACUUM_REFORGE_EFFECT_ENTRY_IDS, selectedVacuumReforge } from './item-capabilities.js';
+import { FARMING_TOOL_REFORGE_ENTRY_IDS, selectedFarmingToolReforge, VACUUM_REFORGE_EFFECT_ENTRY_IDS, selectedVacuumReforge } from './item-capabilities.js';
 import {
   vacuumBaseFarmingFortune,
   vacuumBuzzingFarmingFortune,
@@ -96,6 +96,15 @@ function scopeKey(item, cropId) {
 function configuredLevel(profile, item, cropId) {
   const store = progressBucket(profile, item, cropId);
 
+  if (Object.values(FARMING_TOOL_REFORGE_ENTRY_IDS).includes(item.id)) {
+    const selected = selectedFarmingToolReforge(store, profile.toolReforges?.[toolKeyForCropId(cropId)]);
+    if (!selected && !Object.hasOwn(store, 'reforge') && profile.toolReforges?.[toolKeyForCropId(cropId)] === undefined) {
+      const flags = Object.values(FARMING_TOOL_REFORGE_ENTRY_IDS).filter(id => Number(store.levels?.[id]) > 0 || store.owned?.[id] === true);
+      if (flags.length > 1) return flags[0] === item.id ? 1 : 0;
+    }
+    return selected && FARMING_TOOL_REFORGE_ENTRY_IDS[selected] === item.id ? 1 : 0;
+  }
+
   // Vacuum reforges are mutually exclusive. An explicit current reforge wins
   // over stale legacy `owned`/`levels` flags from older builds. Legacy profiles
   // without `vacuumProgress.reforge` continue to read their old Beady flag.
@@ -161,6 +170,13 @@ function contributionFor(state, item, cropId, mode = null, activeContextScope = 
 
   const level = configuredLevel(profile, item, cropId);
   if (level <= 0) return null;
+
+  if (Object.values(FARMING_TOOL_REFORGE_ENTRY_IDS).includes(item.id)) {
+    const store = progressBucket(profile, item, cropId);
+    if (!selectedFarmingToolReforge(store, profile.toolReforges?.[toolKeyForCropId(cropId)])) {
+      return { axis, value: 0, incomplete: true, id: item.id, reason: 'conflicting legacy tool reforges need a physical selection' };
+    }
+  }
 
   if (item.status !== 'ACTIVE') {
     return { axis, value: 0, incomplete: true, id: item.id, reason: 'not verified' };

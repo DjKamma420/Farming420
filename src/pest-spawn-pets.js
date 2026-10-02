@@ -1,3 +1,4 @@
+import { syncedPetForSetup } from './pet-identity.js';
 import { petLevelFromExperience } from './mooshroom-cow.js';
 import { activeSetup } from './setups.js';
 
@@ -33,17 +34,6 @@ function profilePets(state) {
   return Array.isArray(state?.profile?.normalizedSnapshot?.pets)
     ? state.profile.normalizedSnapshot.pets
     : [];
-}
-
-function syncedPetForSetup(state, setupPet, petId) {
-  const pets = profilePets(state);
-  const physicalId = String(setupPet?.physicalItemId || '');
-  const uuid = physicalId.startsWith('pet:') ? physicalId.slice(4) : null;
-  if (uuid) {
-    const exact = pets.find(pet => String(pet?.uuid || '') === uuid);
-    if (exact) return exact;
-  }
-  return pets.find(pet => normalizedPetId(pet?.type) === petId) || null;
 }
 
 function resolvedLevel(setupPet, synced) {

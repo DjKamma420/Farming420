@@ -176,6 +176,7 @@ function closeAddSetDialog(dialog) {
 }
 
 function openAddSetDialog() {
+  const trigger = document.activeElement;
   document.querySelector('[data-add-set-dialog]')?.remove();
   const dialog = document.createElement('dialog');
   dialog.className = 'physical-set-dialog';
@@ -192,7 +193,7 @@ function openAddSetDialog() {
           data-new-set-name placeholder="e.g. Mushroom Set">
       </label>
       <div class="physical-set-dialog-actions">
-        <button type="submit" value="cancel" class="ghost">Cancel</button>
+        <button type="button" data-add-set-cancel class="ghost">Cancel</button>
         <button type="submit" value="add" class="primary-btn">Add Set</button>
       </div>
     </form>`;
@@ -202,7 +203,6 @@ function openAddSetDialog() {
   const input = dialog.querySelector('[data-new-set-name]');
 
   form?.addEventListener('submit', event => {
-    if (event.submitter?.value === 'cancel') return;
     event.preventDefault();
     const name = String(input?.value || '').trim();
     if (!name) {
@@ -220,7 +220,12 @@ function openAddSetDialog() {
   });
 
   input?.addEventListener('input', () => input.setCustomValidity(''));
-  dialog.addEventListener('close', () => dialog.remove(), { once: true });
+  dialog.querySelector('[data-add-set-cancel]')?.addEventListener('click', () => closeAddSetDialog(dialog));
+  dialog.addEventListener('close', () => {
+    dialog.remove();
+    const currentTrigger = trigger?.isConnected ? trigger : document.querySelector('[data-add-physical-set]');
+    currentTrigger?.focus({ preventScroll: true });
+  }, { once: true });
   dialog.addEventListener('click', event => {
     if (event.target === dialog) closeAddSetDialog(dialog);
   });

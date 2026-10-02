@@ -44,6 +44,6 @@ test('supported writes migrate old states and preserve current unknown fields', 
 test('runtime modules cannot bypass the single main-state storage writer', () => {
   for (const file of readdirSync(new URL('../src/', import.meta.url)).filter(file => file.endsWith('.js') && file !== 'app-storage.js')) {
     const source = readFileSync(new URL(`../src/${file}`, import.meta.url), 'utf8');
-    assert.doesNotMatch(source, /localStorage\.(?:setItem|removeItem)\(STORAGE_KEY/, file);
+    assert.doesNotMatch(source, /localStorage(?:\?\.)?\.?(?:setItem|removeItem)\(STORAGE_KEY/, file);
   }
 });

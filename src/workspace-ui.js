@@ -1,3 +1,4 @@
+import { applyFarmingToolReforge, selectedFarmingToolReforge } from './item-capabilities.js';
 import { readStoredAppState, writeStoredAppState } from './app-storage.js';
 import { deriveRarity, describeRarity } from './tool-rarity.js';
 import { CROPS } from './data.js';
@@ -75,18 +76,11 @@ function setEntryLevel(bucket, id, value, max) {
 }
 function selectedReforge(state, cropId) {
   const bucket = toolBucket(state, cropId);
-  if (reforgeById(bucket.reforge)) return bucket.reforge;
-  if (bucket.owned[LEGACY_REFORGE_ENTRY_IDS.bountiful]) return 'bountiful';
-  if (bucket.owned[LEGACY_REFORGE_ENTRY_IDS.blessed]) return 'blessed';
-  return null;
+  return selectedFarmingToolReforge(bucket, state.profile?.toolReforges?.[toolKeyForCropId(cropId)]);
 }
 function setSelectedReforge(state, cropId, id) {
   const bucket = toolBucket(state, cropId);
-  const next = reforgeById(id)?.id || null;
-  bucket.reforge = next;
-  for (const legacy of Object.values(LEGACY_REFORGE_ENTRY_IDS)) { delete bucket.levels[legacy]; delete bucket.owned[legacy]; }
-  const legacy = LEGACY_REFORGE_ENTRY_IDS[next];
-  if (legacy) { bucket.levels[legacy] = 1; bucket.owned[legacy] = true; }
+  applyFarmingToolReforge(bucket, id);
 }
 function uniqueTools() {
   const map = new Map();

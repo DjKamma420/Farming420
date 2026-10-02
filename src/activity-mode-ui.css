@@ -95,7 +95,8 @@
     display: grid !important;
     grid-template-columns: max-content minmax(0, 1fr);
     grid-template-areas:
-      "title control"
+      "title title"
+      "control control"
       "search search";
     align-items: center;
     gap: 10px 12px;
@@ -239,19 +240,23 @@
     flex: 1 1 0;
     min-width: 0;
     max-width: none;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
   }
 
   .physical-set-switch .physical-set-tabs {
-    flex: 1 1 0;
+    flex: 1 1 100%;
     min-width: 0;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
   }
 
   .physical-set-switch .physical-set-tabs button {
     flex: 1 1 0;
     min-width: 0;
     max-width: none;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    min-height: 36px;
+    text-overflow: clip;
   }
 
   .physical-set-switch .add-set-button,

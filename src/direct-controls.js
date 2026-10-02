@@ -1,5 +1,6 @@
 import { readStoredAppState, writeStoredAppState } from './app-storage.js';
 import { UPGRADES } from './data.js';
+import { applyFarmingToolReforge, FARMING_TOOL_REFORGE_ENTRY_IDS, selectedFarmingToolReforge } from './item-capabilities.js';
 import { STORAGE_KEY } from './config.js';
 import { toolKeyForCropId } from './migrations.js';
 import { EXCLUSIVE_ENTRY_GROUPS } from './exclusivity.js';
@@ -54,6 +55,11 @@ function clearExclusivePeers(raw, item) {
 function writeLevel(raw, item, value) {
   const target = bucket(raw, item);
   const next = Math.max(0, Math.min(Number(item.max || 1), Math.floor(Number(value) || 0)));
+  const reforge = Object.entries(FARMING_TOOL_REFORGE_ENTRY_IDS).find(([, id]) => id === item.id)?.[0];
+  if (reforge) {
+    applyFarmingToolReforge(target, next > 0 ? reforge : null);
+    return writeStoredAppState(raw);
+  }
   if (next > 0) {
     clearExclusivePeers(raw, item);
     target.levels[item.id] = next;

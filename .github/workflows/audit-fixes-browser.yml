@@ -1,0 +1,51 @@
+name: Verify audit fixes in browsers
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    env:
+      AUDIT_BROWSER: ${{ matrix.browser }}
+      AUDITED_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Verify exact tested commit
+        run: test "$(git rev-parse HEAD)" = "$AUDITED_SHA"
+      - name: Prepare isolated browser dependency
+        run: |
+          npm install --prefix "$RUNNER_TEMP/browser-deps" playwright@1.63.0
+          "$RUNNER_TEMP/browser-deps/node_modules/.bin/playwright" install --with-deps "$AUDIT_BROWSER"
+          mkdir -p "$RUNNER_TEMP/browser-results"
+          printf 'PLAYWRIGHT_MODULE=%s\n' "$RUNNER_TEMP/browser-deps/node_modules/playwright/index.mjs" >> "$GITHUB_ENV"
+          printf 'AUDIT_OUT=%s\n' "$RUNNER_TEMP/browser-results" >> "$GITHUB_ENV"
+      - name: Execute retained audit regression probe
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4173 --bind 127.0.0.1 > "$AUDIT_OUT/server.log" 2>&1 &
+          FIX_SERVER_PID=$!
+          trap 'kill "$FIX_SERVER_PID" 2>/dev/null || true' EXIT
+          for i in $(seq 1 40); do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then break; fi
+            sleep 0.25
+          done
+          node scripts/audit-fix-browser.mjs > "$AUDIT_OUT/browser.log" 2>&1
+      - name: Upload evidence including failed cases
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-fix-${{ matrix.browser }}-${{ github.event.pull_request.head.sha }}
+          path: ${{ runner.temp }}/browser-results
+          retention-days: 30

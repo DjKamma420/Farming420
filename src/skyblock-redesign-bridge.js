@@ -1,3 +1,4 @@
+import { applyFarmingToolReforge } from './item-capabilities.js';
 import { readStoredAppState, writeStoredAppState } from './app-storage.js';
 import { STORAGE_KEY } from './config.js';
 import { toolKeyForCropId } from './migrations.js';
@@ -30,16 +31,8 @@ function selectReforge(reforgeId) {
   bucket.levels ||= {};
   bucket.owned ||= {};
 
-  for (const entryId of Object.values(REFORGE_ENTRY)) {
-    delete bucket.levels[entryId];
-    delete bucket.owned[entryId];
-  }
-  const selectedEntry = REFORGE_ENTRY[reforgeId];
-  if (selectedEntry) {
-    bucket.levels[selectedEntry] = 1;
-    bucket.owned[selectedEntry] = true;
-    raw.profile.toolReforges[key] = reforgeId;
-  }
+  applyFarmingToolReforge(bucket, reforgeId);
+  delete raw.profile.toolReforges[key];
   return writeStoredAppState(raw);
 }
 

@@ -4,7 +4,7 @@ Goal: implement and verify the eighteen ordered audit work packages, without mer
 Branch: `fix/audit-2026-10-02`.
 Application baseline: `bda761d81deb0be37af9fad31f5469efb992df82`.
 Audit baseline: `e666096b55d1a2a887374feb7c7cd743e8cbe111`.
-Last secured remote commit: `a84fc0f4f5a7fa8d263c4e1ff0419bb5a591b25c` (initial checkpoint). Local checkpoint: `dcf5cd4`. CLI push is unavailable; GitHub API mirrors verified local trees without force updates.
+Last secured remote commit: `657a4fd0130a189d872968f043f256c9cbe64551` (packages 1–2). Local checkpoint: `a12cb5b`. CLI push is unavailable; GitHub API mirrors verified local trees without force updates.
 
 ## Actual repository state
 
@@ -20,15 +20,15 @@ Last secured remote commit: `a84fc0f4f5a7fa8d263c4e1ff0419bb5a591b25c` (initial 
 |---|---|---|
 | 1 | Future-schema storage protection | implemented; browser verification pending |
 | 2 | Backup envelope/state validation | implemented; browser verification pending |
-| 3 | One physical tool reforge | open |
-| 4 | Physical pet identity | open |
-| 5 | Unknown numeric helper inputs | open |
-| 6 | Contest missing Fortune | open |
-| 7 | Manual scroll cancels restores | open |
-| 8 | Mobile header/set layout | open |
-| 9 | Add Set Cancel/focus | open |
-| 10 | Menu/drawer keyboard ownership | open |
-| 11 | Cropshot valid controls/idempotence | open |
+| 3 | One physical tool reforge | implemented; regression tested |
+| 4 | Physical pet identity | implemented; regression tested |
+| 5 | Unknown numeric helper inputs | implemented; regression tested |
+| 6 | Contest missing Fortune | implemented; regression tested |
+| 7 | Manual scroll cancels restores | in progress; browser acceptance pending |
+| 8 | Mobile header/set layout | in progress; browser acceptance pending |
+| 9 | Add Set Cancel/focus | in progress; browser acceptance pending |
+| 10 | Menu/drawer keyboard ownership | in progress; browser acceptance pending |
+| 11 | Cropshot valid controls/idempotence | in progress; browser acceptance pending |
 | 12 | Phillip count/duration/expiry | open |
 | 13 | Canonical Vacuum helper | open |
 | 14 | Canonical chip rates/confidence | open |
@@ -56,3 +56,17 @@ Last secured remote commit: `a84fc0f4f5a7fa8d263c4e1ff0419bb5a591b25c` (initial 
 - Initial full Node suite: 1,365/1,367 passed, exit 1. Both failures addressed: legacy omitted backupVersion compatibility and old source assertion requiring the unsafe direct restore writer. Not yet claiming a repeated full-suite pass.
 - Browser runtime unavailable locally (no Chrome/Playwright found yet); CI browser verification will run on a remote fix commit.
 - Next: packages 3–6 (reforge exclusivity, physical pet UUID, missing numeric inputs, contest adapter).
+
+## Packages 3–11 checkpoint (incomplete)
+
+- PR #301 is a draft; no merge/deploy. Remote persistence commit CI run 36947438507 concluded success; individual steps still to be recorded before final acceptance.
+- Central physical tool reforge selection/write functions reused by computed totals and all editors. Explicit none suppresses stale flags; conflicting legacy flags contribute one incomplete source. Existing numeric reforge tables were not reinterpreted as new game evidence.
+- Shared UUID-first pet resolver now serves Cow, Rose Dragon, Mosquito/Slug and editor levels. Missing explicit UUID never falls back to another copy; duplicate species without physical identity remain unresolved; explicit local level wins.
+- Shared finite-number validation protects Pest/Chip/Hypercharge and Contest helpers from null/blank/boolean/array coercion. The omitted temporary Hypercharge option keeps its legitimate zero default.
+- Regression suite covers flag order, Eclipse sharing, rarity/metadata preservation, duplicate pets in both orders, missing UUID/manual levels, unknown versus zero/default inputs. Five multi-case regressions pass. Existing targeted identity/numeric suite 69/69 pass. Full local suite after packages 3–6: 1,372 Node + 8 Python PASS, exit 0.
+- Packages 7–11 now have code changes for user scroll cancellation generations, dedicated mobile control row/wrapping, non-submit Cancel/focus return, one shared picker keyboard owner, Effects drawer keyboard/focus, and sibling card controls. Browser acceptance is pending.
+- Discovered an additional optional-chain writer in setup-selection-ui.js; routed it through the same storage guard and broadened bypass regression.
+- Initial UI full suite: 1,371/1,372 pass, one old CSS expectation required nowrap. Updated to the new intentional wrap contract; browser geometry remains required.
+- New three-engine workflow and probe based on the immutable October 2 audit, expanded to eight phone/landscape contexts and cancel/48-character-name scenarios. It checks exact PR head and propagates probe failure.
+- Active local processes: none. Latest full-suite session 93202 completed exit 1 with the CSS assertion described above.
+- Next: sync this incomplete working checkpoint to PR #301, inspect browser CI evidence, then implement packages 12–18 and expand final browser/gate acceptance.

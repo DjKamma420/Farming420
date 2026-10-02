@@ -1,4 +1,6 @@
 import { DATA_SCHEMA_VERSION, STORAGE_KEY } from './config.js';
+import { readStoredAppState, writeStoredAppState } from './app-storage.js';
+import { bindDropdownControls } from './dropdown-controls.js';
 import {
   createEmptyItem,
   ITEM_SOURCE,
@@ -70,9 +72,7 @@ function normalizedRarity(value) {
 
 function readState() {
   try {
-    const raw = globalThis.localStorage?.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
+    const parsed = readStoredAppState(null);
     if (!parsed || typeof parsed !== 'object') return null;
     if (Number(parsed.schemaVersion || 0) > DATA_SCHEMA_VERSION) return null;
     return parsed;
@@ -83,8 +83,7 @@ function readState() {
 
 function writeState(state) {
   try {
-    state.schemaVersion = DATA_SCHEMA_VERSION;
-    globalThis.localStorage?.setItem(STORAGE_KEY, JSON.stringify(state));
+    if (!writeStoredAppState(state)) return false;
     globalThis.dispatchEvent?.(new Event('farming420:state-changed'));
     return true;
   } catch {
@@ -325,6 +324,7 @@ function buildPetDropdown(currentId, item) {
   addOption(null, '', 'No pet', !currentId);
   for (const pet of FARMING_PETS) addOption(pet, pet.id, pet.name, currentId === pet.id);
   dropdown.append(trigger, menu);
+  bindDropdownControls(dropdown, 'farming-pet');
   return dropdown;
 }
 
@@ -599,6 +599,7 @@ function buildPetItemPicker(editor, item, setupId = null) {
   for (const option of options) addOption(option, currentId === String(option.id || '').toUpperCase());
 
   dropdown.append(trigger, menu);
+  bindDropdownControls(dropdown, 'pet-item');
   const closedField = element('div', { className: 'settings-field sb-closed-item-field sb-pet-item-dropdown-field' });
   const recommendationText = recommendation.item
     ? `Recommended: ${recommendation.item.name} · ${recommendation.reason}`
@@ -797,6 +798,7 @@ function buildArmorItemPicker(editor, slotId, item) {
   }
 
   dropdown.append(trigger, menu);
+  bindDropdownControls(dropdown, `gear-${slotId}`);
   const closedField = element('div', {
     className: 'settings-field sb-closed-item-field sb-gear-dropdown-field',
   });

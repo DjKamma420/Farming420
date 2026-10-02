@@ -1,3 +1,5 @@
+import { finiteNonNegative } from './finite-number.js';
+
 export const FARMING_MODIFIERS_DATA_VERSION = 1;
 
 const SOURCE = Object.freeze({
@@ -96,8 +98,8 @@ export const GARDEN_CHIPS = Object.freeze({
 export function gardenChipEffect(chipId, { level, rarity } = {}) {
   const chip = Object.values(GARDEN_CHIPS).find(row => row.id === chipId || row.itemId === chipId);
   const normalizedRarity = String(rarity || '').toUpperCase();
-  const numericLevel = Number(level);
-  if (!chip || !CHIP_LEVEL_CAP[normalizedRarity] || !Number.isFinite(numericLevel)) return null;
+  const numericLevel = finiteNonNegative(level);
+  if (!chip || !CHIP_LEVEL_CAP[normalizedRarity] || numericLevel === null) return null;
   if (numericLevel < 0 || numericLevel > CHIP_LEVEL_CAP[normalizedRarity]) return null;
   const perLevel = chip.effect.rates[normalizedRarity];
   if (!Number.isFinite(perLevel)) return null;
@@ -215,13 +217,14 @@ export const TEMPORARY_FARMING_MODIFIERS = Object.freeze({
 });
 
 export function hyperchargedFarmingFortune(baseFarmingFortune, hyperchargePercent) {
-  const base = Number(baseFarmingFortune);
-  const percent = Number(hyperchargePercent);
-  if (!Number.isFinite(base) || !Number.isFinite(percent) || base < 0 || percent < 0) return null;
+  const base = finiteNonNegative(baseFarmingFortune);
+  const percent = finiteNonNegative(hyperchargePercent);
+  if (base === null || percent === null) return null;
   return base * (1 + percent / 100);
 }
 
-export function temporaryModifierEffect(modifierId, { hyperchargePercent = 0 } = {}) {
+export function temporaryModifierEffect(modifierId, options = {}) {
+  const hyperchargePercent = Object.hasOwn(options, 'hyperchargePercent') ? options.hyperchargePercent : 0;
   const row = Object.values(TEMPORARY_FARMING_MODIFIERS).find(entry => entry.id === modifierId);
   if (!row) return null;
   const effects = { ...row.effects };

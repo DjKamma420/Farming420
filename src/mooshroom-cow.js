@@ -1,4 +1,5 @@
 import { activeSetup } from './setups.js';
+import { syncedPetForSetup } from './pet-identity.js';
 
 // Mooshroom Cow mechanics used by the computed-stat coverage check.
 // Current post-0.26.1 base Farming Fortune is 1 -> 100 by pet level.
@@ -97,13 +98,13 @@ export function activeMooshroomCow(state) {
   const selected = selectedSetupPet(state);
   if (selected) {
     if (!itemIsCow(selected)) return null;
-    const syncedCow = pets.find(pet => cowType(pet?.type));
+    const syncedCow = syncedPetForSetup(state, selected, 'MOOSHROOM_COW');
     return syncedCow
       ? {
           ...syncedCow,
           source: 'setup+profile',
           rarity: selected?.rarity || syncedCow.rarity,
-          petLevel: explicitPetLevel(selected?.petLevel),
+          petLevel: explicitPetLevel(selected?.petLevel) ?? explicitPetLevel(syncedCow?.level),
         }
       : {
           type: 'MOOSHROOM_COW',
