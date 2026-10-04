@@ -1,0 +1,1246 @@
+{
+  "commit": "01941a8fd5ba25c30f35b1e1f015f642dfa539df",
+  "scope": "Package 12 only: Phillip research/count/Info correction",
+  "local": {
+    "targeted": 28,
+    "node": 1387,
+    "python": 8,
+    "result": "pass"
+  },
+  "validate": {
+    "run": 37234244537,
+    "job": 111530095345,
+    "result": "failure",
+    "passed": [
+      "Exact head/syntax/Python tooling/static references/service-worker retirement",
+      "Immutable artifact: 52 entrypoints, 466 references",
+      "Dashboard/Loadouts/rarity startup",
+      "Ten-page exact DOM and zero mutations",
+      "Both DOM mutation negative controls",
+      "11 art portraits and ordinary tool scroll"
+    ],
+    "failed": {
+      "gate": "Trusted delayed tool scroll",
+      "message": "Error: delayed tool render drifted: top=20.00 scroll=20.00",
+      "fixture": "After all twelve tool transitions and 2100ms, dispatch item-value-updated for selected Melon and measure after 500ms",
+      "thresholdPx": 4,
+      "observedTopDriftPx": 20,
+      "observedScrollDeltaPx": 20,
+      "cause": "Unresolved; no cause assigned from the drift count alone. No tool/scroll owner was changed in this package-12-only commit."
+    },
+    "ciNpm": "skipped after startup-step failure; local pass is recorded separately"
+  },
+  "browser": {
+    "run": 37234244444,
+    "engines": [
+      {
+        "job": 111530095137,
+        "engine": "firefox",
+        "counts": {
+          "PASS": 229,
+          "FAIL": 0,
+          "NOTE": 8,
+          "BLOCKED": 0
+        },
+        "phillip": [
+          {
+            "engine": "firefox",
+            "viewport": "320-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes · capped at 40",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false
+            }
+          },
+          {
+            "engine": "firefox",
+            "viewport": "360-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes · capped at 40",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false
+            }
+          },
+          {
+            "engine": "firefox",
+            "viewport": "375-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes · capped at 40",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false
+            }
+          },
+          {
+            "engine": "firefox",
+            "viewport": "390-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes · capped at 40",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false
+            }
+          },
+          {
+            "engine": "firefox",
+            "viewport": "412-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes · capped at 40",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false
+            }
+          },
+          {
+            "engine": "firefox",
+            "viewport": "568-landscape",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes · capped at 40",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false
+            }
+          },
+          {
+            "engine": "firefox",
+            "viewport": "667-landscape",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes · capped at 40",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false
+            }
+          },
+          {
+            "engine": "firefox",
+            "viewport": "800-landscape",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes · capped at 40",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false
+            }
+          }
+        ],
+        "failed": []
+      },
+      {
+        "job": 111530095325,
+        "engine": "webkit",
+        "counts": {
+          "PASS": 229,
+          "FAIL": 0,
+          "NOTE": 8,
+          "BLOCKED": 0
+        },
+        "phillip": [
+          {
+            "engine": "webkit",
+            "viewport": "320-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes · capped at 40",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false
+            }
+          },
+          {
+            "engine": "webkit",
+            "viewport": "360-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes · capped at 40",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false
+            }
+          },
+          {
+            "engine": "webkit",
+            "viewport": "375-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes · capped at 40",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false
+            }
+          },
+          {
+            "engine": "webkit",
+            "viewport": "390-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes · capped at 40",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false
+            }
+          },
+          {
+            "engine": "webkit",
+            "viewport": "412-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes · capped at 40",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false
+            }
+          },
+          {
+            "engine": "webkit",
+            "viewport": "568-landscape",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes · capped at 40",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false
+            }
+          },
+          {
+            "engine": "webkit",
+            "viewport": "667-landscape",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes · capped at 40",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false
+            }
+          },
+          {
+            "engine": "webkit",
+            "viewport": "800-landscape",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes · capped at 40",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false
+            }
+          }
+        ],
+        "failed": []
+      },
+      {
+        "job": 111530095346,
+        "engine": "chromium",
+        "counts": {
+          "PASS": 229,
+          "FAIL": 0,
+          "NOTE": 8,
+          "BLOCKED": 0
+        },
+        "phillip": [
+          {
+            "engine": "chromium",
+            "viewport": "320-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes · capped at 40",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false
+            }
+          },
+          {
+            "engine": "chromium",
+            "viewport": "360-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes · capped at 40",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false
+            }
+          },
+          {
+            "engine": "chromium",
+            "viewport": "375-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes · capped at 40",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false
+            }
+          },
+          {
+            "engine": "chromium",
+            "viewport": "390-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes · capped at 40",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false
+            }
+          },
+          {
+            "engine": "chromium",
+            "viewport": "412-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes · capped at 40",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false
+            }
+          },
+          {
+            "engine": "chromium",
+            "viewport": "568-landscape",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes · capped at 40",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false
+            }
+          },
+          {
+            "engine": "chromium",
+            "viewport": "667-landscape",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes · capped at 40",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false
+            }
+          },
+          {
+            "engine": "chromium",
+            "viewport": "800-landscape",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 pests for 30 minutes · capped at 40",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false
+            }
+          }
+        ],
+        "failed": []
+      }
+    ],
+    "strictChromium": {
+      "overlayExit": 0,
+      "findings": 0,
+      "runtimeErrors": 0,
+      "mainScrollTargets": 120,
+      "openedOverlays": 16,
+      "sweepExit": 0,
+      "ordinaryAreas": 10,
+      "variants": 30,
+      "injectedRuntimeErrorExit": 1
+    }
+  },
+  "remaining": [
+    "Current live Phillip curve requires dated live lore or a first-party live statement; Alpha/player discussion is not promoted.",
+    "Required Validate remains failed at this source. No full-head acceptance or fixed scroll regression is claimed.",
+    "User restricted this turn to the first open package (12); package-7 implementation was not changed.",
+    "Next continuation must first diagnose the newly reopened earlier package-7 trusted late-value scroll failure."
+  ]
+}
