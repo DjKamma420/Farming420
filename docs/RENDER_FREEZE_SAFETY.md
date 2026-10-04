@@ -127,5 +127,9 @@ existing owner, guards unchanged hidden/class/rarity attributes, and preserves
 the attempted identity through every image-fallback route. The strict probe
 observes three identical announcements after startup settles; injected redundant
 writes and equal-length attribute changes must fail the same acceptance gate.
-Browser verification is pending; this entry records the regression and fix,
-not successful release acceptance.
+Browser acceptance passed at `7d6be52cd837e055271f1573c41f563a74e5fd2e`:
+Validate run 36959294035 checks exact DOM and zero mutations across ten pages,
+and rejects both redundant writes and equal-length changes. Browser run
+36959294051 also passes 24 open-picker idempotence cases in each of Chromium,
+Firefox and WebKit. These are repository/emulated-browser checks, not a
+deployment or physical-device claim; see `tasks/fix-progress-2026-10-02.md`.

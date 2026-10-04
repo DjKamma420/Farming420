@@ -4,16 +4,16 @@ Goal: implement and verify the eighteen ordered audit packages; no merge/deploym
 Branch: `fix/audit-2026-10-02`. Draft PR: [#301](https://github.com/DjKamma420/Farming420/pull/301).
 Application baseline: `bda761d81deb0be37af9fad31f5469efb992df82`.
 Audit baseline: `e666096b55d1a2a887374feb7c7cd743e8cbe111`.
-Last secured tested checkpoint: `12e88f4bbc2a6485821549e04f2bb4f42d225a6d`.
-This documentation checkpoint is its descendant, with identical application code/probes/workflows. Resolve its own exact SHA from the fix-branch ref or `git rev-parse HEAD`; a file cannot contain its own commit hash. PR #301 records its final exact-head run IDs/results.
-Last available local checkpoint: `1f0e67888e30ca910eecddfde49838fc0fc7c31f`, tree equal to remote `36e0767`. Later connector commits are not materialized locally.
+Last secured tested checkpoint: `7d6be52cd837e055271f1573c41f563a74e5fd2e`.
+Application/probe/workflow source is identical to `12e88f4bbc2a6485821549e04f2bb4f42d225a6d`; the empty scoped Git diff was checked again on October 4. Resolve this later documentation checkpoint's own SHA from the branch ref; a file cannot contain its own commit hash. PR #301 records exact-head follow-up CI.
+Recovered local checkout on October 4: `7d6be52cd837e055271f1573c41f563a74e5fd2e`, fully materialized through a successful clone. Its initial `git status --porcelain=v1` is empty. This is an observation before the documentation edits below, not a claim about later sessions.
 
 ## Current actual state
 
-- All independently executable package changes are implemented and accepted at 12e88f4; fourteen packages tested, four partially blocked solely by evidence/access-dependent requirements. The final documentation-only head must also complete its automatically triggered gates before reporting completion.
-- Local execution failed **before process creation** with `409 environment_offline`, “Environment is not connected.” No hanging local process exists. Continue through exact GitHub files/Git trees without force updates until execution returns. **No current clean Git status is claimed.**
+- All independently executable package changes are implemented and accepted at 7d6be52; fourteen packages tested, four partially blocked solely by evidence/access-dependent requirements. Both final-head runs completed successfully and all individual jobs, retained cases and gate results were inspected on October 4.
+- The earlier `409 environment_offline` interruption is resolved in this session: a real full clone and shell reads succeed. The clone process completed with exit 0; there is no hanging local process. Future sessions must inspect their own actual checkout rather than inherit either the earlier offline state or today's empty initial status.
 - A real clone was originally inspected; initial `--no-checkout` staging deletions were the unmaterialized clone, not user work. Its empty status after materialization is a historical observation only.
-- Main was rechecked during final validation and remains bda761d. The fix branch was previously unused; initially only stale PR #108 was open. Foreign changes have not been overwritten.
+- Main was rechecked on October 4 and remains bda761d. PR #301 remains open/draft at 7d6be52; other open PRs #108 and #279 are untouched. Foreign changes have not been overwritten.
 - Read AGENTS.md, product/profile/math/render-safety specifications, tasks/todo.md, prior progress and all three pinned handovers. Handover copies are byte-identical. Current user authorization supersedes AGENTS.md's historical automatic merge instruction. No merge/deploy performed.
 
 ## Ordered package status
@@ -45,6 +45,9 @@ Last available local checkpoint: `1f0e67888e30ca910eecddfde49838fc0fc7c31f`, tre
 
 | Tested commit | Run / job | Actual result |
 |---|---|---|
+| 7d6be52cd837e055271f1573c41f563a74e5fd2e | Validate 36959294035 / 110689171338 | SUCCESS; every individual step reviewed. 1,384 Node + 8 Python PASS; exact immutable artifact has 52 stamped entrypoints / 466 references; startup, exact-DOM/zero-mutation idempotence and both negative controls PASS. |
+| same | Browser 36959294051; Chromium 110689171582, WebKit 110689171749, Firefox 110689171799 | Each **195 PASS / 0 FAIL / 8 NOTE / 0 BLOCKED**. Actual injected runtime exception rejected with acceptance exit 1 in each engine. No pageerrors were filtered. |
+| same | Chromium strict overlay/sweep | Overlay exit 0, zero findings/runtime errors, 120 main scroll targets and 16 opened overlays. All ten areas / thirty variants PASS, sweep exit 0; injected runtime-error sweep rejected in all three variants. This strict step is intentionally Chromium-only. |
 | 12e88f4bbc2a6485821549e04f2bb4f42d225a6d | Validate 36958392621 / 110686398959 | SUCCESS; all individual steps reviewed. 1,384 Node + 8 Python PASS; syntax, required files, 466 static references and SW retirement PASS. |
 | same | Immutable artifact step | Exact SHA matches marker/index; 52 entrypoints stamped, 466 local references resolve; original checkout unchanged. Isolated Git archive, no publishing/deployment. |
 | same | Startup/idempotence/tool scroll | All native Chrome dumps exit 0. Ten pages × three identical reapplies: exact DOM and zero mutations. Both transient-mutation and equal-length-change controls reject. Twelve trusted physical-tool transitions PASS, max drift 1.42 px, no late drift/scroll. |
@@ -55,10 +58,10 @@ Last available local checkpoint: `1f0e67888e30ca910eecddfde49838fc0fc7c31f`, tre
 | 0d2a208d5ecd100508d50ce3789d61e094fb2979 | Validate 36957427909 / Browser 36957427906 | Validate, Chromium and Firefox PASS; WebKit **FAIL** with two market access-control pageerror cases. Failure retained, never relabeled green. |
 | local bde7569 / corresponding remote 1ba9c8a source | Official item-model audit | 152/152 resolve: 43 direct and 109 fallback. Resolution is separate from semantic art/physical-device acceptance. |
 
-Durable results: [12e88f4 acceptance](../docs/audits/fix-browser-12e88f4-2026-10-02.json), [fb5a1a8 acceptance](../docs/audits/fix-browser-fb5a1a8-2026-10-02.json), [0d2a208 failure](../docs/audits/fix-browser-0d2a208-2026-10-02.json).
+Durable results: [7d6be52 exact-head acceptance reviewed October 4](../docs/audits/fix-browser-7d6be52-2026-10-04.json), [12e88f4 acceptance](../docs/audits/fix-browser-12e88f4-2026-10-02.json), [fb5a1a8 acceptance](../docs/audits/fix-browser-fb5a1a8-2026-10-02.json), [0d2a208 failure](../docs/audits/fix-browser-0d2a208-2026-10-02.json).
 No correlated market pageerror occurred in the accepted 12e88f4 run: **no pageerrors were filtered in that run**. Narrow transport classification has pure positive/countercase regressions; actual injected runtime exceptions are rejected in each engine. External HTTP notes preserve unavailable price evidence, not successful market access.
 
-CI/process state at this save: Validate 36958392621 and Browser 36958392562 and all older listed jobs **completed**; no active local process. This documentation-only checkpoint automatically starts its own exact-head final runs; their IDs are recorded on PR #301 and discoverable by current head SHA. Inspect existing jobs before retries; do not restart completed runs without a new reason.
+CI/process state at this save: Validate 36959294035 and Browser 36959294051 and all older listed jobs **completed**; no active local process. No completed run was restarted. Any automatic CI for this documentation-only successor is discoverable by its branch SHA and recorded on PR #301 before closure. Inspect existing jobs before retries.
 
 ## Concrete findings and final implementation
 
@@ -95,8 +98,8 @@ CI/process state at this save: Validate 36958392621 and Browser 36958392562 and 
 
 ## Current interruption and next executable step
 
-Current point: implementation and available risk acceptance are complete at 12e88f4; this last documentation-only save needs its exact-head automatic CI repeat before closing. Local execution remains offline.
-Next executable step: fetch fix-branch head and the already-created Actions runs; inspect every job/case/exitcode and record final results on PR #301. Do not start duplicate runs. If they pass, the only remaining work is the explicit source/account/device blocks above; no independent code package remains open. Do not merge/deploy.
+Current point: implementation and available risk acceptance are complete at 7d6be52. The former final-head CI follow-up and environment interruption are resolved. No executable application package remains open. October 4 changes are documentation/evidence only: this file, `docs/RENDER_FREEZE_SAFETY.md` and the 7d6be52 extracted acceptance JSON.
+Next executable step: inspect any automatic jobs for the current documentation-only successor and record them on PR #301; do not rerun completed jobs blindly. Thereafter resume only a newly failing requirement or a blocked requirement with new authoritative live lore/account/device access. The August 3 Alpha source and August 4 live article were reopened on October 4; the latter still does not enumerate Phillip/Cropshot curves and explicitly excludes some Alpha farming changes. No source block was closed by assumption. Do not merge/deploy.
 For a later “continue”: read this current section, actual branch files and PR CI first. Confirm completed final-head runs; resume only a new failure or a blocked requirement for which new evidence/capabilities exist. Do not restart package 1 or treat historical pending statements as the current task.
 
 ## Historical checkpoints
@@ -211,4 +214,3 @@ Earlier failures and implementation chain are retained below. Their pending/next
 - Applied through the connector: existing Strength/Garden/level UI reads reuse finite-number.js so boolean/blank/array inputs cannot look known. No new mechanics or second data model.
 - Current error/interruption: local environment offline; native startup and updated market-error classification need remote validation. All previous CI jobs completed; no duplicate or hanging process rerun. Changes in this checkpoint have **not** been tested locally.
 - Next executable step: secure this connector checkpoint, inspect new exact-head Validate and three-engine runs; if startup still fails, diagnose its printed wall/DOM evidence instead of declaring success. Finish full final-head gates and ledger/PR update; no merge/deploy.
-
