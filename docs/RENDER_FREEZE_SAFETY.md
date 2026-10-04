@@ -133,3 +133,20 @@ and rejects both redundant writes and equal-length changes. Browser run
 36959294051 also passes 24 open-picker idempotence cases in each of Chromium,
 Firefox and WebKit. These are repository/emulated-browser checks, not a
 deployment or physical-device claim; see `tasks/fix-progress-2026-10-02.md`.
+
+### 2026-10-04 — late value refresh after closing a picker menu
+
+The documentation-only 4e28995 repeat exposed a Firefox 320px Pet Item case
+with identical final HTML but 106 transient DOM mutations. The old price guard
+protected an open dropdown or its focused descendant, but permitted replacing
+the full app while the editor remained open and the menu/focus had moved on.
+The original mutation count alone does not prove which writer ran; it remains
+retained as a failure rather than reclassified.
+
+Price-only core repaint now waits until the Setups/Tools item editor closes;
+ordinary state renders consume the same cache. Browser regressions dispatch a
+controlled late value event after each of the three menus closes, preserve the
+real editor/picker nodes and focus, and reject a disposable routed module with
+only this guard removed. Reapply diagnostics retain mutation targets and render
+events without weakening exact DOM/zero-mutation requirements. Browser
+verification of this new fix is pending.

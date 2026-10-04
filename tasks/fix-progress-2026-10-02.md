@@ -5,12 +5,12 @@ Branch: `fix/audit-2026-10-02`. Draft PR: [#301](https://github.com/DjKamma420/F
 Application baseline: `bda761d81deb0be37af9fad31f5469efb992df82`.
 Audit baseline: `e666096b55d1a2a887374feb7c7cd743e8cbe111`.
 Last secured tested checkpoint: `7d6be52cd837e055271f1573c41f563a74e5fd2e`.
-Application/probe/workflow source is identical to `12e88f4bbc2a6485821549e04f2bb4f42d225a6d`; the empty scoped Git diff was checked again on October 4. Resolve this later documentation checkpoint's own SHA from the branch ref; a file cannot contain its own commit hash. PR #301 records exact-head follow-up CI.
+The 7d6be52 application/probe/workflow source is identical to `12e88f4bbc2a6485821549e04f2bb4f42d225a6d`; its empty scoped Git diff was checked on October 4 before the new failure and code correction below. Resolve this checkpoint's own SHA from the branch ref; a file cannot contain its own commit hash. PR #301 records exact-head follow-up CI.
 Recovered local checkout on October 4: `7d6be52cd837e055271f1573c41f563a74e5fd2e`, fully materialized through a successful clone. Its initial `git status --porcelain=v1` is empty. This is an observation before the documentation edits below, not a claim about later sessions.
 
 ## Current actual state
 
-- All independently executable package changes are implemented and accepted at 7d6be52; fourteen packages tested, four partially blocked solely by evidence/access-dependent requirements. Both final-head runs completed successfully and all individual jobs, retained cases and gate results were inspected on October 4.
+- Prior 7d6be52 acceptance was inspected on October 4. Its documentation-only successor 4e28995 exposed one nondeterministic Firefox same-state mutation failure. Package 11 is reopened; the current editor ownership fix and deterministic regression/negative control require new exact-head browser acceptance. Other accepted packages and the four source/access blocks remain unchanged.
 - The earlier `409 environment_offline` interruption is resolved in this session: a real full clone and shell reads succeed. The clone process completed with exit 0; there is no hanging local process. Future sessions must inspect their own actual checkout rather than inherit either the earlier offline state or today's empty initial status.
 - A real clone was originally inspected; initial `--no-checkout` staging deletions were the unmaterialized clone, not user work. Its empty status after materialization is a historical observation only.
 - Main was rechecked on October 4 and remains bda761d. PR #301 remains open/draft at 7d6be52; other open PRs #108 and #279 are untouched. Foreign changes have not been overwritten.
@@ -32,7 +32,7 @@ Recovered local checkout on October 4: `7d6be52cd837e055271f1573c41f563a74e5fd2e
 | 8 | Mobile header/set layout | tested | Eight emulated phone/landscape contexts, two/three sets and 48-character names; no obscured tab centers. |
 | 9 | Add Set Cancel/focus | tested | Blank/filled Cancel and Escape close without new set, focus returns. |
 | 10 | Menu/drawer keyboard ownership | tested | Stable last option, actual coordinate touch selection, Arrow/Home/End/Tab/Escape/outside and delayed value-refresh focus. |
-| 11 | Cropshot valid controls/idempotence | tested | Valid sibling controls, one logical write, ten-page and 24 open-picker exact-DOM/zero-mutation cases. |
+| 11 | Cropshot valid controls/idempotence | in progress (October 4 regression) | Cropshot/ten-page checks pass; 4e28995 Firefox reports 106 transient mutations with identical final HTML in the 320px Pet Item fixture. Closed-editor price guard and controlled positive/negative regression added; browser verification pending. |
 | 12 | Phillip count/duration/expiry | blocked (partial implementation tested) | Count, duration, activation/expiry/deactivation and Alpha preview implemented; no first-party live curve established. |
 | 13 | Canonical Vacuum helper | tested | Five canonical damage values/legal modifiers; unsourced elapsed handling remains unknown. |
 | 14 | Canonical chip rates/confidence | blocked (canonical fixes tested) | All ten families share rarity/provenance; Rarefinder 15/30/50 confirmed; live Cropshot curve unresolved. |
@@ -45,6 +45,8 @@ Recovered local checkout on October 4: `7d6be52cd837e055271f1573c41f563a74e5fd2e
 
 | Tested commit | Run / job | Actual result |
 |---|---|---|
+| 4e289959922d37529962b02699900e1a8d039a51 | Validate 37214593240 / 111472421040 | SUCCESS; all individual gates and 1,384 Node + 8 Python tests PASS. |
+| same | Browser 37214593250; Chromium 111472420836, WebKit 111472421027, Firefox 111472421043 | Chromium/WebKit PASS. Firefox **194 PASS / 1 FAIL / 8 NOTE / 0 BLOCKED**: 320px `picker-petItem-same-state-zero-mutations`, equal HTML, 106 mutations. This newer failure reopens acceptance; earlier passes are not substituted. |
 | 7d6be52cd837e055271f1573c41f563a74e5fd2e | Validate 36959294035 / 110689171338 | SUCCESS; every individual step reviewed. 1,384 Node + 8 Python PASS; exact immutable artifact has 52 stamped entrypoints / 466 references; startup, exact-DOM/zero-mutation idempotence and both negative controls PASS. |
 | same | Browser 36959294051; Chromium 110689171582, WebKit 110689171749, Firefox 110689171799 | Each **195 PASS / 0 FAIL / 8 NOTE / 0 BLOCKED**. Actual injected runtime exception rejected with acceptance exit 1 in each engine. No pageerrors were filtered. |
 | same | Chromium strict overlay/sweep | Overlay exit 0, zero findings/runtime errors, 120 main scroll targets and 16 opened overlays. All ten areas / thirty variants PASS, sweep exit 0; injected runtime-error sweep rejected in all three variants. This strict step is intentionally Chromium-only. |
@@ -98,8 +100,9 @@ CI/process state at this save: Validate 36959294035 and Browser 36959294051 and 
 
 ## Current interruption and next executable step
 
-Current point: implementation and available risk acceptance are complete at 7d6be52. The former final-head CI follow-up and environment interruption are resolved. No executable application package remains open. October 4 changes are documentation/evidence only: this file, `docs/RENDER_FREEZE_SAFETY.md` and the 7d6be52 extracted acceptance JSON.
-Next executable step: inspect any automatic jobs for the current documentation-only successor and record them on PR #301; do not rerun completed jobs blindly. Thereafter resume only a newly failing requirement or a blocked requirement with new authoritative live lore/account/device access. The August 3 Alpha source and August 4 live article were reopened on October 4; the latter still does not enumerate Phillip/Cropshot curves and explicitly excludes some Alpha farming changes. No source block was closed by assumption. Do not merge/deploy.
+Current point: **incomplete** after the retained 4e28995 Firefox failure. See [extracted failure](../docs/audits/fix-browser-4e28995-2026-10-04.json). Source inspection found that a late item-value event can structurally repaint a still-open editor when its menu is closed and focus moved outside. The mutation-only original sample does not name its writer; the new controlled old-guard counterexample and mutation/event samples will establish that boundary without assuming all transient mutations have that cause.
+Changed now: `src/app.js` defers price-only core repaint for any existing Setups/Tools item editor; `scripts/audit-fix-browser.mjs` adds 24 closed-menu late-value cases, the isolated former-guard countercontrol and first-20 mutation/event diagnostics; this progress file, render incident log and retained failure JSON. Zero-mutation acceptance is unchanged. Local `npm test` session 85344 completed exit 0: **1,384 Node + 8 Python PASS**; syntax checks pass. Firefox binaries downloaded, but local launch exits 255 (`Couldn't find the application directory`); no local browser acceptance. Failed launch attempts completed. Temporary HTTP server session 6066 belongs only to this session's attempted local browser diagnosis.
+Next executable step: secure this explicitly incomplete fix, inspect its new automatic three-engine/Validate jobs and controlled old/new refresh outcomes, then fix any actual reported mutations. Do not blindly rerun 4e28995. Record final exact-head results on PR #301. The August 3 Alpha source and August 4 live article were reopened on October 4; the latter still does not enumerate Phillip/Cropshot curves and explicitly excludes some Alpha farming changes. Source/account/device blocks remain. Do not merge/deploy.
 For a later “continue”: read this current section, actual branch files and PR CI first. Confirm completed final-head runs; resume only a new failure or a blocked requirement for which new evidence/capabilities exist. Do not restart package 1 or treat historical pending statements as the current task.
 
 ## Historical checkpoints

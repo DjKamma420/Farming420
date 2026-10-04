@@ -87,6 +87,47 @@ try {
       {...result,acceptanceExit,rawPageErrors:capture.errors});
     await context.close();
   }
+  {
+    // Revert only the new editor ownership guard in a disposable browser.
+    // The actual delayed-refresh regression must detect that former behavior.
+    const currentSource=await readFile('src/app.js','utf8');
+    const guard="(['setups','tools'].includes(state.page) && document.querySelector('[data-item-editor]'))\n    || ";
+    if(!currentSource.includes(guard))throw new Error('Closed-editor negative control could not identify its single guard');
+    const legacySource=currentSource.replace(guard,'');
+    const context=await browser.newContext({viewport:{width:320,height:568},hasTouch:true});
+    const page=await context.newPage();
+    const capture=captureErrors(page);
+    await page.route('**/src/app.js*',route=>route.fulfill({status:200,contentType:'text/javascript',body:legacySource}));
+    await instrument(page,JSON.stringify(seed));
+    try {
+      await page.goto('http://127.0.0.1:4173',{waitUntil:'domcontentloaded'});
+      await page.locator('[data-nav-toggle]').waitFor();
+      await page.waitForTimeout(2200);
+      await navigate(page,'setups');
+      await page.locator('.slot-card[data-slot="petItem"][data-setup-target="normal"]').tap();
+      await page.locator('details[data-pet-item-dropdown] summary').waitFor();
+      await page.locator('#search').tap();
+      const legacy=await page.evaluate(async()=>{
+        const editor=document.querySelector('[data-item-editor]');
+        const picker=editor.querySelector('details[data-pet-item-dropdown]');
+        let rendered=0;
+        const recordRender=()=>rendered++;
+        window.addEventListener('farming420:rendered',recordRender);
+        window.dispatchEvent(new Event('farming420:item-value-updated'));
+        await new Promise(r=>setTimeout(r,100));
+        window.removeEventListener('farming420:rendered',recordRender);
+        return {rendered,editorConnected:editor.isConnected,pickerConnected:picker.isConnected};
+      });
+      const regressionExit=probeExitCode([{status:legacy.rendered===0&&legacy.editorConnected&&legacy.pickerConnected?'PASS':'FAIL'}]);
+      add('closed-editor-negative-control','late-value-refresh-rejects-former-editor-replacement',
+        regressionExit===1&&legacy.rendered>0&&!legacy.editorConnected?'PASS':'FAIL',{...legacy,regressionExit,source:'one editor guard removed in disposable routed module'});
+      runtimeCase('closed-editor-negative-control',capture);
+    } catch(error) {
+      add('closed-editor-negative-control','probe-execution','BLOCKED',{message:String(error)});
+    } finally {
+      await context.close();
+    }
+  }
   for (const [name, width, height] of [['320-portrait',320,568],['360-portrait',360,640],['375-portrait',375,667],['390-portrait',390,844],['412-portrait',412,915],['568-landscape',568,320],['667-landscape',667,375],['800-landscape',800,360]]) {
     const context = await browser.newContext({ viewport: { width, height }, hasTouch: true });
     const page = await context.newPage();
@@ -217,6 +258,19 @@ try {
         await page.locator('#search').tap();
         const outside=await picker.evaluate(e=>!e.open);
         add(name,`picker-${slot}-home-end-tab-outside-focus`,end&&home&&escape&&tab&&outside&&stableOnValueRefresh?'PASS':'FAIL',{end,home,escape,tab,outside,stableOnValueRefresh});
+        const closedEditorRefresh=await picker.evaluate(async e=>{
+          const editor=e.closest('[data-item-editor]'),focused=document.activeElement;
+          let rendered=0;
+          const recordRender=()=>rendered++;
+          window.addEventListener('farming420:rendered',recordRender);
+          window.dispatchEvent(new Event('farming420:item-value-updated'));
+          await new Promise(r=>setTimeout(r,100));
+          window.removeEventListener('farming420:rendered',recordRender);
+          return {closed:!e.open,editorConnected:editor.isConnected,pickerConnected:e.isConnected,
+            focusPreserved:focused===document.activeElement,rendered};
+        });
+        add(name,`picker-${slot}-closed-menu-late-value-refresh`,
+          closedEditorRefresh.closed&&closedEditorRefresh.editorConnected&&closedEditorRefresh.pickerConnected&&closedEditorRefresh.focusPreserved&&closedEditorRefresh.rendered===0?'PASS':'FAIL',closedEditorRefresh);
         const reapplied=await page.evaluate(async()=>{
           const root=document.getElementById('app');
           let last=Date.now();
@@ -227,10 +281,25 @@ try {
           quiet.disconnect();
           if(Date.now()-last<250)throw new Error('Open picker did not settle before reapply');
           const before=root.innerHTML;let mutations=0;
-          const observer=new MutationObserver(rows=>mutations+=rows.length);
-          observer.observe(root,{subtree:true,attributes:true,childList:true,characterData:true});
+          const samples=[],events=[];
+          const eventNames=['farming420:rendered','farming420:item-value-updated','farming420:market-average-updated'];
+          const recordEvent=event=>events.push(event.type);
+          for(const name of eventNames)window.addEventListener(name,recordEvent);
+          const observer=new MutationObserver(rows=>{
+            mutations+=rows.length;
+            for(const row of rows)if(samples.length<20)samples.push({
+              type:row.type,target:row.target.nodeName,id:row.target.id||null,
+              className:row.target.nodeType===1?row.target.getAttribute('class'):null,
+              attribute:row.attributeName,oldValue:row.oldValue,
+              newValue:row.attributeName?row.target.getAttribute(row.attributeName):null,
+              added:row.addedNodes.length,removed:row.removedNodes.length,
+            });
+          });
+          observer.observe(root,{subtree:true,attributes:true,attributeOldValue:true,childList:true,characterData:true,characterDataOldValue:true});
           for(let i=0;i<3;i++){window.dispatchEvent(new Event('farming420:state-changed'));await new Promise(r=>setTimeout(r,120));}
-          observer.disconnect();return {equal:before===root.innerHTML,mutations};
+          observer.disconnect();
+          for(const name of eventNames)window.removeEventListener(name,recordEvent);
+          return {equal:before===root.innerHTML,mutations,samples,events};
         });
         add(name,`picker-${slot}-same-state-zero-mutations`,reapplied.equal&&reapplied.mutations===0?'PASS':'FAIL',reapplied);
       }

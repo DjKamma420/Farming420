@@ -3647,7 +3647,8 @@ window.addEventListener('farming420:state-changed', () => {
 // is active. A normal state render consumes the cache; otherwise flush after
 // the user leaves/closes the interactive overlay through its normal event.
 function priceRenderBlockedByInteraction() {
-  return Boolean(document.querySelector('details[data-keyboard-bound="1"][open], .drawer, .sidebar.nav-open')
+  return Boolean((['setups','tools'].includes(state.page) && document.querySelector('[data-item-editor]'))
+    || document.querySelector('details[data-keyboard-bound="1"][open], .drawer, .sidebar.nav-open')
     || document.activeElement?.closest?.('details[data-keyboard-bound="1"]'));
 }
 function flushPriceRender() {
