@@ -230,7 +230,7 @@ function petItemArtNode(record, label = 'Pet Item') {
   image.addEventListener('load', () => art.classList.add('has-pet-item-icon'), { once: true });
   image.addEventListener('error', () => {
     image.remove();
-    art.classList.remove('has-pet-item-icon');
+    if (art.classList.contains('has-pet-item-icon')) art.classList.remove('has-pet-item-icon');
   }, { once: true });
   art.append(image);
   return art;
@@ -683,7 +683,7 @@ function armorItemArtNode(record, label = 'Armor') {
   const appendVoxelFallback = () => {
     const voxel = armorVoxelHeadNode(catalogTextureId, label);
     if (!voxel) {
-      art.classList.remove('has-gear-art');
+      if (art.classList.contains('has-gear-art')) art.classList.remove('has-gear-art');
       return;
     }
     art.append(voxel);

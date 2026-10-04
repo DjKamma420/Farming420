@@ -154,3 +154,22 @@ Validate 37215640986 succeeds; Browser 37215640933 reports 221 PASS, zero FAIL
 and zero BLOCKED in each engine. All 24 late-refresh/editor-reapply cases pass;
 the removed-guard module emits one render, disconnects its editor/picker and is
 rejected with regression exit 1 in every engine. Full overlays/sweep also pass.
+
+### 2026-10-04 — unfinished icon fallback wakes a redundant workspace writer
+
+The b2997a4 repeat fails Chromium's 320px helmet reapply with three recorded
+mutations and changed HTML, while Firefox/WebKit and the Chromium sweep pass.
+No core render/value event occurs. A pending icon error removes its failed image,
+the fallback removes an absent class, and the resulting child-list observation
+makes workspace UI add an already-present crop-switch class. The image removal
+is a legitimate one-time transition; the two unchanged class writes violate
+the no-op invariant. The failed run remains retained, not reclassified.
+
+Workspace UI now tests class membership before adding. Pet Item/armor fallback
+owners also test membership before removing. A functional regression invokes
+the actual workspace apply function, counts one initial write, zero repeated
+writes and one correction after a genuinely missing class. The browser reapply
+fixture finishes only the editor icon load/error owners before taking its
+baseline, with an explicit settlement deadline. Every later DOM mutation still
+fails; there is no whitelist or excluded target. Browser acceptance of this
+correction remains pending; see `tasks/fix-progress-2026-10-02.md`.

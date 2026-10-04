@@ -273,6 +273,21 @@ try {
           closedEditorRefresh.closed&&closedEditorRefresh.editorConnected&&closedEditorRefresh.pickerConnected&&closedEditorRefresh.focusPreserved&&closedEditorRefresh.rendered===0?'PASS':'FAIL',closedEditorRefresh);
         const reapplied=await page.evaluate(async()=>{
           const root=document.getElementById('app');
+          // A pending image response changes presentation independently of a
+          // same-state announcement. Finish these existing load/error owners
+          // before taking the baseline; no mutation during reapply is ignored.
+          const images=[...root.querySelectorAll('[data-item-editor] img.sb-gear-item-icon, [data-item-editor] img.sb-pet-item-icon')];
+          for(const image of images)if(image.loading==='lazy')image.loading='eager';
+          let imageTimer;
+          try {
+            await Promise.race([
+              Promise.all(images.map(image=>image.complete?Promise.resolve():new Promise(resolve=>{
+                image.addEventListener('load',resolve,{once:true});
+                image.addEventListener('error',resolve,{once:true});
+              }))),
+              new Promise((_,reject)=>imageTimer=setTimeout(()=>reject(new Error('Editor images did not settle before reapply')),8000)),
+            ]);
+          } finally { clearTimeout(imageTimer); }
           let last=Date.now();
           const quiet=new MutationObserver(()=>last=Date.now());
           quiet.observe(root,{subtree:true,attributes:true,childList:true,characterData:true});
@@ -299,7 +314,7 @@ try {
           for(let i=0;i<3;i++){window.dispatchEvent(new Event('farming420:state-changed'));await new Promise(r=>setTimeout(r,120));}
           observer.disconnect();
           for(const name of eventNames)window.removeEventListener(name,recordEvent);
-          return {equal:before===root.innerHTML,mutations,samples,events};
+          return {equal:before===root.innerHTML,mutations,samples,events,settledEditorImages:images.length};
         });
         add(name,`picker-${slot}-same-state-zero-mutations`,reapplied.equal&&reapplied.mutations===0?'PASS':'FAIL',reapplied);
       }

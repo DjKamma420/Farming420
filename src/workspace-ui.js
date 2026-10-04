@@ -209,7 +209,10 @@ function enhanceTools(root) {
 }
 
 export function applyWorkspaceUI(root = document) {
-  root.querySelector('.topbar .crop-switch')?.classList.add('workspace-hidden-crop-switch');
+  const cropSwitch = root.querySelector('.topbar .crop-switch');
+  if (cropSwitch && !cropSwitch.classList.contains('workspace-hidden-crop-switch')) {
+    cropSwitch.classList.add('workspace-hidden-crop-switch');
+  }
   enhanceTools(root);
 }
 
