@@ -123,22 +123,20 @@ test('Phillip converts at the researched rate and stops at the cap', () => {
   assert.equal(over.fortune, PESTHUNTER_PHILIP.maxFortune);
   assert.equal(over.capped, true, 'a swallowed spend must say it was capped');
 
-  // A fractional count spends whole pests.
-  assert.equal(philipFortuneFor(10.9).spent, 10);
+  assert.equal(philipFortuneFor('17').fortune, 85);
+  assert.equal(philipFortuneFor(10.9), null, 'a partial Pest is an invalid count');
+  assert.equal(philipFortuneFor('10.9'), null);
 });
 
 test('a bad pest count is no answer, not zero Fortune', () => {
-  for (const bad of [-1, NaN, 'abc', null, undefined, {}]) {
+  for (const bad of [-1, NaN, 'abc', null, undefined, {}, false, [], ' ']) {
     assert.equal(philipFortuneFor(bad), null, String(bad));
   }
-  // '' coerces to 0, which is a real answer: spending nothing buys nothing.
+  // A blank count remains unknown; explicit measured zero above is valid.
   assert.equal(philipFortuneFor(''), null);
 });
 
-test('the superseded cap is kept visible rather than dropped', () => {
-  // Two sources disagree on the ceiling. Both agree on 5 per pest. The
-  // version-tagged figure is used and the older one stays readable, so a
-  // player on an older snapshot can tell which number is theirs.
+test('the historical cap remains visible without identifying a live version', () => {
   const older = PESTHUNTER_PHILIP.supersededSnapshot;
   assert.equal(older.pestCap, 40);
   assert.equal(older.maxFortune, 200);
@@ -146,6 +144,7 @@ test('the superseded cap is kept visible rather than dropped', () => {
   assert.equal(PESTHUNTER_PHILIP.maxFortune, 200);
   assert.equal(PESTHUNTER_PHILIP.confidence,'ALPHA_ONLY');
   assert.match(read('pest-analysis-ui.js'), /supersededSnapshot/);
+  assert.doesNotMatch(read('pest-analysis-ui.js'), /yours is the older one/);
 });
 
 test('pest health carries its one documented exception', () => {

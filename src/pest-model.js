@@ -114,20 +114,21 @@ export const LOOT_PIPELINE = Object.freeze([
 /**
  * Pesthunter Phillip's pest-to-Fortune conversion.
  *
- * Two sources give different caps. `current_key_values` in the master research
- * file is tagged `_0_27` and gives 200 pests for +1,000 Farming Fortune;
- * `VACUUM_RESEARCH.md` records an earlier +200 ceiling at 40 pests. Both agree
- * on 5 Farming Fortune per pest. The newer, version-tagged figure is the one
- * used, and the older one is kept visible rather than quietly dropped -- a
- * player on an older snapshot should be able to see which number they have.
+ * The shared modifier table carries an explicitly Alpha-only curve: +5 per
+ * pest capped at +200 Fortune, reached with 40 pests. It is a preview rather
+ * than verified live Fortune. The old research reference remains readable;
+ * identical caps cannot identify which game version a player is running.
  */
 export const PESTHUNTER_PHILIP = Object.freeze({
   fortunePerPest: TEMPORARY_FARMING_MODIFIERS.pesthunterPhillip.farmingFortunePerPest,
   pestCap: TEMPORARY_FARMING_MODIFIERS.pesthunterPhillip.currentPestCostForFullBuff,
   maxFortune: TEMPORARY_FARMING_MODIFIERS.pesthunterPhillip.farmingFortuneCap,
-  durationMinutes: 30,
+  durationMinutes: TEMPORARY_FARMING_MODIFIERS.pesthunterPhillip.durationSeconds / 60,
   version: 'Alpha 2026-08-03; live verification pending',
-  confidence: 'ALPHA_ONLY',
+  confidence: TEMPORARY_FARMING_MODIFIERS.pesthunterPhillip.confidence,
+  status: TEMPORARY_FARMING_MODIFIERS.pesthunterPhillip.status,
+  source: TEMPORARY_FARMING_MODIFIERS.pesthunterPhillip.source,
+  sourceDate: TEMPORARY_FARMING_MODIFIERS.pesthunterPhillip.sourceDate,
   supersededSnapshot: Object.freeze({ pestCap: 40, maxFortune: 200, source: 'research/VACUUM_RESEARCH.md' }),
   alternativeUseNote: 'Pest currency has other uses, so this is only worth its Fortune if you were going to spend it here.',
 });
@@ -140,14 +141,14 @@ export const PESTHUNTER_PHILIP = Object.freeze({
  */
 export function philipFortuneFor(pests, table = PESTHUNTER_PHILIP) {
   const requested = finiteNonNegative(pests);
-  if (requested === null) return null;
-  const spent = Math.min(Math.floor(requested), table.pestCap);
+  if (requested === null || !Number.isInteger(requested)) return null;
+  const spent = Math.min(requested, table.pestCap);
   const fortune = Math.min(spent * table.fortunePerPest, table.maxFortune);
   return {
-    requested: Math.floor(requested),
+    requested,
     spent,
     fortune,
-    capped: Math.floor(requested) > table.pestCap,
+    capped: requested > table.pestCap,
     durationMinutes: table.durationMinutes,
   };
 }
