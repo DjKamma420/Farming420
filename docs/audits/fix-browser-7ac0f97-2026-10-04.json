@@ -1,0 +1,559 @@
+{
+  "commit": "7ac0f976b41a2ad52579bd79b1f2bc36dbf2eec5",
+  "validate": {
+    "run": 37217577368,
+    "job": 111481127755,
+    "result": "success",
+    "node": 1385,
+    "python": 8,
+    "stampedEntrypoints": 52,
+    "references": 466,
+    "allIndividualGatesPassed": true,
+    "tenPageSameStateZeroMutations": true,
+    "bothDomNegativeControlsRejected": true
+  },
+  "browser": {
+    "run": 37217577257,
+    "engines": [
+      {
+        "job": 111481127300,
+        "engine": "chromium",
+        "counts": {
+          "PASS": 221,
+          "FAIL": 0,
+          "NOTE": 8,
+          "BLOCKED": 0
+        },
+        "runtimeNegative": {
+          "engine": "chromium",
+          "viewport": "negative-control",
+          "check": "runtime-error-negative-control",
+          "status": "PASS",
+          "evidence": {
+            "runtimeErrors": [
+              "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+            ],
+            "marketTransportNotes": [],
+            "acceptanceExit": 1,
+            "rawPageErrors": [
+              "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+            ]
+          }
+        },
+        "oldEditorGuardNegative": {
+          "engine": "chromium",
+          "viewport": "closed-editor-negative-control",
+          "check": "late-value-refresh-rejects-former-editor-replacement",
+          "status": "PASS",
+          "evidence": {
+            "rendered": 1,
+            "editorConnected": false,
+            "pickerConnected": false,
+            "regressionExit": 1,
+            "source": "one editor guard removed in disposable routed module"
+          }
+        },
+        "closedEditorRefresh": {
+          "cases": 24,
+          "allPassed": true,
+          "rendered": 0,
+          "nodeAndFocusPreserved": true
+        },
+        "sameStateEditor": {
+          "cases": 24,
+          "allExactDomEqual": true,
+          "mutations": 0,
+          "events": [],
+          "settledEditorImages": [
+            {
+              "viewport": "320-portrait",
+              "check": "picker-petItem-same-state-zero-mutations",
+              "images": 1
+            },
+            {
+              "viewport": "320-portrait",
+              "check": "picker-pet-same-state-zero-mutations",
+              "images": 0
+            },
+            {
+              "viewport": "320-portrait",
+              "check": "picker-helmet-same-state-zero-mutations",
+              "images": 10
+            },
+            {
+              "viewport": "360-portrait",
+              "check": "picker-petItem-same-state-zero-mutations",
+              "images": 1
+            },
+            {
+              "viewport": "360-portrait",
+              "check": "picker-pet-same-state-zero-mutations",
+              "images": 0
+            },
+            {
+              "viewport": "360-portrait",
+              "check": "picker-helmet-same-state-zero-mutations",
+              "images": 10
+            },
+            {
+              "viewport": "375-portrait",
+              "check": "picker-petItem-same-state-zero-mutations",
+              "images": 1
+            },
+            {
+              "viewport": "375-portrait",
+              "check": "picker-pet-same-state-zero-mutations",
+              "images": 0
+            },
+            {
+              "viewport": "375-portrait",
+              "check": "picker-helmet-same-state-zero-mutations",
+              "images": 10
+            },
+            {
+              "viewport": "390-portrait",
+              "check": "picker-petItem-same-state-zero-mutations",
+              "images": 1
+            },
+            {
+              "viewport": "390-portrait",
+              "check": "picker-pet-same-state-zero-mutations",
+              "images": 0
+            },
+            {
+              "viewport": "390-portrait",
+              "check": "picker-helmet-same-state-zero-mutations",
+              "images": 10
+            },
+            {
+              "viewport": "412-portrait",
+              "check": "picker-petItem-same-state-zero-mutations",
+              "images": 1
+            },
+            {
+              "viewport": "412-portrait",
+              "check": "picker-pet-same-state-zero-mutations",
+              "images": 0
+            },
+            {
+              "viewport": "412-portrait",
+              "check": "picker-helmet-same-state-zero-mutations",
+              "images": 10
+            },
+            {
+              "viewport": "568-landscape",
+              "check": "picker-petItem-same-state-zero-mutations",
+              "images": 1
+            },
+            {
+              "viewport": "568-landscape",
+              "check": "picker-pet-same-state-zero-mutations",
+              "images": 0
+            },
+            {
+              "viewport": "568-landscape",
+              "check": "picker-helmet-same-state-zero-mutations",
+              "images": 10
+            },
+            {
+              "viewport": "667-landscape",
+              "check": "picker-petItem-same-state-zero-mutations",
+              "images": 1
+            },
+            {
+              "viewport": "667-landscape",
+              "check": "picker-pet-same-state-zero-mutations",
+              "images": 0
+            },
+            {
+              "viewport": "667-landscape",
+              "check": "picker-helmet-same-state-zero-mutations",
+              "images": 10
+            },
+            {
+              "viewport": "800-landscape",
+              "check": "picker-petItem-same-state-zero-mutations",
+              "images": 1
+            },
+            {
+              "viewport": "800-landscape",
+              "check": "picker-pet-same-state-zero-mutations",
+              "images": 0
+            },
+            {
+              "viewport": "800-landscape",
+              "check": "picker-helmet-same-state-zero-mutations",
+              "images": 10
+            }
+          ]
+        },
+        "failed": []
+      },
+      {
+        "job": 111481127575,
+        "engine": "webkit",
+        "counts": {
+          "PASS": 221,
+          "FAIL": 0,
+          "NOTE": 8,
+          "BLOCKED": 0
+        },
+        "runtimeNegative": {
+          "engine": "webkit",
+          "viewport": "negative-control",
+          "check": "runtime-error-negative-control",
+          "status": "PASS",
+          "evidence": {
+            "runtimeErrors": [
+              "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+            ],
+            "marketTransportNotes": [],
+            "acceptanceExit": 1,
+            "rawPageErrors": [
+              "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+            ]
+          }
+        },
+        "oldEditorGuardNegative": {
+          "engine": "webkit",
+          "viewport": "closed-editor-negative-control",
+          "check": "late-value-refresh-rejects-former-editor-replacement",
+          "status": "PASS",
+          "evidence": {
+            "rendered": 1,
+            "editorConnected": false,
+            "pickerConnected": false,
+            "regressionExit": 1,
+            "source": "one editor guard removed in disposable routed module"
+          }
+        },
+        "closedEditorRefresh": {
+          "cases": 24,
+          "allPassed": true,
+          "rendered": 0,
+          "nodeAndFocusPreserved": true
+        },
+        "sameStateEditor": {
+          "cases": 24,
+          "allExactDomEqual": true,
+          "mutations": 0,
+          "events": [],
+          "settledEditorImages": [
+            {
+              "viewport": "320-portrait",
+              "check": "picker-petItem-same-state-zero-mutations",
+              "images": 1
+            },
+            {
+              "viewport": "320-portrait",
+              "check": "picker-pet-same-state-zero-mutations",
+              "images": 0
+            },
+            {
+              "viewport": "320-portrait",
+              "check": "picker-helmet-same-state-zero-mutations",
+              "images": 10
+            },
+            {
+              "viewport": "360-portrait",
+              "check": "picker-petItem-same-state-zero-mutations",
+              "images": 1
+            },
+            {
+              "viewport": "360-portrait",
+              "check": "picker-pet-same-state-zero-mutations",
+              "images": 0
+            },
+            {
+              "viewport": "360-portrait",
+              "check": "picker-helmet-same-state-zero-mutations",
+              "images": 10
+            },
+            {
+              "viewport": "375-portrait",
+              "check": "picker-petItem-same-state-zero-mutations",
+              "images": 1
+            },
+            {
+              "viewport": "375-portrait",
+              "check": "picker-pet-same-state-zero-mutations",
+              "images": 0
+            },
+            {
+              "viewport": "375-portrait",
+              "check": "picker-helmet-same-state-zero-mutations",
+              "images": 10
+            },
+            {
+              "viewport": "390-portrait",
+              "check": "picker-petItem-same-state-zero-mutations",
+              "images": 1
+            },
+            {
+              "viewport": "390-portrait",
+              "check": "picker-pet-same-state-zero-mutations",
+              "images": 0
+            },
+            {
+              "viewport": "390-portrait",
+              "check": "picker-helmet-same-state-zero-mutations",
+              "images": 10
+            },
+            {
+              "viewport": "412-portrait",
+              "check": "picker-petItem-same-state-zero-mutations",
+              "images": 1
+            },
+            {
+              "viewport": "412-portrait",
+              "check": "picker-pet-same-state-zero-mutations",
+              "images": 0
+            },
+            {
+              "viewport": "412-portrait",
+              "check": "picker-helmet-same-state-zero-mutations",
+              "images": 10
+            },
+            {
+              "viewport": "568-landscape",
+              "check": "picker-petItem-same-state-zero-mutations",
+              "images": 1
+            },
+            {
+              "viewport": "568-landscape",
+              "check": "picker-pet-same-state-zero-mutations",
+              "images": 0
+            },
+            {
+              "viewport": "568-landscape",
+              "check": "picker-helmet-same-state-zero-mutations",
+              "images": 10
+            },
+            {
+              "viewport": "667-landscape",
+              "check": "picker-petItem-same-state-zero-mutations",
+              "images": 1
+            },
+            {
+              "viewport": "667-landscape",
+              "check": "picker-pet-same-state-zero-mutations",
+              "images": 0
+            },
+            {
+              "viewport": "667-landscape",
+              "check": "picker-helmet-same-state-zero-mutations",
+              "images": 10
+            },
+            {
+              "viewport": "800-landscape",
+              "check": "picker-petItem-same-state-zero-mutations",
+              "images": 1
+            },
+            {
+              "viewport": "800-landscape",
+              "check": "picker-pet-same-state-zero-mutations",
+              "images": 0
+            },
+            {
+              "viewport": "800-landscape",
+              "check": "picker-helmet-same-state-zero-mutations",
+              "images": 10
+            }
+          ]
+        },
+        "failed": []
+      },
+      {
+        "job": 111481127858,
+        "engine": "firefox",
+        "counts": {
+          "PASS": 221,
+          "FAIL": 0,
+          "NOTE": 8,
+          "BLOCKED": 0
+        },
+        "runtimeNegative": {
+          "engine": "firefox",
+          "viewport": "negative-control",
+          "check": "runtime-error-negative-control",
+          "status": "PASS",
+          "evidence": {
+            "runtimeErrors": [
+              "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+            ],
+            "marketTransportNotes": [],
+            "acceptanceExit": 1,
+            "rawPageErrors": [
+              "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+            ]
+          }
+        },
+        "oldEditorGuardNegative": {
+          "engine": "firefox",
+          "viewport": "closed-editor-negative-control",
+          "check": "late-value-refresh-rejects-former-editor-replacement",
+          "status": "PASS",
+          "evidence": {
+            "rendered": 1,
+            "editorConnected": false,
+            "pickerConnected": false,
+            "regressionExit": 1,
+            "source": "one editor guard removed in disposable routed module"
+          }
+        },
+        "closedEditorRefresh": {
+          "cases": 24,
+          "allPassed": true,
+          "rendered": 0,
+          "nodeAndFocusPreserved": true
+        },
+        "sameStateEditor": {
+          "cases": 24,
+          "allExactDomEqual": true,
+          "mutations": 0,
+          "events": [],
+          "settledEditorImages": [
+            {
+              "viewport": "320-portrait",
+              "check": "picker-petItem-same-state-zero-mutations",
+              "images": 1
+            },
+            {
+              "viewport": "320-portrait",
+              "check": "picker-pet-same-state-zero-mutations",
+              "images": 0
+            },
+            {
+              "viewport": "320-portrait",
+              "check": "picker-helmet-same-state-zero-mutations",
+              "images": 11
+            },
+            {
+              "viewport": "360-portrait",
+              "check": "picker-petItem-same-state-zero-mutations",
+              "images": 1
+            },
+            {
+              "viewport": "360-portrait",
+              "check": "picker-pet-same-state-zero-mutations",
+              "images": 0
+            },
+            {
+              "viewport": "360-portrait",
+              "check": "picker-helmet-same-state-zero-mutations",
+              "images": 10
+            },
+            {
+              "viewport": "375-portrait",
+              "check": "picker-petItem-same-state-zero-mutations",
+              "images": 1
+            },
+            {
+              "viewport": "375-portrait",
+              "check": "picker-pet-same-state-zero-mutations",
+              "images": 0
+            },
+            {
+              "viewport": "375-portrait",
+              "check": "picker-helmet-same-state-zero-mutations",
+              "images": 10
+            },
+            {
+              "viewport": "390-portrait",
+              "check": "picker-petItem-same-state-zero-mutations",
+              "images": 1
+            },
+            {
+              "viewport": "390-portrait",
+              "check": "picker-pet-same-state-zero-mutations",
+              "images": 0
+            },
+            {
+              "viewport": "390-portrait",
+              "check": "picker-helmet-same-state-zero-mutations",
+              "images": 10
+            },
+            {
+              "viewport": "412-portrait",
+              "check": "picker-petItem-same-state-zero-mutations",
+              "images": 1
+            },
+            {
+              "viewport": "412-portrait",
+              "check": "picker-pet-same-state-zero-mutations",
+              "images": 0
+            },
+            {
+              "viewport": "412-portrait",
+              "check": "picker-helmet-same-state-zero-mutations",
+              "images": 10
+            },
+            {
+              "viewport": "568-landscape",
+              "check": "picker-petItem-same-state-zero-mutations",
+              "images": 1
+            },
+            {
+              "viewport": "568-landscape",
+              "check": "picker-pet-same-state-zero-mutations",
+              "images": 0
+            },
+            {
+              "viewport": "568-landscape",
+              "check": "picker-helmet-same-state-zero-mutations",
+              "images": 10
+            },
+            {
+              "viewport": "667-landscape",
+              "check": "picker-petItem-same-state-zero-mutations",
+              "images": 1
+            },
+            {
+              "viewport": "667-landscape",
+              "check": "picker-pet-same-state-zero-mutations",
+              "images": 0
+            },
+            {
+              "viewport": "667-landscape",
+              "check": "picker-helmet-same-state-zero-mutations",
+              "images": 10
+            },
+            {
+              "viewport": "800-landscape",
+              "check": "picker-petItem-same-state-zero-mutations",
+              "images": 1
+            },
+            {
+              "viewport": "800-landscape",
+              "check": "picker-pet-same-state-zero-mutations",
+              "images": 0
+            },
+            {
+              "viewport": "800-landscape",
+              "check": "picker-helmet-same-state-zero-mutations",
+              "images": 10
+            }
+          ]
+        },
+        "failed": []
+      }
+    ],
+    "strictChromium": {
+      "overlayExit": 0,
+      "findings": 0,
+      "runtimeErrors": 0,
+      "mainScrollTargets": 120,
+      "openedOverlays": 16,
+      "sweepExit": 0,
+      "ordinaryAreas": 10,
+      "variants": 30,
+      "injectedRuntimeErrorExit": 1
+    }
+  },
+  "boundaries": [
+    "Editor icon load/error owners finish before the strict reapply baseline; every mutation after the baseline still fails.",
+    "b2997a4 Chromium failure remains retained; no blind same-commit rerun.",
+    "This is CI/emulated browser acceptance, not physical-device or deployed acceptance.",
+    "Phillip/Cropshot live curves, remaining Pest/shard/pet live lore and account/deployed Pages checks stay partially blocked."
+  ]
+}

@@ -171,5 +171,10 @@ the actual workspace apply function, counts one initial write, zero repeated
 writes and one correction after a genuinely missing class. The browser reapply
 fixture finishes only the editor icon load/error owners before taking its
 baseline, with an explicit settlement deadline. Every later DOM mutation still
-fails; there is no whitelist or excluded target. Browser acceptance of this
-correction remains pending; see `tasks/fix-progress-2026-10-02.md`.
+fails; there is no whitelist or excluded target. Browser acceptance passes at
+`7ac0f976b41a2ad52579bd79b1f2bc36dbf2eec5`: Validate 37217577368 succeeds
+with 1,385 Node + 8 Python tests, startup/ten-page no-op checks and both injected
+DOM countercontrols. Browser 37217577257 reports 221 PASS / zero FAIL / zero
+BLOCKED in each engine; all 24 editor measurements have identical HTML and zero
+mutations after icon settlement. Strict Chromium overlays/sweep pass. See
+`docs/audits/fix-browser-7ac0f97-2026-10-04.json` and the progress ledger.
