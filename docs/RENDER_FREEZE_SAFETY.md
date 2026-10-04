@@ -149,4 +149,8 @@ controlled late value event after each of the three menus closes, preserve the
 real editor/picker nodes and focus, and reject a disposable routed module with
 only this guard removed. Reapply diagnostics retain mutation targets and render
 events without weakening exact DOM/zero-mutation requirements. Browser
-verification of this new fix is pending.
+verification passes at `002e86e243eec926c16850f1c3664dc824a9c41d`:
+Validate 37215640986 succeeds; Browser 37215640933 reports 221 PASS, zero FAIL
+and zero BLOCKED in each engine. All 24 late-refresh/editor-reapply cases pass;
+the removed-guard module emits one render, disconnects its editor/picker and is
+rejected with regression exit 1 in every engine. Full overlays/sweep also pass.
