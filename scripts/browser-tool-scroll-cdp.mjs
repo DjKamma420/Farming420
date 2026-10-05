@@ -278,12 +278,18 @@ try {
   })()`);
   const lateDrift = Math.abs(lateAfter.top - lateBefore.top);
   const lateScrollDelta = Math.abs(lateAfter.y - lateBefore.y);
-  console.log('TRUSTED_TOOL_SCROLL_DIAGNOSTIC ' + JSON.stringify(await evaluate(`({
+  const diagnostic = await evaluate(`({
     before: ${JSON.stringify(lateBefore)}, after: window.__toolScrollDiagnostic.snapshot(),
     events: window.__toolScrollDiagnostic.events,
-  })`)));
+  })`);
+  console.log('TRUSTED_TOOL_SCROLL_DIAGNOSTIC ' + JSON.stringify(diagnostic));
   if (lateDrift > 4 || lateScrollDelta > 4) {
     fail(`delayed tool render drifted: top=${lateDrift.toFixed(2)} scroll=${lateScrollDelta.toFixed(2)}`);
+  }
+  if (diagnostic.events.some(event => event.type === 'farming420:rendered')
+    || ['card', 'editor', 'main'].some(key => diagnostic.before[key] !== diagnostic.after[key]
+      || !diagnostic.after.originalConnected[key])) {
+    fail('delayed tool value refresh replaced the physical editor or scroll owner');
   }
 
   console.log(`TRUSTED_TOOL_SCROLL_OK transitions=${sequence.length} maxDrift=${maxDrift.toFixed(2)} lateDrift=${lateDrift.toFixed(2)} lateScroll=${lateScrollDelta.toFixed(2)} ${rows.join(' | ')}`);

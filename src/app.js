@@ -3648,6 +3648,7 @@ window.addEventListener('farming420:state-changed', () => {
 // the user leaves/closes the interactive overlay through its normal event.
 function priceRenderBlockedByInteraction() {
   return Boolean((['setups','tools'].includes(state.page) && document.querySelector('[data-item-editor]'))
+    || (state.page === 'tools' && document.querySelector('[data-tool-editor], [data-vacuum-panel]'))
     || document.querySelector('details[data-keyboard-bound="1"][open], .drawer, .sidebar.nav-open')
     || document.activeElement?.closest?.('details[data-keyboard-bound="1"]'));
 }
@@ -3680,9 +3681,8 @@ window.addEventListener('farming420:item-value-updated', () => {
   if (state.page !== 'setups' && state.page !== 'tools') return;
 
   // Physical value refreshes finish after the selection that requested them.
-  // On Setups that late render is followed by editor docking, so it needs the
-  // same interaction/slot restore path as a direct state change. Without it,
-  // item-dependent price refreshes can move the page even though the original
-  // selection itself was scroll-safe.
+  // Both physical editor surfaces must keep their nodes through this late
+  // event, including after the click anchor expires. Ordinary state renders
+  // consume the cache; price-only refresh waits for the editor owner to leave.
   requestPriceRender();
 });

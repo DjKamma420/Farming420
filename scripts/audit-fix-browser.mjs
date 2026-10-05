@@ -73,6 +73,36 @@ const wheelToLast = async page => {
   }
   return geometry(page);
 };
+const toolRefreshAccepted = evidence => evidence.rendered === 0
+  && evidence.sameCard && evidence.sameEditor && evidence.sameMain && evidence.focusPreserved
+  && Math.abs(evidence.after.top - evidence.before.top) <= 4
+  && Math.abs(evidence.after.y - evidence.before.y) <= 4;
+const toolValueRefresh = async page => {
+  const card = page.locator('.sb-tool-card[data-sb-tool-crop="melon"]');
+  await card.scrollIntoViewIfNeeded();
+  if (!await card.evaluate(e => e.classList.contains('selected')
+    && e.nextElementSibling?.matches('[data-tool-editor]:not(.sb-tool-editor-collapsed)'))) await card.tap();
+  await page.waitForTimeout(2100);
+  return page.evaluate(async () => {
+    const card = document.querySelector('.sb-tool-card.selected[data-sb-tool-crop="melon"]');
+    const editor = document.querySelector('[data-tool-editor]');
+    const main = document.querySelector('.main');
+    const focus = document.activeElement;
+    const before = {top: card.getBoundingClientRect().top, y: main.scrollTop};
+    let rendered = 0;
+    const record = () => rendered++;
+    window.addEventListener('farming420:rendered', record);
+    window.dispatchEvent(new Event('farming420:item-value-updated'));
+    await new Promise(resolve => setTimeout(resolve, 500));
+    window.removeEventListener('farming420:rendered', record);
+    const nextCard = document.querySelector('.sb-tool-card.selected[data-sb-tool-crop="melon"]');
+    const nextMain = document.querySelector('.main');
+    return {before, after: {top: nextCard.getBoundingClientRect().top, y: nextMain.scrollTop}, rendered,
+      sameCard: card.isConnected && card === nextCard,
+      sameEditor: editor.isConnected && editor === document.querySelector('[data-tool-editor]'),
+      sameMain: main.isConnected && main === nextMain, focusPreserved: focus === document.activeElement};
+  });
+};
 try {
   {
     const context = await browser.newContext();
@@ -124,6 +154,32 @@ try {
       runtimeCase('closed-editor-negative-control',capture);
     } catch(error) {
       add('closed-editor-negative-control','probe-execution','BLOCKED',{message:String(error)});
+    } finally {
+      await context.close();
+    }
+  }
+  {
+    // Remove only Tool ownership. The same late-refresh acceptance function
+    // must reject the old repaint even if native anchoring hides final drift.
+    const currentSource = await readFile('src/app.js', 'utf8');
+    const guard = "    || (state.page === 'tools' && document.querySelector('[data-tool-editor], [data-vacuum-panel]'))\n";
+    if (!currentSource.includes(guard)) throw new Error('Tool negative control could not identify its single guard');
+    const context = await browser.newContext({viewport: {width:412, height:840}, hasTouch:true});
+    const page = await context.newPage();
+    const capture = captureErrors(page);
+    await page.route('**/src/app.js*', route => route.fulfill({status:200, contentType:'text/javascript', body:currentSource.replace(guard, '')}));
+    await instrument(page, JSON.stringify({...seed, page:'tools'}));
+    try {
+      await page.goto('http://127.0.0.1:4173', {waitUntil:'domcontentloaded'});
+      await page.locator('[data-tool-editor]').waitFor();
+      const legacy = await toolValueRefresh(page);
+      const regressionExit = probeExitCode([{status:toolRefreshAccepted(legacy)?'PASS':'FAIL'}]);
+      add('tool-editor-negative-control', 'late-tool-value-refresh-rejects-former-editor-replacement',
+        regressionExit===1 && legacy.rendered>0 && !legacy.sameEditor && !legacy.sameMain ? 'PASS':'FAIL',
+        {...legacy, regressionExit, source:'only Tool price guard removed in disposable routed module'});
+      runtimeCase('tool-editor-negative-control', capture);
+    } catch (error) {
+      add('tool-editor-negative-control', 'probe-execution', 'BLOCKED', {message:String(error)});
     } finally {
       await context.close();
     }
@@ -337,6 +393,8 @@ try {
         add(name,'cropshot-valid-tree-one-write',nested===0&&action.writes===1&&action.level===1?'PASS':'FAIL',{nested,...action});
       } else add(name,'cropshot-valid-tree-one-write','BLOCKED',{reason:'Cropshot card absent from canonical workspace'});
       await navigate(page,'tools');
+      const toolRefresh = await toolValueRefresh(page);
+      add(name, 'tool-editor-late-value-refresh-after-anchor-expiry', toolRefreshAccepted(toolRefresh)?'PASS':'FAIL', toolRefresh);
       const anchor=page.locator('[data-sb-tool-crop="cactus"]');
       await anchor.scrollIntoViewIfNeeded();
       await anchor.tap();
