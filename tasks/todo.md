@@ -1,6 +1,6 @@
 # Farming420 — Foundation gap closure and current work
 
-Current audit implementation: [October 2 fix progress](fix-progress-2026-10-02.md). This ledger supersedes historical completion claims for the eighteen audited defects. October 5: package 7 late Tool repaint accepted at c32ce93; next open package 12 requires current live Phillip provenance, with its independent count/expiry safeguards already tested.
+Current audit implementation: [October 2 fix progress](fix-progress-2026-10-02.md). This ledger supersedes historical completion claims for the eighteen audited defects. October 5: starting head 3f83b1f/package-7 acceptance rechecked green. Only package 12 continued: separate the Alpha count threshold from unknown actual Pest cost/duration; 26 targeted and 1,393 Node + 8 Python pass, new source CI pending. Package 12 remains first open, requiring dated current live provenance; accepted count/expiry safeguards are preserved.
 
 This file records the concrete architecture/correctness gaps found during repository review and the work completed against them. It is intentionally kept in the repository so another development chat can resume from the actual code state instead of reconstructing context from conversation history.
 

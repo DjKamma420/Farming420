@@ -15,6 +15,8 @@ test('the master research cannot advertise an unverified Phillip rate or +1000 l
   assert.equal(buff.status, 'VERIFY_LIVE');
   assert.equal(buff.live_verified, false);
   assert.equal(buff.last_live_verified, null);
+  assert.equal(buff.live_pest_cost_for_full_buff, null);
+  assert.equal(buff.live_duration_seconds, null);
   assert.deepEqual([buff.alpha_preview.fortune_per_pest, buff.alpha_preview.pest_count_for_cap, buff.alpha_preview.max_farming_fortune], [5, 40, 200]);
   assert.equal(buff.alpha_preview.confidence, 'ALPHA_ONLY');
   assert.match(buff.alpha_preview.source, /aug-3-0-27-alpha-changes-2/);
@@ -24,7 +26,9 @@ test('Phillip research and Info preview retain the canonical modifier authority 
   const row = TEMPORARY_FARMING_MODIFIERS.pesthunterPhillip;
   const preview = research.temporary_and_consumable.pesthunter_philip.alpha_preview;
   assert.equal(preview.fortune_per_pest, row.farmingFortunePerPest);
-  assert.equal(preview.pest_count_for_cap, row.currentPestCostForFullBuff);
+  assert.equal(preview.pest_count_for_cap, row.previewPestCountForCap);
+  assert.equal(preview.pest_count_for_cap, preview.max_farming_fortune / preview.fortune_per_pest);
+  assert.equal(row.currentPestCostForFullBuff, null);
   assert.equal(preview.max_farming_fortune, row.farmingFortuneCap);
   assert.equal(preview.source, row.source);
   assert.equal(preview.source_date, row.sourceDate);
@@ -32,5 +36,6 @@ test('Phillip research and Info preview retain the canonical modifier authority 
   assert.equal(PESTHUNTER_PHILIP.status, row.status);
   assert.equal(PESTHUNTER_PHILIP.source, row.source);
   assert.equal(PESTHUNTER_PHILIP.sourceDate, row.sourceDate);
-  assert.equal(PESTHUNTER_PHILIP.durationMinutes * 60, row.durationSeconds);
+  assert.equal(row.durationSeconds, null);
+  assert.equal(PESTHUNTER_PHILIP.durationMinutes, null, 'unknown seconds must not be coerced to zero minutes');
 });

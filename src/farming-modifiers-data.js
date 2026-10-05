@@ -173,9 +173,11 @@ export const TEMPORARY_FARMING_MODIFIERS = Object.freeze({
   pesthunterPhillip: Object.freeze({
     id: 'pesthunter-phillip', name: 'Pesthunter Phillip', status: 'VERIFY_LIVE', source: SOURCE.phillipAlpha,
     sourceDate: '2026-08-03', confidence: 'ALPHA_ONLY',
-    durationSeconds: 1800,
+    sourceChecked: '2026-10-05',
+    durationSeconds: null,
     farmingFortunePerPest: 5, farmingFortuneCap: 200,
-    currentPestCostForFullBuff: 40,
+    previewPestCountForCap: 40,
+    currentPestCostForFullBuff: null,
     effects: Object.freeze({ farmingFortune: 200 }),
     hyperchargeEligible: true,
     lastVerified: HYPERCHARGE_VERIFIED_ON,

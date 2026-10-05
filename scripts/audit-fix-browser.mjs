@@ -447,20 +447,26 @@ try {
       const phillip=page.locator('details.pest-philip');
       await phillip.locator('summary').tap();
       const pestCount=phillip.locator('[data-pest-philip]');
+      const phillipInitialNote=await phillip.locator('[data-pest-philip-note]').textContent();
       const phillipCounts=[];
-      for(const [input,fortune] of [['0',0],['17',85],['40',200],['200',200],['1.5',null],['',null]]) {
+      for(const [input,fortune] of [['0',0],['17',85],['40',200],['80',200],['200',200],['1.5',null],['',null]]) {
         await pestCount.fill(input);
         const output=await phillip.locator('[data-pest-philip-out]').textContent();
         const note=await phillip.locator('[data-pest-philip-note]').textContent();
         phillipCounts.push({input,output,note,valid:fortune===null
           ?output==='—'&&note==='Enter a whole Pest count'
-          :output===`+${fortune} Farming Fortune (Alpha preview)`});
+          :output===`+${fortune} Farming Fortune (Alpha preview)`
+            &&note.includes('Pests in the Alpha calculation')
+            &&note.includes('Live Pest cost and duration unverified')});
       }
       const phillipText=await phillip.textContent();
       const phillipProvenance=phillipText.includes('live verification pending')
-        &&phillipText.includes('Matching caps do not verify')&&!phillipText.includes('yours is the older one');
+        &&phillipText.includes('Matching caps do not verify')&&!phillipText.includes('yours is the older one')
+        &&phillipText.includes('Pests in Alpha preview')
+        &&phillipInitialNote.includes('Live Pest cost and duration unverified')
+        &&!phillipText.includes('Pests to spend')&&!/pests for .* minutes/i.test(phillipText);
       add(name,'phillip-preview-integer-count-cap-and-provenance',phillipCounts.every(row=>row.valid)&&phillipProvenance?'PASS':'FAIL',
-        {counts:phillipCounts,provenance:phillipProvenance,liveCurveVerified:false});
+        {initialNote:phillipInitialNote,counts:phillipCounts,provenance:phillipProvenance,liveCurveVerified:false,liveCostVerified:false,liveDurationVerified:false});
       const marketTransportNotes = runtimeCase(name, capture);
       const notes = [...httpErrors,...marketTransportNotes];
       add(name, 'external-http-errors', notes.length ? 'NOTE' : 'PASS', [...new Map(notes.map(r => [String(r.status || r.kind) + r.url, r])).values()]);

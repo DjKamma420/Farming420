@@ -121,9 +121,11 @@ export const LOOT_PIPELINE = Object.freeze([
  */
 export const PESTHUNTER_PHILIP = Object.freeze({
   fortunePerPest: TEMPORARY_FARMING_MODIFIERS.pesthunterPhillip.farmingFortunePerPest,
-  pestCap: TEMPORARY_FARMING_MODIFIERS.pesthunterPhillip.currentPestCostForFullBuff,
+  pestCap: TEMPORARY_FARMING_MODIFIERS.pesthunterPhillip.previewPestCountForCap,
+  pestCostForFullBuff: TEMPORARY_FARMING_MODIFIERS.pesthunterPhillip.currentPestCostForFullBuff,
   maxFortune: TEMPORARY_FARMING_MODIFIERS.pesthunterPhillip.farmingFortuneCap,
-  durationMinutes: TEMPORARY_FARMING_MODIFIERS.pesthunterPhillip.durationSeconds / 60,
+  durationMinutes: TEMPORARY_FARMING_MODIFIERS.pesthunterPhillip.durationSeconds === null
+    ? null : TEMPORARY_FARMING_MODIFIERS.pesthunterPhillip.durationSeconds / 60,
   version: 'Alpha 2026-08-03; live verification pending',
   confidence: TEMPORARY_FARMING_MODIFIERS.pesthunterPhillip.confidence,
   status: TEMPORARY_FARMING_MODIFIERS.pesthunterPhillip.status,
@@ -134,7 +136,8 @@ export const PESTHUNTER_PHILIP = Object.freeze({
 });
 
 /**
- * The Farming Fortune a pest spend buys, and whether the cap swallowed it.
+ * The Alpha Fortune preview for an integer Pest count. The cap/rate threshold
+ * does not establish the currency an NPC actually consumes or its duration.
  *
  * Returns null for anything that is not a usable pest count, rather than
  * folding a bad input into a confident zero.
@@ -142,11 +145,12 @@ export const PESTHUNTER_PHILIP = Object.freeze({
 export function philipFortuneFor(pests, table = PESTHUNTER_PHILIP) {
   const requested = finiteNonNegative(pests);
   if (requested === null || !Number.isInteger(requested)) return null;
-  const spent = Math.min(requested, table.pestCap);
-  const fortune = Math.min(spent * table.fortunePerPest, table.maxFortune);
+  const previewPestCount = Math.min(requested, table.pestCap);
+  const fortune = Math.min(previewPestCount * table.fortunePerPest, table.maxFortune);
   return {
     requested,
-    spent,
+    previewPestCount,
+    spent: null,
     fortune,
     capped: requested > table.pestCap,
     durationMinutes: table.durationMinutes,

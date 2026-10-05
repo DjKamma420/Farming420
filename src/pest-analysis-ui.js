@@ -29,19 +29,22 @@ function pageId() {
   return document.querySelector('.sidebar .nav-link.active')?.dataset.page || '';
 }
 
+function philipPreviewNote(result) {
+  if (!result) return 'Enter a whole Pest count';
+  return `${formatNumber(result.previewPestCount)} Pests in the Alpha calculation${result.capped ? ` · preview cap at ${PESTHUNTER_PHILIP.pestCap}` : ''} · Live Pest cost and duration unverified`;
+}
+
 function philipMarkup(pests) {
   const result = philipFortuneFor(pests);
   const older = PESTHUNTER_PHILIP.supersededSnapshot;
   return `
     <label class="pest-philip-input">
-      <span>Pests to spend</span>
+      <span>Pests in Alpha preview</span>
       <input data-pest-philip type="number" min="0" step="1" value="${result ? result.requested : 0}">
     </label>
     <div class="pest-philip-result">
       <strong data-pest-philip-out>${result ? `+${formatNumber(result.fortune)} Farming Fortune (Alpha preview)` : '—'}</strong>
-      <span data-pest-philip-note>${result
-        ? `${formatNumber(result.spent)} pests for ${PESTHUNTER_PHILIP.durationMinutes} minutes${result.capped ? ` · capped at ${PESTHUNTER_PHILIP.pestCap}` : ''}`
-        : 'Enter a whole Pest count'}</span>
+      <span data-pest-philip-note>${philipPreviewNote(result)}</span>
     </div>
     <p class="pest-note">${PESTHUNTER_PHILIP.fortunePerPest} Farming Fortune per pest, up to
       ${formatNumber(PESTHUNTER_PHILIP.maxFortune)} at ${PESTHUNTER_PHILIP.pestCap} pests
@@ -176,9 +179,7 @@ function applyPestAnalysis() {
     // and emits another childList mutation. That is rule 2 of
     // docs/RENDER_FREEZE_SAFETY.md and the exact shape of the PR #90 freeze.
     setTextIfChanged(out, result ? `+${formatNumber(result.fortune)} Farming Fortune (Alpha preview)` : '—');
-    setTextIfChanged(note, result
-      ? `${formatNumber(result.spent)} pests for ${PESTHUNTER_PHILIP.durationMinutes} minutes${result.capped ? ` · capped at ${PESTHUNTER_PHILIP.pestCap}` : ''}`
-      : 'Enter a whole Pest count');
+    setTextIfChanged(note, philipPreviewNote(result));
   });
 }
 

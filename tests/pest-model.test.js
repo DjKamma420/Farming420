@@ -112,20 +112,32 @@ test('a stat is placed on one side, or on none', () => {
   }
 });
 
-test('Phillip converts at the researched rate and stops at the cap', () => {
+test('Phillip Alpha preview stops at the Fortune cap without inventing a spend', () => {
   assert.equal(PESTHUNTER_PHILIP.fortunePerPest, 5);
-  assert.deepEqual(philipFortuneFor(0), { requested: 0, spent: 0, fortune: 0, capped: false, durationMinutes: 30 });
+  assert.deepEqual(philipFortuneFor(0), { requested: 0, previewPestCount: 0, spent: null, fortune: 0, capped: false, durationMinutes: null });
   assert.equal(philipFortuneFor(40).fortune, 200);
   assert.equal(philipFortuneFor(200).fortune, PESTHUNTER_PHILIP.maxFortune);
 
   const over = philipFortuneFor(500);
-  assert.equal(over.spent, PESTHUNTER_PHILIP.pestCap);
+  assert.equal(over.previewPestCount, PESTHUNTER_PHILIP.pestCap);
+  assert.equal(over.spent, null);
   assert.equal(over.fortune, PESTHUNTER_PHILIP.maxFortune);
-  assert.equal(over.capped, true, 'a swallowed spend must say it was capped');
+  assert.equal(over.capped, true, 'the Fortune preview must say it reached its cap');
 
   assert.equal(philipFortuneFor('17').fortune, 85);
   assert.equal(philipFortuneFor(10.9), null, 'a partial Pest is an invalid count');
   assert.equal(philipFortuneFor('10.9'), null);
+});
+
+test('Phillip preview cannot imply current Pest consumption or a default timer', () => {
+  assert.equal(PESTHUNTER_PHILIP.pestCostForFullBuff, null);
+  assert.equal(PESTHUNTER_PHILIP.durationMinutes, null);
+  for (const count of [0, 17, 40, 80, 200]) {
+    const preview = philipFortuneFor(count);
+    assert.equal(preview.spent, null, `actual spend for ${count} Pests is unverified`);
+    assert.equal(preview.durationMinutes, null, `duration for ${count} Pests is unverified`);
+    assert.equal(preview.fortune, Math.min(count * 5, 200));
+  }
 });
 
 test('a bad pest count is no answer, not zero Fortune', () => {

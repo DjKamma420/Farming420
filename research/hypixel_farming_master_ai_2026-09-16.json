@@ -232,18 +232,21 @@
       "temporary":true,
       "live_verified":false,
       "last_live_verified":null,
-      "source_checked":"2026-10-04",
+      "source_checked":"2026-10-05",
       "runtime_authority":"src/farming-modifiers-data.js:TEMPORARY_FARMING_MODIFIERS.pesthunterPhillip",
+      "live_pest_cost_for_full_buff":null,
+      "live_duration_seconds":null,
       "alpha_preview":{
         "fortune_per_pest":5,
         "pest_count_for_cap":40,
+        "count_rule":"Fortune cap divided by rate; an arithmetic preview threshold, not verified NPC currency consumption.",
         "max_farming_fortune":200,
         "confidence":"ALPHA_ONLY",
         "source":"https://hypixel.net/threads/aug-3-0-27-alpha-changes-2.6134812/",
         "source_date":"2026-08-03"
       },
       "live_release_source":"https://hypixel.net/threads/hypixel-skyblock-0-27-torrhus-canyon-critter-safari.6132090/",
-      "verification_gap":"The live release excludes unspecified Alpha Farming changes and does not establish this curve. Require current live lore or a first-party live statement before promotion.",
+      "verification_gap":"The live release excludes unspecified Alpha Farming changes and does not establish this curve. The Alpha rate/cap do not establish actual Pest consumption or duration. Require dated current live lore or a first-party live statement covering rate, Fortune cap, Pest cost and duration/expiry before promotion.",
       "activation_rule":"One observed integer Pest count and observed activation/expiry; no guessed live duration or stacking."
     },
     "dark_cacao_truffle":{"status":"0.27 Cocoa-specific behavior requires exact live recheck before global use"}

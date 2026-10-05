@@ -1026,6 +1026,15 @@ Sources checked 2026-10-04 (source review, **not** live verification):
 - https://hypixel.net/threads/aug-3-0-27-alpha-changes-2.6134812/
 - https://hypixel.net/threads/hypixel-skyblock-0-27-torrhus-canyon-critter-safari.6132090/
 
+October 5 follow-up: the same staff sources still do not publish current live
+Pest consumption or duration. Dividing the Alpha Fortune cap by its rate yields
+40 Pests in the preview, not proof that the NPC charges 40 Pests. The runtime
+table and master research keep actual cost and default duration null. The Info
+helper now labels this count as an Alpha calculation and leaves live cost and
+duration unverified. Observed activation/expiry remains independently usable;
+no Alpha preview is added to live Fortune. See
+[the dated source review](../docs/audits/phillip-source-review-2026-10-05.md).
+
 ---
 
 # 29. Global vs crop-specific recommendation scope
