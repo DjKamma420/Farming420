@@ -34,8 +34,16 @@ acceptance threshold changed.
 
 Regression covers zero, partial, exact threshold, 80 Pests, over-cap, fractional
 and blank inputs; it retains the historical/Alpha provenance distinction.
-Native browser acceptance and local test results will be recorded in the
-[progress ledger](../../tasks/fix-progress-2026-10-02.md) against actual commits.
+Source `4c51f53ead77286986c1ab15f018c0e986e0bdc6` is accepted: 26 targeted tests and
+1,393 Node + 8 Python pass locally; Validate 37277652522 / 111658158255 passes
+startup, exact DOM/no-op and the retained trusted-scroll controls. Browser run
+37277652525 passes Chromium 111658158252, Firefox 111658158470 and WebKit
+111658158553, each 239 PASS / zero FAIL / 8 NOTE / zero BLOCKED. All 24 expanded
+Phillip cases pass. Chromium strict overlay/sweep and injected-error controls
+also pass. Actual evidence is retained in
+[the acceptance JSON](phillip-acceptance-4c51f53-2026-10-05.json) and the
+[progress ledger](../../tasks/fix-progress-2026-10-02.md). These tests validate
+the unknown-value safeguards, not the unavailable live mechanics.
 
 ## Next step
 

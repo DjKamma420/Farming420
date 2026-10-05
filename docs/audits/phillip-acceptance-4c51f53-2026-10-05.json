@@ -1,0 +1,2953 @@
+{
+  "reviewDate": "2026-10-05",
+  "scope": "Audit package 12 only: separate Alpha preview threshold from unknown live cost and duration",
+  "auditedSource": "4c51f53ead77286986c1ab15f018c0e986e0bdc6",
+  "parent": "3f83b1f0585c9adff1a81775ff1cd63658102955",
+  "branch": "fix/audit-2026-10-02",
+  "pullRequest": 301,
+  "liveCurveVerified": false,
+  "liveCostVerified": false,
+  "liveDurationVerified": false,
+  "sourceReview": "docs/audits/phillip-source-review-2026-10-05.md",
+  "local": {
+    "targetedPassed": 26,
+    "nodePassed": 1393,
+    "pythonPassed": 8,
+    "fullExit": 0,
+    "fullLogSession": 59009,
+    "syntaxAndWhitespace": "PASS",
+    "nativeBrowserLocally": "Unavailable; no local native pass claimed"
+  },
+  "validate": {
+    "runId": 37277652522,
+    "jobId": 111658158255,
+    "conclusion": "success",
+    "evidence": [
+      "OK",
+      "Immutable artifact PASS: build=4c51f53ead77286986c1ab15f018c0e986e0bdc6, stamped entrypoints=52, resolved references=466",
+      "Browser smoke test passed: Dashboard, Loadouts picker, and canonical recombobulated rarity background render in headless Chrome.",
+      "Idempotence smoke passed: same state on 10 pages produced zero mutations.",
+      "Idempotence negative control mutation: acceptance returned nonzero for equal-length DOM mutation.",
+      "Idempotence negative control equal-length: acceptance returned nonzero for equal-length DOM mutation.",
+      "Tool accordion scroll smoke passed: TOOL_SCROLL_OK drift=0.33 lateDrift=0.00 lateScrollDelta=0.00 beforeY=2700.00 afterY=446.00 maxY=3110.00",
+      "TRUSTED_TOOL_SCROLL_DIAGNOSTIC {\"before\":{\"top\":377,\"y\":358,\"height\":3915,\"clientHeight\":840,\"mainTop\":0,\"card\":1,\"editor\":2,\"main\":3,\"originalConnected\":{\"card\":true,\"editor\":true,\"main\":true},\"editorTop\":451,\"editorHeight\":2220.421875,\"focus\":\"body.\",\"incompleteImages\":4,\"fonts\":\"loaded\"},\"after\":{\"top\":377,\"y\":358,\"height\":3915,\"clientHeight\":840,\"mainTop\":0,\"card\":1,\"editor\":2,\"main\":3,\"originalConnected\":{\"card\":true,\"editor\":true,\"main\":true},\"editorTop\":451,\"editorHeight\":2220.421875,\"focus\":\"body.\",\"incompleteImages\":4,\"fonts\":\"loaded\"},\"events\":[{\"time\":6879.5,\"type\":\"farming420:item-value-updated\",\"detail\":{\"top\":377,\"y\":358,\"height\":3915,\"clientHeight\":840,\"mainTop\":0,\"card\":1,\"editor\":2,\"main\":3,\"originalConnected\":{\"card\":true,\"editor\":true,\"main\":true},\"editorTop\":451,\"editorHeight\":2220.421875,\"focus\":\"body.\",\"incompleteImages\":4,\"fonts\":\"loaded\"}}]}",
+      "TRUSTED_TOOL_SCROLL_OK transitions=12 maxDrift=1.42 lateDrift=0.00 lateScroll=0.00 wheat:drift=1.00,y=0->1,max=3075 | carrot:drift=1.42,y=2293->75,max=3075 | potato:drift=1.42,y=2389->171,max=3075 | pumpkin:drift=1.42,y=2486->268,max=3075 | mushroom:drift=1.42,y=2666->448,max=3075 | cactus:drift=1.42,y=2756->538,max=3075 | sugar-cane:drift=1.42,y=2852->634,max=3075 | cocoa-beans:drift=1.42,y=2949->731,max=3075 | nether-wart:drift=1.42,y=3045->827,max=3075 | sunflower:drift=1.42,y=3075->857,max=3075 | wild-rose:drift=1.42,y=3075->857,max=3075 | melon:drift=1.00,y=357->358,max=3075",
+      "ℹ tests 1393",
+      "ℹ pass 1393",
+      "ℹ fail 0",
+      "Ran 8 tests in 0.027s",
+      "OK"
+    ]
+  },
+  "browser": {
+    "runId": 37277652525,
+    "conclusion": "success",
+    "engines": [
+      {
+        "engine": "chromium",
+        "jobId": 111658158252,
+        "conclusion": "success",
+        "testedSource": "4c51f53ead77286986c1ab15f018c0e986e0bdc6",
+        "counts": {
+          "PASS": 239,
+          "FAIL": 0,
+          "NOTE": 8,
+          "BLOCKED": 0
+        },
+        "phillipCases": [
+          {
+            "engine": "chromium",
+            "viewport": "320-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "chromium",
+            "viewport": "360-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "chromium",
+            "viewport": "375-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "chromium",
+            "viewport": "390-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "chromium",
+            "viewport": "412-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "chromium",
+            "viewport": "568-landscape",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "chromium",
+            "viewport": "667-landscape",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "chromium",
+            "viewport": "800-landscape",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          }
+        ],
+        "retainedGateCounts": {
+          "runtime-error-negative-control": {
+            "PASS": 1
+          },
+          "late-value-refresh-rejects-former-editor-replacement": {
+            "PASS": 1
+          },
+          "runtime-page-errors": {
+            "PASS": 13
+          },
+          "late-tool-value-refresh-rejects-former-editor-replacement": {
+            "PASS": 1
+          },
+          "settled-navigation-retries": {
+            "PASS": 8
+          },
+          "normal-tap-navigation": {
+            "PASS": 8
+          },
+          "cancel-set-blank": {
+            "PASS": 8
+          },
+          "cancel-set-filled": {
+            "PASS": 8
+          },
+          "add-set-escape": {
+            "PASS": 8
+          },
+          "three-set-long-name-header": {
+            "PASS": 8
+          },
+          "last-option-point-in-time-hit": {
+            "PASS": 8
+          },
+          "last-option-stable-after-capture-and-anchor-expiry": {
+            "PASS": 8
+          },
+          "pet-item-escape-close": {
+            "PASS": 8
+          },
+          "declared-listbox-arrow-focus": {
+            "PASS": 8
+          },
+          "last-option-actual-touch-selection-after-recovery": {
+            "PASS": 8
+          },
+          "picker-petItem-home-end-tab-outside-focus": {
+            "PASS": 8
+          },
+          "picker-petItem-closed-menu-late-value-refresh": {
+            "PASS": 8
+          },
+          "picker-petItem-same-state-zero-mutations": {
+            "PASS": 8
+          },
+          "picker-pet-home-end-tab-outside-focus": {
+            "PASS": 8
+          },
+          "picker-pet-closed-menu-late-value-refresh": {
+            "PASS": 8
+          },
+          "picker-pet-same-state-zero-mutations": {
+            "PASS": 8
+          },
+          "picker-helmet-home-end-tab-outside-focus": {
+            "PASS": 8
+          },
+          "picker-helmet-closed-menu-late-value-refresh": {
+            "PASS": 8
+          },
+          "picker-helmet-same-state-zero-mutations": {
+            "PASS": 8
+          },
+          "effects-drawer-escape-focus-tab": {
+            "PASS": 8
+          },
+          "cropshot-valid-tree-one-write": {
+            "PASS": 8
+          },
+          "tool-editor-late-value-refresh-after-anchor-expiry": {
+            "PASS": 8
+          },
+          "manual-wheel-controlled-late-mutation": {
+            "PASS": 8
+          },
+          "manual-key-controlled-late-mutation": {
+            "PASS": 8
+          },
+          "touch-intent-controlled-late-mutation": {
+            "PASS": 8
+          },
+          "phillip-preview-integer-count-cap-and-provenance": {
+            "PASS": 8
+          },
+          "external-http-errors": {
+            "NOTE": 8
+          },
+          "tater-pesthunter-clover-truthful-stable-fallback": {
+            "PASS": 1
+          },
+          "export-preserves-actual-state": {
+            "PASS": 1
+          },
+          "invalid-json-ui-rejection": {
+            "PASS": 1
+          },
+          "future-inner-ui-rejection": {
+            "PASS": 1
+          },
+          "future-envelope-ui-rejection": {
+            "PASS": 1
+          },
+          "valid-current-ui-restore": {
+            "PASS": 1
+          },
+          "future-raw-bytes-zero-writes-startup-navigation-editors-settings-sync": {
+            "PASS": 1
+          }
+        },
+        "negativeControls": [
+          {
+            "engine": "chromium",
+            "viewport": "negative-control",
+            "check": "runtime-error-negative-control",
+            "status": "PASS",
+            "evidence": {
+              "runtimeErrors": [
+                "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+              ],
+              "marketTransportNotes": [],
+              "acceptanceExit": 1,
+              "rawPageErrors": [
+                "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+              ]
+            }
+          },
+          {
+            "engine": "chromium",
+            "viewport": "closed-editor-negative-control",
+            "check": "late-value-refresh-rejects-former-editor-replacement",
+            "status": "PASS",
+            "evidence": {
+              "rendered": 1,
+              "editorConnected": false,
+              "pickerConnected": false,
+              "regressionExit": 1,
+              "source": "one editor guard removed in disposable routed module"
+            }
+          },
+          {
+            "engine": "chromium",
+            "viewport": "closed-editor-negative-control",
+            "check": "runtime-page-errors",
+            "status": "PASS",
+            "evidence": {
+              "runtimeErrors": [],
+              "marketTransportNotes": [],
+              "rawPageErrors": [],
+              "requestFailures": []
+            }
+          },
+          {
+            "engine": "chromium",
+            "viewport": "tool-editor-negative-control",
+            "check": "late-tool-value-refresh-rejects-former-editor-replacement",
+            "status": "PASS",
+            "evidence": {
+              "before": {
+                "top": 735,
+                "y": 0
+              },
+              "after": {
+                "top": 735,
+                "y": 0
+              },
+              "rendered": 1,
+              "sameCard": false,
+              "sameEditor": false,
+              "sameMain": false,
+              "focusPreserved": true,
+              "regressionExit": 1,
+              "source": "only Tool price guard removed in disposable routed module"
+            }
+          },
+          {
+            "engine": "chromium",
+            "viewport": "tool-editor-negative-control",
+            "check": "runtime-page-errors",
+            "status": "PASS",
+            "evidence": {
+              "runtimeErrors": [],
+              "marketTransportNotes": [],
+              "rawPageErrors": [],
+              "requestFailures": []
+            }
+          }
+        ]
+      },
+      {
+        "engine": "firefox",
+        "jobId": 111658158470,
+        "conclusion": "success",
+        "testedSource": "4c51f53ead77286986c1ab15f018c0e986e0bdc6",
+        "counts": {
+          "PASS": 239,
+          "FAIL": 0,
+          "NOTE": 8,
+          "BLOCKED": 0
+        },
+        "phillipCases": [
+          {
+            "engine": "firefox",
+            "viewport": "320-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "firefox",
+            "viewport": "360-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "firefox",
+            "viewport": "375-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "firefox",
+            "viewport": "390-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "firefox",
+            "viewport": "412-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "firefox",
+            "viewport": "568-landscape",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "firefox",
+            "viewport": "667-landscape",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "firefox",
+            "viewport": "800-landscape",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          }
+        ],
+        "retainedGateCounts": {
+          "runtime-error-negative-control": {
+            "PASS": 1
+          },
+          "late-value-refresh-rejects-former-editor-replacement": {
+            "PASS": 1
+          },
+          "runtime-page-errors": {
+            "PASS": 13
+          },
+          "late-tool-value-refresh-rejects-former-editor-replacement": {
+            "PASS": 1
+          },
+          "settled-navigation-retries": {
+            "PASS": 8
+          },
+          "normal-tap-navigation": {
+            "PASS": 8
+          },
+          "cancel-set-blank": {
+            "PASS": 8
+          },
+          "cancel-set-filled": {
+            "PASS": 8
+          },
+          "add-set-escape": {
+            "PASS": 8
+          },
+          "three-set-long-name-header": {
+            "PASS": 8
+          },
+          "last-option-point-in-time-hit": {
+            "PASS": 8
+          },
+          "last-option-stable-after-capture-and-anchor-expiry": {
+            "PASS": 8
+          },
+          "pet-item-escape-close": {
+            "PASS": 8
+          },
+          "declared-listbox-arrow-focus": {
+            "PASS": 8
+          },
+          "last-option-actual-touch-selection-after-recovery": {
+            "PASS": 8
+          },
+          "picker-petItem-home-end-tab-outside-focus": {
+            "PASS": 8
+          },
+          "picker-petItem-closed-menu-late-value-refresh": {
+            "PASS": 8
+          },
+          "picker-petItem-same-state-zero-mutations": {
+            "PASS": 8
+          },
+          "picker-pet-home-end-tab-outside-focus": {
+            "PASS": 8
+          },
+          "picker-pet-closed-menu-late-value-refresh": {
+            "PASS": 8
+          },
+          "picker-pet-same-state-zero-mutations": {
+            "PASS": 8
+          },
+          "picker-helmet-home-end-tab-outside-focus": {
+            "PASS": 8
+          },
+          "picker-helmet-closed-menu-late-value-refresh": {
+            "PASS": 8
+          },
+          "picker-helmet-same-state-zero-mutations": {
+            "PASS": 8
+          },
+          "effects-drawer-escape-focus-tab": {
+            "PASS": 8
+          },
+          "cropshot-valid-tree-one-write": {
+            "PASS": 8
+          },
+          "tool-editor-late-value-refresh-after-anchor-expiry": {
+            "PASS": 8
+          },
+          "manual-wheel-controlled-late-mutation": {
+            "PASS": 8
+          },
+          "manual-key-controlled-late-mutation": {
+            "PASS": 8
+          },
+          "touch-intent-controlled-late-mutation": {
+            "PASS": 8
+          },
+          "phillip-preview-integer-count-cap-and-provenance": {
+            "PASS": 8
+          },
+          "external-http-errors": {
+            "NOTE": 8
+          },
+          "tater-pesthunter-clover-truthful-stable-fallback": {
+            "PASS": 1
+          },
+          "export-preserves-actual-state": {
+            "PASS": 1
+          },
+          "invalid-json-ui-rejection": {
+            "PASS": 1
+          },
+          "future-inner-ui-rejection": {
+            "PASS": 1
+          },
+          "future-envelope-ui-rejection": {
+            "PASS": 1
+          },
+          "valid-current-ui-restore": {
+            "PASS": 1
+          },
+          "future-raw-bytes-zero-writes-startup-navigation-editors-settings-sync": {
+            "PASS": 1
+          }
+        },
+        "negativeControls": [
+          {
+            "engine": "firefox",
+            "viewport": "negative-control",
+            "check": "runtime-error-negative-control",
+            "status": "PASS",
+            "evidence": {
+              "runtimeErrors": [
+                "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+              ],
+              "marketTransportNotes": [],
+              "acceptanceExit": 1,
+              "rawPageErrors": [
+                "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+              ]
+            }
+          },
+          {
+            "engine": "firefox",
+            "viewport": "closed-editor-negative-control",
+            "check": "late-value-refresh-rejects-former-editor-replacement",
+            "status": "PASS",
+            "evidence": {
+              "rendered": 1,
+              "editorConnected": false,
+              "pickerConnected": false,
+              "regressionExit": 1,
+              "source": "one editor guard removed in disposable routed module"
+            }
+          },
+          {
+            "engine": "firefox",
+            "viewport": "closed-editor-negative-control",
+            "check": "runtime-page-errors",
+            "status": "PASS",
+            "evidence": {
+              "runtimeErrors": [],
+              "marketTransportNotes": [],
+              "rawPageErrors": [],
+              "requestFailures": []
+            }
+          },
+          {
+            "engine": "firefox",
+            "viewport": "tool-editor-negative-control",
+            "check": "late-tool-value-refresh-rejects-former-editor-replacement",
+            "status": "PASS",
+            "evidence": {
+              "before": {
+                "top": 749,
+                "y": 0
+              },
+              "after": {
+                "top": 749,
+                "y": 0
+              },
+              "rendered": 1,
+              "sameCard": false,
+              "sameEditor": false,
+              "sameMain": false,
+              "focusPreserved": true,
+              "regressionExit": 1,
+              "source": "only Tool price guard removed in disposable routed module"
+            }
+          },
+          {
+            "engine": "firefox",
+            "viewport": "tool-editor-negative-control",
+            "check": "runtime-page-errors",
+            "status": "PASS",
+            "evidence": {
+              "runtimeErrors": [],
+              "marketTransportNotes": [],
+              "rawPageErrors": [],
+              "requestFailures": []
+            }
+          }
+        ]
+      },
+      {
+        "engine": "webkit",
+        "jobId": 111658158553,
+        "conclusion": "success",
+        "testedSource": "4c51f53ead77286986c1ab15f018c0e986e0bdc6",
+        "counts": {
+          "PASS": 239,
+          "FAIL": 0,
+          "NOTE": 8,
+          "BLOCKED": 0
+        },
+        "phillipCases": [
+          {
+            "engine": "webkit",
+            "viewport": "320-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "webkit",
+            "viewport": "360-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "webkit",
+            "viewport": "375-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "webkit",
+            "viewport": "390-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "webkit",
+            "viewport": "412-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "webkit",
+            "viewport": "568-landscape",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "webkit",
+            "viewport": "667-landscape",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "webkit",
+            "viewport": "800-landscape",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          }
+        ],
+        "retainedGateCounts": {
+          "runtime-error-negative-control": {
+            "PASS": 1
+          },
+          "late-value-refresh-rejects-former-editor-replacement": {
+            "PASS": 1
+          },
+          "runtime-page-errors": {
+            "PASS": 13
+          },
+          "late-tool-value-refresh-rejects-former-editor-replacement": {
+            "PASS": 1
+          },
+          "settled-navigation-retries": {
+            "PASS": 8
+          },
+          "normal-tap-navigation": {
+            "PASS": 8
+          },
+          "cancel-set-blank": {
+            "PASS": 8
+          },
+          "cancel-set-filled": {
+            "PASS": 8
+          },
+          "add-set-escape": {
+            "PASS": 8
+          },
+          "three-set-long-name-header": {
+            "PASS": 8
+          },
+          "last-option-point-in-time-hit": {
+            "PASS": 8
+          },
+          "last-option-stable-after-capture-and-anchor-expiry": {
+            "PASS": 8
+          },
+          "pet-item-escape-close": {
+            "PASS": 8
+          },
+          "declared-listbox-arrow-focus": {
+            "PASS": 8
+          },
+          "last-option-actual-touch-selection-after-recovery": {
+            "PASS": 8
+          },
+          "picker-petItem-home-end-tab-outside-focus": {
+            "PASS": 8
+          },
+          "picker-petItem-closed-menu-late-value-refresh": {
+            "PASS": 8
+          },
+          "picker-petItem-same-state-zero-mutations": {
+            "PASS": 8
+          },
+          "picker-pet-home-end-tab-outside-focus": {
+            "PASS": 8
+          },
+          "picker-pet-closed-menu-late-value-refresh": {
+            "PASS": 8
+          },
+          "picker-pet-same-state-zero-mutations": {
+            "PASS": 8
+          },
+          "picker-helmet-home-end-tab-outside-focus": {
+            "PASS": 8
+          },
+          "picker-helmet-closed-menu-late-value-refresh": {
+            "PASS": 8
+          },
+          "picker-helmet-same-state-zero-mutations": {
+            "PASS": 8
+          },
+          "effects-drawer-escape-focus-tab": {
+            "PASS": 8
+          },
+          "cropshot-valid-tree-one-write": {
+            "PASS": 8
+          },
+          "tool-editor-late-value-refresh-after-anchor-expiry": {
+            "PASS": 8
+          },
+          "manual-wheel-controlled-late-mutation": {
+            "PASS": 8
+          },
+          "manual-key-controlled-late-mutation": {
+            "PASS": 8
+          },
+          "touch-intent-controlled-late-mutation": {
+            "PASS": 8
+          },
+          "phillip-preview-integer-count-cap-and-provenance": {
+            "PASS": 8
+          },
+          "external-http-errors": {
+            "NOTE": 8
+          },
+          "tater-pesthunter-clover-truthful-stable-fallback": {
+            "PASS": 1
+          },
+          "export-preserves-actual-state": {
+            "PASS": 1
+          },
+          "invalid-json-ui-rejection": {
+            "PASS": 1
+          },
+          "future-inner-ui-rejection": {
+            "PASS": 1
+          },
+          "future-envelope-ui-rejection": {
+            "PASS": 1
+          },
+          "valid-current-ui-restore": {
+            "PASS": 1
+          },
+          "future-raw-bytes-zero-writes-startup-navigation-editors-settings-sync": {
+            "PASS": 1
+          }
+        },
+        "negativeControls": [
+          {
+            "engine": "webkit",
+            "viewport": "negative-control",
+            "check": "runtime-error-negative-control",
+            "status": "PASS",
+            "evidence": {
+              "runtimeErrors": [
+                "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+              ],
+              "marketTransportNotes": [],
+              "acceptanceExit": 1,
+              "rawPageErrors": [
+                "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+              ]
+            }
+          },
+          {
+            "engine": "webkit",
+            "viewport": "closed-editor-negative-control",
+            "check": "late-value-refresh-rejects-former-editor-replacement",
+            "status": "PASS",
+            "evidence": {
+              "rendered": 1,
+              "editorConnected": false,
+              "pickerConnected": false,
+              "regressionExit": 1,
+              "source": "one editor guard removed in disposable routed module"
+            }
+          },
+          {
+            "engine": "webkit",
+            "viewport": "closed-editor-negative-control",
+            "check": "runtime-page-errors",
+            "status": "PASS",
+            "evidence": {
+              "runtimeErrors": [],
+              "marketTransportNotes": [],
+              "rawPageErrors": [],
+              "requestFailures": []
+            }
+          },
+          {
+            "engine": "webkit",
+            "viewport": "tool-editor-negative-control",
+            "check": "late-tool-value-refresh-rejects-former-editor-replacement",
+            "status": "PASS",
+            "evidence": {
+              "before": {
+                "top": 735,
+                "y": 0
+              },
+              "after": {
+                "top": 735,
+                "y": 0
+              },
+              "rendered": 1,
+              "sameCard": false,
+              "sameEditor": false,
+              "sameMain": false,
+              "focusPreserved": true,
+              "regressionExit": 1,
+              "source": "only Tool price guard removed in disposable routed module"
+            }
+          },
+          {
+            "engine": "webkit",
+            "viewport": "tool-editor-negative-control",
+            "check": "runtime-page-errors",
+            "status": "PASS",
+            "evidence": {
+              "runtimeErrors": [],
+              "marketTransportNotes": [],
+              "rawPageErrors": [],
+              "requestFailures": []
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "strictChromium": {
+    "jobId": 111658158252,
+    "overlayExit": 0,
+    "sweepExit": 0,
+    "distinctFindings": 0,
+    "overlayEvidence": {
+      "scrollEvidence": [
+        {
+          "viewport": "phone",
+          "page": "dashboard",
+          "requested": 0,
+          "actual": 0,
+          "max": 4748
+        },
+        {
+          "viewport": "phone",
+          "page": "dashboard",
+          "requested": 300,
+          "actual": 300,
+          "max": 4748
+        },
+        {
+          "viewport": "phone",
+          "page": "dashboard",
+          "requested": 700,
+          "actual": 700,
+          "max": 4748
+        },
+        {
+          "viewport": "phone",
+          "page": "setups",
+          "requested": 0,
+          "actual": 0,
+          "max": 1919
+        },
+        {
+          "viewport": "phone",
+          "page": "setups",
+          "requested": 300,
+          "actual": 300,
+          "max": 1919
+        },
+        {
+          "viewport": "phone",
+          "page": "setups",
+          "requested": 700,
+          "actual": 700,
+          "max": 1919
+        },
+        {
+          "viewport": "phone",
+          "page": "crops",
+          "requested": 0,
+          "actual": 0,
+          "max": 3299
+        },
+        {
+          "viewport": "phone",
+          "page": "crops",
+          "requested": 300,
+          "actual": 300,
+          "max": 3299
+        },
+        {
+          "viewport": "phone",
+          "page": "crops",
+          "requested": 700,
+          "actual": 700,
+          "max": 3299
+        },
+        {
+          "viewport": "phone",
+          "page": "buffs",
+          "requested": 0,
+          "actual": 0,
+          "max": 3094
+        },
+        {
+          "viewport": "phone",
+          "page": "buffs",
+          "requested": 300,
+          "actual": 300,
+          "max": 3094
+        },
+        {
+          "viewport": "phone",
+          "page": "buffs",
+          "requested": 700,
+          "actual": 700,
+          "max": 3094
+        },
+        {
+          "viewport": "phone",
+          "page": "tools",
+          "requested": 0,
+          "actual": 0,
+          "max": 4615
+        },
+        {
+          "viewport": "phone",
+          "page": "tools",
+          "requested": 300,
+          "actual": 300,
+          "max": 4615
+        },
+        {
+          "viewport": "phone",
+          "page": "tools",
+          "requested": 700,
+          "actual": 700,
+          "max": 4615
+        },
+        {
+          "viewport": "phone",
+          "page": "shards",
+          "requested": 0,
+          "actual": 0,
+          "max": 17506
+        },
+        {
+          "viewport": "phone",
+          "page": "shards",
+          "requested": 300,
+          "actual": 300,
+          "max": 17506
+        },
+        {
+          "viewport": "phone",
+          "page": "shards",
+          "requested": 700,
+          "actual": 700,
+          "max": 17506
+        },
+        {
+          "viewport": "phone",
+          "page": "planner",
+          "requested": 0,
+          "actual": 0,
+          "max": 4107
+        },
+        {
+          "viewport": "phone",
+          "page": "planner",
+          "requested": 300,
+          "actual": 300,
+          "max": 4107
+        },
+        {
+          "viewport": "phone",
+          "page": "planner",
+          "requested": 700,
+          "actual": 700,
+          "max": 4107
+        },
+        {
+          "viewport": "phone",
+          "page": "qol",
+          "requested": 0,
+          "actual": 0,
+          "max": 2502
+        },
+        {
+          "viewport": "phone",
+          "page": "qol",
+          "requested": 300,
+          "actual": 300,
+          "max": 2502
+        },
+        {
+          "viewport": "phone",
+          "page": "qol",
+          "requested": 700,
+          "actual": 700,
+          "max": 2502
+        },
+        {
+          "viewport": "phone",
+          "page": "focus",
+          "requested": 0,
+          "actual": 0,
+          "max": 151
+        },
+        {
+          "viewport": "phone",
+          "page": "focus",
+          "requested": 300,
+          "actual": 151,
+          "max": 151
+        },
+        {
+          "viewport": "phone",
+          "page": "focus",
+          "requested": 700,
+          "actual": 151,
+          "max": 151
+        },
+        {
+          "viewport": "phone",
+          "page": "info",
+          "requested": 0,
+          "actual": 0,
+          "max": 31055
+        },
+        {
+          "viewport": "phone",
+          "page": "info",
+          "requested": 300,
+          "actual": 300,
+          "max": 31055
+        },
+        {
+          "viewport": "phone",
+          "page": "info",
+          "requested": 700,
+          "actual": 700,
+          "max": 31055
+        },
+        {
+          "viewport": "phone-l",
+          "page": "dashboard",
+          "requested": 0,
+          "actual": 0,
+          "max": 4554
+        },
+        {
+          "viewport": "phone-l",
+          "page": "dashboard",
+          "requested": 300,
+          "actual": 300,
+          "max": 4554
+        },
+        {
+          "viewport": "phone-l",
+          "page": "dashboard",
+          "requested": 700,
+          "actual": 700,
+          "max": 4554
+        },
+        {
+          "viewport": "phone-l",
+          "page": "setups",
+          "requested": 0,
+          "actual": 0,
+          "max": 1848
+        },
+        {
+          "viewport": "phone-l",
+          "page": "setups",
+          "requested": 300,
+          "actual": 300,
+          "max": 1848
+        },
+        {
+          "viewport": "phone-l",
+          "page": "setups",
+          "requested": 700,
+          "actual": 700,
+          "max": 1848
+        },
+        {
+          "viewport": "phone-l",
+          "page": "crops",
+          "requested": 0,
+          "actual": 0,
+          "max": 3038
+        },
+        {
+          "viewport": "phone-l",
+          "page": "crops",
+          "requested": 300,
+          "actual": 300,
+          "max": 3038
+        },
+        {
+          "viewport": "phone-l",
+          "page": "crops",
+          "requested": 700,
+          "actual": 700,
+          "max": 3038
+        },
+        {
+          "viewport": "phone-l",
+          "page": "buffs",
+          "requested": 0,
+          "actual": 0,
+          "max": 2993
+        },
+        {
+          "viewport": "phone-l",
+          "page": "buffs",
+          "requested": 300,
+          "actual": 300,
+          "max": 2993
+        },
+        {
+          "viewport": "phone-l",
+          "page": "buffs",
+          "requested": 700,
+          "actual": 700,
+          "max": 2993
+        },
+        {
+          "viewport": "phone-l",
+          "page": "tools",
+          "requested": 0,
+          "actual": 0,
+          "max": 4476
+        },
+        {
+          "viewport": "phone-l",
+          "page": "tools",
+          "requested": 300,
+          "actual": 300,
+          "max": 4476
+        },
+        {
+          "viewport": "phone-l",
+          "page": "tools",
+          "requested": 700,
+          "actual": 700,
+          "max": 4476
+        },
+        {
+          "viewport": "phone-l",
+          "page": "shards",
+          "requested": 0,
+          "actual": 0,
+          "max": 17089
+        },
+        {
+          "viewport": "phone-l",
+          "page": "shards",
+          "requested": 300,
+          "actual": 300,
+          "max": 17089
+        },
+        {
+          "viewport": "phone-l",
+          "page": "shards",
+          "requested": 700,
+          "actual": 700,
+          "max": 17089
+        },
+        {
+          "viewport": "phone-l",
+          "page": "planner",
+          "requested": 0,
+          "actual": 0,
+          "max": 4036
+        },
+        {
+          "viewport": "phone-l",
+          "page": "planner",
+          "requested": 300,
+          "actual": 300,
+          "max": 4036
+        },
+        {
+          "viewport": "phone-l",
+          "page": "planner",
+          "requested": 700,
+          "actual": 700,
+          "max": 4036
+        },
+        {
+          "viewport": "phone-l",
+          "page": "qol",
+          "requested": 0,
+          "actual": 0,
+          "max": 2241
+        },
+        {
+          "viewport": "phone-l",
+          "page": "qol",
+          "requested": 300,
+          "actual": 300,
+          "max": 2241
+        },
+        {
+          "viewport": "phone-l",
+          "page": "qol",
+          "requested": 700,
+          "actual": 700,
+          "max": 2241
+        },
+        {
+          "viewport": "phone-l",
+          "page": "focus",
+          "requested": 0,
+          "actual": 0,
+          "max": 61
+        },
+        {
+          "viewport": "phone-l",
+          "page": "focus",
+          "requested": 300,
+          "actual": 61,
+          "max": 61
+        },
+        {
+          "viewport": "phone-l",
+          "page": "focus",
+          "requested": 700,
+          "actual": 61,
+          "max": 61
+        },
+        {
+          "viewport": "phone-l",
+          "page": "info",
+          "requested": 0,
+          "actual": 0,
+          "max": 29545
+        },
+        {
+          "viewport": "phone-l",
+          "page": "info",
+          "requested": 300,
+          "actual": 300,
+          "max": 29545
+        },
+        {
+          "viewport": "phone-l",
+          "page": "info",
+          "requested": 700,
+          "actual": 700,
+          "max": 29545
+        },
+        {
+          "viewport": "tablet",
+          "page": "dashboard",
+          "requested": 0,
+          "actual": 0,
+          "max": 4110
+        },
+        {
+          "viewport": "tablet",
+          "page": "dashboard",
+          "requested": 300,
+          "actual": 300,
+          "max": 4110
+        },
+        {
+          "viewport": "tablet",
+          "page": "dashboard",
+          "requested": 700,
+          "actual": 700,
+          "max": 4110
+        },
+        {
+          "viewport": "tablet",
+          "page": "setups",
+          "requested": 0,
+          "actual": 0,
+          "max": 1392
+        },
+        {
+          "viewport": "tablet",
+          "page": "setups",
+          "requested": 300,
+          "actual": 300,
+          "max": 1392
+        },
+        {
+          "viewport": "tablet",
+          "page": "setups",
+          "requested": 700,
+          "actual": 700,
+          "max": 1392
+        },
+        {
+          "viewport": "tablet",
+          "page": "crops",
+          "requested": 0,
+          "actual": 0,
+          "max": 2371
+        },
+        {
+          "viewport": "tablet",
+          "page": "crops",
+          "requested": 300,
+          "actual": 300,
+          "max": 2371
+        },
+        {
+          "viewport": "tablet",
+          "page": "crops",
+          "requested": 700,
+          "actual": 700,
+          "max": 2371
+        },
+        {
+          "viewport": "tablet",
+          "page": "buffs",
+          "requested": 0,
+          "actual": 0,
+          "max": 2551
+        },
+        {
+          "viewport": "tablet",
+          "page": "buffs",
+          "requested": 300,
+          "actual": 300,
+          "max": 2551
+        },
+        {
+          "viewport": "tablet",
+          "page": "buffs",
+          "requested": 700,
+          "actual": 700,
+          "max": 2551
+        },
+        {
+          "viewport": "tablet",
+          "page": "tools",
+          "requested": 0,
+          "actual": 0,
+          "max": 2634
+        },
+        {
+          "viewport": "tablet",
+          "page": "tools",
+          "requested": 300,
+          "actual": 300,
+          "max": 2634
+        },
+        {
+          "viewport": "tablet",
+          "page": "tools",
+          "requested": 700,
+          "actual": 700,
+          "max": 2634
+        },
+        {
+          "viewport": "tablet",
+          "page": "shards",
+          "requested": 0,
+          "actual": 0,
+          "max": 11545
+        },
+        {
+          "viewport": "tablet",
+          "page": "shards",
+          "requested": 300,
+          "actual": 300,
+          "max": 11545
+        },
+        {
+          "viewport": "tablet",
+          "page": "shards",
+          "requested": 700,
+          "actual": 700,
+          "max": 11545
+        },
+        {
+          "viewport": "tablet",
+          "page": "planner",
+          "requested": 0,
+          "actual": 0,
+          "max": 2647
+        },
+        {
+          "viewport": "tablet",
+          "page": "planner",
+          "requested": 300,
+          "actual": 300,
+          "max": 2647
+        },
+        {
+          "viewport": "tablet",
+          "page": "planner",
+          "requested": 700,
+          "actual": 700,
+          "max": 2647
+        },
+        {
+          "viewport": "tablet",
+          "page": "qol",
+          "requested": 0,
+          "actual": 0,
+          "max": 892
+        },
+        {
+          "viewport": "tablet",
+          "page": "qol",
+          "requested": 300,
+          "actual": 300,
+          "max": 892
+        },
+        {
+          "viewport": "tablet",
+          "page": "qol",
+          "requested": 700,
+          "actual": 700,
+          "max": 892
+        },
+        {
+          "viewport": "tablet",
+          "page": "focus",
+          "requested": 0,
+          "actual": 0,
+          "max": 0
+        },
+        {
+          "viewport": "tablet",
+          "page": "focus",
+          "requested": 300,
+          "actual": 0,
+          "max": 0
+        },
+        {
+          "viewport": "tablet",
+          "page": "focus",
+          "requested": 700,
+          "actual": 0,
+          "max": 0
+        },
+        {
+          "viewport": "tablet",
+          "page": "info",
+          "requested": 0,
+          "actual": 0,
+          "max": 19238
+        },
+        {
+          "viewport": "tablet",
+          "page": "info",
+          "requested": 300,
+          "actual": 300,
+          "max": 19238
+        },
+        {
+          "viewport": "tablet",
+          "page": "info",
+          "requested": 700,
+          "actual": 700,
+          "max": 19238
+        },
+        {
+          "viewport": "desktop",
+          "page": "dashboard",
+          "requested": 0,
+          "actual": 0,
+          "max": 1767
+        },
+        {
+          "viewport": "desktop",
+          "page": "dashboard",
+          "requested": 300,
+          "actual": 300,
+          "max": 1767
+        },
+        {
+          "viewport": "desktop",
+          "page": "dashboard",
+          "requested": 700,
+          "actual": 700,
+          "max": 1767
+        },
+        {
+          "viewport": "desktop",
+          "page": "setups",
+          "requested": 0,
+          "actual": 0,
+          "max": 657
+        },
+        {
+          "viewport": "desktop",
+          "page": "setups",
+          "requested": 300,
+          "actual": 300,
+          "max": 657
+        },
+        {
+          "viewport": "desktop",
+          "page": "setups",
+          "requested": 700,
+          "actual": 657,
+          "max": 657
+        },
+        {
+          "viewport": "desktop",
+          "page": "crops",
+          "requested": 0,
+          "actual": 0,
+          "max": 1194
+        },
+        {
+          "viewport": "desktop",
+          "page": "crops",
+          "requested": 300,
+          "actual": 300,
+          "max": 1194
+        },
+        {
+          "viewport": "desktop",
+          "page": "crops",
+          "requested": 700,
+          "actual": 700,
+          "max": 1194
+        },
+        {
+          "viewport": "desktop",
+          "page": "buffs",
+          "requested": 0,
+          "actual": 0,
+          "max": 639
+        },
+        {
+          "viewport": "desktop",
+          "page": "buffs",
+          "requested": 300,
+          "actual": 300,
+          "max": 639
+        },
+        {
+          "viewport": "desktop",
+          "page": "buffs",
+          "requested": 700,
+          "actual": 639,
+          "max": 639
+        },
+        {
+          "viewport": "desktop",
+          "page": "tools",
+          "requested": 0,
+          "actual": 0,
+          "max": 2279
+        },
+        {
+          "viewport": "desktop",
+          "page": "tools",
+          "requested": 300,
+          "actual": 300,
+          "max": 2279
+        },
+        {
+          "viewport": "desktop",
+          "page": "tools",
+          "requested": 700,
+          "actual": 700,
+          "max": 2279
+        },
+        {
+          "viewport": "desktop",
+          "page": "shards",
+          "requested": 0,
+          "actual": 0,
+          "max": 7256
+        },
+        {
+          "viewport": "desktop",
+          "page": "shards",
+          "requested": 300,
+          "actual": 300,
+          "max": 7256
+        },
+        {
+          "viewport": "desktop",
+          "page": "shards",
+          "requested": 700,
+          "actual": 700,
+          "max": 7256
+        },
+        {
+          "viewport": "desktop",
+          "page": "planner",
+          "requested": 0,
+          "actual": 0,
+          "max": 2872
+        },
+        {
+          "viewport": "desktop",
+          "page": "planner",
+          "requested": 300,
+          "actual": 300,
+          "max": 2872
+        },
+        {
+          "viewport": "desktop",
+          "page": "planner",
+          "requested": 700,
+          "actual": 700,
+          "max": 2872
+        },
+        {
+          "viewport": "desktop",
+          "page": "qol",
+          "requested": 0,
+          "actual": 0,
+          "max": 819
+        },
+        {
+          "viewport": "desktop",
+          "page": "qol",
+          "requested": 300,
+          "actual": 300,
+          "max": 819
+        },
+        {
+          "viewport": "desktop",
+          "page": "qol",
+          "requested": 700,
+          "actual": 700,
+          "max": 819
+        },
+        {
+          "viewport": "desktop",
+          "page": "focus",
+          "requested": 0,
+          "actual": 0,
+          "max": 0
+        },
+        {
+          "viewport": "desktop",
+          "page": "focus",
+          "requested": 300,
+          "actual": 0,
+          "max": 0
+        },
+        {
+          "viewport": "desktop",
+          "page": "focus",
+          "requested": 700,
+          "actual": 0,
+          "max": 0
+        },
+        {
+          "viewport": "desktop",
+          "page": "info",
+          "requested": 0,
+          "actual": 0,
+          "max": 12356
+        },
+        {
+          "viewport": "desktop",
+          "page": "info",
+          "requested": 300,
+          "actual": 300,
+          "max": 12356
+        },
+        {
+          "viewport": "desktop",
+          "page": "info",
+          "requested": 700,
+          "actual": 700,
+          "max": 12356
+        }
+      ],
+      "openedOverlays": 16,
+      "runtimeErrors": []
+    },
+    "sweepAreas": [
+      "PASS  dashboard",
+      "PASS  crops",
+      "PASS  setups",
+      "PASS  buffs",
+      "PASS  tools",
+      "PASS  qol",
+      "PASS  focus",
+      "PASS  info",
+      "PASS  planner",
+      "PASS  shards"
+    ],
+    "sweepVariants": [
+      "[buffs] desktop-empty  ok (14 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[buffs] desktop-filled ok (14 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[buffs] phone-filled   ok (14 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[crops] desktop-empty  ok (8 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[crops] desktop-filled ok (8 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[crops] phone-filled   ok (8 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[dashboard] desktop-empty  ok (0 clicks)",
+      "[dashboard] desktop-filled ok (0 clicks)",
+      "[dashboard] phone-filled   ok (0 clicks)",
+      "[focus] desktop-empty  ok (1 clicks)",
+      "[focus] desktop-filled ok (1 clicks)",
+      "[focus] phone-filled   ok (1 clicks)",
+      "[info] desktop-empty  ok (5 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[info] desktop-filled ok (5 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[info] phone-filled   ok (5 clicks)",
+      "[planner] desktop-empty  ok (30 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[planner] desktop-filled ok (23 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[planner] phone-filled   ok (23 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[qol] desktop-empty  ok (0 clicks)",
+      "[qol] desktop-filled ok (0 clicks)",
+      "[qol] phone-filled   ok (0 clicks)",
+      "[setups] desktop-empty  ok (12 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[setups] desktop-filled ok (12 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/H/history/full\",\"external\":true},{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[setups] phone-filled   ok (12 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/H/history/full\",\"external\":true},{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[shards] desktop-empty  ok (40 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[shards] desktop-filled ok (40 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[shards] phone-filled   ok (40 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[tools] desktop-empty  ok (10 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[tools] desktop-filled ok (10 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[tools] phone-filled   ok (10 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]"
+    ],
+    "negativeSweepExpectedExit": 1,
+    "negativeSweepGate": "Completed success after requiring exit 1 and injected-error marker",
+    "negativeSweepVariants": [
+      "[dashboard] desktop-empty  ok (0 clicks) | Error: AUDIT_INJECTED_RUNTIME_ERROR",
+      "[dashboard] desktop-filled ok (0 clicks) | Error: AUDIT_INJECTED_RUNTIME_ERROR",
+      "[dashboard] phone-filled   ok (0 clicks) | Error: AUDIT_INJECTED_RUNTIME_ERROR"
+    ]
+  },
+  "nextStep": "Package 12 remains first open. Obtain dated current live lore or first-party live statement for rate, Fortune cap, actual Pest cost and duration/expiry. Keep unknowns until verified; do not repeat accepted count/expiry or preview/cost corrections. Packages 14/15/17 remain blocked; no merge/deployment."
+}
