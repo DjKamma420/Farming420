@@ -23,4 +23,13 @@ Fixtures are opt-in audit routes. Ordinary area sweeps, overlay checks, renderer
 
 Local verification: 18 targeted tests; full npm session 89080 exit 0, 1,398 Node and 8 Python PASS; syntax, whitespace and workflow YAML/shell parsing PASS. The initial aggregation run failed with `ENOENT` creating `/tmp/farming420-gate-XXXXXX`; a writable workspace TMPDIR resolved the environment issue without editing that test. Native local-browser acceptance is not claimed.
 
-Next: verify all automatic runs on the exact saved implementation SHA and retain their fixture/ordinary/negative evidence before closing package 18. Package 12 still requires dated current live lore; packages 14/15/17 retain their source/account blocks. Main, other PRs and the original four dirty files are preserved; no merge/deployment.
+Initial next step before native CI: verify all automatic runs on the exact saved implementation SHA and retain their fixture/ordinary/negative evidence before closing package 18. Package 12 still requires dated current live lore; packages 14/15/17 retain their source/account blocks. Main, other PRs and the original four dirty files are preserved; no merge/deployment.
+
+
+## Completed exact-source acceptance
+
+Source **5bdcdfabaa2db3c17d6d4a4b89282d34bef624d1**: Validate **37297466792 / 111721986547 SUCCESS**, 1,398 Node + 8 Python, startup/immutable artifact and existing trusted Tool/idempotence gates. Browser **37297466894**, Chromium **111721987836**, WebKit **111721987940**, Firefox **111721988100**, all SUCCESS, each 239 PASS / zero FAIL / 8 NOTE / zero BLOCKED. All 24 Phillip cases remain accepted.
+
+Chromium ordinary overlay/sweep exit 0, zero findings/runtime errors, 120 main targets / 16 overlays and ten areas/thirty variants. Both forced transport and genuine CORS fixtures exit 0 in all retained variants, with null quotes, no cached prices and full native notes. Concurrent same-origin failures log exit 1; actual runtime injection remains fatal in every variant and the completed conditional gate enforces exit 1. That runtime exit has no separate printed log line; the retained evidence states how it is verified. [Exact-source results and diagnostics](sweep-transport-acceptance-5bdcdfa-2026-10-05.json).
+
+Package 18 is source-accepted for this defect; the earlier counterexample remains. Next: check the evidence-only successor's own head/CI, then return to first blocked package 12 only with the specific dated current live evidence. No new live mechanic, successful external delivery, merge or deployment is claimed.
