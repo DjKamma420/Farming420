@@ -52,3 +52,39 @@ first-party live statement covering rate, Fortune cap, actual Pest cost and
 duration/expiry conditions before promoting any numeric live value. Do not
 repeat the accepted count/expiry or preview/cost corrections. Packages 14, 15
 and 17 retain their earlier blocks.
+
+## Follow-up from accepted efd868a — 10:45 CEST continuation
+
+PR #301 still points to `efd868aeb96115cbc3cf2dcfc84cd7cec56ba3ac` at the start
+of this continuation. Its Validate 37283844344 and Browser 37283844315 were
+freshly rechecked as completed success. No new runtime defect was established;
+this follow-up records only the remaining package-12 source investigation.
+
+The maintained community wiki is reachable. Its
+[pinned article revision 836519](https://hypixelskyblock.minecraft.wiki/w/Pesthunter_Phillip?oldid=836519)
+is dated September 9, 2026. However, the
+[July 24 to September 9 comparison](https://hypixelskyblock.minecraft.wiki/w/Pesthunter_Phillip?diff=836519&oldid=790018)
+changes other sections, leaving the Bonus Farming Fortune section unchanged.
+The duration text already appears in
+[revision 510191, September 11, 2024](https://hypixelskyblock.minecraft.wiki/w/Pesthunter_Phillip?oldid=510191).
+Inference: the recent whole-page edit date does not establish a new live
+measurement of this mechanic. The article remains a community reference, not
+the missing dated post-Alpha live lore. No numeric live fields were promoted.
+
+The public item-resource URL
+`https://api.hypixel.net/v2/resources/skyblock/items` failed through the web
+reader with the actual result **Internal Error**. The cause and HTTP status
+were not supplied; no successful payload or API verification is claimed.
+[Official API documentation](https://api.hypixel.net/) was readable and describes
+an item-resource endpoint, but that documentation alone does not prove the
+NPC's current conversion, consumed currency or duration. Wiki history links
+initially failed with **Unable to resolve click call due to invalid arguments**;
+direct history URLs subsequently succeeded.
+
+Pesthunter Phillip remains the first open package. To unblock it, retain a
+dated live-server tooltip/turn-in observation showing the rate, Fortune cap,
+actual consumed Pest currency and active-effect expiry, including any duration
+condition; alternatively obtain an explicit first-party live statement covering
+those fields. Public search, an unrelated wiki edit or the Alpha arithmetic
+threshold cannot substitute for that evidence. Existing accepted code, tests,
+and other packages are unchanged.
