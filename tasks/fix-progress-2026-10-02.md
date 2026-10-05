@@ -5,10 +5,18 @@ Branch: `fix/audit-2026-10-02`. Draft PR: [#301](https://github.com/DjKamma420/F
 Application baseline: `bda761d81deb0be37af9fad31f5469efb992df82`.
 Audit baseline: `e666096b55d1a2a887374feb7c7cd743e8cbe111`.
 Last secured accepted baseline: `839246d5d407505fdd202f22a7831395989ad5bd`.
-Latest source checkpoint: `01941a8fd5ba25c30f35b1e1f015f642dfa539df` — package 12 only. Targeted/full local tests and all three browser probes PASS; required Validate FAILS in trusted delayed tool scroll. This result/next-step successor changes documentation only, with identical source/tests/harness. Resolve its own SHA from PR #301; automatic successor CI is recorded there. No full-head acceptance or scroll fix is claimed.
+Latest secured predecessor: `8acf8de41d5b82647ccc38fb4d0f871571099ee9`. This continuation handles **package 7 only**. The diagnostic checkpoint below changes the trusted-scroll harness and progress, with no runtime fix yet. Resolve this checkpoint's SHA from PR #301; no full-head acceptance or scroll fix is claimed.
 Recovered local checkout on October 4: `7d6be52cd837e055271f1573c41f563a74e5fd2e`, fully materialized through a successful clone. Its initial `git status --porcelain=v1` is empty. This is an observation before the documentation edits below, not a claim about later sessions.
 
 ## Current actual state
+
+- October 5: remote main bda761d and fix head 8acf8de queried successfully; open PRs remain #301 (draft), #279 and #108. Fix branches were searched. The isolated worktree was clean at 8acf8de and now uses local branch `fix/audit-package-7-2026-10-05`; the original dirty checkout remains untouched.
+- Both 01941a8 and its documentation-only successor 8acf8de fail required Validate after twelve trusted Tool transitions: selected Melon's delayed value event gives **20px top / 20px scroll drift**, unchanged limit 4px. Successor Validate run **37235064302 / 111532413503 FAILURE**; all preceding startup/no-op gates pass and CI npm is skipped. All three successor browser jobs report 229 PASS / zero FAIL / 8 NOTE / zero BLOCKED; Chromium overlay/sweep pass. These separate passes do not accept the trusted case.
+- Code inspection finds the price guard recognizes `[data-item-editor]` while the physical Tool editor uses `[data-tool-editor]`. This is a candidate cause, not runtime proof. The native trusted harness now retains before/after positions, scroll dimensions, card/editor/main identity and connectivity, focus/image/font state, render/value events, bounded mutation targets and scrollTop assignment stacks. Its existing assertion and timing are unchanged.
+- Local Chrome is absent (`command -v google-chrome` has no result); no local native-browser pass is claimed. Harness syntax and whitespace checks must pass before syncing; the new diagnostic CI run is required before changing the runtime owner.
+- **Next executable step:** inspect this diagnostic checkpoint's exact-head Validate log, especially `TRUSTED_TOOL_SCROLL_DIAGNOSTIC`. Identify the actual render/layout/scroll writer; fix that existing owner and add a deterministic positive/negative regression. Keep the 4px threshold, same-state zero-mutation gates and nonzero failures. Packages 12/14/15/17 retain their existing source/access blocks. No merge/deploy.
+
+## Prior October 4 state (retained history)
 
 - Thirteen packages retain baseline acceptance; package 7 is reopened by the new required trusted-scroll failure. Four packages retain source/access-dependent partial blocks. This turn implemented only package 12, the first remaining package at its start. The independent Phillip research/count/provenance correction passes local tests and all three browser probes; its live curve remains unverified. The new scroll failure remains red with unresolved cause; no out-of-scope scroll owner was edited and no assertion was relaxed.
 - The earlier `409 environment_offline` interruption is resolved in this session: a real full clone and shell reads succeed. The clone process completed with exit 0; there is no hanging local process. Future sessions must inspect their own actual checkout rather than inherit either the earlier offline state or today's empty initial status.
@@ -111,7 +119,7 @@ CI/process state at this save: all 01941a8 jobs completed; Validate FAILURE and 
 - External market requests return 403/429 and previously 400/CORS rejection. Handled unknown-price behavior is tested; successful live market delivery is not asserted.
 - No credentials or personal profile data committed.
 
-## Current interruption and next executable step
+## Prior October 4 interruption and next step (superseded above)
 
 Current point: **package 12 only**, continued from the freshly queried accepted remote 839246d rather than the older local b2997a4 checkout. The old checkout's three modified files and untracked workspace regression are byte-identical to remote 839246d; they were preserved untouched. An isolated worktree based on 839246d carries this continuation. Open PRs #301, #279 and #108 and remote branches were queried; no foreign branch/PR was changed.
 

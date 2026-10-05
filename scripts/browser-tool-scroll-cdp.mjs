@@ -211,11 +211,64 @@ try {
 
   // Also cover a delayed full value render after the click anchor has expired.
   await wait(2100);
-  const lateBefore = await evaluate(`(() => {
-    const card = document.querySelector('.sb-tool-card.selected[data-sb-tool-crop="melon"]');
-    const main = document.querySelector('.main');
-    return { top: card.getBoundingClientRect().top, y: main.scrollTop };
+  await evaluate(`(() => {
+    const ids = new WeakMap();
+    let next = 1;
+    const id = node => {
+      if (!node) return null;
+      if (!ids.has(node)) ids.set(node, next++);
+      return ids.get(node);
+    };
+    const label = node => node?.nodeType === 1
+      ? node.tagName.toLowerCase() + (node.id ? '#' + node.id : '') + '.' + [...node.classList].join('.')
+      : node?.nodeName;
+    const original = {
+      card: document.querySelector('.sb-tool-card.selected[data-sb-tool-crop="melon"]'),
+      editor: document.querySelector('[data-tool-editor]'),
+      main: document.querySelector('.main'),
+    };
+    const events = [];
+    const snapshot = () => {
+      const card = document.querySelector('.sb-tool-card.selected[data-sb-tool-crop="melon"]');
+      const editor = document.querySelector('[data-tool-editor]');
+      const main = document.querySelector('.main');
+      return {
+        top: card?.getBoundingClientRect().top, y: main?.scrollTop,
+        height: main?.scrollHeight, clientHeight: main?.clientHeight,
+        mainTop: main?.getBoundingClientRect().top,
+        card: id(card), editor: id(editor), main: id(main),
+        originalConnected: Object.fromEntries(Object.entries(original).map(([key, node]) => [key, node?.isConnected])),
+        editorTop: editor?.getBoundingClientRect().top,
+        editorHeight: editor?.getBoundingClientRect().height,
+        focus: label(document.activeElement),
+        incompleteImages: [...document.querySelectorAll('#app img')].filter(image => !image.complete).length,
+        fonts: document.fonts.status,
+      };
+    };
+    const record = (type, detail) => {
+      if (events.length < 200) events.push({time: performance.now(), type, detail});
+    };
+    const descriptor = Object.getOwnPropertyDescriptor(Element.prototype, 'scrollTop');
+    Object.defineProperty(Element.prototype, 'scrollTop', {
+      ...descriptor,
+      set(value) {
+        record('scrollTop-write', {node: id(this), label: label(this), value, stack: new Error().stack});
+        descriptor.set.call(this, value);
+      },
+    });
+    for (const type of ['farming420:rendered', 'farming420:item-value-updated']) {
+      window.addEventListener(type, () => record(type, snapshot()));
+    }
+    document.addEventListener('scroll', event => record('scroll', {node: id(event.target), label: label(event.target)}), true);
+    new MutationObserver(records => record('mutations', records.slice(0, 30).map(mutation => ({
+      type: mutation.type, target: label(mutation.target), id: id(mutation.target),
+      attribute: mutation.attributeName, added: [...mutation.addedNodes].slice(0, 5).map(label),
+      removed: [...mutation.removedNodes].slice(0, 5).map(label),
+    })))).observe(document.getElementById('app'), {subtree: true, childList: true, attributes: true});
+    window.__toolScrollDiagnostic = {snapshot, events};
+    return true;
   })()`);
+  const lateBefore = await evaluate('window.__toolScrollDiagnostic.snapshot()');
   await evaluate(`window.dispatchEvent(new Event('farming420:item-value-updated')); true`);
   await wait(500);
   const lateAfter = await evaluate(`(() => {
@@ -225,6 +278,10 @@ try {
   })()`);
   const lateDrift = Math.abs(lateAfter.top - lateBefore.top);
   const lateScrollDelta = Math.abs(lateAfter.y - lateBefore.y);
+  console.log('TRUSTED_TOOL_SCROLL_DIAGNOSTIC ' + JSON.stringify(await evaluate(`({
+    before: ${JSON.stringify(lateBefore)}, after: window.__toolScrollDiagnostic.snapshot(),
+    events: window.__toolScrollDiagnostic.events,
+  })`)));
   if (lateDrift > 4 || lateScrollDelta > 4) {
     fail(`delayed tool render drifted: top=${lateDrift.toFixed(2)} scroll=${lateScrollDelta.toFixed(2)}`);
   }
