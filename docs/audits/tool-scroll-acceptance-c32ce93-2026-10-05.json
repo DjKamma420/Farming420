@@ -1,0 +1,4513 @@
+{
+  "sourceCommit": "c32ce937fa8c63f7a037e0d1b57d062f68fdea33",
+  "scope": "Package 7 only: late physical Tool price refresh after click-anchor expiry.",
+  "validate": {
+    "run": 37272745150,
+    "job": 111643039888,
+    "conclusion": "success",
+    "nodeTests": 1392,
+    "pythonTests": 8,
+    "trustedTransitions": 12,
+    "maxDriftPx": 1.42,
+    "lateDriftPx": 0,
+    "lateScrollDeltaPx": 0,
+    "unchangedLimitPx": 4,
+    "diagnostic": {
+      "before": {
+        "top": 377,
+        "y": 358,
+        "height": 3915,
+        "clientHeight": 840,
+        "mainTop": 0,
+        "card": 1,
+        "editor": 2,
+        "main": 3,
+        "originalConnected": {
+          "card": true,
+          "editor": true,
+          "main": true
+        },
+        "editorTop": 451,
+        "editorHeight": 2220.421875,
+        "focus": "body.",
+        "incompleteImages": 4,
+        "fonts": "loaded"
+      },
+      "after": {
+        "top": 377,
+        "y": 358,
+        "height": 3915,
+        "clientHeight": 840,
+        "mainTop": 0,
+        "card": 1,
+        "editor": 2,
+        "main": 3,
+        "originalConnected": {
+          "card": true,
+          "editor": true,
+          "main": true
+        },
+        "editorTop": 451,
+        "editorHeight": 2220.421875,
+        "focus": "body.",
+        "incompleteImages": 4,
+        "fonts": "loaded"
+      },
+      "events": [
+        {
+          "time": 7101.899999999994,
+          "type": "farming420:item-value-updated",
+          "detail": {
+            "top": 377,
+            "y": 358,
+            "height": 3915,
+            "clientHeight": 840,
+            "mainTop": 0,
+            "card": 1,
+            "editor": 2,
+            "main": 3,
+            "originalConnected": {
+              "card": true,
+              "editor": true,
+              "main": true
+            },
+            "editorTop": 451,
+            "editorHeight": 2220.421875,
+            "focus": "body.",
+            "incompleteImages": 4,
+            "fonts": "loaded"
+          }
+        }
+      ]
+    }
+  },
+  "browsers": [
+    {
+      "run": 37272745171,
+      "job": 111643040083,
+      "engine": "chromium",
+      "conclusion": "success",
+      "counts": {
+        "PASS": 239,
+        "FAIL": 0,
+        "NOTE": 8,
+        "BLOCKED": 0
+      },
+      "cases": [
+        {
+          "engine": "chromium",
+          "viewport": "negative-control",
+          "check": "runtime-error-negative-control",
+          "status": "PASS",
+          "evidence": {
+            "runtimeErrors": [
+              "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+            ],
+            "marketTransportNotes": [],
+            "acceptanceExit": 1,
+            "rawPageErrors": [
+              "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+            ]
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "closed-editor-negative-control",
+          "check": "late-value-refresh-rejects-former-editor-replacement",
+          "status": "PASS",
+          "evidence": {
+            "rendered": 1,
+            "editorConnected": false,
+            "pickerConnected": false,
+            "regressionExit": 1,
+            "source": "one editor guard removed in disposable routed module"
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "closed-editor-negative-control",
+          "check": "runtime-page-errors",
+          "status": "PASS",
+          "evidence": {
+            "runtimeErrors": [],
+            "marketTransportNotes": [],
+            "rawPageErrors": [],
+            "requestFailures": []
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "tool-editor-negative-control",
+          "check": "late-tool-value-refresh-rejects-former-editor-replacement",
+          "status": "PASS",
+          "evidence": {
+            "before": {
+              "top": 735,
+              "y": 0
+            },
+            "after": {
+              "top": 735,
+              "y": 0
+            },
+            "rendered": 1,
+            "sameCard": false,
+            "sameEditor": false,
+            "sameMain": false,
+            "focusPreserved": true,
+            "regressionExit": 1,
+            "source": "only Tool price guard removed in disposable routed module"
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "tool-editor-negative-control",
+          "check": "runtime-page-errors",
+          "status": "PASS",
+          "evidence": {
+            "runtimeErrors": [],
+            "marketTransportNotes": [],
+            "rawPageErrors": [],
+            "requestFailures": []
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "320-portrait",
+          "check": "picker-petItem-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "320-portrait",
+          "check": "picker-petItem-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 1
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "320-portrait",
+          "check": "picker-pet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "320-portrait",
+          "check": "picker-pet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 0
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "320-portrait",
+          "check": "picker-helmet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "320-portrait",
+          "check": "picker-helmet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 10
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "320-portrait",
+          "check": "tool-editor-late-value-refresh-after-anchor-expiry",
+          "status": "PASS",
+          "evidence": {
+            "before": {
+              "top": 243,
+              "y": 574
+            },
+            "after": {
+              "top": 243,
+              "y": 574
+            },
+            "rendered": 0,
+            "sameCard": true,
+            "sameEditor": true,
+            "sameMain": true,
+            "focusPreserved": true
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "320-portrait",
+          "check": "manual-wheel-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "prior": 756,
+            "manual": 916,
+            "late": 916,
+            "controlledMutation": true
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "320-portrait",
+          "check": "manual-key-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "keyBefore": 917,
+            "keyManual": 420,
+            "keyLate": 420,
+            "key": "PageUp",
+            "controlledPaneFocus": true
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "320-portrait",
+          "check": "touch-intent-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "before": 755,
+            "manual": 635,
+            "late": 635,
+            "syntheticIntentAndControlledScroll": true,
+            "physicalDevice": false
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "360-portrait",
+          "check": "picker-petItem-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "360-portrait",
+          "check": "picker-petItem-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 1
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "360-portrait",
+          "check": "picker-pet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "360-portrait",
+          "check": "picker-pet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 0
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "360-portrait",
+          "check": "picker-helmet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "360-portrait",
+          "check": "picker-helmet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 10
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "360-portrait",
+          "check": "tool-editor-late-value-refresh-after-anchor-expiry",
+          "status": "PASS",
+          "evidence": {
+            "before": {
+              "top": 279,
+              "y": 482
+            },
+            "after": {
+              "top": 279,
+              "y": 482
+            },
+            "rendered": 0,
+            "sameCard": true,
+            "sameEditor": true,
+            "sameMain": true,
+            "focusPreserved": true
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "360-portrait",
+          "check": "manual-wheel-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "prior": 664,
+            "manual": 824,
+            "late": 824,
+            "controlledMutation": true
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "360-portrait",
+          "check": "manual-key-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "keyBefore": 825,
+            "keyManual": 265,
+            "keyLate": 265,
+            "key": "PageUp",
+            "controlledPaneFocus": true
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "360-portrait",
+          "check": "touch-intent-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "before": 663,
+            "manual": 543,
+            "late": 543,
+            "syntheticIntentAndControlledScroll": true,
+            "physicalDevice": false
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "375-portrait",
+          "check": "picker-petItem-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "375-portrait",
+          "check": "picker-petItem-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 1
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "375-portrait",
+          "check": "picker-pet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "375-portrait",
+          "check": "picker-pet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 0
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "375-portrait",
+          "check": "picker-helmet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "375-portrait",
+          "check": "picker-helmet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 10
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "375-portrait",
+          "check": "tool-editor-late-value-refresh-after-anchor-expiry",
+          "status": "PASS",
+          "evidence": {
+            "before": {
+              "top": 293,
+              "y": 455
+            },
+            "after": {
+              "top": 293,
+              "y": 455
+            },
+            "rendered": 0,
+            "sameCard": true,
+            "sameEditor": true,
+            "sameMain": true,
+            "focusPreserved": true
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "375-portrait",
+          "check": "manual-wheel-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "prior": 637,
+            "manual": 797,
+            "late": 797,
+            "controlledMutation": true
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "375-portrait",
+          "check": "manual-key-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "keyBefore": 798,
+            "keyManual": 215,
+            "keyLate": 215,
+            "key": "PageUp",
+            "controlledPaneFocus": true
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "375-portrait",
+          "check": "touch-intent-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "before": 636,
+            "manual": 516,
+            "late": 516,
+            "syntheticIntentAndControlledScroll": true,
+            "physicalDevice": false
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "390-portrait",
+          "check": "picker-petItem-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "390-portrait",
+          "check": "picker-petItem-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 1
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "390-portrait",
+          "check": "picker-pet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "390-portrait",
+          "check": "picker-pet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 0
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "390-portrait",
+          "check": "picker-helmet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "390-portrait",
+          "check": "picker-helmet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 10
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "390-portrait",
+          "check": "tool-editor-late-value-refresh-after-anchor-expiry",
+          "status": "PASS",
+          "evidence": {
+            "before": {
+              "top": 735,
+              "y": 0
+            },
+            "after": {
+              "top": 735,
+              "y": 0
+            },
+            "rendered": 0,
+            "sameCard": true,
+            "sameEditor": true,
+            "sameMain": true,
+            "focusPreserved": true
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "390-portrait",
+          "check": "manual-wheel-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "prior": 535,
+            "manual": 695,
+            "late": 695,
+            "controlledMutation": true
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "390-portrait",
+          "check": "manual-key-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "keyBefore": 696,
+            "keyManual": 0,
+            "keyLate": 0,
+            "key": "PageUp",
+            "controlledPaneFocus": true
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "390-portrait",
+          "check": "touch-intent-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "before": 535,
+            "manual": 415,
+            "late": 415,
+            "syntheticIntentAndControlledScroll": true,
+            "physicalDevice": false
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "412-portrait",
+          "check": "picker-petItem-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "412-portrait",
+          "check": "picker-petItem-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 1
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "412-portrait",
+          "check": "picker-pet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "412-portrait",
+          "check": "picker-pet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 0
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "412-portrait",
+          "check": "picker-helmet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "412-portrait",
+          "check": "picker-helmet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 10
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "412-portrait",
+          "check": "tool-editor-late-value-refresh-after-anchor-expiry",
+          "status": "PASS",
+          "evidence": {
+            "before": {
+              "top": 735,
+              "y": 0
+            },
+            "after": {
+              "top": 735,
+              "y": 0
+            },
+            "rendered": 0,
+            "sameCard": true,
+            "sameEditor": true,
+            "sameMain": true,
+            "focusPreserved": true
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "412-portrait",
+          "check": "manual-wheel-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "prior": 500,
+            "manual": 660,
+            "late": 660,
+            "controlledMutation": true
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "412-portrait",
+          "check": "manual-key-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "keyBefore": 661,
+            "keyManual": 0,
+            "keyLate": 0,
+            "key": "PageUp",
+            "controlledPaneFocus": true
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "412-portrait",
+          "check": "touch-intent-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "before": 499,
+            "manual": 379,
+            "late": 379,
+            "syntheticIntentAndControlledScroll": true,
+            "physicalDevice": false
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "568-landscape",
+          "check": "picker-petItem-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "568-landscape",
+          "check": "picker-petItem-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 1
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "568-landscape",
+          "check": "picker-pet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "568-landscape",
+          "check": "picker-pet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 0
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "568-landscape",
+          "check": "picker-helmet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "568-landscape",
+          "check": "picker-helmet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 10
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "568-landscape",
+          "check": "tool-editor-late-value-refresh-after-anchor-expiry",
+          "status": "PASS",
+          "evidence": {
+            "before": {
+              "top": 119,
+              "y": 556
+            },
+            "after": {
+              "top": 119,
+              "y": 556
+            },
+            "rendered": 0,
+            "sameCard": true,
+            "sameEditor": true,
+            "sameMain": true,
+            "focusPreserved": true
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "568-landscape",
+          "check": "manual-wheel-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "prior": 737,
+            "manual": 897,
+            "late": 897,
+            "controlledMutation": true
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "568-landscape",
+          "check": "manual-key-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "keyBefore": 617,
+            "keyManual": 337,
+            "keyLate": 337,
+            "key": "PageUp",
+            "controlledPaneFocus": true
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "568-landscape",
+          "check": "touch-intent-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "before": 737,
+            "manual": 617,
+            "late": 617,
+            "syntheticIntentAndControlledScroll": true,
+            "physicalDevice": false
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "667-landscape",
+          "check": "picker-petItem-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "667-landscape",
+          "check": "picker-petItem-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 1
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "667-landscape",
+          "check": "picker-pet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "667-landscape",
+          "check": "picker-pet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 0
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "667-landscape",
+          "check": "picker-helmet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "667-landscape",
+          "check": "picker-helmet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 10
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "667-landscape",
+          "check": "tool-editor-late-value-refresh-after-anchor-expiry",
+          "status": "PASS",
+          "evidence": {
+            "before": {
+              "top": 147,
+              "y": 374
+            },
+            "after": {
+              "top": 147,
+              "y": 374
+            },
+            "rendered": 0,
+            "sameCard": true,
+            "sameEditor": true,
+            "sameMain": true,
+            "focusPreserved": true
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "667-landscape",
+          "check": "manual-wheel-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "prior": 466,
+            "manual": 626,
+            "late": 626,
+            "controlledMutation": true
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "667-landscape",
+          "check": "manual-key-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "keyBefore": 228,
+            "keyManual": 0,
+            "keyLate": 0,
+            "key": "PageUp",
+            "controlledPaneFocus": true
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "667-landscape",
+          "check": "touch-intent-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "before": 465,
+            "manual": 345,
+            "late": 345,
+            "syntheticIntentAndControlledScroll": true,
+            "physicalDevice": false
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "800-landscape",
+          "check": "picker-petItem-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "800-landscape",
+          "check": "picker-petItem-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 1
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "800-landscape",
+          "check": "picker-pet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "800-landscape",
+          "check": "picker-pet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 0
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "800-landscape",
+          "check": "picker-helmet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "800-landscape",
+          "check": "picker-helmet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 10
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "800-landscape",
+          "check": "tool-editor-late-value-refresh-after-anchor-expiry",
+          "status": "PASS",
+          "evidence": {
+            "before": {
+              "top": 139,
+              "y": 289
+            },
+            "after": {
+              "top": 139,
+              "y": 289
+            },
+            "rendered": 0,
+            "sameCard": true,
+            "sameEditor": true,
+            "sameMain": true,
+            "focusPreserved": true
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "800-landscape",
+          "check": "manual-wheel-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "prior": 387,
+            "manual": 547,
+            "late": 547,
+            "controlledMutation": true
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "800-landscape",
+          "check": "manual-key-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "keyBefore": 150,
+            "keyManual": 0,
+            "keyLate": 0,
+            "key": "PageUp",
+            "controlledPaneFocus": true
+          }
+        },
+        {
+          "engine": "chromium",
+          "viewport": "800-landscape",
+          "check": "touch-intent-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "before": 386,
+            "manual": 266,
+            "late": 266,
+            "syntheticIntentAndControlledScroll": true,
+            "physicalDevice": false
+          }
+        }
+      ]
+    },
+    {
+      "run": 37272745171,
+      "job": 111643040364,
+      "engine": "webkit",
+      "conclusion": "success",
+      "counts": {
+        "PASS": 239,
+        "FAIL": 0,
+        "NOTE": 8,
+        "BLOCKED": 0
+      },
+      "cases": [
+        {
+          "engine": "webkit",
+          "viewport": "negative-control",
+          "check": "runtime-error-negative-control",
+          "status": "PASS",
+          "evidence": {
+            "runtimeErrors": [
+              "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+            ],
+            "marketTransportNotes": [],
+            "acceptanceExit": 1,
+            "rawPageErrors": [
+              "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+            ]
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "closed-editor-negative-control",
+          "check": "late-value-refresh-rejects-former-editor-replacement",
+          "status": "PASS",
+          "evidence": {
+            "rendered": 1,
+            "editorConnected": false,
+            "pickerConnected": false,
+            "regressionExit": 1,
+            "source": "one editor guard removed in disposable routed module"
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "closed-editor-negative-control",
+          "check": "runtime-page-errors",
+          "status": "PASS",
+          "evidence": {
+            "runtimeErrors": [],
+            "marketTransportNotes": [],
+            "rawPageErrors": [],
+            "requestFailures": []
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "tool-editor-negative-control",
+          "check": "late-tool-value-refresh-rejects-former-editor-replacement",
+          "status": "PASS",
+          "evidence": {
+            "before": {
+              "top": 735,
+              "y": 0
+            },
+            "after": {
+              "top": 735,
+              "y": 0
+            },
+            "rendered": 1,
+            "sameCard": false,
+            "sameEditor": false,
+            "sameMain": false,
+            "focusPreserved": true,
+            "regressionExit": 1,
+            "source": "only Tool price guard removed in disposable routed module"
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "tool-editor-negative-control",
+          "check": "runtime-page-errors",
+          "status": "PASS",
+          "evidence": {
+            "runtimeErrors": [],
+            "marketTransportNotes": [],
+            "rawPageErrors": [],
+            "requestFailures": []
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "320-portrait",
+          "check": "picker-petItem-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "320-portrait",
+          "check": "picker-petItem-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 1
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "320-portrait",
+          "check": "picker-pet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "320-portrait",
+          "check": "picker-pet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 0
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "320-portrait",
+          "check": "picker-helmet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "320-portrait",
+          "check": "picker-helmet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 10
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "320-portrait",
+          "check": "tool-editor-late-value-refresh-after-anchor-expiry",
+          "status": "PASS",
+          "evidence": {
+            "before": {
+              "top": 243,
+              "y": 574
+            },
+            "after": {
+              "top": 243,
+              "y": 574
+            },
+            "rendered": 0,
+            "sameCard": true,
+            "sameEditor": true,
+            "sameMain": true,
+            "focusPreserved": true
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "320-portrait",
+          "check": "manual-wheel-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "prior": 755,
+            "manual": 915,
+            "late": 915,
+            "controlledMutation": true
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "320-portrait",
+          "check": "manual-key-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "keyBefore": 915,
+            "keyManual": 461,
+            "keyLate": 461,
+            "key": "PageUp",
+            "controlledPaneFocus": true
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "320-portrait",
+          "check": "touch-intent-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "before": 512,
+            "manual": 392,
+            "late": 392,
+            "syntheticIntentAndControlledScroll": true,
+            "physicalDevice": false
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "360-portrait",
+          "check": "picker-petItem-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "360-portrait",
+          "check": "picker-petItem-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 1
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "360-portrait",
+          "check": "picker-pet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "360-portrait",
+          "check": "picker-pet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 0
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "360-portrait",
+          "check": "picker-helmet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "360-portrait",
+          "check": "picker-helmet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 10
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "360-portrait",
+          "check": "tool-editor-late-value-refresh-after-anchor-expiry",
+          "status": "PASS",
+          "evidence": {
+            "before": {
+              "top": 279,
+              "y": 482
+            },
+            "after": {
+              "top": 279,
+              "y": 482
+            },
+            "rendered": 0,
+            "sameCard": true,
+            "sameEditor": true,
+            "sameMain": true,
+            "focusPreserved": true
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "360-portrait",
+          "check": "manual-wheel-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "prior": 663,
+            "manual": 823,
+            "late": 823,
+            "controlledMutation": true
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "360-portrait",
+          "check": "manual-key-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "keyBefore": 823,
+            "keyManual": 311,
+            "keyLate": 311,
+            "key": "PageUp",
+            "controlledPaneFocus": true
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "360-portrait",
+          "check": "touch-intent-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "before": 384,
+            "manual": 264,
+            "late": 264,
+            "syntheticIntentAndControlledScroll": true,
+            "physicalDevice": false
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "375-portrait",
+          "check": "picker-petItem-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "375-portrait",
+          "check": "picker-petItem-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 1
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "375-portrait",
+          "check": "picker-pet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "375-portrait",
+          "check": "picker-pet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 0
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "375-portrait",
+          "check": "picker-helmet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "375-portrait",
+          "check": "picker-helmet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 10
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "375-portrait",
+          "check": "tool-editor-late-value-refresh-after-anchor-expiry",
+          "status": "PASS",
+          "evidence": {
+            "before": {
+              "top": 293,
+              "y": 455
+            },
+            "after": {
+              "top": 293,
+              "y": 455
+            },
+            "rendered": 0,
+            "sameCard": true,
+            "sameEditor": true,
+            "sameMain": true,
+            "focusPreserved": true
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "375-portrait",
+          "check": "manual-wheel-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "prior": 636,
+            "manual": 796,
+            "late": 796,
+            "controlledMutation": true
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "375-portrait",
+          "check": "manual-key-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "keyBefore": 796,
+            "keyManual": 262,
+            "keyLate": 262,
+            "key": "PageUp",
+            "controlledPaneFocus": true
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "375-portrait",
+          "check": "touch-intent-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "before": 344,
+            "manual": 224,
+            "late": 224,
+            "syntheticIntentAndControlledScroll": true,
+            "physicalDevice": false
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "390-portrait",
+          "check": "picker-petItem-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "390-portrait",
+          "check": "picker-petItem-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 1
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "390-portrait",
+          "check": "picker-pet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "390-portrait",
+          "check": "picker-pet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 0
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "390-portrait",
+          "check": "picker-helmet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "390-portrait",
+          "check": "picker-helmet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 10
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "390-portrait",
+          "check": "tool-editor-late-value-refresh-after-anchor-expiry",
+          "status": "PASS",
+          "evidence": {
+            "before": {
+              "top": 735,
+              "y": 0
+            },
+            "after": {
+              "top": 735,
+              "y": 0
+            },
+            "rendered": 0,
+            "sameCard": true,
+            "sameEditor": true,
+            "sameMain": true,
+            "focusPreserved": true
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "390-portrait",
+          "check": "manual-wheel-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "prior": 534,
+            "manual": 694,
+            "late": 694,
+            "controlledMutation": true
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "390-portrait",
+          "check": "manual-key-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "keyBefore": 694,
+            "keyManual": 19,
+            "keyLate": 19,
+            "key": "PageUp",
+            "controlledPaneFocus": true
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "390-portrait",
+          "check": "touch-intent-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "before": 535,
+            "manual": 415,
+            "late": 415,
+            "syntheticIntentAndControlledScroll": true,
+            "physicalDevice": false
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "412-portrait",
+          "check": "picker-petItem-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "412-portrait",
+          "check": "picker-petItem-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 1
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "412-portrait",
+          "check": "picker-pet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "412-portrait",
+          "check": "picker-pet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 0
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "412-portrait",
+          "check": "picker-helmet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "412-portrait",
+          "check": "picker-helmet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 10
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "412-portrait",
+          "check": "tool-editor-late-value-refresh-after-anchor-expiry",
+          "status": "PASS",
+          "evidence": {
+            "before": {
+              "top": 735,
+              "y": 0
+            },
+            "after": {
+              "top": 735,
+              "y": 0
+            },
+            "rendered": 0,
+            "sameCard": true,
+            "sameEditor": true,
+            "sameMain": true,
+            "focusPreserved": true
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "412-portrait",
+          "check": "manual-wheel-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "prior": 500,
+            "manual": 660,
+            "late": 660,
+            "controlledMutation": true
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "412-portrait",
+          "check": "manual-key-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "keyBefore": 660,
+            "keyManual": 0,
+            "keyLate": 0,
+            "key": "PageUp",
+            "controlledPaneFocus": true
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "412-portrait",
+          "check": "touch-intent-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "before": 499,
+            "manual": 379,
+            "late": 379,
+            "syntheticIntentAndControlledScroll": true,
+            "physicalDevice": false
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "568-landscape",
+          "check": "picker-petItem-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "568-landscape",
+          "check": "picker-petItem-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 1
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "568-landscape",
+          "check": "picker-pet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "568-landscape",
+          "check": "picker-pet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 0
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "568-landscape",
+          "check": "picker-helmet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "568-landscape",
+          "check": "picker-helmet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 10
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "568-landscape",
+          "check": "tool-editor-late-value-refresh-after-anchor-expiry",
+          "status": "PASS",
+          "evidence": {
+            "before": {
+              "top": 118,
+              "y": 556
+            },
+            "after": {
+              "top": 118,
+              "y": 556
+            },
+            "rendered": 0,
+            "sameCard": true,
+            "sameEditor": true,
+            "sameMain": true,
+            "focusPreserved": true
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "568-landscape",
+          "check": "manual-wheel-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "prior": 736,
+            "manual": 896,
+            "late": 896,
+            "controlledMutation": true
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "568-landscape",
+          "check": "manual-key-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "keyBefore": 616,
+            "keyManual": 360,
+            "keyLate": 360,
+            "key": "PageUp",
+            "controlledPaneFocus": true
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "568-landscape",
+          "check": "touch-intent-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "before": 737,
+            "manual": 617,
+            "late": 617,
+            "syntheticIntentAndControlledScroll": true,
+            "physicalDevice": false
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "667-landscape",
+          "check": "picker-petItem-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "667-landscape",
+          "check": "picker-petItem-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 1
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "667-landscape",
+          "check": "picker-pet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "667-landscape",
+          "check": "picker-pet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 0
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "667-landscape",
+          "check": "picker-helmet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "667-landscape",
+          "check": "picker-helmet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 10
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "667-landscape",
+          "check": "tool-editor-late-value-refresh-after-anchor-expiry",
+          "status": "PASS",
+          "evidence": {
+            "before": {
+              "top": 147,
+              "y": 374
+            },
+            "after": {
+              "top": 147,
+              "y": 374
+            },
+            "rendered": 0,
+            "sameCard": true,
+            "sameEditor": true,
+            "sameMain": true,
+            "focusPreserved": true
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "667-landscape",
+          "check": "manual-wheel-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "prior": 466,
+            "manual": 626,
+            "late": 626,
+            "controlledMutation": true
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "667-landscape",
+          "check": "manual-key-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "keyBefore": 228,
+            "keyManual": 0,
+            "keyLate": 0,
+            "key": "PageUp",
+            "controlledPaneFocus": true
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "667-landscape",
+          "check": "touch-intent-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "before": 465,
+            "manual": 345,
+            "late": 345,
+            "syntheticIntentAndControlledScroll": true,
+            "physicalDevice": false
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "800-landscape",
+          "check": "picker-petItem-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "800-landscape",
+          "check": "picker-petItem-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 1
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "800-landscape",
+          "check": "picker-pet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "800-landscape",
+          "check": "picker-pet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 0
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "800-landscape",
+          "check": "picker-helmet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "800-landscape",
+          "check": "picker-helmet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 10
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "800-landscape",
+          "check": "tool-editor-late-value-refresh-after-anchor-expiry",
+          "status": "PASS",
+          "evidence": {
+            "before": {
+              "top": 139,
+              "y": 289
+            },
+            "after": {
+              "top": 139,
+              "y": 289
+            },
+            "rendered": 0,
+            "sameCard": true,
+            "sameEditor": true,
+            "sameMain": true,
+            "focusPreserved": true
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "800-landscape",
+          "check": "manual-wheel-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "prior": 386,
+            "manual": 546,
+            "late": 546,
+            "controlledMutation": true
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "800-landscape",
+          "check": "manual-key-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "keyBefore": 149,
+            "keyManual": 0,
+            "keyLate": 0,
+            "key": "PageUp",
+            "controlledPaneFocus": true
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "800-landscape",
+          "check": "touch-intent-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "before": 386,
+            "manual": 266,
+            "late": 266,
+            "syntheticIntentAndControlledScroll": true,
+            "physicalDevice": false
+          }
+        }
+      ]
+    },
+    {
+      "run": 37272745171,
+      "job": 111643040370,
+      "engine": "firefox",
+      "conclusion": "success",
+      "counts": {
+        "PASS": 239,
+        "FAIL": 0,
+        "NOTE": 8,
+        "BLOCKED": 0
+      },
+      "cases": [
+        {
+          "engine": "firefox",
+          "viewport": "negative-control",
+          "check": "runtime-error-negative-control",
+          "status": "PASS",
+          "evidence": {
+            "runtimeErrors": [
+              "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+            ],
+            "marketTransportNotes": [],
+            "acceptanceExit": 1,
+            "rawPageErrors": [
+              "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+            ]
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "closed-editor-negative-control",
+          "check": "late-value-refresh-rejects-former-editor-replacement",
+          "status": "PASS",
+          "evidence": {
+            "rendered": 1,
+            "editorConnected": false,
+            "pickerConnected": false,
+            "regressionExit": 1,
+            "source": "one editor guard removed in disposable routed module"
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "closed-editor-negative-control",
+          "check": "runtime-page-errors",
+          "status": "PASS",
+          "evidence": {
+            "runtimeErrors": [],
+            "marketTransportNotes": [],
+            "rawPageErrors": [],
+            "requestFailures": []
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "tool-editor-negative-control",
+          "check": "late-tool-value-refresh-rejects-former-editor-replacement",
+          "status": "PASS",
+          "evidence": {
+            "before": {
+              "top": 749,
+              "y": 0
+            },
+            "after": {
+              "top": 749,
+              "y": 0
+            },
+            "rendered": 1,
+            "sameCard": false,
+            "sameEditor": false,
+            "sameMain": false,
+            "focusPreserved": true,
+            "regressionExit": 1,
+            "source": "only Tool price guard removed in disposable routed module"
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "tool-editor-negative-control",
+          "check": "runtime-page-errors",
+          "status": "PASS",
+          "evidence": {
+            "runtimeErrors": [],
+            "marketTransportNotes": [],
+            "rawPageErrors": [],
+            "requestFailures": []
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "320-portrait",
+          "check": "picker-petItem-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "320-portrait",
+          "check": "picker-petItem-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 1
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "320-portrait",
+          "check": "picker-pet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "320-portrait",
+          "check": "picker-pet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 0
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "320-portrait",
+          "check": "picker-helmet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "320-portrait",
+          "check": "picker-helmet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 11
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "320-portrait",
+          "check": "tool-editor-late-value-refresh-after-anchor-expiry",
+          "status": "PASS",
+          "evidence": {
+            "before": {
+              "top": 242,
+              "y": 598
+            },
+            "after": {
+              "top": 242,
+              "y": 598
+            },
+            "rendered": 0,
+            "sameCard": true,
+            "sameEditor": true,
+            "sameMain": true,
+            "focusPreserved": true
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "320-portrait",
+          "check": "manual-wheel-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "prior": 783,
+            "manual": 943,
+            "late": 943,
+            "controlledMutation": true
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "320-portrait",
+          "check": "manual-key-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "keyBefore": 943,
+            "keyManual": 504,
+            "keyLate": 504,
+            "key": "PageUp",
+            "controlledPaneFocus": true
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "320-portrait",
+          "check": "touch-intent-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "before": 782,
+            "manual": 662,
+            "late": 662,
+            "syntheticIntentAndControlledScroll": true,
+            "physicalDevice": false
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "360-portrait",
+          "check": "picker-petItem-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "360-portrait",
+          "check": "picker-petItem-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 1
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "360-portrait",
+          "check": "picker-pet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "360-portrait",
+          "check": "picker-pet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 0
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "360-portrait",
+          "check": "picker-helmet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "360-portrait",
+          "check": "picker-helmet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 10
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "360-portrait",
+          "check": "tool-editor-late-value-refresh-after-anchor-expiry",
+          "status": "PASS",
+          "evidence": {
+            "before": {
+              "top": 278,
+              "y": 501
+            },
+            "after": {
+              "top": 278,
+              "y": 501
+            },
+            "rendered": 0,
+            "sameCard": true,
+            "sameEditor": true,
+            "sameMain": true,
+            "focusPreserved": true
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "360-portrait",
+          "check": "manual-wheel-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "prior": 686,
+            "manual": 846,
+            "late": 846,
+            "controlledMutation": true
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "360-portrait",
+          "check": "manual-key-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "keyBefore": 846,
+            "keyManual": 335,
+            "keyLate": 335,
+            "key": "PageUp",
+            "controlledPaneFocus": true
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "360-portrait",
+          "check": "touch-intent-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "before": 685,
+            "manual": 565,
+            "late": 565,
+            "syntheticIntentAndControlledScroll": true,
+            "physicalDevice": false
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "375-portrait",
+          "check": "picker-petItem-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "375-portrait",
+          "check": "picker-petItem-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 1
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "375-portrait",
+          "check": "picker-pet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "375-portrait",
+          "check": "picker-pet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 0
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "375-portrait",
+          "check": "picker-helmet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "375-portrait",
+          "check": "picker-helmet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 10
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "375-portrait",
+          "check": "tool-editor-late-value-refresh-after-anchor-expiry",
+          "status": "PASS",
+          "evidence": {
+            "before": {
+              "top": 292,
+              "y": 472
+            },
+            "after": {
+              "top": 292,
+              "y": 472
+            },
+            "rendered": 0,
+            "sameCard": true,
+            "sameEditor": true,
+            "sameMain": true,
+            "focusPreserved": true
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "375-portrait",
+          "check": "manual-wheel-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "prior": 658,
+            "manual": 818,
+            "late": 818,
+            "controlledMutation": true
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "375-portrait",
+          "check": "manual-key-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "keyBefore": 818,
+            "keyManual": 280,
+            "keyLate": 280,
+            "key": "PageUp",
+            "controlledPaneFocus": true
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "375-portrait",
+          "check": "touch-intent-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "before": 656,
+            "manual": 536,
+            "late": 536,
+            "syntheticIntentAndControlledScroll": true,
+            "physicalDevice": false
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "390-portrait",
+          "check": "picker-petItem-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "390-portrait",
+          "check": "picker-petItem-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 1
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "390-portrait",
+          "check": "picker-pet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "390-portrait",
+          "check": "picker-pet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 0
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "390-portrait",
+          "check": "picker-helmet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "390-portrait",
+          "check": "picker-helmet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 10
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "390-portrait",
+          "check": "tool-editor-late-value-refresh-after-anchor-expiry",
+          "status": "PASS",
+          "evidence": {
+            "before": {
+              "top": 749,
+              "y": 0
+            },
+            "after": {
+              "top": 749,
+              "y": 0
+            },
+            "rendered": 0,
+            "sameCard": true,
+            "sameEditor": true,
+            "sameMain": true,
+            "focusPreserved": true
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "390-portrait",
+          "check": "manual-wheel-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "prior": 554,
+            "manual": 714,
+            "late": 714,
+            "controlledMutation": true
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "390-portrait",
+          "check": "manual-key-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "keyBefore": 714,
+            "keyManual": 0,
+            "keyLate": 0,
+            "key": "PageUp",
+            "controlledPaneFocus": true
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "390-portrait",
+          "check": "touch-intent-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "before": 553,
+            "manual": 433,
+            "late": 433,
+            "syntheticIntentAndControlledScroll": true,
+            "physicalDevice": false
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "412-portrait",
+          "check": "picker-petItem-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "412-portrait",
+          "check": "picker-petItem-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 1
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "412-portrait",
+          "check": "picker-pet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "412-portrait",
+          "check": "picker-pet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 0
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "412-portrait",
+          "check": "picker-helmet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "412-portrait",
+          "check": "picker-helmet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 10
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "412-portrait",
+          "check": "tool-editor-late-value-refresh-after-anchor-expiry",
+          "status": "PASS",
+          "evidence": {
+            "before": {
+              "top": 749,
+              "y": 0
+            },
+            "after": {
+              "top": 749,
+              "y": 0
+            },
+            "rendered": 0,
+            "sameCard": true,
+            "sameEditor": true,
+            "sameMain": true,
+            "focusPreserved": true
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "412-portrait",
+          "check": "manual-wheel-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "prior": 519,
+            "manual": 679,
+            "late": 679,
+            "controlledMutation": true
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "412-portrait",
+          "check": "manual-key-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "keyBefore": 679,
+            "keyManual": 0,
+            "keyLate": 0,
+            "key": "PageUp",
+            "controlledPaneFocus": true
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "412-portrait",
+          "check": "touch-intent-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "before": 517,
+            "manual": 397,
+            "late": 397,
+            "syntheticIntentAndControlledScroll": true,
+            "physicalDevice": false
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "568-landscape",
+          "check": "picker-petItem-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "568-landscape",
+          "check": "picker-petItem-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 1
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "568-landscape",
+          "check": "picker-pet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "568-landscape",
+          "check": "picker-pet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 0
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "568-landscape",
+          "check": "picker-helmet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "568-landscape",
+          "check": "picker-helmet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 10
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "568-landscape",
+          "check": "tool-editor-late-value-refresh-after-anchor-expiry",
+          "status": "PASS",
+          "evidence": {
+            "before": {
+              "top": 118,
+              "y": 568
+            },
+            "after": {
+              "top": 118,
+              "y": 568
+            },
+            "rendered": 0,
+            "sameCard": true,
+            "sameEditor": true,
+            "sameMain": true,
+            "focusPreserved": true
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "568-landscape",
+          "check": "manual-wheel-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "prior": 753,
+            "manual": 913,
+            "late": 913,
+            "controlledMutation": true
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "568-landscape",
+          "check": "manual-key-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "keyBefore": 751,
+            "keyManual": 545,
+            "keyLate": 545,
+            "key": "PageUp",
+            "controlledPaneFocus": true
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "568-landscape",
+          "check": "touch-intent-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "before": 752,
+            "manual": 632,
+            "late": 632,
+            "syntheticIntentAndControlledScroll": true,
+            "physicalDevice": false
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "667-landscape",
+          "check": "picker-petItem-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "667-landscape",
+          "check": "picker-petItem-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 1
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "667-landscape",
+          "check": "picker-pet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "667-landscape",
+          "check": "picker-pet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 0
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "667-landscape",
+          "check": "picker-helmet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "667-landscape",
+          "check": "picker-helmet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 10
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "667-landscape",
+          "check": "tool-editor-late-value-refresh-after-anchor-expiry",
+          "status": "PASS",
+          "evidence": {
+            "before": {
+              "top": 146,
+              "y": 386
+            },
+            "after": {
+              "top": 146,
+              "y": 386
+            },
+            "rendered": 0,
+            "sameCard": true,
+            "sameEditor": true,
+            "sameMain": true,
+            "focusPreserved": true
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "667-landscape",
+          "check": "manual-wheel-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "prior": 480,
+            "manual": 640,
+            "late": 640,
+            "controlledMutation": true
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "667-landscape",
+          "check": "manual-key-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "keyBefore": 386,
+            "keyManual": 130,
+            "keyLate": 130,
+            "key": "PageUp",
+            "controlledPaneFocus": true
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "667-landscape",
+          "check": "touch-intent-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "before": 478,
+            "manual": 358,
+            "late": 358,
+            "syntheticIntentAndControlledScroll": true,
+            "physicalDevice": false
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "800-landscape",
+          "check": "picker-petItem-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "800-landscape",
+          "check": "picker-petItem-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 1
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "800-landscape",
+          "check": "picker-pet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "800-landscape",
+          "check": "picker-pet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 0
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "800-landscape",
+          "check": "picker-helmet-closed-menu-late-value-refresh",
+          "status": "PASS",
+          "evidence": {
+            "closed": true,
+            "editorConnected": true,
+            "pickerConnected": true,
+            "focusPreserved": true,
+            "rendered": 0
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "800-landscape",
+          "check": "picker-helmet-same-state-zero-mutations",
+          "status": "PASS",
+          "evidence": {
+            "equal": true,
+            "mutations": 0,
+            "samples": [],
+            "events": [],
+            "settledEditorImages": 10
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "800-landscape",
+          "check": "tool-editor-late-value-refresh-after-anchor-expiry",
+          "status": "PASS",
+          "evidence": {
+            "before": {
+              "top": 138,
+              "y": 299
+            },
+            "after": {
+              "top": 138,
+              "y": 299
+            },
+            "rendered": 0,
+            "sameCard": true,
+            "sameEditor": true,
+            "sameMain": true,
+            "focusPreserved": true
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "800-landscape",
+          "check": "manual-wheel-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "prior": 400,
+            "manual": 560,
+            "late": 560,
+            "controlledMutation": true
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "800-landscape",
+          "check": "manual-key-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "keyBefore": 298,
+            "keyManual": 39,
+            "keyLate": 39,
+            "key": "PageUp",
+            "controlledPaneFocus": true
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "800-landscape",
+          "check": "touch-intent-controlled-late-mutation",
+          "status": "PASS",
+          "evidence": {
+            "before": 398,
+            "manual": 278,
+            "late": 278,
+            "syntheticIntentAndControlledScroll": true,
+            "physicalDevice": false
+          }
+        }
+      ]
+    }
+  ],
+  "boundaries": "Repository CI/emulated viewports, not a deployment or physical-device claim. Remaining packages 12/14/15/17 retain prior source/account blocks; original dirty checkout preserved. Prior failed commits and diagnostic image deadline retained separately.",
+  "strictChromium": {
+    "job": 111643040083,
+    "conclusion": "success",
+    "lines": [
+      "=== 0 distinct findings ===",
+      "Overlay exit: 0",
+      "PASS  dashboard",
+      "PASS  crops",
+      "PASS  setups",
+      "PASS  buffs",
+      "PASS  tools",
+      "PASS  qol",
+      "PASS  focus",
+      "PASS  info",
+      "PASS  planner",
+      "PASS  shards",
+      "Sweep exit: 0",
+      "[dashboard] desktop-empty  ok (0 clicks) | Error: AUDIT_INJECTED_RUNTIME_ERROR",
+      "[dashboard] desktop-filled ok (0 clicks) | Error: AUDIT_INJECTED_RUNTIME_ERROR",
+      "[dashboard] phone-filled   ok (0 clicks) | Error: AUDIT_INJECTED_RUNTIME_ERROR"
+    ],
+    "overlay": {
+      "scrollEvidence": [
+        {
+          "viewport": "phone",
+          "page": "dashboard",
+          "requested": 0,
+          "actual": 0,
+          "max": 4748
+        },
+        {
+          "viewport": "phone",
+          "page": "dashboard",
+          "requested": 300,
+          "actual": 300,
+          "max": 4748
+        },
+        {
+          "viewport": "phone",
+          "page": "dashboard",
+          "requested": 700,
+          "actual": 700,
+          "max": 4748
+        },
+        {
+          "viewport": "phone",
+          "page": "setups",
+          "requested": 0,
+          "actual": 0,
+          "max": 1919
+        },
+        {
+          "viewport": "phone",
+          "page": "setups",
+          "requested": 300,
+          "actual": 300,
+          "max": 1919
+        },
+        {
+          "viewport": "phone",
+          "page": "setups",
+          "requested": 700,
+          "actual": 700,
+          "max": 1919
+        },
+        {
+          "viewport": "phone",
+          "page": "crops",
+          "requested": 0,
+          "actual": 0,
+          "max": 3299
+        },
+        {
+          "viewport": "phone",
+          "page": "crops",
+          "requested": 300,
+          "actual": 300,
+          "max": 3299
+        },
+        {
+          "viewport": "phone",
+          "page": "crops",
+          "requested": 700,
+          "actual": 700,
+          "max": 3299
+        },
+        {
+          "viewport": "phone",
+          "page": "buffs",
+          "requested": 0,
+          "actual": 0,
+          "max": 3094
+        },
+        {
+          "viewport": "phone",
+          "page": "buffs",
+          "requested": 300,
+          "actual": 300,
+          "max": 3094
+        },
+        {
+          "viewport": "phone",
+          "page": "buffs",
+          "requested": 700,
+          "actual": 700,
+          "max": 3094
+        },
+        {
+          "viewport": "phone",
+          "page": "tools",
+          "requested": 0,
+          "actual": 0,
+          "max": 4615
+        },
+        {
+          "viewport": "phone",
+          "page": "tools",
+          "requested": 300,
+          "actual": 300,
+          "max": 4615
+        },
+        {
+          "viewport": "phone",
+          "page": "tools",
+          "requested": 700,
+          "actual": 700,
+          "max": 4615
+        },
+        {
+          "viewport": "phone",
+          "page": "shards",
+          "requested": 0,
+          "actual": 0,
+          "max": 17506
+        },
+        {
+          "viewport": "phone",
+          "page": "shards",
+          "requested": 300,
+          "actual": 300,
+          "max": 17506
+        },
+        {
+          "viewport": "phone",
+          "page": "shards",
+          "requested": 700,
+          "actual": 700,
+          "max": 17506
+        },
+        {
+          "viewport": "phone",
+          "page": "planner",
+          "requested": 0,
+          "actual": 0,
+          "max": 4107
+        },
+        {
+          "viewport": "phone",
+          "page": "planner",
+          "requested": 300,
+          "actual": 300,
+          "max": 4107
+        },
+        {
+          "viewport": "phone",
+          "page": "planner",
+          "requested": 700,
+          "actual": 700,
+          "max": 4107
+        },
+        {
+          "viewport": "phone",
+          "page": "qol",
+          "requested": 0,
+          "actual": 0,
+          "max": 2502
+        },
+        {
+          "viewport": "phone",
+          "page": "qol",
+          "requested": 300,
+          "actual": 300,
+          "max": 2502
+        },
+        {
+          "viewport": "phone",
+          "page": "qol",
+          "requested": 700,
+          "actual": 700,
+          "max": 2502
+        },
+        {
+          "viewport": "phone",
+          "page": "focus",
+          "requested": 0,
+          "actual": 0,
+          "max": 151
+        },
+        {
+          "viewport": "phone",
+          "page": "focus",
+          "requested": 300,
+          "actual": 151,
+          "max": 151
+        },
+        {
+          "viewport": "phone",
+          "page": "focus",
+          "requested": 700,
+          "actual": 151,
+          "max": 151
+        },
+        {
+          "viewport": "phone",
+          "page": "info",
+          "requested": 0,
+          "actual": 0,
+          "max": 31055
+        },
+        {
+          "viewport": "phone",
+          "page": "info",
+          "requested": 300,
+          "actual": 300,
+          "max": 31055
+        },
+        {
+          "viewport": "phone",
+          "page": "info",
+          "requested": 700,
+          "actual": 700,
+          "max": 31055
+        },
+        {
+          "viewport": "phone-l",
+          "page": "dashboard",
+          "requested": 0,
+          "actual": 0,
+          "max": 4554
+        },
+        {
+          "viewport": "phone-l",
+          "page": "dashboard",
+          "requested": 300,
+          "actual": 300,
+          "max": 4554
+        },
+        {
+          "viewport": "phone-l",
+          "page": "dashboard",
+          "requested": 700,
+          "actual": 700,
+          "max": 4554
+        },
+        {
+          "viewport": "phone-l",
+          "page": "setups",
+          "requested": 0,
+          "actual": 0,
+          "max": 1848
+        },
+        {
+          "viewport": "phone-l",
+          "page": "setups",
+          "requested": 300,
+          "actual": 300,
+          "max": 1848
+        },
+        {
+          "viewport": "phone-l",
+          "page": "setups",
+          "requested": 700,
+          "actual": 700,
+          "max": 1848
+        },
+        {
+          "viewport": "phone-l",
+          "page": "crops",
+          "requested": 0,
+          "actual": 0,
+          "max": 3038
+        },
+        {
+          "viewport": "phone-l",
+          "page": "crops",
+          "requested": 300,
+          "actual": 300,
+          "max": 3038
+        },
+        {
+          "viewport": "phone-l",
+          "page": "crops",
+          "requested": 700,
+          "actual": 700,
+          "max": 3038
+        },
+        {
+          "viewport": "phone-l",
+          "page": "buffs",
+          "requested": 0,
+          "actual": 0,
+          "max": 2993
+        },
+        {
+          "viewport": "phone-l",
+          "page": "buffs",
+          "requested": 300,
+          "actual": 300,
+          "max": 2993
+        },
+        {
+          "viewport": "phone-l",
+          "page": "buffs",
+          "requested": 700,
+          "actual": 700,
+          "max": 2993
+        },
+        {
+          "viewport": "phone-l",
+          "page": "tools",
+          "requested": 0,
+          "actual": 0,
+          "max": 4476
+        },
+        {
+          "viewport": "phone-l",
+          "page": "tools",
+          "requested": 300,
+          "actual": 300,
+          "max": 4476
+        },
+        {
+          "viewport": "phone-l",
+          "page": "tools",
+          "requested": 700,
+          "actual": 700,
+          "max": 4476
+        },
+        {
+          "viewport": "phone-l",
+          "page": "shards",
+          "requested": 0,
+          "actual": 0,
+          "max": 17089
+        },
+        {
+          "viewport": "phone-l",
+          "page": "shards",
+          "requested": 300,
+          "actual": 300,
+          "max": 17089
+        },
+        {
+          "viewport": "phone-l",
+          "page": "shards",
+          "requested": 700,
+          "actual": 700,
+          "max": 17089
+        },
+        {
+          "viewport": "phone-l",
+          "page": "planner",
+          "requested": 0,
+          "actual": 0,
+          "max": 4036
+        },
+        {
+          "viewport": "phone-l",
+          "page": "planner",
+          "requested": 300,
+          "actual": 300,
+          "max": 4036
+        },
+        {
+          "viewport": "phone-l",
+          "page": "planner",
+          "requested": 700,
+          "actual": 700,
+          "max": 4036
+        },
+        {
+          "viewport": "phone-l",
+          "page": "qol",
+          "requested": 0,
+          "actual": 0,
+          "max": 2241
+        },
+        {
+          "viewport": "phone-l",
+          "page": "qol",
+          "requested": 300,
+          "actual": 300,
+          "max": 2241
+        },
+        {
+          "viewport": "phone-l",
+          "page": "qol",
+          "requested": 700,
+          "actual": 700,
+          "max": 2241
+        },
+        {
+          "viewport": "phone-l",
+          "page": "focus",
+          "requested": 0,
+          "actual": 0,
+          "max": 61
+        },
+        {
+          "viewport": "phone-l",
+          "page": "focus",
+          "requested": 300,
+          "actual": 61,
+          "max": 61
+        },
+        {
+          "viewport": "phone-l",
+          "page": "focus",
+          "requested": 700,
+          "actual": 61,
+          "max": 61
+        },
+        {
+          "viewport": "phone-l",
+          "page": "info",
+          "requested": 0,
+          "actual": 0,
+          "max": 29545
+        },
+        {
+          "viewport": "phone-l",
+          "page": "info",
+          "requested": 300,
+          "actual": 300,
+          "max": 29545
+        },
+        {
+          "viewport": "phone-l",
+          "page": "info",
+          "requested": 700,
+          "actual": 700,
+          "max": 29545
+        },
+        {
+          "viewport": "tablet",
+          "page": "dashboard",
+          "requested": 0,
+          "actual": 0,
+          "max": 4110
+        },
+        {
+          "viewport": "tablet",
+          "page": "dashboard",
+          "requested": 300,
+          "actual": 300,
+          "max": 4110
+        },
+        {
+          "viewport": "tablet",
+          "page": "dashboard",
+          "requested": 700,
+          "actual": 700,
+          "max": 4110
+        },
+        {
+          "viewport": "tablet",
+          "page": "setups",
+          "requested": 0,
+          "actual": 0,
+          "max": 1392
+        },
+        {
+          "viewport": "tablet",
+          "page": "setups",
+          "requested": 300,
+          "actual": 300,
+          "max": 1392
+        },
+        {
+          "viewport": "tablet",
+          "page": "setups",
+          "requested": 700,
+          "actual": 700,
+          "max": 1392
+        },
+        {
+          "viewport": "tablet",
+          "page": "crops",
+          "requested": 0,
+          "actual": 0,
+          "max": 2371
+        },
+        {
+          "viewport": "tablet",
+          "page": "crops",
+          "requested": 300,
+          "actual": 300,
+          "max": 2371
+        },
+        {
+          "viewport": "tablet",
+          "page": "crops",
+          "requested": 700,
+          "actual": 700,
+          "max": 2371
+        },
+        {
+          "viewport": "tablet",
+          "page": "buffs",
+          "requested": 0,
+          "actual": 0,
+          "max": 2551
+        },
+        {
+          "viewport": "tablet",
+          "page": "buffs",
+          "requested": 300,
+          "actual": 300,
+          "max": 2551
+        },
+        {
+          "viewport": "tablet",
+          "page": "buffs",
+          "requested": 700,
+          "actual": 700,
+          "max": 2551
+        },
+        {
+          "viewport": "tablet",
+          "page": "tools",
+          "requested": 0,
+          "actual": 0,
+          "max": 2634
+        },
+        {
+          "viewport": "tablet",
+          "page": "tools",
+          "requested": 300,
+          "actual": 300,
+          "max": 2634
+        },
+        {
+          "viewport": "tablet",
+          "page": "tools",
+          "requested": 700,
+          "actual": 700,
+          "max": 2634
+        },
+        {
+          "viewport": "tablet",
+          "page": "shards",
+          "requested": 0,
+          "actual": 0,
+          "max": 11545
+        },
+        {
+          "viewport": "tablet",
+          "page": "shards",
+          "requested": 300,
+          "actual": 300,
+          "max": 11545
+        },
+        {
+          "viewport": "tablet",
+          "page": "shards",
+          "requested": 700,
+          "actual": 700,
+          "max": 11545
+        },
+        {
+          "viewport": "tablet",
+          "page": "planner",
+          "requested": 0,
+          "actual": 0,
+          "max": 2647
+        },
+        {
+          "viewport": "tablet",
+          "page": "planner",
+          "requested": 300,
+          "actual": 300,
+          "max": 2647
+        },
+        {
+          "viewport": "tablet",
+          "page": "planner",
+          "requested": 700,
+          "actual": 700,
+          "max": 2647
+        },
+        {
+          "viewport": "tablet",
+          "page": "qol",
+          "requested": 0,
+          "actual": 0,
+          "max": 892
+        },
+        {
+          "viewport": "tablet",
+          "page": "qol",
+          "requested": 300,
+          "actual": 300,
+          "max": 892
+        },
+        {
+          "viewport": "tablet",
+          "page": "qol",
+          "requested": 700,
+          "actual": 700,
+          "max": 892
+        },
+        {
+          "viewport": "tablet",
+          "page": "focus",
+          "requested": 0,
+          "actual": 0,
+          "max": 0
+        },
+        {
+          "viewport": "tablet",
+          "page": "focus",
+          "requested": 300,
+          "actual": 0,
+          "max": 0
+        },
+        {
+          "viewport": "tablet",
+          "page": "focus",
+          "requested": 700,
+          "actual": 0,
+          "max": 0
+        },
+        {
+          "viewport": "tablet",
+          "page": "info",
+          "requested": 0,
+          "actual": 0,
+          "max": 19238
+        },
+        {
+          "viewport": "tablet",
+          "page": "info",
+          "requested": 300,
+          "actual": 300,
+          "max": 19238
+        },
+        {
+          "viewport": "tablet",
+          "page": "info",
+          "requested": 700,
+          "actual": 700,
+          "max": 19238
+        },
+        {
+          "viewport": "desktop",
+          "page": "dashboard",
+          "requested": 0,
+          "actual": 0,
+          "max": 1767
+        },
+        {
+          "viewport": "desktop",
+          "page": "dashboard",
+          "requested": 300,
+          "actual": 300,
+          "max": 1767
+        },
+        {
+          "viewport": "desktop",
+          "page": "dashboard",
+          "requested": 700,
+          "actual": 700,
+          "max": 1767
+        },
+        {
+          "viewport": "desktop",
+          "page": "setups",
+          "requested": 0,
+          "actual": 0,
+          "max": 657
+        },
+        {
+          "viewport": "desktop",
+          "page": "setups",
+          "requested": 300,
+          "actual": 300,
+          "max": 657
+        },
+        {
+          "viewport": "desktop",
+          "page": "setups",
+          "requested": 700,
+          "actual": 657,
+          "max": 657
+        },
+        {
+          "viewport": "desktop",
+          "page": "crops",
+          "requested": 0,
+          "actual": 0,
+          "max": 1194
+        },
+        {
+          "viewport": "desktop",
+          "page": "crops",
+          "requested": 300,
+          "actual": 300,
+          "max": 1194
+        },
+        {
+          "viewport": "desktop",
+          "page": "crops",
+          "requested": 700,
+          "actual": 700,
+          "max": 1194
+        },
+        {
+          "viewport": "desktop",
+          "page": "buffs",
+          "requested": 0,
+          "actual": 0,
+          "max": 639
+        },
+        {
+          "viewport": "desktop",
+          "page": "buffs",
+          "requested": 300,
+          "actual": 300,
+          "max": 639
+        },
+        {
+          "viewport": "desktop",
+          "page": "buffs",
+          "requested": 700,
+          "actual": 639,
+          "max": 639
+        },
+        {
+          "viewport": "desktop",
+          "page": "tools",
+          "requested": 0,
+          "actual": 0,
+          "max": 2279
+        },
+        {
+          "viewport": "desktop",
+          "page": "tools",
+          "requested": 300,
+          "actual": 300,
+          "max": 2279
+        },
+        {
+          "viewport": "desktop",
+          "page": "tools",
+          "requested": 700,
+          "actual": 700,
+          "max": 2279
+        },
+        {
+          "viewport": "desktop",
+          "page": "shards",
+          "requested": 0,
+          "actual": 0,
+          "max": 7256
+        },
+        {
+          "viewport": "desktop",
+          "page": "shards",
+          "requested": 300,
+          "actual": 300,
+          "max": 7256
+        },
+        {
+          "viewport": "desktop",
+          "page": "shards",
+          "requested": 700,
+          "actual": 700,
+          "max": 7256
+        },
+        {
+          "viewport": "desktop",
+          "page": "planner",
+          "requested": 0,
+          "actual": 0,
+          "max": 2872
+        },
+        {
+          "viewport": "desktop",
+          "page": "planner",
+          "requested": 300,
+          "actual": 300,
+          "max": 2872
+        },
+        {
+          "viewport": "desktop",
+          "page": "planner",
+          "requested": 700,
+          "actual": 700,
+          "max": 2872
+        },
+        {
+          "viewport": "desktop",
+          "page": "qol",
+          "requested": 0,
+          "actual": 0,
+          "max": 819
+        },
+        {
+          "viewport": "desktop",
+          "page": "qol",
+          "requested": 300,
+          "actual": 300,
+          "max": 819
+        },
+        {
+          "viewport": "desktop",
+          "page": "qol",
+          "requested": 700,
+          "actual": 700,
+          "max": 819
+        },
+        {
+          "viewport": "desktop",
+          "page": "focus",
+          "requested": 0,
+          "actual": 0,
+          "max": 0
+        },
+        {
+          "viewport": "desktop",
+          "page": "focus",
+          "requested": 300,
+          "actual": 0,
+          "max": 0
+        },
+        {
+          "viewport": "desktop",
+          "page": "focus",
+          "requested": 700,
+          "actual": 0,
+          "max": 0
+        },
+        {
+          "viewport": "desktop",
+          "page": "info",
+          "requested": 0,
+          "actual": 0,
+          "max": 12356
+        },
+        {
+          "viewport": "desktop",
+          "page": "info",
+          "requested": 300,
+          "actual": 300,
+          "max": 12356
+        },
+        {
+          "viewport": "desktop",
+          "page": "info",
+          "requested": 700,
+          "actual": 700,
+          "max": 12356
+        }
+      ],
+      "openedOverlays": 16,
+      "runtimeErrors": []
+    }
+  }
+}

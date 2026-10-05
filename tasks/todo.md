@@ -1,6 +1,6 @@
 # Farming420 — Foundation gap closure and current work
 
-Current audit implementation: [October 2 fix progress](fix-progress-2026-10-02.md). This ledger supersedes historical completion claims for the eighteen audited defects.
+Current audit implementation: [October 2 fix progress](fix-progress-2026-10-02.md). This ledger supersedes historical completion claims for the eighteen audited defects. October 5: package 7 late Tool repaint accepted at c32ce93; next open package 12 requires current live Phillip provenance, with its independent count/expiry safeguards already tested.
 
 This file records the concrete architecture/correctness gaps found during repository review and the work completed against them. It is intentionally kept in the repository so another development chat can resume from the actual code state instead of reconstructing context from conversation history.
 

@@ -1,28 +1,5 @@
 # Render / Freeze Safety
 
-### 2026-10-05 — late physical Tool price repaint after anchor expiry
-
-The required trusted-touch test failed twice (01941a8 and 8acf8de) with
-20px card/scroll drift after selected Melon's delayed value event. Diagnostic
-5b7c135 has zero final displacement, but records the actual
-`requestPriceRender -> flushPriceRender -> render` stack: the event replaces
-the entire app, disconnects the physical Tool card/editor/main and restores
-scroll before asynchronous docking finishes. Instrumented layout reads may
-affect that timing; the earlier failures remain failures. See
-`docs/audits/tool-scroll-diagnostic-2026-10-05.json` for retained evidence.
-
-The existing price guard recognized `[data-item-editor]` but missed Tools'
-`[data-tool-editor]` and `[data-vacuum-panel]`. It now defers price-only core
-repaint on those physical surfaces; ordinary state renders still consume the
-same cache. No observer, restore timer or persistent click anchor was added.
-The trusted regression keeps its 4px bounds and additionally rejects editor,
-card or main replacement. All eight emulated viewports receive a late-refresh
-fixture in each engine; a disposable module with only the Tool guard removed
-must fail the same identity/position acceptance function. Five functional
-tests execute the actual price owner, including coalesced deferral, one flush
-after editor removal, unchanged Setups protection and immediate safe-page
-refresh. Exact-head browser/startup acceptance is pending at this checkpoint.
-
 This document records UI freeze regressions and the rules that prevent them from returning.
 
 ## Why this exists
@@ -201,3 +178,31 @@ DOM countercontrols. Browser 37217577257 reports 221 PASS / zero FAIL / zero
 BLOCKED in each engine; all 24 editor measurements have identical HTML and zero
 mutations after icon settlement. Strict Chromium overlays/sweep pass. See
 `docs/audits/fix-browser-7ac0f97-2026-10-04.json` and the progress ledger.
+
+### 2026-10-05 — late physical Tool price repaint after anchor expiry
+
+The required trusted-touch test failed twice (01941a8 and 8acf8de) with
+20px card/scroll drift after selected Melon's delayed value event. Diagnostic
+5b7c135 has zero final displacement, but records the actual
+`requestPriceRender -> flushPriceRender -> render` stack: the event replaces
+the entire app, disconnects the physical Tool card/editor/main and restores
+scroll before asynchronous docking finishes. Instrumented layout reads may
+affect that timing; the earlier failures remain failures. See
+`docs/audits/tool-scroll-diagnostic-2026-10-05.json` for retained evidence.
+
+The existing price guard recognized `[data-item-editor]` but missed Tools'
+`[data-tool-editor]` and `[data-vacuum-panel]`. It now defers price-only core
+repaint on those physical surfaces; ordinary state renders still consume the
+same cache. No observer, restore timer or persistent click anchor was added.
+The trusted regression keeps its 4px bounds and additionally rejects editor,
+card or main replacement. All eight emulated viewports receive a late-refresh
+fixture in each engine; a disposable module with only the Tool guard removed
+must fail the same identity/position acceptance function. Five functional
+tests execute the actual price owner, including coalesced deferral, one flush
+after editor removal, unchanged Setups protection and immediate safe-page
+refresh. Acceptance at `c32ce937fa8c63f7a037e0d1b57d062f68fdea33`: Validate
+37272745150 succeeds with 1,392 Node + 8 Python tests, zero late drift and
+identical physical nodes. Browser 37272745171 reports 239 PASS / zero FAIL /
+zero BLOCKED in each engine; all 24 new late Tool cases and all three removed-
+guard countercontrols pass (regression exit 1). Chromium overlays/sweep pass.
+See `docs/audits/tool-scroll-acceptance-c32ce93-2026-10-05.json`.
