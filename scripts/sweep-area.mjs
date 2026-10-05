@@ -11,6 +11,9 @@
  * Usage: node sweep-area.mjs <page-id>
  * Exit 0 = clean, 1 = froze or errored, 2 = ran out of budget.
  */
+import { classifySweepTransportErrors } from './sweep-error-classification.mjs';
+import { installSweepTransportFixture, transportFixtureErrors } from './sweep-transport-fixture.mjs';
+
 const PLAYWRIGHT = process.env.PLAYWRIGHT_MODULE
   || '/opt/node22/lib/node_modules/playwright/index.mjs';
 const { chromium } = await import(PLAYWRIGHT);
@@ -56,14 +59,19 @@ async function sweepVariant(browser, label, viewport, seed) {
   const errs = [];
   const consoleErrors = [];
   const networkFailures = [];
+  const requestFailures = [];
   p.setDefaultTimeout(3000);
   p.on('response',response=>{if(response.status()>=400)networkFailures.push({status:response.status(),url:response.url(),external:new URL(response.url()).origin!==new URL(BASE_URL).origin});});
+  p.on('requestfailed', request => requestFailures.push({ url: request.url(),
+    method: request.method(), resourceType: request.resourceType(), error: request.failure()?.errorText }));
   let crashed = false;
   p.on('crash', () => { crashed = true; });
   p.on('pageerror', e => errs.push(String(e).slice(0, 120)));
   p.on('console', message => {
     if (message.type() === 'error') consoleErrors.push({text:message.text(),url:message.location()?.url || ''});
   });
+  const runTransportFixture = await installSweepTransportFixture(p, process.env.SWEEP_MARKET_FAILURE, BASE_URL);
+  let transportFixture = null;
 
   if (seed) await p.addInitScript(([k, s]) => localStorage.setItem(k, s), [KEY, JSON.stringify(seed)]);
 
@@ -110,6 +118,7 @@ async function sweepVariant(browser, label, viewport, seed) {
       'nav ready',
     );
     await p.waitForTimeout(400);
+    if (runTransportFixture) transportFixture = await cap(runTransportFixture(), 8000, 'market transport fixture');
     if (process.env.SWEEP_INJECT_ERROR === '1') await p.evaluate(() => setTimeout(()=>{throw new Error('AUDIT_INJECTED_RUNTIME_ERROR');},0));
     if (!await alive()) throw new Error('FROZE on load');
 
@@ -244,7 +253,10 @@ async function sweepVariant(browser, label, viewport, seed) {
   const expectedExternal = row => row.external && ([403,429].includes(row.status) || handledMarketHistory400(row));
   const networkNotes = networkFailures.filter(expectedExternal);
   for (const row of networkFailures) if(!row.external && !expectedLocalMiss(row.url)) errs.push(`Local HTTP ${row.status}: ${row.url}`);
-  for (const row of consoleErrors) {
+  const { remainingConsoleErrors, marketTransportNotes } = classifySweepTransportErrors(consoleErrors, requestFailures, BASE_URL);
+  if (runTransportFixture && !transportFixture) errs.push('MARKET_TRANSPORT_FIXTURE_DID_NOT_COMPLETE');
+  errs.push(...transportFixtureErrors(transportFixture, marketTransportNotes));
+  for (const row of remainingConsoleErrors) {
     if (/ERR_TUNNEL/.test(row.text) || expectedLocalMiss(row.url)) continue;
     const status = Number(row.text.match(/server responded with a status of (\d+)/)?.[1]);
     const exact = networkFailures.find(f=>f.url===row.url&&f.status===status);
@@ -257,7 +269,8 @@ async function sweepVariant(browser, label, viewport, seed) {
   }
   const unique = [...new Set(errs)];
   await cap(ctx.close(), 4000, 'ctx close').catch(() => {});
-  return { label, verdict, clicks, crashed, errors: unique, networkNotes: [...new Map(networkNotes.map(row=>[row.url,row])).values()] };
+  return { label, verdict, clicks, crashed, errors: unique, marketTransportNotes, transportFixture,
+    networkNotes: [...new Map(networkNotes.map(row=>[row.url,row])).values()] };
 }
 
 const browser = await chromium.launch();
@@ -277,6 +290,8 @@ for (const r of results) {
   console.log(`[${PAGE}] ${r.label} ${r.verdict} (${r.clicks} clicks)`
     + (r.crashed ? ' RENDERER CRASHED' : '')
     + (r.errors.length ? ' | ' + r.errors.join(' ;; ') : '')
-    + (r.networkNotes.length ? ' | EXTERNAL_HTTP_NOTE ' + JSON.stringify(r.networkNotes) : ''));
+    + (r.networkNotes.length ? ' | EXTERNAL_HTTP_NOTE ' + JSON.stringify(r.networkNotes) : '')
+    + (r.marketTransportNotes.length ? ' | EXTERNAL_MARKET_TRANSPORT_NOTE ' + JSON.stringify(r.marketTransportNotes) : '')
+    + (r.transportFixture ? ' | MARKET_FAILURE_FIXTURE ' + JSON.stringify(r.transportFixture) : ''));
 }
 process.exit(worst);
