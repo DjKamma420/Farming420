@@ -1,8 +1,12 @@
+import { finiteNonNegative, finiteNonNegativeInteger } from './finite-number.js';
+
 export const FARMING_MODIFIERS_DATA_VERSION = 1;
 
 const SOURCE = Object.freeze({
   greenhouseRelease: 'https://hypixel.net/threads/hypixel-skyblock-0-24-the-greenhouse.6027542/',
   gardenChips: 'https://hypixel-skyblock.fandom.com/wiki/Garden_Chips',
+  rarefinderLive: 'https://hypixel.net/threads/hypixel-skyblock-0-26-1-new-player-improvements-harvest-feast-changes-healing-revamp-and-more.6127383/',
+  phillipAlpha: 'https://hypixel.net/threads/aug-3-0-27-alpha-changes-2.6134812/',
   farmingFortune: 'https://hypixel-skyblock.fandom.com/wiki/Farming_Fortune',
   cropFever: 'https://hypixel-skyblock.fandom.com/wiki/Crop_Fever',
   overbloom: 'https://hypixel-skyblock.fandom.com/wiki/Overbloom',
@@ -87,21 +91,25 @@ export const GARDEN_CHIPS = Object.freeze({
   }),
   rarefinder: Object.freeze({
     id: 'rarefinder', itemId: 'RAREFINDER_CHIP', name: 'Rarefinder Chip',
-    status: 'ACTIVE', effect: effect('overbloom', { RARE: 2, EPIC: 2.5, LEGENDARY: 3 }),
+    status: 'ACTIVE', effect: effect('overbloom', { RARE: 1.5, EPIC: 2, LEGENDARY: 2.5 }),
     baseDropProbabilityPerCropBreak: 0.0000015,
-    source: SOURCE.gardenChips,
+    source: SOURCE.rarefinderLive, sourceDate: '2026-07-22', confidence: 'LIVE_PATCH', lastVerified: '2026-10-02',
   }),
 });
 
 export function gardenChipEffect(chipId, { level, rarity } = {}) {
   const chip = Object.values(GARDEN_CHIPS).find(row => row.id === chipId || row.itemId === chipId);
   const normalizedRarity = String(rarity || '').toUpperCase();
-  const numericLevel = Number(level);
-  if (!chip || !CHIP_LEVEL_CAP[normalizedRarity] || !Number.isFinite(numericLevel)) return null;
+  const numericLevel = finiteNonNegative(level);
+  if (!chip || chip.status !== 'ACTIVE' || !CHIP_LEVEL_CAP[normalizedRarity] || numericLevel === null) return null;
   if (numericLevel < 0 || numericLevel > CHIP_LEVEL_CAP[normalizedRarity]) return null;
   const perLevel = chip.effect.rates[normalizedRarity];
   if (!Number.isFinite(perLevel)) return null;
   return numericLevel * perLevel;
+}
+
+export function gardenChipForEntry(item) {
+  return Object.values(GARDEN_CHIPS).find(chip => item?.name === chip.name || item?.name === `${chip.name} next level`) || null;
 }
 
 export function maxGardenChipEffect(chipId, rarity = 'LEGENDARY') {
@@ -163,9 +171,13 @@ export const TEMPORARY_FARMING_MODIFIERS = Object.freeze({
     lastVerified: HYPERCHARGE_VERIFIED_ON,
   }),
   pesthunterPhillip: Object.freeze({
-    id: 'pesthunter-phillip', name: 'Pesthunter Phillip', status: 'ACTIVE', source: SOURCE.hypercharge,
-    durationSeconds: 1800,
-    currentPestCostForFullBuff: 80,
+    id: 'pesthunter-phillip', name: 'Pesthunter Phillip', status: 'VERIFY_LIVE', source: SOURCE.phillipAlpha,
+    sourceDate: '2026-08-03', confidence: 'ALPHA_ONLY',
+    sourceChecked: '2026-10-05',
+    durationSeconds: null,
+    farmingFortunePerPest: 5, farmingFortuneCap: 200,
+    previewPestCountForCap: 40,
+    currentPestCostForFullBuff: null,
     effects: Object.freeze({ farmingFortune: 200 }),
     hyperchargeEligible: true,
     lastVerified: HYPERCHARGE_VERIFIED_ON,
@@ -214,16 +226,52 @@ export const TEMPORARY_FARMING_MODIFIERS = Object.freeze({
   }),
 });
 
+/** A single activation, not a stack or an acquisition price. Alpha curve is a
+ * labeled preview until live lore verifies it; expired/inactive is known zero. */
+export function phillipBuffEffect(record, nowMs = Date.now()) {
+  const row = TEMPORARY_FARMING_MODIFIERS.pesthunterPhillip;
+  if (record?.active === false) return { baseFarmingFortune: 0, farmingFortune: 0, complete: true, active: false, remainingSeconds: 0, reasons: [] };
+  const count = finiteNonNegativeInteger(record?.pestCount);
+  const until = finiteNonNegative(record?.activeUntilMs);
+  const now = finiteNonNegative(nowMs);
+  if (until !== null && now !== null && until <= now) return { baseFarmingFortune: 0, farmingFortune: 0, complete: true, active: false, remainingSeconds: 0, reasons: [] };
+  const base = count !== null ? Math.min(row.farmingFortuneCap, count * row.farmingFortunePerPest) : null;
+  const reasons = [];
+  if (base === null) reasons.push('Phillip Pest count is unavailable or invalid');
+  if (until === null || now === null) reasons.push('Phillip activation expiry is unavailable');
+  reasons.push('Phillip +5 per Pest curve is Alpha-only; live lore verification is required');
+  return { baseFarmingFortune: base, farmingFortune: null, complete: false, active: until === null ? null : until > now,
+    remainingSeconds: until !== null && now !== null ? Math.max(0, Math.ceil((until - now) / 1000)) : null, reasons };
+}
+
+/** Validate observed timing before replacing a saved activation. No game duration is assumed. */
+export function phillipActivationTiming(minutesValue, nowMs = Date.now()) {
+  const minutes = finiteNonNegative(minutesValue);
+  const now = finiteNonNegative(nowMs);
+  if (minutes === null || minutes <= 0 || !Number.isSafeInteger(now)) return null;
+  const durationSeconds = minutes * 60;
+  const activeUntilMs = now + minutes * 60000;
+  if (!Number.isFinite(durationSeconds) || durationSeconds <= 0
+    || !Number.isSafeInteger(activeUntilMs) || activeUntilMs <= now
+    || !Number.isFinite(new Date(activeUntilMs).getTime())) return null;
+  return { durationSeconds, activeUntilMs };
+}
+
 export function hyperchargedFarmingFortune(baseFarmingFortune, hyperchargePercent) {
-  const base = Number(baseFarmingFortune);
-  const percent = Number(hyperchargePercent);
-  if (!Number.isFinite(base) || !Number.isFinite(percent) || base < 0 || percent < 0) return null;
+  const base = finiteNonNegative(baseFarmingFortune);
+  const percent = finiteNonNegative(hyperchargePercent);
+  if (base === null || percent === null) return null;
   return base * (1 + percent / 100);
 }
 
-export function temporaryModifierEffect(modifierId, { hyperchargePercent = 0 } = {}) {
+export function temporaryModifierEffect(modifierId, options = {}) {
+  const hyperchargePercent = Object.hasOwn(options, 'hyperchargePercent') ? options.hyperchargePercent : 0;
   const row = Object.values(TEMPORARY_FARMING_MODIFIERS).find(entry => entry.id === modifierId);
   if (!row) return null;
+  if (row.id === 'pesthunter-phillip') {
+    const result = phillipBuffEffect(options.activation, options.nowMs);
+    return Object.freeze({ farmingFortune: result.farmingFortune === null ? null : hyperchargedFarmingFortune(result.farmingFortune, hyperchargePercent), complete: result.complete, reasons: result.reasons });
+  }
   const effects = { ...row.effects };
   if (isHyperchargeEligibleModifier(row.id) && Number.isFinite(effects.farmingFortune)) {
     effects.farmingFortune = hyperchargedFarmingFortune(effects.farmingFortune, hyperchargePercent);
@@ -237,18 +285,18 @@ export function temporaryModifierEffect(modifierId, { hyperchargePercent = 0 } =
  * provenance and should be replaceable by direct live profile/item decoding.
  */
 export const FARMING_SHARDS_027 = Object.freeze({
-  fieldMouse: Object.freeze({ id: 'field-mouse', name: 'Field Mouse Shard', status: 'ACTIVE_REPORTED_0_27', source: SOURCE.current027Report, effects: Object.freeze({ pestOverbloom: 5 }) }),
-  cricket: Object.freeze({ id: 'cricket', name: 'Cricket Shard', status: 'ACTIVE_REPORTED_0_27', source: SOURCE.current027ShardReport, effects: Object.freeze({ farmingFortuneOnPests: 50 }) }),
-  fly: Object.freeze({ id: 'fly', name: 'Fly Shard', status: 'ACTIVE_REPORTED_0_27', source: SOURCE.current027ShardReport, effects: Object.freeze({ farmingFortune: 25 }) }),
-  keeledSlug: Object.freeze({ id: 'keeled-slug', name: 'Keeled Slug Shard', status: 'ACTIVE_REPORTED_0_27', source: SOURCE.current027ShardReport, effects: Object.freeze({ bonusPestChance: 10 }) }),
-  moth: Object.freeze({ id: 'moth', name: 'Moth Shard', status: 'ACTIVE_REPORTED_0_27', source: SOURCE.current027ShardReport, effects: Object.freeze({ pestSpawnCooldownSeconds: -5 }) }),
-  rat: Object.freeze({ id: 'rat', name: 'Rat Shard', status: 'ACTIVE_REPORTED_0_27', source: SOURCE.current027ShardReport, effects: Object.freeze({ extraSprayonatorMaterialChance: 0.10 }) }),
-  mosquito: Object.freeze({ id: 'mosquito', name: 'Mosquito Shard', status: 'ACTIVE_REPORTED_0_27', source: SOURCE.current027ShardReport, effects: Object.freeze({ enchantedCropDropProbabilityPerBreak: 0.0001 }) }),
-  mudworm: Object.freeze({ id: 'mudworm', name: 'Mudworm Shard', status: 'ACTIVE_REPORTED_0_27', source: SOURCE.current027ShardReport, effects: Object.freeze({ visitorArrivalTimeReductionPercent: 10 }), interactionStatus: 'VERIFY_STACKING' }),
+  fieldMouse: Object.freeze({ id: 'field-mouse', name: 'Field Mouse Shard', status: 'VERIFY_LIVE', confidence: 'ALPHA_OR_COMMUNITY', sourceDate: '2026-07-31', source: SOURCE.current027Report, effects: Object.freeze({ pestOverbloom: 5 }) }),
+  cricket: Object.freeze({ id: 'cricket', name: 'Cricket Shard', status: 'VERIFY_LIVE', confidence: 'ALPHA_OR_COMMUNITY', sourceDate: '2026-07-31', source: SOURCE.current027ShardReport, effects: Object.freeze({ farmingFortuneOnPests: 50 }) }),
+  fly: Object.freeze({ id: 'fly', name: 'Fly Shard', status: 'VERIFY_LIVE', confidence: 'ALPHA_OR_COMMUNITY', sourceDate: '2026-07-31', source: SOURCE.current027ShardReport, effects: Object.freeze({ farmingFortune: 25 }) }),
+  keeledSlug: Object.freeze({ id: 'keeled-slug', name: 'Keeled Slug Shard', status: 'VERIFY_LIVE', confidence: 'ALPHA_OR_COMMUNITY', sourceDate: '2026-07-31', source: SOURCE.current027ShardReport, effects: Object.freeze({ bonusPestChance: 10 }) }),
+  moth: Object.freeze({ id: 'moth', name: 'Moth Shard', status: 'VERIFY_LIVE', confidence: 'ALPHA_OR_COMMUNITY', sourceDate: '2026-07-31', source: SOURCE.current027ShardReport, effects: Object.freeze({ pestSpawnCooldownSeconds: -5 }) }),
+  rat: Object.freeze({ id: 'rat', name: 'Rat Shard', status: 'VERIFY_LIVE', confidence: 'ALPHA_OR_COMMUNITY', sourceDate: '2026-07-31', source: SOURCE.current027ShardReport, effects: Object.freeze({ extraSprayonatorMaterialChance: 0.10 }) }),
+  mosquito: Object.freeze({ id: 'mosquito', name: 'Mosquito Shard', status: 'VERIFY_LIVE', confidence: 'ALPHA_OR_COMMUNITY', sourceDate: '2026-07-31', source: SOURCE.current027ShardReport, effects: Object.freeze({ enchantedCropDropProbabilityPerBreak: 0.0001 }) }),
+  mudworm: Object.freeze({ id: 'mudworm', name: 'Mudworm Shard', status: 'VERIFY_LIVE', confidence: 'ALPHA_OR_COMMUNITY', sourceDate: '2026-07-31', source: SOURCE.current027ShardReport, effects: Object.freeze({ visitorArrivalTimeReductionPercent: 10 }), interactionStatus: 'VERIFY_STACKING' }),
   ladybug: Object.freeze({ id: 'ladybug', name: 'Ladybug Shard', status: 'ACTIVE', source: 'https://hypixel-skyblock.fandom.com/wiki/Attributes/List/Rare', effects: Object.freeze({ visitorCopperPercent: 10 }) }),
-  locust: Object.freeze({ id: 'locust', name: 'Locust Shard', status: 'ACTIVE_REPORTED_0_27', source: SOURCE.current027ShardReport, effects: Object.freeze({ cropGrowth: 10 }) }),
-  timestalkClone: Object.freeze({ id: 'timestalk-clone', name: 'Timestalk Clone Shard', status: 'ACTIVE_REPORTED_0_27', source: SOURCE.current027ShardReport, effects: Object.freeze({ greenhouseGrowthSpeedPercent: 5 }), interactionStatus: 'VERIFY_STACKING' }),
-  mite: Object.freeze({ id: 'mite', name: 'Mite Shard', status: 'ACTIVE_REPORTED_0_27', source: SOURCE.current027ShardReport, effects: Object.freeze({ atmosphericFilterStrengthPercent: 20 }) }),
+  locust: Object.freeze({ id: 'locust', name: 'Locust Shard', status: 'VERIFY_LIVE', confidence: 'ALPHA_OR_COMMUNITY', sourceDate: '2026-07-31', source: SOURCE.current027ShardReport, effects: Object.freeze({ cropGrowth: 10 }) }),
+  timestalkClone: Object.freeze({ id: 'timestalk-clone', name: 'Timestalk Clone Shard', status: 'VERIFY_LIVE', confidence: 'ALPHA_OR_COMMUNITY', sourceDate: '2026-07-31', source: SOURCE.current027ShardReport, effects: Object.freeze({ greenhouseGrowthSpeedPercent: 5 }), interactionStatus: 'VERIFY_STACKING' }),
+  mite: Object.freeze({ id: 'mite', name: 'Mite Shard', status: 'VERIFY_LIVE', confidence: 'ALPHA_OR_COMMUNITY', sourceDate: '2026-07-31', source: SOURCE.current027ShardReport, effects: Object.freeze({ atmosphericFilterStrengthPercent: 20 }) }),
 });
 
 export function farmingModifierCoverage() {

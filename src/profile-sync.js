@@ -1,3 +1,4 @@
+import { readStoredAppState, writeStoredAppState } from './app-storage.js';
 import { DATA_SCHEMA_VERSION, STORAGE_KEY } from './config.js';
 import { importGardenPayload, importProfilePayload } from './hypixel-import.js';
 import { migrateState } from './migrations.js';
@@ -15,7 +16,7 @@ import {
 function readStoredState() {
   let raw = {};
   try {
-    raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    raw = readStoredAppState({});
   } catch {
     raw = {};
   }
@@ -27,8 +28,7 @@ function readStoredState() {
 }
 
 function writeStoredState(state) {
-  state.schemaVersion = DATA_SCHEMA_VERSION;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  return writeStoredAppState(state, { strict: true });
 }
 
 function currentSnapshot(profile) {

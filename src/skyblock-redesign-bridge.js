@@ -1,3 +1,5 @@
+import { applyFarmingToolReforge } from './item-capabilities.js';
+import { readStoredAppState, writeStoredAppState } from './app-storage.js';
 import { STORAGE_KEY } from './config.js';
 import { toolKeyForCropId } from './migrations.js';
 
@@ -11,7 +13,7 @@ const REFORGE_ENTRY = Object.freeze({
 });
 
 function state() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
+  try { return readStoredAppState({}); } catch { return {}; }
 }
 
 function cropId(raw) {
@@ -29,17 +31,9 @@ function selectReforge(reforgeId) {
   bucket.levels ||= {};
   bucket.owned ||= {};
 
-  for (const entryId of Object.values(REFORGE_ENTRY)) {
-    delete bucket.levels[entryId];
-    delete bucket.owned[entryId];
-  }
-  const selectedEntry = REFORGE_ENTRY[reforgeId];
-  if (selectedEntry) {
-    bucket.levels[selectedEntry] = 1;
-    bucket.owned[selectedEntry] = true;
-    raw.profile.toolReforges[key] = reforgeId;
-  }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(raw));
+  applyFarmingToolReforge(bucket, reforgeId);
+  delete raw.profile.toolReforges[key];
+  return writeStoredAppState(raw);
 }
 
 // Capture before the redesign's target listener. This makes all five visible

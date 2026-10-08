@@ -1005,9 +1005,35 @@ Examples relevant to Farming research include:
 - Magic 8 Ball conditional effects.
 - Crop Fever proc state.
 - Feast windows.
-- Pesthunter-style temporary stacks.
+- A single Pesthunter Phillip activation with an observed Pest count and expiry.
 
 Never fold a temporary effect into permanent base state without duration/activation metadata.
+
+### Pesthunter Phillip — October 4 audit correction
+
+The August 3, 2026 staff post is explicitly **Alpha**: +5 Farming Fortune per
+Pest capped at **+200 Fortune**, reached at 40 Pests. It does not mean a cap of
+200 Pests or +1,000 Fortune. The August 4 live release excludes unspecified
+Alpha Farming changes and does not establish this curve. Live rate/cap remain
+unknown (`VERIFY_LIVE`); the structured master file stores the numbers only in
+an `ALPHA_ONLY` preview. Neither that preview nor the identical historical cap
+identifies a player's game version. Current lore or a first-party live statement
+is required before promotion. Use `src/farming-modifiers-data.js` as the shared
+runtime authority; observed activation/duration/expiry is separate from this
+unverified live numeric curve.
+
+Sources checked 2026-10-04 (source review, **not** live verification):
+- https://hypixel.net/threads/aug-3-0-27-alpha-changes-2.6134812/
+- https://hypixel.net/threads/hypixel-skyblock-0-27-torrhus-canyon-critter-safari.6132090/
+
+October 5 follow-up: the same staff sources still do not publish current live
+Pest consumption or duration. Dividing the Alpha Fortune cap by its rate yields
+40 Pests in the preview, not proof that the NPC charges 40 Pests. The runtime
+table and master research keep actual cost and default duration null. The Info
+helper now labels this count as an Alpha calculation and leaves live cost and
+duration unverified. Observed activation/expiry remains independently usable;
+no Alpha preview is added to live Fortune. See
+[the dated source review](../docs/audits/phillip-source-review-2026-10-05.md).
 
 ---
 

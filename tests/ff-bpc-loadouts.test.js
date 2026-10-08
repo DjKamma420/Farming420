@@ -164,11 +164,11 @@ test('the Setups UI adds the optional third set from a name dialog instead of a 
   assert.match(activityUi, /BPC \(Bonus Pest Chance\) Set/);
   assert.doesNotMatch(activityCss, /\.physical-set-switch\s*\{[^}]*overflow-x:\s*auto/);
   assert.doesNotMatch(activityCss, /@media \(max-width: 760px\)[\s\S]*?\.physical-set-switch\s*\{[^}]*flex:\s*1\s+1\s+100%/);
-  assert.match(activityCss, /@media \(max-width: 760px\)[\s\S]*?\.physical-set-switch\s*\{[^}]*flex:\s*1\s+1\s+0;[^}]*flex-wrap:\s*nowrap/);
+  assert.match(activityCss, /@media \(max-width: 760px\)[\s\S]*?\.physical-set-switch\s*\{[^}]*flex:\s*1\s+1\s+0;[^}]*flex-wrap:\s*wrap/);
   assert.match(activityCss, /\.physical-set-switch \.physical-set-tabs button\s*\{[^}]*flex:\s*1\s+1\s+0/);
-  assert.match(activityUi, /topbar\.classList\.add\('activity-mode-topbar-controls'\)/);
+  assert.match(activityUi, /topbar\.classList\.toggle\('activity-mode-topbar-controls', true\)/);
   assert.match(activityCss, /\.activity-mode-topbar-controls\s*\{[^}]*display:\s*grid\s*!important;[^}]*grid-template-columns:\s*max-content minmax\(0, 1fr\)/);
-  assert.match(activityCss, /"title control"\s*"search search"/);
+  assert.match(activityCss, /"title title"\s*"control control"\s*"search search"/);
   assert.match(index, /activity-mode-ui\.css\?v=20260930-2/);
   assert.match(index, /activity-mode-ui\.js\?v=20260930-2/);
   assert.match(app, /visiblePhysicalSetupIds\(all\)/);

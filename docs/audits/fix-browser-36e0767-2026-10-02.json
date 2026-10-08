@@ -1,0 +1,151 @@
+{
+  "commit": "36e076755ed4ffaf1c47da112dc2fdc6d57900fd",
+  "validateRun": 36954678457,
+  "browserRun": 36954678429,
+  "engineResults": [
+    {
+      "engine": "chromium",
+      "counts": {
+        "PASS": 194,
+        "FAIL": 0,
+        "NOTE": 8,
+        "BLOCKED": 0
+      },
+      "failed": [],
+      "passedChecks": [
+        "settled-navigation-retries",
+        "normal-tap-navigation",
+        "cancel-set-blank",
+        "cancel-set-filled",
+        "add-set-escape",
+        "three-set-long-name-header",
+        "last-option-point-in-time-hit",
+        "last-option-stable-after-capture-and-anchor-expiry",
+        "pet-item-escape-close",
+        "declared-listbox-arrow-focus",
+        "last-option-actual-touch-selection-after-recovery",
+        "picker-petItem-home-end-tab-outside-focus",
+        "picker-petItem-same-state-zero-mutations",
+        "picker-pet-home-end-tab-outside-focus",
+        "picker-pet-same-state-zero-mutations",
+        "picker-helmet-home-end-tab-outside-focus",
+        "picker-helmet-same-state-zero-mutations",
+        "effects-drawer-escape-focus-tab",
+        "cropshot-valid-tree-one-write",
+        "manual-wheel-controlled-late-mutation",
+        "manual-key-controlled-late-mutation",
+        "touch-intent-controlled-late-mutation",
+        "runtime-page-errors",
+        "tater-pesthunter-clover-truthful-stable-fallback",
+        "export-preserves-actual-state",
+        "invalid-json-ui-rejection",
+        "future-inner-ui-rejection",
+        "future-envelope-ui-rejection",
+        "valid-current-ui-restore",
+        "future-raw-bytes-zero-writes-startup-navigation-editors-settings-sync"
+      ]
+    },
+    {
+      "engine": "firefox",
+      "counts": {
+        "PASS": 194,
+        "FAIL": 0,
+        "NOTE": 8,
+        "BLOCKED": 0
+      },
+      "failed": [],
+      "passedChecks": [
+        "settled-navigation-retries",
+        "normal-tap-navigation",
+        "cancel-set-blank",
+        "cancel-set-filled",
+        "add-set-escape",
+        "three-set-long-name-header",
+        "last-option-point-in-time-hit",
+        "last-option-stable-after-capture-and-anchor-expiry",
+        "pet-item-escape-close",
+        "declared-listbox-arrow-focus",
+        "last-option-actual-touch-selection-after-recovery",
+        "picker-petItem-home-end-tab-outside-focus",
+        "picker-petItem-same-state-zero-mutations",
+        "picker-pet-home-end-tab-outside-focus",
+        "picker-pet-same-state-zero-mutations",
+        "picker-helmet-home-end-tab-outside-focus",
+        "picker-helmet-same-state-zero-mutations",
+        "effects-drawer-escape-focus-tab",
+        "cropshot-valid-tree-one-write",
+        "manual-wheel-controlled-late-mutation",
+        "manual-key-controlled-late-mutation",
+        "touch-intent-controlled-late-mutation",
+        "runtime-page-errors",
+        "tater-pesthunter-clover-truthful-stable-fallback",
+        "export-preserves-actual-state",
+        "invalid-json-ui-rejection",
+        "future-inner-ui-rejection",
+        "future-envelope-ui-rejection",
+        "valid-current-ui-restore",
+        "future-raw-bytes-zero-writes-startup-navigation-editors-settings-sync"
+      ]
+    },
+    {
+      "engine": "webkit",
+      "counts": {
+        "PASS": 194,
+        "FAIL": 0,
+        "NOTE": 8,
+        "BLOCKED": 0
+      },
+      "failed": [],
+      "passedChecks": [
+        "settled-navigation-retries",
+        "normal-tap-navigation",
+        "cancel-set-blank",
+        "cancel-set-filled",
+        "add-set-escape",
+        "three-set-long-name-header",
+        "last-option-point-in-time-hit",
+        "last-option-stable-after-capture-and-anchor-expiry",
+        "pet-item-escape-close",
+        "declared-listbox-arrow-focus",
+        "last-option-actual-touch-selection-after-recovery",
+        "picker-petItem-home-end-tab-outside-focus",
+        "picker-petItem-same-state-zero-mutations",
+        "picker-pet-home-end-tab-outside-focus",
+        "picker-pet-same-state-zero-mutations",
+        "picker-helmet-home-end-tab-outside-focus",
+        "picker-helmet-same-state-zero-mutations",
+        "effects-drawer-escape-focus-tab",
+        "cropshot-valid-tree-one-write",
+        "manual-wheel-controlled-late-mutation",
+        "manual-key-controlled-late-mutation",
+        "touch-intent-controlled-late-mutation",
+        "runtime-page-errors",
+        "tater-pesthunter-clover-truthful-stable-fallback",
+        "export-preserves-actual-state",
+        "invalid-json-ui-rejection",
+        "future-inner-ui-rejection",
+        "future-envelope-ui-rejection",
+        "valid-current-ui-restore",
+        "future-raw-bytes-zero-writes-startup-navigation-editors-settings-sync"
+      ]
+    }
+  ],
+  "startup": {
+    "exit": 1,
+    "reason": "first raw Dashboard dump exceeded 45s wall; no verdict"
+  },
+  "overlay": {
+    "exit": 0,
+    "findings": 0,
+    "mainTargets": 120,
+    "openedOverlays": 16
+  },
+  "sweep": {
+    "exit": 123,
+    "passedAreas": 9,
+    "failedArea": "planner",
+    "actualInteractions": "all variants ok",
+    "error": "external SkyCofl Rarefinder history HTTP 400"
+  },
+  "scope": "Linux engines and emulated viewport/touch; no physical devices or live authenticated profile."
+}

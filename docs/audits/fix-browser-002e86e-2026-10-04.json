@@ -1,0 +1,202 @@
+{
+  "commit": "002e86e243eec926c16850f1c3664dc824a9c41d",
+  "validate": {
+    "run": 37215640986,
+    "job": 111475462787,
+    "result": "success",
+    "node": 1384,
+    "python": 8,
+    "stampedEntrypoints": 52,
+    "references": 466
+  },
+  "browser": {
+    "run": 37215640933,
+    "engines": [
+      {
+        "job": 111475462694,
+        "engine": "chromium",
+        "counts": {
+          "PASS": 221,
+          "FAIL": 0,
+          "NOTE": 8,
+          "BLOCKED": 0
+        },
+        "runtimeNegative": {
+          "engine": "chromium",
+          "viewport": "negative-control",
+          "check": "runtime-error-negative-control",
+          "status": "PASS",
+          "evidence": {
+            "runtimeErrors": [
+              "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+            ],
+            "marketTransportNotes": [],
+            "acceptanceExit": 1,
+            "rawPageErrors": [
+              "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+            ]
+          }
+        },
+        "oldEditorGuardNegative": {
+          "engine": "chromium",
+          "viewport": "closed-editor-negative-control",
+          "check": "late-value-refresh-rejects-former-editor-replacement",
+          "status": "PASS",
+          "evidence": {
+            "rendered": 1,
+            "editorConnected": false,
+            "pickerConnected": false,
+            "regressionExit": 1,
+            "source": "one editor guard removed in disposable routed module"
+          }
+        },
+        "closedEditorRefresh": {
+          "cases": 24,
+          "allPassed": true,
+          "rendered": 0,
+          "nodeAndFocusPreserved": true
+        },
+        "sameStateEditor": {
+          "cases": 24,
+          "allExactDomEqual": true,
+          "mutations": 0,
+          "eventDuringMeasurement": false
+        }
+      },
+      {
+        "job": 111475462508,
+        "engine": "webkit",
+        "counts": {
+          "PASS": 221,
+          "FAIL": 0,
+          "NOTE": 8,
+          "BLOCKED": 0
+        },
+        "runtimeNegative": {
+          "engine": "webkit",
+          "viewport": "negative-control",
+          "check": "runtime-error-negative-control",
+          "status": "PASS",
+          "evidence": {
+            "runtimeErrors": [
+              "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+            ],
+            "marketTransportNotes": [],
+            "acceptanceExit": 1,
+            "rawPageErrors": [
+              "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+            ]
+          }
+        },
+        "oldEditorGuardNegative": {
+          "engine": "webkit",
+          "viewport": "closed-editor-negative-control",
+          "check": "late-value-refresh-rejects-former-editor-replacement",
+          "status": "PASS",
+          "evidence": {
+            "rendered": 1,
+            "editorConnected": false,
+            "pickerConnected": false,
+            "regressionExit": 1,
+            "source": "one editor guard removed in disposable routed module"
+          }
+        },
+        "closedEditorRefresh": {
+          "cases": 24,
+          "allPassed": true,
+          "rendered": 0,
+          "nodeAndFocusPreserved": true
+        },
+        "sameStateEditor": {
+          "cases": 24,
+          "allExactDomEqual": true,
+          "mutations": 0,
+          "eventDuringMeasurement": false
+        }
+      },
+      {
+        "job": 111475462722,
+        "engine": "firefox",
+        "counts": {
+          "PASS": 221,
+          "FAIL": 0,
+          "NOTE": 8,
+          "BLOCKED": 0
+        },
+        "runtimeNegative": {
+          "engine": "firefox",
+          "viewport": "negative-control",
+          "check": "runtime-error-negative-control",
+          "status": "PASS",
+          "evidence": {
+            "runtimeErrors": [
+              "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+            ],
+            "marketTransportNotes": [],
+            "acceptanceExit": 1,
+            "rawPageErrors": [
+              "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+            ]
+          }
+        },
+        "oldEditorGuardNegative": {
+          "engine": "firefox",
+          "viewport": "closed-editor-negative-control",
+          "check": "late-value-refresh-rejects-former-editor-replacement",
+          "status": "PASS",
+          "evidence": {
+            "rendered": 1,
+            "editorConnected": false,
+            "pickerConnected": false,
+            "regressionExit": 1,
+            "source": "one editor guard removed in disposable routed module"
+          }
+        },
+        "closedEditorRefresh": {
+          "cases": 24,
+          "allPassed": true,
+          "rendered": 0,
+          "nodeAndFocusPreserved": true
+        },
+        "sameStateEditor": {
+          "cases": 24,
+          "allExactDomEqual": true,
+          "mutations": 0,
+          "eventDuringMeasurement": false
+        }
+      }
+    ]
+  },
+  "overlay": {
+    "engine": "chromium",
+    "exit": 0,
+    "findings": 0,
+    "mainScrollTargets": 120,
+    "openedOverlays": 16,
+    "runtimeErrors": []
+  },
+  "sweep": {
+    "engine": "chromium",
+    "exit": 0,
+    "areas": [
+      "dashboard",
+      "crops",
+      "setups",
+      "buffs",
+      "tools",
+      "qol",
+      "focus",
+      "info",
+      "planner",
+      "shards"
+    ],
+    "variantsPerArea": 3,
+    "negativeGate": "Job checks injected runtime error exit 1 and marker; all three variants reject."
+  },
+  "limits": [
+    "Emulated viewports and browser engines; not real Android/iOS.",
+    "External market failures stay notes and unknown prices.",
+    "Remaining package 12/14/15 numeric and 17 account/deployed blocks.",
+    "No merge or deployment."
+  ]
+}

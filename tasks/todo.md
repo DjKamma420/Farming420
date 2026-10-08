@@ -1,5 +1,7 @@
 # Farming420 — Foundation gap closure and current work
 
+Current audit implementation: [October 2 fix progress](fix-progress-2026-10-02.md). October 8 continued **package 12 only**: exact count and safe observed-timer validation is accepted at **8f8f989**. Local 25 targeted and **1,405 Node + 8 Python** pass; former-source handler controls fail as required. Exact-source Validate/all three browsers/Chromium strict gates are SUCCESS; every engine reports **247 PASS / zero FAIL / 8 NOTE / zero BLOCKED**, and all 48 Phillip fixtures pass. [Retained acceptance](../docs/audits/phillip-validation-acceptance-8f8f989-2026-10-08.json); [correction/source investigation](../docs/audits/phillip-validation-review-2026-10-08.md). Fourteen packages remain source-accepted and **12/14/15/17 remain blocked**. Package 12 stays first open and needs current live rate/cap/Pest-cost/duration/expiry proof. Read this evidence-only successor's own exact-head CI before claiming current-head green; do not repeat accepted validation or start another package. Prior fixes/failure evidence and other work are preserved. No merge/deployment.
+
 This file records the concrete architecture/correctness gaps found during repository review and the work completed against them. It is intentionally kept in the repository so another development chat can resume from the actual code state instead of reconstructing context from conversation history.
 
 ## Foundation gaps found and closed

@@ -1,0 +1,1088 @@
+{
+  "reviewDate": "2026-10-05",
+  "continuation": "11:51 CEST",
+  "auditedSource": "b54facee3ffb640a81a0b4e786e4dc19b6664174",
+  "lastAcceptedHead": "efd868aeb96115cbc3cf2dcfc84cd7cec56ba3ac",
+  "pullRequest": 301,
+  "validate": {
+    "runId": 37286441046,
+    "conclusion": "success"
+  },
+  "browser": {
+    "runId": 37286441098,
+    "conclusion": "failure",
+    "jobs": [
+      {
+        "jobId": 111686350602,
+        "engine": "chromium",
+        "conclusion": "failure",
+        "counts": {
+          "PASS": 239,
+          "FAIL": 0,
+          "NOTE": 8,
+          "BLOCKED": 0
+        },
+        "phillipCases": [
+          {
+            "viewport": "320-portrait",
+            "status": "PASS",
+            "provenance": true
+          },
+          {
+            "viewport": "360-portrait",
+            "status": "PASS",
+            "provenance": true
+          },
+          {
+            "viewport": "375-portrait",
+            "status": "PASS",
+            "provenance": true
+          },
+          {
+            "viewport": "390-portrait",
+            "status": "PASS",
+            "provenance": true
+          },
+          {
+            "viewport": "412-portrait",
+            "status": "PASS",
+            "provenance": true
+          },
+          {
+            "viewport": "568-landscape",
+            "status": "PASS",
+            "provenance": true
+          },
+          {
+            "viewport": "667-landscape",
+            "status": "PASS",
+            "provenance": true
+          },
+          {
+            "viewport": "800-landscape",
+            "status": "PASS",
+            "provenance": true
+          }
+        ],
+        "failedProbeCases": []
+      },
+      {
+        "jobId": 111686350217,
+        "engine": "firefox",
+        "conclusion": "success",
+        "counts": {
+          "PASS": 239,
+          "FAIL": 0,
+          "NOTE": 8,
+          "BLOCKED": 0
+        },
+        "phillipCases": [
+          {
+            "viewport": "320-portrait",
+            "status": "PASS",
+            "provenance": true
+          },
+          {
+            "viewport": "360-portrait",
+            "status": "PASS",
+            "provenance": true
+          },
+          {
+            "viewport": "375-portrait",
+            "status": "PASS",
+            "provenance": true
+          },
+          {
+            "viewport": "390-portrait",
+            "status": "PASS",
+            "provenance": true
+          },
+          {
+            "viewport": "412-portrait",
+            "status": "PASS",
+            "provenance": true
+          },
+          {
+            "viewport": "568-landscape",
+            "status": "PASS",
+            "provenance": true
+          },
+          {
+            "viewport": "667-landscape",
+            "status": "PASS",
+            "provenance": true
+          },
+          {
+            "viewport": "800-landscape",
+            "status": "PASS",
+            "provenance": true
+          }
+        ],
+        "failedProbeCases": []
+      },
+      {
+        "jobId": 111686350500,
+        "engine": "webkit",
+        "conclusion": "success",
+        "counts": {
+          "PASS": 239,
+          "FAIL": 0,
+          "NOTE": 8,
+          "BLOCKED": 0
+        },
+        "phillipCases": [
+          {
+            "viewport": "320-portrait",
+            "status": "PASS",
+            "provenance": true
+          },
+          {
+            "viewport": "360-portrait",
+            "status": "PASS",
+            "provenance": true
+          },
+          {
+            "viewport": "375-portrait",
+            "status": "PASS",
+            "provenance": true
+          },
+          {
+            "viewport": "390-portrait",
+            "status": "PASS",
+            "provenance": true
+          },
+          {
+            "viewport": "412-portrait",
+            "status": "PASS",
+            "provenance": true
+          },
+          {
+            "viewport": "568-landscape",
+            "status": "PASS",
+            "provenance": true
+          },
+          {
+            "viewport": "667-landscape",
+            "status": "PASS",
+            "provenance": true
+          },
+          {
+            "viewport": "800-landscape",
+            "status": "PASS",
+            "provenance": true
+          }
+        ],
+        "failedProbeCases": []
+      }
+    ]
+  },
+  "chromiumStrict": {
+    "jobId": 111686350602,
+    "failedStep": "Execute strict overlay and interaction gates with negative controls",
+    "overlayExit": 0,
+    "distinctFindings": 0,
+    "overlayEvidence": {
+      "scrollEvidence": [
+        {
+          "viewport": "phone",
+          "page": "dashboard",
+          "requested": 0,
+          "actual": 0,
+          "max": 4748
+        },
+        {
+          "viewport": "phone",
+          "page": "dashboard",
+          "requested": 300,
+          "actual": 300,
+          "max": 4748
+        },
+        {
+          "viewport": "phone",
+          "page": "dashboard",
+          "requested": 700,
+          "actual": 700,
+          "max": 4748
+        },
+        {
+          "viewport": "phone",
+          "page": "setups",
+          "requested": 0,
+          "actual": 0,
+          "max": 1919
+        },
+        {
+          "viewport": "phone",
+          "page": "setups",
+          "requested": 300,
+          "actual": 300,
+          "max": 1919
+        },
+        {
+          "viewport": "phone",
+          "page": "setups",
+          "requested": 700,
+          "actual": 700,
+          "max": 1919
+        },
+        {
+          "viewport": "phone",
+          "page": "crops",
+          "requested": 0,
+          "actual": 0,
+          "max": 3299
+        },
+        {
+          "viewport": "phone",
+          "page": "crops",
+          "requested": 300,
+          "actual": 300,
+          "max": 3299
+        },
+        {
+          "viewport": "phone",
+          "page": "crops",
+          "requested": 700,
+          "actual": 700,
+          "max": 3299
+        },
+        {
+          "viewport": "phone",
+          "page": "buffs",
+          "requested": 0,
+          "actual": 0,
+          "max": 3094
+        },
+        {
+          "viewport": "phone",
+          "page": "buffs",
+          "requested": 300,
+          "actual": 300,
+          "max": 3094
+        },
+        {
+          "viewport": "phone",
+          "page": "buffs",
+          "requested": 700,
+          "actual": 700,
+          "max": 3094
+        },
+        {
+          "viewport": "phone",
+          "page": "tools",
+          "requested": 0,
+          "actual": 0,
+          "max": 4615
+        },
+        {
+          "viewport": "phone",
+          "page": "tools",
+          "requested": 300,
+          "actual": 300,
+          "max": 4615
+        },
+        {
+          "viewport": "phone",
+          "page": "tools",
+          "requested": 700,
+          "actual": 700,
+          "max": 4615
+        },
+        {
+          "viewport": "phone",
+          "page": "shards",
+          "requested": 0,
+          "actual": 0,
+          "max": 17506
+        },
+        {
+          "viewport": "phone",
+          "page": "shards",
+          "requested": 300,
+          "actual": 300,
+          "max": 17506
+        },
+        {
+          "viewport": "phone",
+          "page": "shards",
+          "requested": 700,
+          "actual": 700,
+          "max": 17506
+        },
+        {
+          "viewport": "phone",
+          "page": "planner",
+          "requested": 0,
+          "actual": 0,
+          "max": 4107
+        },
+        {
+          "viewport": "phone",
+          "page": "planner",
+          "requested": 300,
+          "actual": 300,
+          "max": 4107
+        },
+        {
+          "viewport": "phone",
+          "page": "planner",
+          "requested": 700,
+          "actual": 700,
+          "max": 4107
+        },
+        {
+          "viewport": "phone",
+          "page": "qol",
+          "requested": 0,
+          "actual": 0,
+          "max": 2502
+        },
+        {
+          "viewport": "phone",
+          "page": "qol",
+          "requested": 300,
+          "actual": 300,
+          "max": 2502
+        },
+        {
+          "viewport": "phone",
+          "page": "qol",
+          "requested": 700,
+          "actual": 700,
+          "max": 2502
+        },
+        {
+          "viewport": "phone",
+          "page": "focus",
+          "requested": 0,
+          "actual": 0,
+          "max": 151
+        },
+        {
+          "viewport": "phone",
+          "page": "focus",
+          "requested": 300,
+          "actual": 151,
+          "max": 151
+        },
+        {
+          "viewport": "phone",
+          "page": "focus",
+          "requested": 700,
+          "actual": 151,
+          "max": 151
+        },
+        {
+          "viewport": "phone",
+          "page": "info",
+          "requested": 0,
+          "actual": 0,
+          "max": 31055
+        },
+        {
+          "viewport": "phone",
+          "page": "info",
+          "requested": 300,
+          "actual": 300,
+          "max": 31055
+        },
+        {
+          "viewport": "phone",
+          "page": "info",
+          "requested": 700,
+          "actual": 700,
+          "max": 31055
+        },
+        {
+          "viewport": "phone-l",
+          "page": "dashboard",
+          "requested": 0,
+          "actual": 0,
+          "max": 4554
+        },
+        {
+          "viewport": "phone-l",
+          "page": "dashboard",
+          "requested": 300,
+          "actual": 300,
+          "max": 4554
+        },
+        {
+          "viewport": "phone-l",
+          "page": "dashboard",
+          "requested": 700,
+          "actual": 700,
+          "max": 4554
+        },
+        {
+          "viewport": "phone-l",
+          "page": "setups",
+          "requested": 0,
+          "actual": 0,
+          "max": 1848
+        },
+        {
+          "viewport": "phone-l",
+          "page": "setups",
+          "requested": 300,
+          "actual": 300,
+          "max": 1848
+        },
+        {
+          "viewport": "phone-l",
+          "page": "setups",
+          "requested": 700,
+          "actual": 700,
+          "max": 1848
+        },
+        {
+          "viewport": "phone-l",
+          "page": "crops",
+          "requested": 0,
+          "actual": 0,
+          "max": 3038
+        },
+        {
+          "viewport": "phone-l",
+          "page": "crops",
+          "requested": 300,
+          "actual": 300,
+          "max": 3038
+        },
+        {
+          "viewport": "phone-l",
+          "page": "crops",
+          "requested": 700,
+          "actual": 700,
+          "max": 3038
+        },
+        {
+          "viewport": "phone-l",
+          "page": "buffs",
+          "requested": 0,
+          "actual": 0,
+          "max": 2993
+        },
+        {
+          "viewport": "phone-l",
+          "page": "buffs",
+          "requested": 300,
+          "actual": 300,
+          "max": 2993
+        },
+        {
+          "viewport": "phone-l",
+          "page": "buffs",
+          "requested": 700,
+          "actual": 700,
+          "max": 2993
+        },
+        {
+          "viewport": "phone-l",
+          "page": "tools",
+          "requested": 0,
+          "actual": 0,
+          "max": 4476
+        },
+        {
+          "viewport": "phone-l",
+          "page": "tools",
+          "requested": 300,
+          "actual": 300,
+          "max": 4476
+        },
+        {
+          "viewport": "phone-l",
+          "page": "tools",
+          "requested": 700,
+          "actual": 700,
+          "max": 4476
+        },
+        {
+          "viewport": "phone-l",
+          "page": "shards",
+          "requested": 0,
+          "actual": 0,
+          "max": 17089
+        },
+        {
+          "viewport": "phone-l",
+          "page": "shards",
+          "requested": 300,
+          "actual": 300,
+          "max": 17089
+        },
+        {
+          "viewport": "phone-l",
+          "page": "shards",
+          "requested": 700,
+          "actual": 700,
+          "max": 17089
+        },
+        {
+          "viewport": "phone-l",
+          "page": "planner",
+          "requested": 0,
+          "actual": 0,
+          "max": 4036
+        },
+        {
+          "viewport": "phone-l",
+          "page": "planner",
+          "requested": 300,
+          "actual": 300,
+          "max": 4036
+        },
+        {
+          "viewport": "phone-l",
+          "page": "planner",
+          "requested": 700,
+          "actual": 700,
+          "max": 4036
+        },
+        {
+          "viewport": "phone-l",
+          "page": "qol",
+          "requested": 0,
+          "actual": 0,
+          "max": 2241
+        },
+        {
+          "viewport": "phone-l",
+          "page": "qol",
+          "requested": 300,
+          "actual": 300,
+          "max": 2241
+        },
+        {
+          "viewport": "phone-l",
+          "page": "qol",
+          "requested": 700,
+          "actual": 700,
+          "max": 2241
+        },
+        {
+          "viewport": "phone-l",
+          "page": "focus",
+          "requested": 0,
+          "actual": 0,
+          "max": 61
+        },
+        {
+          "viewport": "phone-l",
+          "page": "focus",
+          "requested": 300,
+          "actual": 61,
+          "max": 61
+        },
+        {
+          "viewport": "phone-l",
+          "page": "focus",
+          "requested": 700,
+          "actual": 61,
+          "max": 61
+        },
+        {
+          "viewport": "phone-l",
+          "page": "info",
+          "requested": 0,
+          "actual": 0,
+          "max": 29545
+        },
+        {
+          "viewport": "phone-l",
+          "page": "info",
+          "requested": 300,
+          "actual": 300,
+          "max": 29545
+        },
+        {
+          "viewport": "phone-l",
+          "page": "info",
+          "requested": 700,
+          "actual": 700,
+          "max": 29545
+        },
+        {
+          "viewport": "tablet",
+          "page": "dashboard",
+          "requested": 0,
+          "actual": 0,
+          "max": 4110
+        },
+        {
+          "viewport": "tablet",
+          "page": "dashboard",
+          "requested": 300,
+          "actual": 300,
+          "max": 4110
+        },
+        {
+          "viewport": "tablet",
+          "page": "dashboard",
+          "requested": 700,
+          "actual": 700,
+          "max": 4110
+        },
+        {
+          "viewport": "tablet",
+          "page": "setups",
+          "requested": 0,
+          "actual": 0,
+          "max": 1392
+        },
+        {
+          "viewport": "tablet",
+          "page": "setups",
+          "requested": 300,
+          "actual": 300,
+          "max": 1392
+        },
+        {
+          "viewport": "tablet",
+          "page": "setups",
+          "requested": 700,
+          "actual": 700,
+          "max": 1392
+        },
+        {
+          "viewport": "tablet",
+          "page": "crops",
+          "requested": 0,
+          "actual": 0,
+          "max": 2371
+        },
+        {
+          "viewport": "tablet",
+          "page": "crops",
+          "requested": 300,
+          "actual": 300,
+          "max": 2371
+        },
+        {
+          "viewport": "tablet",
+          "page": "crops",
+          "requested": 700,
+          "actual": 0,
+          "max": 0
+        },
+        {
+          "viewport": "tablet",
+          "page": "buffs",
+          "requested": 0,
+          "actual": 0,
+          "max": 2551
+        },
+        {
+          "viewport": "tablet",
+          "page": "buffs",
+          "requested": 300,
+          "actual": 300,
+          "max": 2551
+        },
+        {
+          "viewport": "tablet",
+          "page": "buffs",
+          "requested": 700,
+          "actual": 700,
+          "max": 2551
+        },
+        {
+          "viewport": "tablet",
+          "page": "tools",
+          "requested": 0,
+          "actual": 0,
+          "max": 2634
+        },
+        {
+          "viewport": "tablet",
+          "page": "tools",
+          "requested": 300,
+          "actual": 300,
+          "max": 2634
+        },
+        {
+          "viewport": "tablet",
+          "page": "tools",
+          "requested": 700,
+          "actual": 700,
+          "max": 2634
+        },
+        {
+          "viewport": "tablet",
+          "page": "shards",
+          "requested": 0,
+          "actual": 0,
+          "max": 11545
+        },
+        {
+          "viewport": "tablet",
+          "page": "shards",
+          "requested": 300,
+          "actual": 300,
+          "max": 11545
+        },
+        {
+          "viewport": "tablet",
+          "page": "shards",
+          "requested": 700,
+          "actual": 700,
+          "max": 11545
+        },
+        {
+          "viewport": "tablet",
+          "page": "planner",
+          "requested": 0,
+          "actual": 0,
+          "max": 2647
+        },
+        {
+          "viewport": "tablet",
+          "page": "planner",
+          "requested": 300,
+          "actual": 300,
+          "max": 2647
+        },
+        {
+          "viewport": "tablet",
+          "page": "planner",
+          "requested": 700,
+          "actual": 700,
+          "max": 2647
+        },
+        {
+          "viewport": "tablet",
+          "page": "qol",
+          "requested": 0,
+          "actual": 0,
+          "max": 892
+        },
+        {
+          "viewport": "tablet",
+          "page": "qol",
+          "requested": 300,
+          "actual": 300,
+          "max": 892
+        },
+        {
+          "viewport": "tablet",
+          "page": "qol",
+          "requested": 700,
+          "actual": 700,
+          "max": 892
+        },
+        {
+          "viewport": "tablet",
+          "page": "focus",
+          "requested": 0,
+          "actual": 0,
+          "max": 0
+        },
+        {
+          "viewport": "tablet",
+          "page": "focus",
+          "requested": 300,
+          "actual": 0,
+          "max": 0
+        },
+        {
+          "viewport": "tablet",
+          "page": "focus",
+          "requested": 700,
+          "actual": 0,
+          "max": 0
+        },
+        {
+          "viewport": "tablet",
+          "page": "info",
+          "requested": 0,
+          "actual": 0,
+          "max": 19238
+        },
+        {
+          "viewport": "tablet",
+          "page": "info",
+          "requested": 300,
+          "actual": 300,
+          "max": 19238
+        },
+        {
+          "viewport": "tablet",
+          "page": "info",
+          "requested": 700,
+          "actual": 700,
+          "max": 19238
+        },
+        {
+          "viewport": "desktop",
+          "page": "dashboard",
+          "requested": 0,
+          "actual": 0,
+          "max": 1767
+        },
+        {
+          "viewport": "desktop",
+          "page": "dashboard",
+          "requested": 300,
+          "actual": 300,
+          "max": 1767
+        },
+        {
+          "viewport": "desktop",
+          "page": "dashboard",
+          "requested": 700,
+          "actual": 700,
+          "max": 1767
+        },
+        {
+          "viewport": "desktop",
+          "page": "setups",
+          "requested": 0,
+          "actual": 0,
+          "max": 657
+        },
+        {
+          "viewport": "desktop",
+          "page": "setups",
+          "requested": 300,
+          "actual": 300,
+          "max": 657
+        },
+        {
+          "viewport": "desktop",
+          "page": "setups",
+          "requested": 700,
+          "actual": 657,
+          "max": 657
+        },
+        {
+          "viewport": "desktop",
+          "page": "crops",
+          "requested": 0,
+          "actual": 0,
+          "max": 1194
+        },
+        {
+          "viewport": "desktop",
+          "page": "crops",
+          "requested": 300,
+          "actual": 300,
+          "max": 1194
+        },
+        {
+          "viewport": "desktop",
+          "page": "crops",
+          "requested": 700,
+          "actual": 700,
+          "max": 1194
+        },
+        {
+          "viewport": "desktop",
+          "page": "buffs",
+          "requested": 0,
+          "actual": 0,
+          "max": 639
+        },
+        {
+          "viewport": "desktop",
+          "page": "buffs",
+          "requested": 300,
+          "actual": 300,
+          "max": 639
+        },
+        {
+          "viewport": "desktop",
+          "page": "buffs",
+          "requested": 700,
+          "actual": 639,
+          "max": 639
+        },
+        {
+          "viewport": "desktop",
+          "page": "tools",
+          "requested": 0,
+          "actual": 0,
+          "max": 2279
+        },
+        {
+          "viewport": "desktop",
+          "page": "tools",
+          "requested": 300,
+          "actual": 300,
+          "max": 2279
+        },
+        {
+          "viewport": "desktop",
+          "page": "tools",
+          "requested": 700,
+          "actual": 700,
+          "max": 2279
+        },
+        {
+          "viewport": "desktop",
+          "page": "shards",
+          "requested": 0,
+          "actual": 0,
+          "max": 7256
+        },
+        {
+          "viewport": "desktop",
+          "page": "shards",
+          "requested": 300,
+          "actual": 300,
+          "max": 7256
+        },
+        {
+          "viewport": "desktop",
+          "page": "shards",
+          "requested": 700,
+          "actual": 700,
+          "max": 7256
+        },
+        {
+          "viewport": "desktop",
+          "page": "planner",
+          "requested": 0,
+          "actual": 0,
+          "max": 2872
+        },
+        {
+          "viewport": "desktop",
+          "page": "planner",
+          "requested": 300,
+          "actual": 300,
+          "max": 2872
+        },
+        {
+          "viewport": "desktop",
+          "page": "planner",
+          "requested": 700,
+          "actual": 700,
+          "max": 2872
+        },
+        {
+          "viewport": "desktop",
+          "page": "qol",
+          "requested": 0,
+          "actual": 0,
+          "max": 819
+        },
+        {
+          "viewport": "desktop",
+          "page": "qol",
+          "requested": 300,
+          "actual": 300,
+          "max": 819
+        },
+        {
+          "viewport": "desktop",
+          "page": "qol",
+          "requested": 700,
+          "actual": 700,
+          "max": 819
+        },
+        {
+          "viewport": "desktop",
+          "page": "focus",
+          "requested": 0,
+          "actual": 0,
+          "max": 0
+        },
+        {
+          "viewport": "desktop",
+          "page": "focus",
+          "requested": 300,
+          "actual": 0,
+          "max": 0
+        },
+        {
+          "viewport": "desktop",
+          "page": "focus",
+          "requested": 700,
+          "actual": 0,
+          "max": 0
+        },
+        {
+          "viewport": "desktop",
+          "page": "info",
+          "requested": 0,
+          "actual": 0,
+          "max": 12356
+        },
+        {
+          "viewport": "desktop",
+          "page": "info",
+          "requested": 300,
+          "actual": 300,
+          "max": 12356
+        },
+        {
+          "viewport": "desktop",
+          "page": "info",
+          "requested": 700,
+          "actual": 700,
+          "max": 12356
+        }
+      ],
+      "openedOverlays": 16,
+      "runtimeErrors": []
+    },
+    "sweepExit": 123,
+    "areaResults": [
+      "PASS  dashboard",
+      "FAIL  crops (exit 1)",
+      "FAIL  setups (exit 1)",
+      "FAIL  buffs (exit 1)",
+      "PASS  tools",
+      "PASS  qol",
+      "PASS  focus",
+      "PASS  info",
+      "PASS  planner",
+      "PASS  shards"
+    ],
+    "variants": [
+      "[buffs] desktop-empty  ok (14 clicks) | Access to fetch at 'https://sky.coflnet.com/api/bazaar/SHARD_PEST/history?start=2026-07-07T08%3A58%3A43.647Z&end=2026-10-05T08%3A58%3A43.647Z' from origin 'http://127.0.0.1:4173' h [http://127.0.0.1:4173/?t=1791190719615] ;; Failed to load resource: net::ERR_FAILED [https://sky.coflnet.com/api/bazaar/SHARD_PEST/history?start=2026-07-07T08%3A58%3A43.647Z&end=2026-10-05T08%3A58%3A43.647Z] ;; Access to fetch at 'https://sky.coflnet.com/api/bazaar/SHARD_CRICKET/history?start=2026-07-07T08%3A58%3A43.651Z&end=2026-10-05T08%3A58%3A43.651Z' from origin 'http://127.0.0.1:4173 [http://127.0.0.1:4173/?t=1791190719615] ;; Failed to load resource: net::ERR_FAILED [https://sky.coflnet.com/api/bazaar/SHARD_CRICKET/history?start=2026-07-07T08%3A58%3A43.651Z&end=2026-10-05T08%3A58%3A43.651Z] ;; Access to fetch at 'https://sky.coflnet.com/api/bazaar/RECOMBOBULATOR_3000/history?start=2026-07-07T08%3A58%3A44.492Z&end=2026-10-05T08%3A58%3A44.492Z' from origin 'http://127.0.0. [http://127.0.0.1:4173/?t=1791190719615] ;; Failed to load resource: net::ERR_FAILED [https://sky.coflnet.com/api/bazaar/RECOMBOBULATOR_3000/history?start=2026-07-07T08%3A58%3A44.492Z&end=2026-10-05T08%3A58%3A44.492Z] | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[buffs] desktop-filled ok (14 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[buffs] phone-filled   ok (14 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[crops] desktop-empty  ok (8 clicks) | Access to fetch at 'https://sky.coflnet.com/api/bazaar/FARMING_FOR_DUMMIES/history?start=2026-07-07T08%3A58%3A43.612Z&end=2026-10-05T08%3A58%3A43.612Z' from origin 'http://127.0.0. [http://127.0.0.1:4173/?t=1791190719689] ;; Failed to load resource: net::ERR_FAILED [https://sky.coflnet.com/api/bazaar/FARMING_FOR_DUMMIES/history?start=2026-07-07T08%3A58%3A43.612Z&end=2026-10-05T08%3A58%3A43.612Z] | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[crops] desktop-filled ok (8 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[crops] phone-filled   ok (8 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[dashboard] desktop-empty  ok (0 clicks)",
+      "[dashboard] desktop-filled ok (0 clicks)",
+      "[dashboard] phone-filled   ok (0 clicks)",
+      "[focus] desktop-empty  ok (1 clicks)",
+      "[focus] desktop-filled ok (1 clicks)",
+      "[focus] phone-filled   ok (1 clicks)",
+      "[info] desktop-empty  ok (5 clicks)",
+      "[info] desktop-filled ok (5 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[info] phone-filled   ok (5 clicks)",
+      "[planner] desktop-empty  ok (30 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[planner] desktop-filled ok (23 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[planner] phone-filled   ok (23 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[qol] desktop-empty  ok (0 clicks)",
+      "[qol] desktop-filled ok (0 clicks)",
+      "[qol] phone-filled   ok (0 clicks)",
+      "[setups] desktop-empty  ok (12 clicks) | Access to fetch at 'https://sky.coflnet.com/api/bazaar/FARMING_FOR_DUMMIES/history?start=2026-07-07T08%3A58%3A43.607Z&end=2026-10-05T08%3A58%3A43.607Z' from origin 'http://127.0.0. [http://127.0.0.1:4173/?t=1791190719720] ;; Failed to load resource: net::ERR_FAILED [https://sky.coflnet.com/api/bazaar/FARMING_FOR_DUMMIES/history?start=2026-07-07T08%3A58%3A43.607Z&end=2026-10-05T08%3A58%3A43.607Z] | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[setups] desktop-filled ok (12 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/H/history/full\",\"external\":true},{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[setups] phone-filled   ok (12 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/H/history/full\",\"external\":true},{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[shards] desktop-empty  ok (40 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[shards] desktop-filled ok (40 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[shards] phone-filled   ok (40 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[tools] desktop-empty  ok (10 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[tools] desktop-filled ok (10 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[tools] phone-filled   ok (10 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]"
+    ],
+    "negativeSweepVariants": [
+      "[dashboard] desktop-empty  ok (0 clicks) | Error: AUDIT_INJECTED_RUNTIME_ERROR",
+      "[dashboard] desktop-filled ok (0 clicks) | Error: AUDIT_INJECTED_RUNTIME_ERROR",
+      "[dashboard] phone-filled   ok (0 clicks) | Error: AUDIT_INJECTED_RUNTIME_ERROR"
+    ],
+    "actualJobFailure": [
+      "##[error]Process completed with exit code 1."
+    ]
+  },
+  "observedBoundary": "All 24 Phillip cases passed. The strict sweep failed in desktop-empty crops/setups/buffs with external sky.coflnet.com history CORS and net::ERR_FAILED console diagnostics. No new Phillip defect or live numeric evidence established.",
+  "readOnlyDiagnosis": "sweep-area.mjs records HTTP responses and console errors but no requestfailed correlation. Its console-note branch handles selected HTTP statuses, while these access-control failures have no recorded response status. A correlated exact-owner/history transport classification is a candidate correction for package 18; it has not been implemented or accepted.",
+  "preserved": "Runtime, tests, market classification and all error/exit gates unchanged. Prior failure is retained; no blind rerun or whitelist added.",
+  "nextStep": "Package 12 remains first open under the user's current ordering and needs dated live lore. Obtain explicit scope to fix package 18 despite that block; then capture/correlate exact failed requests, add deterministic positive/negative regression cases and verify the real strict sweep without hiding local/runtime errors."
+}

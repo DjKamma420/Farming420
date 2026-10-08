@@ -1,4 +1,8 @@
+import { isUnsupportedState, readStoredAppState, writeStoredAppState } from './app-storage.js';
+import { applyFarmingToolReforge, FARMING_TOOL_REFORGE_ENTRY_IDS, selectedFarmingToolReforge } from './item-capabilities.js';
 import { CROPS, UPGRADES } from './data.js';
+import { CHIP_LEVEL_CAP, gardenChipForEntry, phillipBuffEffect, phillipActivationTiming } from './farming-modifiers-data.js';
+import { finiteNonNegativeInteger } from './finite-number.js';
 import { INFO_ENTRIES, INFO_SECTIONS, allInfoEntries, cropStrategyInfo } from './info-content.js';
 import { FARMING_ACCESSORY_GROUPS } from './farming-accessories.js';
 import { FARMING_PETS } from './setup-pet-catalog.js';
@@ -191,11 +195,12 @@ const defaultState = {
 };
 
 function loadState() {
+  readOnlyState = false;
+  migrationApplied = false;
   let saved;
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return structuredClone(defaultState);
-    saved = JSON.parse(raw);
+    saved = readStoredAppState(null);
+    if (!saved) return structuredClone(defaultState);
   } catch {
     return structuredClone(defaultState);
   }
@@ -225,9 +230,15 @@ function loadState() {
 let readOnlyState = false;
 let migrationApplied = false;
 let state = loadState();
+// Render helpers may normalize an in-memory projection. Compare announcements
+// against persisted input so an unchanged disk state cannot repaint that projection.
+let lastObservedStoredState = JSON.stringify(readStoredAppState(null));
+let pendingPriceRender = false;
+let priceRenderTimer;
 
 let activeScrollAnchor = null;
 let scrollAnchorRestoreFrame = 0;
+let scrollIntentGeneration = 0;
 const SCROLL_ANCHOR_MAX_AGE_MS = 1800;
 const SCROLL_ANCHOR_CONTROL_SELECTOR = 'button, input, select, textarea, a, label, [role="button"], [role="radio"]';
 
@@ -331,6 +342,7 @@ function currentScrollAnchor() {
 }
 
 function clearScrollAnchor() {
+  scrollIntentGeneration += 1;
   activeScrollAnchor = null;
   if (scrollAnchorRestoreFrame) {
     cancelAnimationFrame(scrollAnchorRestoreFrame);
@@ -401,8 +413,27 @@ function captureInteractionScrollAnchor(event) {
   rememberScrollAnchor(event.target);
 }
 
+function preventUnsupportedMutation(event) {
+  if (!isUnsupportedState(readStoredAppState())) return;
+  const target = event.target?.closest?.('button, input, select, textarea, summary, a, [role="button"]');
+  if (!target) return;
+  // Navigation, raw backup export and update delivery remain available. The
+  // older build cannot safely interpret dependent editor/sync actions.
+  if (target.matches('[data-page], [data-open-settings], [data-nav-toggle], [data-nav-close], [data-settings-close], [data-backup-download], [data-check-update], #exportBtn, a')) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+}
+
 if (typeof document !== 'undefined') {
+  for (const type of ['wheel', 'touchstart', 'touchmove', 'pointerdown']) {
+    document.addEventListener(type, clearScrollAnchor, { capture: true, passive: true });
+  }
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Tab' || (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(event.key)
+      && !event.target?.matches?.('input, textarea, [contenteditable="true"]'))) clearScrollAnchor();
+  }, true);
   for (const type of ['click', 'change', 'input']) {
+    document.addEventListener(type, preventUnsupportedMutation, true);
     document.addEventListener(type, captureInteractionScrollAnchor, true);
   }
 
@@ -418,8 +449,9 @@ if (typeof document !== 'undefined') {
 
 function saveState() {
   if (readOnlyState) return;
-  state.schemaVersion = DATA_SCHEMA_VERSION;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  const written = writeStoredAppState(state);
+  if (written) lastObservedStoredState = JSON.stringify(readStoredAppState(null));
+  return written;
 }
 
 // Persist the migrated shape once, so the next load starts from the new schema.
@@ -468,11 +500,14 @@ function itemStore(item) {
 
 function currentLevel(item) {
   const store = itemStore(item);
+  const reforge = Object.entries(FARMING_TOOL_REFORGE_ENTRY_IDS).find(([, id]) => id === item.id)?.[0];
+  if (reforge) return selectedFarmingToolReforge(store, state.profile.toolReforges?.[toolKeyForCropId(state.selectedCrop)]) === reforge ? 1 : 0;
   return Math.max(0, Math.min(Number(item.max || 1), Number(store.levels[item.id] || 0)));
 }
 
 function isOwned(item) {
   const store = itemStore(item);
+  if (Object.values(FARMING_TOOL_REFORGE_ENTRY_IDS).includes(item.id)) return currentLevel(item) > 0;
   return Boolean(store.owned[item.id]) || currentLevel(item) > 0;
 }
 
@@ -1059,7 +1094,7 @@ function card(item, compact=false, { showArt = true } = {}) {
       ? 'replacement'
       : pricing.costToMaxCoins != null ? 'to max' : 'item';
   return `
-    <button class="item-card ${status} ${isShard ? 'shard-card' : ''} ${compact ? 'compact' : ''}" data-open="${esc(item.id)}"${showArt ? '' : ' data-no-item-art="1"'}>
+    <article class="item-card ${status} ${isShard ? 'shard-card' : ''} ${compact ? 'compact' : ''}" data-open="${esc(item.id)}"${showArt ? '' : ' data-no-item-art="1"'}>
       <div class="card-layer"></div>
       <div class="card-head">
         ${showArt && (item.packAsset || isShard) ? `<span class="card-portrait${isShard ? ' shard-portrait' : ''}"${item.packAsset ? ` data-pack-asset="${esc(item.packAsset)}"` : ''}></span>` : ''}
@@ -1082,7 +1117,8 @@ function card(item, compact=false, { showArt = true } = {}) {
         ${item.hypercharge ? badge('Hypercharge', 'soft') : ''}
         ${item.modeScope !== 'Any' ? badge(item.modeScope, 'soft') : ''}
       </div>
-    </button>`;
+      <button type="button" class="ghost small card-open-button" data-open="${esc(item.id)}" aria-label="Details for ${esc(item.name)}">Details</button>
+    </article>`;
 }
 
 function shell(content) {
@@ -1120,7 +1156,7 @@ function shell(content) {
           <div id="searchResults" class="search-results" role="listbox" ${state.search.trim() ? '' : 'hidden'}>${searchResultsMarkup(state.search)}</div>
         </div>
       </header>
-      <section class="content">${content}</section>
+      <section class="content">${readOnlyState ? '<p role="status" class="hint">Stored data uses a newer schema. Editing is disabled; the saved bytes remain untouched. Export a backup or reload a newer Farming420 build.</p>' : ''}${content}</section>
     </main>
     ${drawer()}
   </div>`;
@@ -1837,11 +1873,17 @@ function setEntryLevel(item, level) {
   const store = itemStore(item);
   const max = Number(item.max || 1);
   const value = Math.max(0, Math.min(max, Math.floor(Number(level) || 0)));
+  const reforge = Object.entries(FARMING_TOOL_REFORGE_ENTRY_IDS).find(([, id]) => id === item.id)?.[0];
+  if (reforge && (value > 0 || selectedFarmingToolReforge(store) === reforge)) {
+    applyFarmingToolReforge(store, value > 0 ? reforge : null);
+    return;
+  }
   if (value <= 0) {
     delete store.levels[item.id];
     delete store.owned[item.id];
     return;
   }
+  clearExclusivePeers(item);
   store.levels[item.id] = value;
   store.owned[item.id] = true;
 }
@@ -1863,10 +1905,7 @@ function currentToolBuildRecord() {
   const mk2 = TOOL_PANEL_ENTRIES.get('tool-mk-ii');
   const tier = mk3 && isOwned(mk3) ? 3 : mk2 && isOwned(mk2) ? 2 : 1;
   const skyblockId = farmingToolSkyblockId(crop().tool, tier);
-  const reforge = FARMING_TOOL_REFORGES.find(row => {
-    const entry = TOOL_PANEL_ENTRIES.get(`tool-reforge-${row.id}-reforge`);
-    return entry && isOwned(entry);
-  })?.id || null;
+  const reforge = selectedFarmingToolReforge(state.profile.toolProgress?.[toolKeyForCropId(state.selectedCrop)], state.profile.toolReforges?.[toolKeyForCropId(state.selectedCrop)]);
 
   const enchantments = {};
   const enchantRows = [
@@ -2239,13 +2278,24 @@ function drawer() {
   ].filter(Boolean).join(' · ');
   const isShard = item.section === 'shards' || item.category === 'Attribute Shard';
   const manual = store.manualGain[item.id] ?? '';
-  return `<div class="drawer-backdrop" data-close-drawer><aside class="drawer">
-    <div class="drawer-top"><div><div class="eyebrow">${esc(item.category)}</div><h2>${esc(item.name)}</h2></div><button class="close" data-close-drawer>×</button></div>
+  const chip = gardenChipForEntry(item);
+  const phillip = item.id === 'temporary-buff-pesthunter-phillip-buff';
+  const activation = state.profile.temporaryEffects?.pesthunterPhillip || {};
+  const effect = phillip ? phillipBuffEffect(activation) : null;
+  return `<div class="drawer-backdrop" data-close-drawer><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" tabindex="-1">
+    <div class="drawer-top"><div><div class="eyebrow">${esc(item.category)}</div><h2 id="drawer-title">${esc(item.name)}</h2></div><button type="button" class="close" data-close-drawer aria-label="Close details">×</button></div>
     <div class="drawer-badges">${badge(item.status,item.status==='VERIFY'?'verify':'soft')} ${isCropScopedItem(item)?badge(crop().name,'soft'):(item.cropScope!=='Any'?badge(item.cropScope,'soft'):'')} ${item.modeScope!=='Any'?badge(item.modeScope,'soft'):''}</div>
     ${isSynced(item) ? '<div class="drawer-synced">Farming420 worked this value out for you, from your profile sync and your active loadout. Editing it here overrides it until the next sync or loadout change.</div>' : ''}
     <div class="drawer-section"><h3>Ownership & Level</h3>
+      ${chip ? `<label>Chip rarity<select data-chip-rarity="${chip.id}">${Object.keys(CHIP_LEVEL_CAP).map(rarity => `<option value="${rarity}" ${(state.profile.chipRarities?.[chip.id] || 'LEGENDARY') === rarity ? 'selected' : ''}>${rarity} (cap ${CHIP_LEVEL_CAP[rarity]})</option>`).join('')}</select></label>` : ''}
       ${max>1 ? `<div class="stepper"><button data-step="-1" data-id="${item.id}">−</button><strong>${level}/${max}</strong><button data-step="1" data-id="${item.id}">+</button><button class="ghost small" data-max="${item.id}">Max</button></div>` : `<label class="switch-row"><span>Owned</span><input type="checkbox" data-owned="${item.id}" ${isOwned(item)?'checked':''}></label>`}
     </div>
+    ${phillip ? `<div class="drawer-section"><h3>Temporary activation</h3>
+      <label>Pests handed in<input type="number" min="0" step="1" data-phillip-count value="${esc(activation.pestCount ?? '')}"></label>
+      <label>Observed duration (minutes)<input type="number" min="1" step="1" data-phillip-duration placeholder="Read the active potion duration"></label>
+      <button type="button" data-phillip-activate>Activate / replace timer</button><button type="button" data-phillip-deactivate>Deactivate</button>
+      <p>Alpha preview: ${effect.baseFarmingFortune === null ? 'unknown' : `+${effect.baseFarmingFortune}`} FF. Live curve verification pending; excluded from complete totals.</p>
+      <p>${effect.remainingSeconds === null ? 'Expiry unknown' : `${effect.remainingSeconds} seconds remaining`}. One activation; no stacking.</p></div>` : ''}
     <div class="drawer-section"><h3>Evaluation</h3><div class="detail-grid"><div><span>Next step</span><strong>+${formatNumber(gainFor(item))}</strong></div><div><span>Relative effect</span><strong>${relativeGainPct(item).toFixed(2)}%</strong></div></div>
       <div class="detail-grid">
         <div><span>Next cost</span><strong>${esc(costText)}</strong><small>${esc(costOriginNote(costSource))}</small></div>
@@ -2738,6 +2788,8 @@ function restoreSetupSlotViewportAnchor(anchor) {
 
 function captureInteraction() {
   return {
+    generation: scrollIntentGeneration,
+    page: state.page,
     x: Number(window.scrollX || 0),
     y: Number(window.scrollY || 0),
     selector: interactionSelector(document.activeElement),
@@ -2747,11 +2799,13 @@ function captureInteraction() {
 
 function restoreInteraction(interaction) {
   if (!interaction) return;
+  const stillCurrent = () => interaction.generation === scrollIntentGeneration && interaction.page === state.page;
   const restoreBase = () => {
+    if (!stillCurrent()) return;
     window.scrollTo(interaction.x, interaction.y);
     if (interaction.selector) document.querySelector(interaction.selector)?.focus({ preventScroll: true });
   };
-  const restoreAnchor = () => restoreSetupSlotViewportAnchor(interaction.setupSlotAnchor);
+  const restoreAnchor = () => stillCurrent() && restoreSetupSlotViewportAnchor(interaction.setupSlotAnchor);
 
   restoreBase();
   restoreAnchor();
@@ -3220,6 +3274,7 @@ function restoreActiveSearchFocus(snapshot) {
 }
 
 function render({ preserveScroll = true } = {}) {
+  pendingPriceRender = false;
   const searchFocusSnapshot = preserveScroll ? activeSearchFocusSnapshot() : null;
   // Most state changes only alter a control/card. Replacing #app is still the
   // core render model, but it must not behave like navigation: keep the right
@@ -3281,6 +3336,20 @@ function render({ preserveScroll = true } = {}) {
     restoreRelativeScrollAnchor(relativeAnchor);
     scheduleScrollAnchorRestore(relativeAnchor);
   }
+  scheduleTemporaryExpiry();
+}
+
+let temporaryExpiryTimer;
+function scheduleTemporaryExpiry() {
+  clearTimeout(temporaryExpiryTimer);
+  if (readOnlyState) return;
+  const expiry = state.profile.temporaryEffects?.pesthunterPhillip?.activeUntilMs;
+  if (typeof expiry !== 'number' || !Number.isFinite(expiry) || expiry <= Date.now()) return;
+  temporaryExpiryTimer = setTimeout(() => {
+    state = loadState();
+    if (!readOnlyState) { applyComputedStatsToState(state); saveState(); }
+    render();
+  }, Math.min(2147483647, expiry - Date.now() + 10));
 }
 
 function closeNavigation() {
@@ -3292,7 +3361,71 @@ function closeNavigation() {
   toggle.setAttribute('aria-label', 'Open navigation');
 }
 
+function closeDrawer() {
+  const itemId = state.drawer;
+  state.drawer = null;
+  saveState();
+  render();
+  document.querySelector(`button[data-open="${CSS.escape(itemId || '')}"]`)?.focus({ preventScroll: true });
+}
+
+document.addEventListener('keydown', event => {
+  const dialog = document.querySelector('.drawer[role="dialog"]');
+  if (!dialog) return;
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    closeDrawer();
+  } else if (event.key === 'Tab') {
+    const targets = [...dialog.querySelectorAll('button, input, select, textarea, a[href], [tabindex="0"]')]
+      .filter(node => !node.disabled && node.getClientRects().length);
+    const first = targets[0], last = targets.at(-1);
+    if (event.shiftKey && (document.activeElement === first || !dialog.contains(document.activeElement))) {
+      event.preventDefault(); last?.focus({ preventScroll: true });
+    } else if (!event.shiftKey && (document.activeElement === last || !dialog.contains(document.activeElement))) {
+      event.preventDefault(); first?.focus({ preventScroll: true });
+    }
+  }
+});
+
 function bind() {
+  document.querySelector('[data-chip-rarity]')?.addEventListener('change', event => {
+    const id = event.target.dataset.chipRarity, rarity = event.target.value;
+    if (!CHIP_LEVEL_CAP[rarity]) return;
+    state.profile.chipRarities ||= {};
+    state.profile.chipRarities[id] = rarity;
+    const item = UPGRADES.find(row => row.chipId === id);
+    if (item && currentLevel(item) > CHIP_LEVEL_CAP[rarity]) setEntryLevel(item, CHIP_LEVEL_CAP[rarity]);
+    applyComputedStatsToState(state); saveState(); render();
+  });
+  document.querySelector('[data-phillip-count]')?.addEventListener('change', event => {
+    const count = finiteNonNegativeInteger(event.target.value);
+    if (event.target.value !== '' && count === null) {
+      event.target.setCustomValidity('Enter a whole non-negative Pest count.');
+      event.target.reportValidity(); return;
+    }
+    event.target.setCustomValidity('');
+    state.profile.temporaryEffects ||= {};
+    state.profile.temporaryEffects.pesthunterPhillip ||= {};
+    state.profile.temporaryEffects.pesthunterPhillip.pestCount = count;
+    applyComputedStatsToState(state); saveState(); render();
+  });
+  document.querySelector('[data-phillip-activate]')?.addEventListener('click', () => {
+    const input = document.querySelector('[data-phillip-duration]');
+    const timing = phillipActivationTiming(input?.value);
+    if (timing === null) { input?.setCustomValidity('Enter a valid observed potion duration.'); input?.reportValidity(); return; }
+    input?.setCustomValidity('');
+    state.profile.temporaryEffects ||= {};
+    const record = state.profile.temporaryEffects.pesthunterPhillip ||= {};
+    record.active = true;
+    Object.assign(record, timing);
+    setEntryLevel(UPGRADES.find(row => row.id === 'temporary-buff-pesthunter-phillip-buff'), 1);
+    applyComputedStatsToState(state); saveState(); render();
+  });
+  document.querySelector('[data-phillip-deactivate]')?.addEventListener('click', () => {
+    state.profile.temporaryEffects ||= {};
+    state.profile.temporaryEffects.pesthunterPhillip = { ...(state.profile.temporaryEffects.pesthunterPhillip || {}), active: false };
+    applyComputedStatsToState(state); saveState(); render();
+  });
   document.querySelectorAll('[data-progress]').forEach(el => { el.style.width = `${el.dataset.progress}%`; });
 
   const sidebar = document.querySelector('#app .sidebar');
@@ -3312,12 +3445,12 @@ function bind() {
     render({ preserveScroll: false });
   }));
   document.querySelectorAll('[data-open-settings]').forEach(el => el.addEventListener('click', closeNavigation));
-  document.querySelectorAll('[data-open]').forEach(el => el.addEventListener('click', () => { state.drawer=el.dataset.open; saveState(); render(); }));
+  document.querySelectorAll('button[data-open]').forEach(el => el.addEventListener('click', () => { state.drawer=el.dataset.open; saveState(); render(); document.querySelector('.drawer .close')?.focus({ preventScroll: true }); }));
   // The backdrop closes the drawer, but a click on the drawer itself must not:
   // it bubbles up to the backdrop, so the target is checked explicitly.
   document.querySelectorAll('[data-close-drawer]').forEach(el => el.addEventListener('click', event => {
     if (el.classList.contains('drawer-backdrop') && event.target !== el) return;
-    state.drawer=null; saveState(); render();
+    closeDrawer();
   }));
   document.querySelectorAll('[data-crop]').forEach(el => el.addEventListener('click', () => { state.selectedCrop=el.dataset.crop; saveState(); render(); }));
 
@@ -3450,23 +3583,16 @@ function bind() {
     const item = UPGRADES.find(x=>x.id===el.dataset.id); if (!item) return;
     const store = itemStore(item);
     const nextLevel = Math.max(0, Math.min(Number(item.max||1), currentLevel(item)+Number(el.dataset.step)));
-    if (nextLevel > 0) clearExclusivePeers(item);
-    store.levels[item.id] = nextLevel;
-    store.owned[item.id] = nextLevel > 0;
+    setEntryLevel(item, nextLevel);
     saveState(); render();
   }));
   document.querySelectorAll('[data-max]').forEach(el => el.addEventListener('click', () => {
     const item = UPGRADES.find(x=>x.id===el.dataset.max); if (!item) return;
-    clearExclusivePeers(item);
-    const store = itemStore(item);
-    store.levels[item.id]=Number(item.max||1); store.owned[item.id]=true; saveState(); render();
+    setEntryLevel(item, Number(item.max||1)); saveState(); render();
   }));
   document.querySelectorAll('[data-owned]').forEach(el => el.addEventListener('change', e => {
     const item = UPGRADES.find(x=>x.id===e.target.dataset.owned); if (!item) return;
-    if (e.target.checked) clearExclusivePeers(item);
-    const store = itemStore(item);
-    store.owned[item.id]=e.target.checked;
-    store.levels[item.id]=e.target.checked?1:0; saveState(); render();
+    setEntryLevel(item, e.target.checked ? 1 : 0); saveState(); render();
   }));
   document.querySelectorAll('[data-manual]').forEach(el => el.addEventListener('change', e => {
     const item = UPGRADES.find(x=>x.id===e.target.dataset.manual); if (!item) return;
@@ -3478,13 +3604,13 @@ function bind() {
   // so there is exactly one on-disk contract for user data.
   const exportBtn=document.getElementById('exportBtn');
   if(exportBtn) exportBtn.addEventListener('click',()=>{
-    downloadJson(backupFilename(), createBackupPayload(state));
+    downloadJson(backupFilename(), createBackupPayload(readStoredAppState(state)));
   });
   const importInput=document.getElementById('importInput');
   if(importInput) importInput.addEventListener('change', async e=>{
     try {
       const restored = validateBackupPayload(await readJsonFile(e.target.files?.[0]));
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(restored.state));
+      writeStoredAppState(restored.state, { strict: true });
       window.dispatchEvent(new Event('farming420:state-changed'));
     } catch (error) {
       alert(error.message);
@@ -3504,7 +3630,7 @@ function bind() {
 //
 // `saveState` is a no-op while the stored data came from a newer app version,
 // so this cannot write over state this build does not understand.
-applyComputedStatsToState(state);
+if (!readOnlyState) applyComputedStatsToState(state);
 saveState();
 
 render();
@@ -3512,11 +3638,41 @@ render();
 // Settings writes synced values straight to storage; re-read and repaint so the
 // cards show them without a manual reload.
 window.addEventListener('farming420:state-changed', () => {
+  const storedState = JSON.stringify(readStoredAppState(null));
+  if (storedState === lastObservedStoredState) return;
+  lastObservedStoredState = storedState;
+  const nextState = loadState();
+  if (JSON.stringify(nextState) === JSON.stringify(state)) return;
   const interaction = captureInteraction();
-  state = loadState();
+  state = nextState;
   render();
   restoreInteraction(interaction);
 });
+
+// Background prices must not replace a picker while its keyboard/focus owner
+// is active. A normal state render consumes the cache; otherwise flush after
+// the user leaves/closes the interactive overlay through its normal event.
+function priceRenderBlockedByInteraction() {
+  return Boolean((['setups','tools'].includes(state.page) && document.querySelector('[data-item-editor]'))
+    || (state.page === 'tools' && document.querySelector('[data-tool-editor], [data-vacuum-panel]'))
+    || document.querySelector('details[data-keyboard-bound="1"][open], .drawer, .sidebar.nav-open')
+    || document.activeElement?.closest?.('details[data-keyboard-bound="1"]'));
+}
+function flushPriceRender() {
+  if (!pendingPriceRender || priceRenderBlockedByInteraction()) return;
+  const interaction = captureInteraction();
+  render();
+  restoreInteraction(interaction);
+}
+function requestPriceRender() {
+  pendingPriceRender = true;
+  flushPriceRender();
+}
+for (const event of ['focusin', 'toggle']) document.addEventListener(event, () => {
+  if (!pendingPriceRender) return;
+  clearTimeout(priceRenderTimer);
+  priceRenderTimer = setTimeout(flushPriceRender, 0);
+}, true);
 
 // Market refresh changes only the price cache, not profile state. Do not
 // globally repaint editors/setups when background market requests finish:
@@ -3524,18 +3680,15 @@ window.addEventListener('farming420:state-changed', () => {
 // core-rendered surface that needs an immediate repaint for its price cards.
 window.addEventListener('farming420:market-average-updated', () => {
   const safePricePages = new Set(['dashboard', 'accessories', 'crops', 'gear', 'pets', 'chips', 'shards', 'buffs', 'pests', 'qol', 'planner', 'focus']);
-  if (safePricePages.has(state.page)) render();
+  if (safePricePages.has(state.page)) requestPriceRender();
 });
 
 window.addEventListener('farming420:item-value-updated', () => {
   if (state.page !== 'setups' && state.page !== 'tools') return;
 
   // Physical value refreshes finish after the selection that requested them.
-  // On Setups that late render is followed by editor docking, so it needs the
-  // same interaction/slot restore path as a direct state change. Without it,
-  // item-dependent price refreshes can move the page even though the original
-  // selection itself was scroll-safe.
-  const interaction = captureInteraction();
-  render();
-  restoreInteraction(interaction);
+  // Both physical editor surfaces must keep their nodes through this late
+  // event, including after the click anchor expires. Ordinary state renders
+  // consume the cache; price-only refresh waits for the editor owner to leave.
+  requestPriceRender();
 });

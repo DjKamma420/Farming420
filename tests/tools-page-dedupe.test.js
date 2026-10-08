@@ -42,7 +42,7 @@ test('nothing removes a node another module recreates', () => {
   // enhancements.js rebuilds .tool-context-addon whenever it is missing, so
   // removing it makes the two observers fight until the tab dies. Hide it.
   const redesign = read('skyblock-redesign.js');
-  assert.match(redesign, /tool-context-addon'\)\?\.classList\.add\('sb-hidden-context'\)/);
+  assert.match(redesign, /tool-context-addon'\)\?\.classList\.toggle\('sb-hidden-context', true\)/);
   assert.doesNotMatch(redesign, /tool-context-addon'\)\?\.remove\(\)/);
 });
 

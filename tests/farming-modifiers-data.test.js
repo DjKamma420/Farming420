@@ -16,14 +16,14 @@ import {
 test('Garden Chip table covers all ten current chip families', () => {
   assert.equal(Object.keys(GARDEN_CHIPS).length, 10);
   assert.deepEqual(CHIP_LEVEL_CAP, { RARE: 10, EPIC: 15, LEGENDARY: 20 });
-  assert.equal(maxGardenChipEffect('rarefinder'), 60);
+  assert.equal(maxGardenChipEffect('rarefinder'), 50);
   assert.equal(maxGardenChipEffect('vermin-vaporizer'), 100);
   assert.equal(maxGardenChipEffect('hypercharge'), 100);
 });
 
 test('0.27 Cropshot ambiguity does not fabricate missing live rarity rates', () => {
   assert.equal(GARDEN_CHIPS.cropshot.effect.currentReportedLegendaryLevel20Total, 60);
-  assert.equal(gardenChipEffect('cropshot', { level: 10, rarity: 'RARE' }), 30);
+  assert.equal(gardenChipEffect('cropshot', { level: 10, rarity: 'RARE' }), null);
   assert.equal(gardenChipEffect('cropshot', { level: 15, rarity: 'EPIC' }), null);
   assert.equal(gardenChipEffect('cropshot', { level: 20, rarity: 'LEGENDARY' }), null);
 });

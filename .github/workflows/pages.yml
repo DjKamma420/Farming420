@@ -1,9 +1,10 @@
 name: Deploy Farming420 to GitHub Pages
 
 on:
-  push:
-    branches: ["main"]
-  workflow_dispatch:
+  workflow_run:
+    workflows: ["Validate Farming420"]
+    types: [completed]
+    branches: [main]
 
 permissions:
   contents: read
@@ -11,31 +12,50 @@ permissions:
   id-token: write
 
 concurrency:
-  # Only the newest stamped build matters. The repository is also configured
-  # for GitHub's branch-based Pages publisher, which runs in parallel and
-  # normally finishes after this custom workflow. Keep this workflow separate
-  # and let a newer push replace an older waiting stamped deployment.
-  group: farming420-stamped-pages
-  cancel-in-progress: true
+  group: farming420-pages
+  cancel-in-progress: false
 
 jobs:
   deploy:
+    # A successful PR check or a fork must never acquire publishing authority.
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    env:
+      VALIDATED_SHA: ${{ github.event.workflow_run.head_sha }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - name: Verify validated immutable source and reject stale completion
+        id: validated
+        run: |
+          test "$(git rev-parse HEAD)" = "$VALIDATED_SHA"
+          git fetch --no-tags --depth=1 origin main
+          if [ "$(git rev-parse FETCH_HEAD)" = "$VALIDATED_SHA" ]; then
+            echo "current=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "current=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping obsolete validation completion: main has advanced."
+          fi
       - uses: actions/configure-pages@v5
+        if: steps.validated.outputs.current == 'true'
       - name: Stamp deployment build
+        if: steps.validated.outputs.current == 'true'
         env:
-          BUILD_ID: ${{ github.sha }}
+          BUILD_ID: ${{ github.event.workflow_run.head_sha }}
         run: node scripts/prepare-pages-deploy.js
       - uses: actions/upload-pages-artifact@v3
+        if: steps.validated.outputs.current == 'true'
         with:
           path: .
-      - name: Wait for branch Pages publisher
-        run: sleep 70
-      - name: Deploy
+      - name: Deploy validated artifact
+        if: steps.validated.outputs.current == 'true'
         id: deployment
         uses: actions/deploy-pages@v4

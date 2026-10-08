@@ -1,0 +1,109 @@
+{
+  "commit": "b2997a4cafca704960eb8074652a0f78c34dfc42",
+  "validate": {
+    "run": 37216417440,
+    "job": 111477729116,
+    "result": "success",
+    "node": 1384,
+    "python": 8,
+    "stampedEntrypoints": 52,
+    "references": 466
+  },
+  "browser": {
+    "run": 37216417444,
+    "engines": [
+      {
+        "job": 111477729117,
+        "engine": "chromium",
+        "counts": {
+          "PASS": 220,
+          "FAIL": 1,
+          "NOTE": 8,
+          "BLOCKED": 0
+        },
+        "failed": [
+          {
+            "engine": "chromium",
+            "viewport": "320-portrait",
+            "check": "picker-helmet-same-state-zero-mutations",
+            "status": "FAIL",
+            "evidence": {
+              "equal": false,
+              "mutations": 3,
+              "samples": [
+                {
+                  "type": "childList",
+                  "target": "SPAN",
+                  "id": null,
+                  "className": "sb-gear-art",
+                  "attribute": null,
+                  "oldValue": null,
+                  "newValue": null,
+                  "added": 0,
+                  "removed": 1
+                },
+                {
+                  "type": "attributes",
+                  "target": "SPAN",
+                  "id": null,
+                  "className": "sb-gear-art",
+                  "attribute": "class",
+                  "oldValue": "sb-gear-art",
+                  "newValue": "sb-gear-art",
+                  "added": 0,
+                  "removed": 0
+                },
+                {
+                  "type": "attributes",
+                  "target": "DIV",
+                  "id": null,
+                  "className": "crop-switch workspace-hidden-crop-switch",
+                  "attribute": "class",
+                  "oldValue": "crop-switch workspace-hidden-crop-switch",
+                  "newValue": "crop-switch workspace-hidden-crop-switch",
+                  "added": 0,
+                  "removed": 0
+                }
+              ],
+              "events": []
+            }
+          }
+        ]
+      },
+      {
+        "job": 111477729247,
+        "engine": "firefox",
+        "counts": {
+          "PASS": 221,
+          "FAIL": 0,
+          "NOTE": 8,
+          "BLOCKED": 0
+        },
+        "failed": []
+      },
+      {
+        "job": 111477729257,
+        "engine": "webkit",
+        "counts": {
+          "PASS": 221,
+          "FAIL": 0,
+          "NOTE": 8,
+          "BLOCKED": 0
+        },
+        "failed": []
+      }
+    ],
+    "strictChromium": {
+      "overlayExit": 0,
+      "findings": 0,
+      "runtimeErrors": 0,
+      "mainScrollTargets": 120,
+      "openedOverlays": 16,
+      "sweepExit": 0,
+      "ordinaryAreas": 10,
+      "variants": 30,
+      "injectedRuntimeErrorExit": 1
+    }
+  },
+  "interpretation": "Latest exact-head acceptance remains failed. The helmet image error removed a child while the baseline was measured, then issued an absent-class removal and woke the workspace observer's unconditional existing-class add. No core render/value event was recorded. The legitimate pending image transition must settle before same-state measurement; the redundant presentation writes must be guarded. No existing failure is relabeled a pass."
+}

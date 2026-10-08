@@ -90,12 +90,13 @@
   }
 
   /* Pages with a phase/set selector use one deterministic header grid:
-     title + selector on row one, search across row two. */
+     title, selector and search on separate rows. */
   .activity-mode-topbar-controls {
     display: grid !important;
     grid-template-columns: max-content minmax(0, 1fr);
     grid-template-areas:
-      "title control"
+      "title title"
+      "control control"
       "search search";
     align-items: center;
     gap: 10px 12px;
@@ -231,27 +232,29 @@
   gap: 8px;
 }
 
-@media (max-width: 760px) {
-  /* Keep Loadouts on the same two-row mobile header as Dashboard/Planner:
-     title + selector first, search second. A 100% flex-basis here used to force
-     the physical-set selector onto its own third row. */
+@media (max-width: 760px), (max-width: 900px) and (max-height: 480px) {
+  /* Keep the physical tabs readable in narrow portrait and short landscape. */
   .physical-set-switch {
     flex: 1 1 0;
     min-width: 0;
     max-width: none;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
   }
 
   .physical-set-switch .physical-set-tabs {
-    flex: 1 1 0;
+    flex: 1 1 100%;
     min-width: 0;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
   }
 
   .physical-set-switch .physical-set-tabs button {
     flex: 1 1 0;
     min-width: 0;
     max-width: none;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    min-height: 36px;
+    text-overflow: clip;
   }
 
   .physical-set-switch .add-set-button,

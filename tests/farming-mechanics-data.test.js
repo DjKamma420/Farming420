@@ -17,6 +17,7 @@ import {
   expectedPestsPerSpawnFromBonusPestChance,
   feastPestRareCropDropInput,
   idealVacuumKillSeconds,
+  idealVacuumPullCount,
   pestDataCoverage,
 } from '../src/pest-mechanics-data.js';
 import { DROP_SCALING } from '../src/profit-engine.js';
@@ -58,15 +59,15 @@ test('Bonus Pest Chance increases expected pests per successful spawn, not event
   assert.equal(input.pestsPerSpawnExpected, 3.5);
 });
 
-test('classic guaranteed Pest crop drops use per-pest Fortune divisors', () => {
-  assert.equal(expectedGuaranteedPestCropQuantity('fly', { farmingFortune: 2000, cropFortune: 0 }), 1 + 2000 / 35);
-  assert.equal(expectedGuaranteedPestCropQuantity('earthworm', { farmingFortune: 2000, cropFortune: 0 }), 5 + 2000 / 7);
-  assert.equal(expectedGuaranteedPestCropQuantity('dragonfly', { farmingFortune: 2000, cropFortune: 0 }), null);
-
-  const coverage = pestDataCoverage();
-  assert.equal(coverage.totalCropPests, 13);
-  assert.equal(coverage.guaranteedDropFormulaVerified, 10);
-  assert.deepEqual(coverage.unresolvedGuaranteedDropFormulaIds.sort(), ['dragonfly', 'firefly', 'praying-mantis'].sort());
+test('historical Pest divisors cannot certify current guaranteed crop drops', () => {
+  for (const [id,pest] of Object.entries(PESTS)) {
+    assert.equal(expectedGuaranteedPestCropQuantity(id,{farmingFortune:2000,cropFortune:0}),null);
+    if (pest.historicalFortunePerExtraUnit) assert.equal(pest.confidence,'HISTORICAL_ALPHA');
+  }
+  const coverage=pestDataCoverage();
+  assert.equal(coverage.totalCropPests,13);
+  assert.equal(coverage.guaranteedDropFormulaVerified,0);
+  assert.equal(coverage.unresolvedGuaranteedDropFormulaIds.length,13);
 });
 
 test('Feast Pest RARE CROP chance uses Pest Overbloom context', () => {
@@ -78,11 +79,11 @@ test('Feast Pest RARE CROP chance uses Pest Overbloom context', () => {
   assert.equal(mouse.randomInSeasonCrop, true);
 });
 
-test('vacuum table models all five Garden tiers and ideal damage time', () => {
+test('vacuum table models all five Garden tiers and damage units without elapsed time', () => {
   assert.equal(Object.keys(VACUUMS).length, 5);
-  assert.equal(VACUUMS.SKYMART_VACUUM.damagePerSecond, 100);
-  assert.equal(VACUUMS.INFINI_VACUUM_HOOVERIUS.damagePerSecond, 250);
-  assert.equal(idealVacuumKillSeconds('SKYMART_VACUUM'), 6);
-  assert.equal(idealVacuumKillSeconds('INFINI_VACUUM_HOOVERIUS'), 2.4);
+  assert.equal(VACUUMS.SKYMART_VACUUM.damagePerPull, 100);
+  assert.equal(VACUUMS.INFINI_VACUUM_HOOVERIUS.damagePerPull, 400);
+  assert.equal(idealVacuumKillSeconds('SKYMART_VACUUM'), null);
+  assert.equal(idealVacuumKillSeconds('INFINI_VACUUM_HOOVERIUS'), null);
   assert.equal(PESTS.fly.cropId, 'wheat');
 });
