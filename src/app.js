@@ -1,7 +1,8 @@
 import { isUnsupportedState, readStoredAppState, writeStoredAppState } from './app-storage.js';
 import { applyFarmingToolReforge, FARMING_TOOL_REFORGE_ENTRY_IDS, selectedFarmingToolReforge } from './item-capabilities.js';
 import { CROPS, UPGRADES } from './data.js';
-import { CHIP_LEVEL_CAP, gardenChipForEntry, phillipBuffEffect } from './farming-modifiers-data.js';
+import { CHIP_LEVEL_CAP, gardenChipForEntry, phillipBuffEffect, phillipActivationTiming } from './farming-modifiers-data.js';
+import { finiteNonNegativeInteger } from './finite-number.js';
 import { INFO_ENTRIES, INFO_SECTIONS, allInfoEntries, cropStrategyInfo } from './info-content.js';
 import { FARMING_ACCESSORY_GROUPS } from './farming-accessories.js';
 import { FARMING_PETS } from './setup-pet-catalog.js';
@@ -3397,8 +3398,12 @@ function bind() {
     applyComputedStatsToState(state); saveState(); render();
   });
   document.querySelector('[data-phillip-count]')?.addEventListener('change', event => {
-    const count = event.target.value === '' ? null : Number(event.target.value);
-    if (count !== null && (!Number.isInteger(count) || count < 0)) { event.target.reportValidity(); return; }
+    const count = finiteNonNegativeInteger(event.target.value);
+    if (event.target.value !== '' && count === null) {
+      event.target.setCustomValidity('Enter a whole non-negative Pest count.');
+      event.target.reportValidity(); return;
+    }
+    event.target.setCustomValidity('');
     state.profile.temporaryEffects ||= {};
     state.profile.temporaryEffects.pesthunterPhillip ||= {};
     state.profile.temporaryEffects.pesthunterPhillip.pestCount = count;
@@ -3406,12 +3411,13 @@ function bind() {
   });
   document.querySelector('[data-phillip-activate]')?.addEventListener('click', () => {
     const input = document.querySelector('[data-phillip-duration]');
-    const minutes = Number(input?.value);
-    if (!Number.isFinite(minutes) || minutes <= 0) { input?.setCustomValidity('Enter the observed potion duration.'); input?.reportValidity(); return; }
+    const timing = phillipActivationTiming(input?.value);
+    if (timing === null) { input?.setCustomValidity('Enter a valid observed potion duration.'); input?.reportValidity(); return; }
+    input?.setCustomValidity('');
     state.profile.temporaryEffects ||= {};
     const record = state.profile.temporaryEffects.pesthunterPhillip ||= {};
-    record.active = true; record.activeUntilMs = Date.now() + minutes * 60000;
-    record.durationSeconds = minutes * 60;
+    record.active = true;
+    Object.assign(record, timing);
     setEntryLevel(UPGRADES.find(row => row.id === 'temporary-buff-pesthunter-phillip-buff'), 1);
     applyComputedStatsToState(state); saveState(); render();
   });

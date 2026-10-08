@@ -1,4 +1,4 @@
-import { finiteNonNegative } from './finite-number.js';
+import { finiteNonNegative, finiteNonNegativeInteger } from './finite-number.js';
 
 export const FARMING_MODIFIERS_DATA_VERSION = 1;
 
@@ -231,17 +231,30 @@ export const TEMPORARY_FARMING_MODIFIERS = Object.freeze({
 export function phillipBuffEffect(record, nowMs = Date.now()) {
   const row = TEMPORARY_FARMING_MODIFIERS.pesthunterPhillip;
   if (record?.active === false) return { baseFarmingFortune: 0, farmingFortune: 0, complete: true, active: false, remainingSeconds: 0, reasons: [] };
-  const count = finiteNonNegative(record?.pestCount);
+  const count = finiteNonNegativeInteger(record?.pestCount);
   const until = finiteNonNegative(record?.activeUntilMs);
   const now = finiteNonNegative(nowMs);
   if (until !== null && now !== null && until <= now) return { baseFarmingFortune: 0, farmingFortune: 0, complete: true, active: false, remainingSeconds: 0, reasons: [] };
-  const base = count !== null && Number.isInteger(count) ? Math.min(row.farmingFortuneCap, count * row.farmingFortunePerPest) : null;
+  const base = count !== null ? Math.min(row.farmingFortuneCap, count * row.farmingFortunePerPest) : null;
   const reasons = [];
   if (base === null) reasons.push('Phillip Pest count is unavailable or invalid');
   if (until === null || now === null) reasons.push('Phillip activation expiry is unavailable');
   reasons.push('Phillip +5 per Pest curve is Alpha-only; live lore verification is required');
   return { baseFarmingFortune: base, farmingFortune: null, complete: false, active: until === null ? null : until > now,
     remainingSeconds: until !== null && now !== null ? Math.max(0, Math.ceil((until - now) / 1000)) : null, reasons };
+}
+
+/** Validate observed timing before replacing a saved activation. No game duration is assumed. */
+export function phillipActivationTiming(minutesValue, nowMs = Date.now()) {
+  const minutes = finiteNonNegative(minutesValue);
+  const now = finiteNonNegative(nowMs);
+  if (minutes === null || minutes <= 0 || !Number.isSafeInteger(now)) return null;
+  const durationSeconds = minutes * 60;
+  const activeUntilMs = now + minutes * 60000;
+  if (!Number.isFinite(durationSeconds) || durationSeconds <= 0
+    || !Number.isSafeInteger(activeUntilMs) || activeUntilMs <= now
+    || !Number.isFinite(new Date(activeUntilMs).getTime())) return null;
+  return { durationSeconds, activeUntilMs };
 }
 
 export function hyperchargedFarmingFortune(baseFarmingFortune, hyperchargePercent) {

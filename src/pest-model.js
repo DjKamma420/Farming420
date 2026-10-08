@@ -1,5 +1,5 @@
 import { TEMPORARY_FARMING_MODIFIERS } from './farming-modifiers-data.js';
-import { finiteNonNegative } from './finite-number.js';
+import { finiteNonNegativeInteger } from './finite-number.js';
 import { PESTS } from './pest-mechanics-data.js';
 
 /**
@@ -143,8 +143,8 @@ export const PESTHUNTER_PHILIP = Object.freeze({
  * folding a bad input into a confident zero.
  */
 export function philipFortuneFor(pests, table = PESTHUNTER_PHILIP) {
-  const requested = finiteNonNegative(pests);
-  if (requested === null || !Number.isInteger(requested)) return null;
+  const requested = finiteNonNegativeInteger(pests);
+  if (requested === null) return null;
   const previewPestCount = Math.min(requested, table.pestCap);
   const fortune = Math.min(previewPestCount * table.fortunePerPest, table.maxFortune);
   return {

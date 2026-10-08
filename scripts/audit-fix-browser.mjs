@@ -377,6 +377,51 @@ try {
       await navigate(page,'buffs');
       const detailsButton=page.locator('button[data-open="temporary-buff-pesthunter-phillip-buff"]');
       await detailsButton.tap();
+      const activationSnapshot=()=>page.evaluate(key=>({raw:localStorage.getItem(key),writes:window.auditMainWrites.length,
+        record:JSON.parse(localStorage.getItem(key)).profile.temporaryEffects?.pesthunterPhillip}),STORAGE_KEY);
+      await page.locator('[data-phillip-count]').fill('17');
+      await page.locator('[data-phillip-count]').press('Tab');
+      await page.locator('[data-phillip-duration]').fill('30');
+      await page.locator('[data-phillip-activate]').tap();
+      const initialActivation=await activationSnapshot();
+      const invalidCounts=[];
+      for(const input of ['1.0000000000000001','1e-324','9007199254740993','9007199254740990.5']) {
+        const before=await activationSnapshot();
+        await page.locator('[data-phillip-count]').fill(input);
+        await page.locator('[data-phillip-count]').press('Tab');
+        const after=await activationSnapshot();
+        const message=await page.locator('[data-phillip-count]').evaluate(e=>e.validationMessage);
+        invalidCounts.push({input,message,preserved:before.raw===after.raw&&before.writes===after.writes});
+      }
+      await page.locator('[data-phillip-count]').fill('40');
+      await page.locator('[data-phillip-count]').press('Tab');
+      const recoveredCount=await activationSnapshot();
+      const invalidDurations=[];
+      for(const input of ['1e308','1e100','1e-308','0','']) {
+        const before=await activationSnapshot();
+        await page.locator('[data-phillip-duration]').fill(input);
+        await page.locator('[data-phillip-activate]').tap();
+        const after=await activationSnapshot();
+        const message=await page.locator('[data-phillip-duration]').evaluate(e=>e.validationMessage);
+        invalidDurations.push({input,message,preserved:before.raw===after.raw&&before.writes===after.writes});
+      }
+      const activationBefore=await page.evaluate(()=>Date.now());
+      await page.locator('[data-phillip-duration]').fill('60');
+      await page.locator('[data-phillip-activate]').tap();
+      const recoveredActivation=await activationSnapshot();
+      const activationAfter=await page.evaluate(()=>Date.now());
+      const record=recoveredActivation.record;
+      const timerValid=record?.active===true&&record.pestCount===40&&record.durationSeconds===3600
+        &&Number.isSafeInteger(record.activeUntilMs)&&record.activeUntilMs>=activationBefore+3600000
+        &&record.activeUntilMs<=activationAfter+3600000;
+      add(name,'phillip-invalid-input-preserves-timer-and-valid-recovery',
+        initialActivation.record?.pestCount===17&&initialActivation.record?.durationSeconds===1800
+          &&invalidCounts.every(row=>row.preserved&&row.message.includes('whole'))
+          &&recoveredCount.record?.pestCount===40&&recoveredCount.record.activeUntilMs===initialActivation.record.activeUntilMs
+          &&invalidDurations.every(row=>row.preserved&&row.message.includes('observed potion duration'))&&timerValid?'PASS':'FAIL',
+        {initialActivation:initialActivation.record,invalidCounts,recoveredCount:recoveredCount.record,invalidDurations,
+          recoveredActivation:record,activationBefore,activationAfter,timerValid,liveCurveVerified:false});
+      await page.locator('.drawer .close').focus();
       await page.keyboard.press('Tab');
       const tabInDrawer=await page.evaluate(()=>!!document.activeElement?.closest('.drawer'));
       await page.keyboard.press('Escape');
@@ -449,7 +494,8 @@ try {
       const pestCount=phillip.locator('[data-pest-philip]');
       const phillipInitialNote=await phillip.locator('[data-pest-philip-note]').textContent();
       const phillipCounts=[];
-      for(const [input,fortune] of [['0',0],['17',85],['40',200],['80',200],['200',200],['1.5',null],['',null]]) {
+      for(const [input,fortune] of [['0',0],['17',85],['40',200],['80',200],['200',200],['1e2',200],['1.5e1',75],
+        ['1.5',null],['1.0000000000000001',null],['1e-324',null],['9007199254740993',null],['',null]]) {
         await pestCount.fill(input);
         const output=await phillip.locator('[data-pest-philip-out]').textContent();
         const note=await phillip.locator('[data-pest-philip-note]').textContent();
