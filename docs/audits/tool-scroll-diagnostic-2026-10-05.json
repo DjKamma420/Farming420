@@ -1,0 +1,1216 @@
+{
+  "commit": "5b7c1359464c71543a6e2e26a0d9a5bd7b32d03e",
+  "validate": {
+    "run": 37272102408,
+    "job": 111641098575,
+    "conclusion": "success"
+  },
+  "priorFailures": [
+    {
+      "commit": "01941a8",
+      "run": 37234244537,
+      "job": 111530095345,
+      "top": 20,
+      "scroll": 20
+    },
+    {
+      "commit": "8acf8de",
+      "run": 37235064302,
+      "job": 111532413503,
+      "top": 20,
+      "scroll": 20
+    }
+  ],
+  "diagnostic": {
+    "before": {
+      "top": 377,
+      "y": 358,
+      "height": 3915,
+      "clientHeight": 840,
+      "mainTop": 0,
+      "card": 1,
+      "editor": 2,
+      "main": 3,
+      "originalConnected": {
+        "card": true,
+        "editor": true,
+        "main": true
+      },
+      "editorTop": 451,
+      "editorHeight": 2220.421875,
+      "focus": "body.",
+      "incompleteImages": 4,
+      "fonts": "loaded"
+    },
+    "after": {
+      "top": 377,
+      "y": 358,
+      "height": 5388,
+      "clientHeight": 840,
+      "mainTop": 0,
+      "card": 50,
+      "editor": 4,
+      "main": 5,
+      "originalConnected": {
+        "card": false,
+        "editor": false,
+        "main": false
+      },
+      "editorTop": 451,
+      "editorHeight": 2220.421875,
+      "focus": "body.",
+      "incompleteImages": 4,
+      "fonts": "loaded"
+    },
+    "events": [
+      {
+        "time": 7039.5,
+        "type": "farming420:rendered",
+        "detail": {
+          "y": 0,
+          "height": 5830,
+          "clientHeight": 840,
+          "mainTop": 0,
+          "card": null,
+          "editor": 4,
+          "main": 5,
+          "originalConnected": {
+            "card": false,
+            "editor": false,
+            "main": false
+          },
+          "editorTop": 407.796875,
+          "editorHeight": 1264,
+          "focus": "body.",
+          "incompleteImages": 0,
+          "fonts": "loaded"
+        }
+      },
+      {
+        "time": 7039.700000000012,
+        "type": "scrollTop-write",
+        "detail": {
+          "node": 5,
+          "label": "main.main",
+          "value": 358,
+          "stack": "Error\n    at HTMLElement.set [as scrollTop] (<anonymous>:42:86)\n    at render (http://127.0.0.1:4173/src/app.js:3332:30)\n    at flushPriceRender (http://127.0.0.1:4173/src/app.js:3657:3)\n    at requestPriceRender (http://127.0.0.1:4173/src/app.js:3662:3)\n    at http://127.0.0.1:4173/src/app.js:3687:3\n    at <anonymous>:1:8"
+        }
+      },
+      {
+        "time": 7039.700000000012,
+        "type": "scrollTop-write",
+        "detail": {
+          "node": 6,
+          "label": "nav#primaryNav.",
+          "value": 0,
+          "stack": "Error\n    at HTMLElement.set [as scrollTop] (<anonymous>:42:86)\n    at render (http://127.0.0.1:4173/src/app.js:3333:28)\n    at flushPriceRender (http://127.0.0.1:4173/src/app.js:3657:3)\n    at requestPriceRender (http://127.0.0.1:4173/src/app.js:3662:3)\n    at http://127.0.0.1:4173/src/app.js:3687:3\n    at <anonymous>:1:8"
+        }
+      },
+      {
+        "time": 7039.799999999988,
+        "type": "farming420:item-value-updated",
+        "detail": {
+          "y": 358,
+          "height": 5830,
+          "clientHeight": 840,
+          "mainTop": 0,
+          "card": null,
+          "editor": 4,
+          "main": 5,
+          "originalConnected": {
+            "card": false,
+            "editor": false,
+            "main": false
+          },
+          "editorTop": 49.796875,
+          "editorHeight": 1264,
+          "focus": "body.",
+          "incompleteImages": 0,
+          "fonts": "loaded"
+        }
+      },
+      {
+        "time": 7041.200000000012,
+        "type": "mutations",
+        "detail": [
+          {
+            "type": "childList",
+            "target": "div#app.",
+            "id": 7,
+            "attribute": null,
+            "added": [
+              "#text",
+              "div.app-shell"
+            ],
+            "removed": [
+              "#text",
+              "div.app-shell"
+            ]
+          },
+          {
+            "type": "attributes",
+            "target": "i.",
+            "id": 8,
+            "attribute": "style",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "i.",
+            "id": 9,
+            "attribute": "style",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "i.",
+            "id": 10,
+            "attribute": "style",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "i.",
+            "id": 11,
+            "attribute": "style",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "i.",
+            "id": 12,
+            "attribute": "style",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "i.",
+            "id": 13,
+            "attribute": "style",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "i.",
+            "id": 14,
+            "attribute": "style",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "i.",
+            "id": 15,
+            "attribute": "style",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "i.",
+            "id": 16,
+            "attribute": "style",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "i.",
+            "id": 17,
+            "attribute": "style",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "i.",
+            "id": 18,
+            "attribute": "style",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "i.",
+            "id": 19,
+            "attribute": "style",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "i.",
+            "id": 20,
+            "attribute": "style",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "i.",
+            "id": 21,
+            "attribute": "style",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "i.",
+            "id": 22,
+            "attribute": "style",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "i.",
+            "id": 23,
+            "attribute": "style",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "i.",
+            "id": 24,
+            "attribute": "style",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "i.",
+            "id": 25,
+            "attribute": "style",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "i.",
+            "id": 26,
+            "attribute": "style",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "i.",
+            "id": 27,
+            "attribute": "style",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.nav-link",
+            "id": 28,
+            "attribute": "data-settings-bound",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "div.crop-switch.workspace-hidden-crop-switch",
+            "id": 29,
+            "attribute": "class",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "div.item-editor.rarity-unknown",
+            "id": 4,
+            "attribute": "data-workspace-enhanced",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "childList",
+            "target": "section.content",
+            "id": 30,
+            "attribute": null,
+            "added": [
+              "div.workspace-context"
+            ],
+            "removed": []
+          },
+          {
+            "type": "childList",
+            "target": "section.item-editor-section",
+            "id": 31,
+            "attribute": null,
+            "added": [
+              "div.workspace-section-head",
+              "div.workspace-choice-list",
+              "section.workspace-recommendations"
+            ],
+            "removed": [
+              "#text",
+              "div.section-row",
+              "#text",
+              "div.enchant-grid",
+              "#text"
+            ]
+          },
+          {
+            "type": "childList",
+            "target": "section.item-editor-section",
+            "id": 32,
+            "attribute": null,
+            "added": [
+              "div.workspace-section-head",
+              "div.workspace-level-list"
+            ],
+            "removed": [
+              "#text",
+              "div.section-row",
+              "#text",
+              "div.enchant-grid",
+              "#text"
+            ]
+          },
+          {
+            "type": "childList",
+            "target": "section.item-editor-section",
+            "id": 33,
+            "attribute": null,
+            "added": [
+              "section.workspace-gemstones"
+            ],
+            "removed": [
+              "#text",
+              "div.section-row",
+              "#text",
+              "div.enchant-grid",
+              "#text"
+            ]
+          },
+          {
+            "type": "childList",
+            "target": "section.content",
+            "id": 30,
+            "attribute": null,
+            "added": [],
+            "removed": [
+              "div.card-grid"
+            ]
+          },
+          {
+            "type": "childList",
+            "target": "section.content",
+            "id": 30,
+            "attribute": null,
+            "added": [],
+            "removed": [
+              "div.section-row"
+            ]
+          }
+        ]
+      },
+      {
+        "time": 7041.599999999977,
+        "type": "mutations",
+        "detail": [
+          {
+            "type": "attributes",
+            "target": "nav#primaryNav.",
+            "id": 6,
+            "attribute": "data-grouped",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "childList",
+            "target": "nav#primaryNav.",
+            "id": 6,
+            "attribute": null,
+            "added": [],
+            "removed": [
+              "button.nav-link"
+            ]
+          },
+          {
+            "type": "childList",
+            "target": "nav#primaryNav.",
+            "id": 6,
+            "attribute": null,
+            "added": [
+              "div.nav-group-addon"
+            ],
+            "removed": []
+          },
+          {
+            "type": "childList",
+            "target": "nav#primaryNav.",
+            "id": 6,
+            "attribute": null,
+            "added": [],
+            "removed": [
+              "button.nav-link"
+            ]
+          },
+          {
+            "type": "childList",
+            "target": "nav#primaryNav.",
+            "id": 6,
+            "attribute": null,
+            "added": [],
+            "removed": [
+              "button.nav-link"
+            ]
+          },
+          {
+            "type": "childList",
+            "target": "nav#primaryNav.",
+            "id": 6,
+            "attribute": null,
+            "added": [],
+            "removed": [
+              "button.nav-link"
+            ]
+          },
+          {
+            "type": "childList",
+            "target": "nav#primaryNav.",
+            "id": 6,
+            "attribute": null,
+            "added": [],
+            "removed": [
+              "button.nav-link.active"
+            ]
+          },
+          {
+            "type": "childList",
+            "target": "nav#primaryNav.",
+            "id": 6,
+            "attribute": null,
+            "added": [
+              "div.nav-group-addon"
+            ],
+            "removed": []
+          },
+          {
+            "type": "childList",
+            "target": "nav#primaryNav.",
+            "id": 6,
+            "attribute": null,
+            "added": [],
+            "removed": [
+              "button.nav-link"
+            ]
+          },
+          {
+            "type": "childList",
+            "target": "nav#primaryNav.",
+            "id": 6,
+            "attribute": null,
+            "added": [],
+            "removed": [
+              "button.nav-link"
+            ]
+          },
+          {
+            "type": "childList",
+            "target": "nav#primaryNav.",
+            "id": 6,
+            "attribute": null,
+            "added": [],
+            "removed": [
+              "button.nav-link"
+            ]
+          },
+          {
+            "type": "childList",
+            "target": "nav#primaryNav.",
+            "id": 6,
+            "attribute": null,
+            "added": [],
+            "removed": [
+              "button.nav-link"
+            ]
+          },
+          {
+            "type": "childList",
+            "target": "nav#primaryNav.",
+            "id": 6,
+            "attribute": null,
+            "added": [
+              "div.nav-group-addon"
+            ],
+            "removed": []
+          },
+          {
+            "type": "childList",
+            "target": "nav#primaryNav.",
+            "id": 6,
+            "attribute": null,
+            "added": [],
+            "removed": [
+              "button.nav-link"
+            ]
+          },
+          {
+            "type": "childList",
+            "target": "nav#primaryNav.",
+            "id": 6,
+            "attribute": null,
+            "added": [
+              "div.nav-group-addon"
+            ],
+            "removed": []
+          },
+          {
+            "type": "childList",
+            "target": "nav#primaryNav.",
+            "id": 6,
+            "attribute": null,
+            "added": [],
+            "removed": [
+              "button.nav-link"
+            ]
+          },
+          {
+            "type": "childList",
+            "target": "nav#primaryNav.",
+            "id": 6,
+            "attribute": null,
+            "added": [
+              "div.nav-group-addon"
+            ],
+            "removed": []
+          },
+          {
+            "type": "childList",
+            "target": "section.content",
+            "id": 30,
+            "attribute": null,
+            "added": [
+              "div.tool-context-addon"
+            ],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "header.topbar.topbar-simplified-addon",
+            "id": 34,
+            "attribute": "class",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "div.crop-switch.workspace-hidden-crop-switch",
+            "id": 29,
+            "attribute": "hidden",
+            "added": [],
+            "removed": []
+          }
+        ]
+      },
+      {
+        "time": 7045.200000000012,
+        "type": "mutations",
+        "detail": [
+          {
+            "type": "attributes",
+            "target": "header.topbar.topbar-simplified-addon.activity-mode-topbar-shared",
+            "id": 34,
+            "attribute": "class",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "main.main.activity-mode-page-shared",
+            "id": 5,
+            "attribute": "class",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "childList",
+            "target": "section.content.sb-tools-page",
+            "id": 30,
+            "attribute": null,
+            "added": [
+              "div.item-editor.rarity-unknown.sb-docked-editor.sb-tool-editor-collapsed.rarity-surface"
+            ],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "div.item-editor.rarity-unknown.sb-docked-editor.sb-tool-editor-collapsed.rarity-surface",
+            "id": 35,
+            "attribute": "data-signature",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "childList",
+            "target": "div.item-editor.rarity-unknown.sb-docked-editor.sb-tool-editor-collapsed.rarity-surface",
+            "id": 35,
+            "attribute": null,
+            "added": [
+              "#text",
+              "section.sb-reforge-panel.item-editor-section",
+              "#text",
+              "section.item-editor-section",
+              "#text"
+            ],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "div.item-editor.rarity-uncommon.rarity-surface.sb-docked-editor",
+            "id": 4,
+            "attribute": "class",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "div.item-editor.rarity-uncommon.rarity-surface.sb-docked-editor",
+            "id": 4,
+            "attribute": "class",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "div.item-editor.rarity-uncommon.rarity-surface.sb-docked-editor",
+            "id": 4,
+            "attribute": "class",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "div.item-editor.rarity-uncommon.rarity-surface.sb-docked-editor",
+            "id": 4,
+            "attribute": "data-effective-rarity",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "div.item-editor.rarity-unknown.sb-docked-editor.sb-tool-editor-collapsed.rarity-surface",
+            "id": 35,
+            "attribute": "class",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "aside.sidebar.sb-rail",
+            "id": 36,
+            "attribute": "class",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.nav-link",
+            "id": 37,
+            "attribute": "data-label",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "childList",
+            "target": "button.nav-link",
+            "id": 37,
+            "attribute": null,
+            "added": [],
+            "removed": [
+              "#text"
+            ]
+          },
+          {
+            "type": "childList",
+            "target": "button.nav-link",
+            "id": 37,
+            "attribute": null,
+            "added": [
+              "span.sb-nav-icon",
+              "span.sb-nav-label"
+            ],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.nav-link",
+            "id": 38,
+            "attribute": "data-label",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "childList",
+            "target": "button.nav-link",
+            "id": 38,
+            "attribute": null,
+            "added": [],
+            "removed": [
+              "#text"
+            ]
+          },
+          {
+            "type": "childList",
+            "target": "button.nav-link",
+            "id": 38,
+            "attribute": null,
+            "added": [
+              "span.sb-nav-icon",
+              "span.sb-nav-label"
+            ],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.nav-link",
+            "id": 39,
+            "attribute": "data-label",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "childList",
+            "target": "button.nav-link",
+            "id": 39,
+            "attribute": null,
+            "added": [],
+            "removed": [
+              "#text"
+            ]
+          },
+          {
+            "type": "childList",
+            "target": "button.nav-link",
+            "id": 39,
+            "attribute": null,
+            "added": [
+              "span.sb-nav-icon",
+              "span.sb-nav-label"
+            ],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.nav-link",
+            "id": 40,
+            "attribute": "data-label",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "childList",
+            "target": "button.nav-link",
+            "id": 40,
+            "attribute": null,
+            "added": [],
+            "removed": [
+              "#text"
+            ]
+          },
+          {
+            "type": "childList",
+            "target": "button.nav-link",
+            "id": 40,
+            "attribute": null,
+            "added": [
+              "span.sb-nav-icon",
+              "span.sb-nav-label"
+            ],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.nav-link.active",
+            "id": 41,
+            "attribute": "data-label",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "childList",
+            "target": "button.nav-link.active",
+            "id": 41,
+            "attribute": null,
+            "added": [],
+            "removed": [
+              "#text"
+            ]
+          },
+          {
+            "type": "childList",
+            "target": "button.nav-link.active",
+            "id": 41,
+            "attribute": null,
+            "added": [
+              "span.sb-nav-icon",
+              "span.sb-nav-label"
+            ],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.nav-link",
+            "id": 42,
+            "attribute": "data-label",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "childList",
+            "target": "button.nav-link",
+            "id": 42,
+            "attribute": null,
+            "added": [],
+            "removed": [
+              "#text"
+            ]
+          },
+          {
+            "type": "childList",
+            "target": "button.nav-link",
+            "id": 42,
+            "attribute": null,
+            "added": [
+              "span.sb-nav-icon",
+              "span.sb-nav-label"
+            ],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.nav-link",
+            "id": 43,
+            "attribute": "data-label",
+            "added": [],
+            "removed": []
+          }
+        ]
+      },
+      {
+        "time": 7045.5,
+        "type": "mutations",
+        "detail": [
+          {
+            "type": "childList",
+            "target": "span.sb-reforge-art",
+            "id": 44,
+            "attribute": null,
+            "added": [],
+            "removed": [
+              "img.sb-pack-icon"
+            ]
+          },
+          {
+            "type": "attributes",
+            "target": "span.sb-tool-art",
+            "id": 45,
+            "attribute": "aria-label",
+            "added": [],
+            "removed": []
+          }
+        ]
+      },
+      {
+        "time": 7048.599999999977,
+        "type": "mutations",
+        "detail": [
+          {
+            "type": "childList",
+            "target": "div.item-editor.rarity-unknown.sb-docked-editor.sb-tool-editor-collapsed.rarity-surface",
+            "id": 35,
+            "attribute": null,
+            "added": [
+              "section.item-editor-section"
+            ],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.sb-tool-card.rarity-uncommon.rarity-surface",
+            "id": 46,
+            "attribute": "class",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.sb-tool-card.rarity-uncommon.rarity-surface",
+            "id": 46,
+            "attribute": "class",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.sb-tool-card.rarity-uncommon.rarity-surface",
+            "id": 46,
+            "attribute": "data-effective-rarity",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.sb-tool-card.rarity-uncommon.rarity-surface",
+            "id": 47,
+            "attribute": "class",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.sb-tool-card.rarity-uncommon.rarity-surface",
+            "id": 47,
+            "attribute": "class",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.sb-tool-card.rarity-uncommon.rarity-surface",
+            "id": 47,
+            "attribute": "data-effective-rarity",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.sb-tool-card.rarity-uncommon.rarity-surface",
+            "id": 48,
+            "attribute": "class",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.sb-tool-card.rarity-uncommon.rarity-surface",
+            "id": 48,
+            "attribute": "class",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.sb-tool-card.rarity-uncommon.rarity-surface",
+            "id": 48,
+            "attribute": "data-effective-rarity",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.sb-tool-card.rarity-uncommon.rarity-surface",
+            "id": 49,
+            "attribute": "class",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.sb-tool-card.rarity-uncommon.rarity-surface",
+            "id": 49,
+            "attribute": "class",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.sb-tool-card.rarity-uncommon.rarity-surface",
+            "id": 49,
+            "attribute": "data-effective-rarity",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.sb-tool-card.selected.rarity-uncommon.rarity-surface",
+            "id": 50,
+            "attribute": "class",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.sb-tool-card.selected.rarity-uncommon.rarity-surface",
+            "id": 50,
+            "attribute": "class",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.sb-tool-card.selected.rarity-uncommon.rarity-surface",
+            "id": 50,
+            "attribute": "data-effective-rarity",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.sb-tool-card.rarity-uncommon.rarity-surface",
+            "id": 51,
+            "attribute": "class",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.sb-tool-card.rarity-uncommon.rarity-surface",
+            "id": 51,
+            "attribute": "class",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.sb-tool-card.rarity-uncommon.rarity-surface",
+            "id": 51,
+            "attribute": "data-effective-rarity",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.sb-tool-card.rarity-uncommon.rarity-surface",
+            "id": 52,
+            "attribute": "class",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.sb-tool-card.rarity-uncommon.rarity-surface",
+            "id": 52,
+            "attribute": "class",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.sb-tool-card.rarity-uncommon.rarity-surface",
+            "id": 52,
+            "attribute": "data-effective-rarity",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.sb-tool-card.rarity-uncommon.rarity-surface",
+            "id": 53,
+            "attribute": "class",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.sb-tool-card.rarity-uncommon.rarity-surface",
+            "id": 53,
+            "attribute": "class",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.sb-tool-card.rarity-uncommon.rarity-surface",
+            "id": 53,
+            "attribute": "data-effective-rarity",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.sb-tool-card.rarity-uncommon.rarity-surface",
+            "id": 54,
+            "attribute": "class",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.sb-tool-card.rarity-uncommon.rarity-surface",
+            "id": 54,
+            "attribute": "class",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.sb-tool-card.rarity-uncommon.rarity-surface",
+            "id": 54,
+            "attribute": "data-effective-rarity",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.sb-tool-card.rarity-uncommon.rarity-surface",
+            "id": 55,
+            "attribute": "class",
+            "added": [],
+            "removed": []
+          },
+          {
+            "type": "attributes",
+            "target": "button.sb-tool-card.rarity-uncommon.rarity-surface",
+            "id": 55,
+            "attribute": "class",
+            "added": [],
+            "removed": []
+          }
+        ]
+      },
+      {
+        "time": 7050.700000000012,
+        "type": "scroll",
+        "detail": {
+          "node": 5,
+          "label": "main.main.activity-mode-page-shared"
+        }
+      }
+    ]
+  },
+  "inference": "The instrumented run has zero final displacement but proves the delayed value event takes requestPriceRender -> flushPriceRender -> render, disconnecting the original physical card/editor/main. Instrumentation may alter layout timing; earlier 20px failures remain failures. Protect physical Tool editors in the existing price owner and require identity preservation independently of displacement.",
+  "browser": {
+    "run": 37272102419,
+    "webkit": {
+      "job": 111641098707,
+      "conclusion": "failure",
+      "counts": {
+        "PASS": 221,
+        "FAIL": 0,
+        "NOTE": 7,
+        "BLOCKED": 1
+      },
+      "failures": [
+        {
+          "engine": "webkit",
+          "viewport": "320-portrait",
+          "check": "probe-execution",
+          "status": "BLOCKED",
+          "evidence": {
+            "message": "Error: page.evaluate: Error: Editor images did not settle before reapply",
+            "errors": [],
+            "state": {
+              "page": "setups",
+              "navigationExpanded": "false",
+              "editorCount": 1,
+              "dropdownCount": 0
+            }
+          }
+        }
+      ]
+    },
+    "note": "This image-settlement deadline failure is retained; it is not a successful probe or hidden network note. No image fixture/timeout changed in package 7."
+  }
+}

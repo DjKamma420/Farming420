@@ -1,0 +1,276 @@
+{
+  "commit": "1ba9c8abc7996ddd40bff4f91d84fe98a0f0ae94",
+  "validateRun": 36953329823,
+  "browserRun": 36953329817,
+  "engines": [
+    {
+      "engine": "chromium",
+      "counts": {
+        "PASS": 169,
+        "FAIL": 1,
+        "NOTE": 8,
+        "BLOCKED": 0
+      },
+      "failed": [
+        {
+          "engine": "chromium",
+          "viewport": "412-portrait",
+          "check": "picker-helmet-home-end-tab-outside-focus",
+          "status": "FAIL",
+          "evidence": {
+            "end": true,
+            "home": false,
+            "escape": false,
+            "tab": true,
+            "outside": true
+          }
+        }
+      ],
+      "passedChecks": [
+        "settled-navigation-retries",
+        "normal-tap-navigation",
+        "cancel-set-blank",
+        "cancel-set-filled",
+        "add-set-escape",
+        "three-set-long-name-header",
+        "last-option-point-in-time-hit",
+        "last-option-stable-after-capture-and-anchor-expiry",
+        "pet-item-escape-close",
+        "declared-listbox-arrow-focus",
+        "last-option-actual-touch-selection-after-recovery",
+        "picker-petItem-home-end-tab-outside-focus",
+        "picker-pet-home-end-tab-outside-focus",
+        "picker-helmet-home-end-tab-outside-focus",
+        "effects-drawer-escape-focus-tab",
+        "cropshot-valid-tree-one-write",
+        "manual-wheel-controlled-late-mutation",
+        "manual-key-controlled-late-mutation",
+        "touch-intent-controlled-late-mutation",
+        "runtime-page-errors",
+        "tater-pesthunter-clover-truthful-stable-fallback",
+        "export-preserves-actual-state",
+        "invalid-json-ui-rejection",
+        "future-inner-ui-rejection",
+        "future-envelope-ui-rejection",
+        "valid-current-ui-restore",
+        "future-raw-bytes-zero-writes-startup-navigation-editors-settings-sync"
+      ]
+    },
+    {
+      "engine": "firefox",
+      "counts": {
+        "PASS": 168,
+        "FAIL": 2,
+        "NOTE": 8,
+        "BLOCKED": 0
+      },
+      "failed": [
+        {
+          "engine": "firefox",
+          "viewport": "360-portrait",
+          "check": "picker-petItem-home-end-tab-outside-focus",
+          "status": "FAIL",
+          "evidence": {
+            "end": true,
+            "home": true,
+            "escape": true,
+            "tab": false,
+            "outside": true
+          }
+        },
+        {
+          "engine": "firefox",
+          "viewport": "667-landscape",
+          "check": "picker-petItem-home-end-tab-outside-focus",
+          "status": "FAIL",
+          "evidence": {
+            "end": true,
+            "home": true,
+            "escape": true,
+            "tab": false,
+            "outside": true
+          }
+        }
+      ],
+      "passedChecks": [
+        "settled-navigation-retries",
+        "normal-tap-navigation",
+        "cancel-set-blank",
+        "cancel-set-filled",
+        "add-set-escape",
+        "three-set-long-name-header",
+        "last-option-point-in-time-hit",
+        "last-option-stable-after-capture-and-anchor-expiry",
+        "pet-item-escape-close",
+        "declared-listbox-arrow-focus",
+        "last-option-actual-touch-selection-after-recovery",
+        "picker-petItem-home-end-tab-outside-focus",
+        "picker-pet-home-end-tab-outside-focus",
+        "picker-helmet-home-end-tab-outside-focus",
+        "effects-drawer-escape-focus-tab",
+        "cropshot-valid-tree-one-write",
+        "manual-wheel-controlled-late-mutation",
+        "manual-key-controlled-late-mutation",
+        "touch-intent-controlled-late-mutation",
+        "runtime-page-errors",
+        "tater-pesthunter-clover-truthful-stable-fallback",
+        "export-preserves-actual-state",
+        "invalid-json-ui-rejection",
+        "future-inner-ui-rejection",
+        "future-envelope-ui-rejection",
+        "valid-current-ui-restore",
+        "future-raw-bytes-zero-writes-startup-navigation-editors-settings-sync"
+      ]
+    },
+    {
+      "engine": "webkit",
+      "counts": {
+        "PASS": 162,
+        "FAIL": 8,
+        "NOTE": 8,
+        "BLOCKED": 0
+      },
+      "failed": [
+        {
+          "engine": "webkit",
+          "viewport": "320-portrait",
+          "check": "manual-wheel-controlled-late-mutation",
+          "status": "FAIL",
+          "evidence": {
+            "prior": 755,
+            "manual": 850,
+            "late": 915,
+            "controlledMutation": true
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "360-portrait",
+          "check": "manual-wheel-controlled-late-mutation",
+          "status": "FAIL",
+          "evidence": {
+            "prior": 663,
+            "manual": 769,
+            "late": 823,
+            "controlledMutation": true
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "375-portrait",
+          "check": "manual-wheel-controlled-late-mutation",
+          "status": "FAIL",
+          "evidence": {
+            "prior": 636,
+            "manual": 745,
+            "late": 796,
+            "controlledMutation": true
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "390-portrait",
+          "check": "manual-wheel-controlled-late-mutation",
+          "status": "FAIL",
+          "evidence": {
+            "prior": 534,
+            "manual": 662,
+            "late": 694,
+            "controlledMutation": true
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "412-portrait",
+          "check": "manual-wheel-controlled-late-mutation",
+          "status": "FAIL",
+          "evidence": {
+            "prior": 500,
+            "manual": 633,
+            "late": 660,
+            "controlledMutation": true
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "568-landscape",
+          "check": "manual-wheel-controlled-late-mutation",
+          "status": "FAIL",
+          "evidence": {
+            "prior": 736,
+            "manual": 866,
+            "late": 896,
+            "controlledMutation": true
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "667-landscape",
+          "check": "manual-wheel-controlled-late-mutation",
+          "status": "FAIL",
+          "evidence": {
+            "prior": 466,
+            "manual": 608,
+            "late": 626,
+            "controlledMutation": true
+          }
+        },
+        {
+          "engine": "webkit",
+          "viewport": "800-landscape",
+          "check": "manual-wheel-controlled-late-mutation",
+          "status": "FAIL",
+          "evidence": {
+            "prior": 386,
+            "manual": 534,
+            "late": 546,
+            "controlledMutation": true
+          }
+        }
+      ],
+      "passedChecks": [
+        "settled-navigation-retries",
+        "normal-tap-navigation",
+        "cancel-set-blank",
+        "cancel-set-filled",
+        "add-set-escape",
+        "three-set-long-name-header",
+        "last-option-point-in-time-hit",
+        "last-option-stable-after-capture-and-anchor-expiry",
+        "pet-item-escape-close",
+        "declared-listbox-arrow-focus",
+        "last-option-actual-touch-selection-after-recovery",
+        "picker-petItem-home-end-tab-outside-focus",
+        "picker-pet-home-end-tab-outside-focus",
+        "picker-helmet-home-end-tab-outside-focus",
+        "effects-drawer-escape-focus-tab",
+        "cropshot-valid-tree-one-write",
+        "manual-key-controlled-late-mutation",
+        "touch-intent-controlled-late-mutation",
+        "runtime-page-errors",
+        "tater-pesthunter-clover-truthful-stable-fallback",
+        "export-preserves-actual-state",
+        "invalid-json-ui-rejection",
+        "future-inner-ui-rejection",
+        "future-envelope-ui-rejection",
+        "valid-current-ui-restore",
+        "future-raw-bytes-zero-writes-startup-navigation-editors-settings-sync"
+      ]
+    }
+  ],
+  "strictOverlay": {
+    "exit": 0,
+    "findings": 0,
+    "mainRequests": 120,
+    "openedOverlays": 16
+  },
+  "strictSweep": {
+    "exit": 0,
+    "areas": 10
+  },
+  "negativeSweep": {
+    "exit": 1,
+    "marker": "AUDIT_INJECTED_RUNTIME_ERROR"
+  },
+  "scope": "Linux engines with emulated viewport/touch. No physical device or authenticated profile acceptance."
+}

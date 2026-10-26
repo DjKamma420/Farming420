@@ -1,3 +1,4 @@
+import { readStoredAppState, writeStoredAppState } from './app-storage.js';
 import { STORAGE_KEY } from './config.js';
 import { CROPS, UPGRADES } from './data.js';
 import { toolKeyForCropId } from './migrations.js';
@@ -31,11 +32,11 @@ const MODE_SWITCH_PAGES = new Set(['dashboard', 'focus', 'planner']);
 const PHYSICAL_SET_SWITCH_PAGE = 'setups';
 
 function load() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
+  try { return readStoredAppState({}); } catch { return {}; }
 }
 
 function save(raw) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(raw));
+  return writeStoredAppState(raw);
 }
 
 function esc(value = '') {
@@ -175,6 +176,7 @@ function closeAddSetDialog(dialog) {
 }
 
 function openAddSetDialog() {
+  const trigger = document.activeElement;
   document.querySelector('[data-add-set-dialog]')?.remove();
   const dialog = document.createElement('dialog');
   dialog.className = 'physical-set-dialog';
@@ -191,7 +193,7 @@ function openAddSetDialog() {
           data-new-set-name placeholder="e.g. Mushroom Set">
       </label>
       <div class="physical-set-dialog-actions">
-        <button type="submit" value="cancel" class="ghost">Cancel</button>
+        <button type="button" data-add-set-cancel class="ghost">Cancel</button>
         <button type="submit" value="add" class="primary-btn">Add Set</button>
       </div>
     </form>`;
@@ -201,7 +203,6 @@ function openAddSetDialog() {
   const input = dialog.querySelector('[data-new-set-name]');
 
   form?.addEventListener('submit', event => {
-    if (event.submitter?.value === 'cancel') return;
     event.preventDefault();
     const name = String(input?.value || '').trim();
     if (!name) {
@@ -219,7 +220,16 @@ function openAddSetDialog() {
   });
 
   input?.addEventListener('input', () => input.setCustomValidity(''));
-  dialog.addEventListener('close', () => dialog.remove(), { once: true });
+  dialog.querySelector('[data-add-set-cancel]')?.addEventListener('click', () => closeAddSetDialog(dialog));
+  dialog.addEventListener('cancel', event => {
+    event.preventDefault();
+    closeAddSetDialog(dialog);
+  });
+  dialog.addEventListener('close', () => {
+    dialog.remove();
+    const currentTrigger = trigger?.isConnected ? trigger : document.querySelector('[data-add-physical-set]');
+    currentTrigger?.focus({ preventScroll: true });
+  }, { once: true });
   dialog.addEventListener('click', event => {
     if (event.target === dialog) closeAddSetDialog(dialog);
   });
@@ -235,18 +245,18 @@ function injectPhysicalSetHeader(raw, topbar, main, control) {
   const name = hasThirdSet ? thirdSetupName(setups) : '';
   const signature = [hasThirdSet ? 3 : 2, activeId, name].join(':');
 
-  topbar.classList.remove('activity-mode-topbar-shared');
-  topbar.classList.add('activity-mode-topbar-controls');
-  main?.classList.remove('activity-mode-page-shared');
+  topbar.classList.toggle('activity-mode-topbar-shared', false);
+  topbar.classList.toggle('activity-mode-topbar-controls', true);
+  main?.classList.toggle('activity-mode-page-shared', false);
 
   if (!control) {
     control = document.createElement('div');
     const anchor = topbar.querySelector('.search-wrap');
     topbar.insertBefore(control, anchor || null);
   }
+  if (control.dataset.physicalSignature === signature) return;
   control.className = 'activity-mode-switch physical-set-switch';
   control.setAttribute('aria-label', 'Physical farming sets');
-  if (control.dataset.physicalSignature === signature) return;
 
   delete control.dataset.mode;
   control.dataset.physicalSignature = signature;
@@ -292,15 +302,15 @@ function injectHeaderSwitch(raw) {
   // Add Set naming flow above.
   if (!MODE_SWITCH_PAGES.has(page)) {
     control?.remove();
-    topbar.classList.remove('activity-mode-topbar-controls');
-    topbar.classList.add('activity-mode-topbar-shared');
-    main?.classList.add('activity-mode-page-shared');
+    topbar.classList.toggle('activity-mode-topbar-controls', false);
+    topbar.classList.toggle('activity-mode-topbar-shared', true);
+    main?.classList.toggle('activity-mode-page-shared', true);
     return;
   }
 
-  topbar.classList.remove('activity-mode-topbar-shared');
-  topbar.classList.add('activity-mode-topbar-controls');
-  main?.classList.remove('activity-mode-page-shared');
+  topbar.classList.toggle('activity-mode-topbar-shared', false);
+  topbar.classList.toggle('activity-mode-topbar-controls', true);
+  main?.classList.toggle('activity-mode-page-shared', false);
 
   const mode = activityModeForState(raw);
   if (control?.classList.contains('physical-set-switch')) {

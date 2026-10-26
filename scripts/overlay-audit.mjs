@@ -59,6 +59,16 @@ const audit = () => {
     const parent = el.parentElement;
     if (!parent || parent === document.body) continue;
     const ps = getComputedStyle(parent);
+    // An open anchored listbox intentionally escapes its compact trigger.
+    // Check its horizontal reach against the viewport instead of treating the
+    // containing <details> height as a clipping boundary (overflow is visible).
+    const es = getComputedStyle(el);
+    if (el.matches('[role="listbox"]') && el.closest('details[open]')
+      && ['absolute', 'fixed'].includes(es.position) && ps.overflow === 'visible') {
+      const r = box(el);
+      if (r.left < -2 || r.right > innerWidth + 2) findings.push({kind:'overlay-crosses-viewport',el:name(el),by:Math.ceil(Math.max(-r.left,r.right-innerWidth))});
+      continue;
+    }
     if (ps.overflow !== 'visible' || ps.position === 'static') continue;
     const r = box(el), pr = box(parent);
     if (pr.width < 8 || pr.height < 8) continue;
@@ -98,17 +108,28 @@ const audit = () => {
 
 const browser = await chromium.launch();
 const totals = {};
+const scrollEvidence = [];
+const runtimeErrors = [];
+let openedOverlays = 0;
 for (const [vpName, viewport] of VIEWPORTS) {
   const ctx = await browser.newContext({ viewport, hasTouch: viewport.width < 800 });
   const p = await ctx.newPage();
+  p.on('pageerror',error=>runtimeErrors.push(String(error)));
+  p.on('crash',()=>runtimeErrors.push('Renderer crashed'));
   await p.goto(`${BASE}/?t=${Date.now()}`, { waitUntil: 'domcontentloaded' });
   await p.waitForTimeout(1400);
   const pages = await p.$$eval('.sidebar [data-page]', els => els.map(e => e.dataset.page));
   for (const page of pages) {
-    await p.evaluate(id => document.querySelector(`.sidebar [data-page="${id}"]`)?.click(), page);
+    const toggle=p.locator('[data-nav-toggle]');
+    if (await toggle.isVisible() && await toggle.getAttribute('aria-expanded')!=='true') await toggle.click();
+    await p.locator(`.sidebar [data-page="${page}"]`).click();
+    const landed=await p.evaluate(()=>JSON.parse(localStorage.getItem('skyblock-farming-maxer-v1'))?.page);
+    if (landed!==page) throw new Error(`Overlay navigation landed on ${landed}, expected ${page}`);
     await p.waitForTimeout(400);
     for (const scroll of [0, 300, 700]) {
-      await p.evaluate(y => window.scrollTo(0, y), scroll);
+      const owner = await p.locator('main').evaluate((main,y)=>{main.scrollTop=y;return {requested:y,actual:main.scrollTop,max:main.scrollHeight-main.clientHeight};},scroll);
+      if(Math.abs(owner.actual-Math.min(owner.requested,owner.max))>2) throw new Error('Main scroll owner did not move to its valid target');
+      scrollEvidence.push({viewport:vpName,page,...owner});
       await p.waitForTimeout(150);
       const findings = await p.evaluate(audit);
       for (const f of findings) {
@@ -117,6 +138,34 @@ for (const [vpName, viewport] of VIEWPORTS) {
         totals[key].where.add(`${vpName}/${page}`);
       }
     }
+    const trigger=p.locator('button[data-open]').first();
+    if (await trigger.count()) {
+      await trigger.click();
+      await p.locator('.drawer[role="dialog"]').waitFor();
+      openedOverlays++;
+      const rect=await p.locator('.drawer').boundingBox();
+      if (!rect || rect.x< -1 || rect.x+rect.width>viewport.width+1) runtimeErrors.push(`${vpName}/${page}: drawer exceeds viewport`);
+      await p.keyboard.press('Escape');
+      if(await p.locator('.drawer').count()) runtimeErrors.push(`${vpName}/${page}: drawer Escape failed`);
+    }
+    if(page==='setups') {
+      await p.locator('.slot-card[data-slot="petItem"][data-setup-target="normal"]').click();
+      const summary=p.locator('details[data-pet-item-dropdown] > summary');
+      await summary.click();
+      openedOverlays++;
+      await p.waitForTimeout(350);
+      const findings=await p.evaluate(audit);
+      for(const f of findings) {
+        const key=`${f.kind}|${f.el}|${f.parent||''}`;
+        totals[key]=totals[key]||{...f,where:new Set()};
+        totals[key].where.add(`${vpName}/${page}/pet-item-menu`);
+      }
+      await p.keyboard.press('Escape');
+    }
+  }
+  if(process.env.OVERLAY_INJECT_ERROR==='1') {
+    await p.evaluate(()=>setTimeout(()=>{throw new Error('AUDIT_INJECTED_OVERLAY_ERROR');},0));
+    await p.waitForTimeout(40);
   }
   await ctx.close();
 }
@@ -133,3 +182,7 @@ for (const r of rows.slice(0, 45)) {
     .filter(Boolean).join(' ');
   console.log(`${r.kind.padEnd(22)} ${r.el.padEnd(38)} ${extra}  [${r.where.size}x e.g. ${[...r.where][0]}]`);
 }
+
+console.log(JSON.stringify({scrollEvidence,openedOverlays,runtimeErrors}));
+if (!scrollEvidence.some(row=>row.actual>0) || openedOverlays===0) throw new Error('Overlay gate did not cover scrolling/open overlays');
+process.exitCode = rows.length || runtimeErrors.length ? 1 : 0;

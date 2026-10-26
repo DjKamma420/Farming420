@@ -1,0 +1,55 @@
+{
+  "commit": "4e289959922d37529962b02699900e1a8d039a51",
+  "validate": {
+    "run": 37214593240,
+    "job": 111472421040,
+    "result": "success",
+    "node": 1384,
+    "python": 8
+  },
+  "browser": {
+    "run": 37214593250,
+    "engines": [
+      {
+        "job": 111472420836,
+        "engine": "chromium",
+        "result": "success"
+      },
+      {
+        "job": 111472421027,
+        "engine": "webkit",
+        "counts": {
+          "PASS": 195,
+          "FAIL": 0,
+          "NOTE": 8,
+          "BLOCKED": 0
+        }
+      },
+      {
+        "job": 111472421043,
+        "engine": "firefox",
+        "counts": {
+          "PASS": 194,
+          "FAIL": 1,
+          "NOTE": 8,
+          "BLOCKED": 0
+        },
+        "failed": [
+          {
+            "engine": "firefox",
+            "viewport": "320-portrait",
+            "check": "picker-petItem-same-state-zero-mutations",
+            "status": "FAIL",
+            "evidence": {
+              "equal": true,
+              "mutations": 106
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "inference": "The existing guard permits a full price repaint while a setup editor exists but its menu is closed and focus is outside. This is a concrete source path; the original mutation-only sample does not itself name the responsible writer. Added mutation/event diagnostics plus an isolated old-guard countercontrol to verify the link.",
+  "localBrowserAttempt": "Firefox downloads succeed but launch exits 255: Couldn't find the application directory. No local browser pass.",
+  "scope": "Failure retained; no blind same-commit rerun or relaxed zero-mutation assertion."
+}

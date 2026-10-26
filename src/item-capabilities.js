@@ -41,6 +41,40 @@ export const VACUUM_REFORGE_EFFECT_ENTRY_IDS = Object.freeze({
   buzzing: null,
 });
 
+export const FARMING_TOOL_REFORGE_ENTRY_IDS = Object.freeze(Object.fromEntries(
+  FARMING_REFORGES_BY_FAMILY['farming-tool'].map(row => [row.id, `tool-reforge-${row.id}-reforge`]),
+));
+
+export function selectedFarmingToolReforge(bucket, legacySelection = undefined) {
+  // Explicit null/empty means no reforge, and must suppress dormant flags.
+  const explicit = Object.hasOwn(bucket || {}, 'reforge') ? bucket.reforge : legacySelection;
+  if (explicit !== undefined) {
+    const id = String(explicit || '').trim().toLowerCase();
+    return Object.hasOwn(FARMING_TOOL_REFORGE_ENTRY_IDS, id) ? id : null;
+  }
+  const configured = Object.entries(FARMING_TOOL_REFORGE_ENTRY_IDS).filter(([, id]) =>
+    Number(bucket?.levels?.[id]) > 0 || bucket?.owned?.[id] === true);
+  // Conflicting legacy flags provide no evidence of which reforge is worn.
+  return configured.length === 1 ? configured[0][0] : null;
+}
+
+export function applyFarmingToolReforge(bucket, requested) {
+  if (!bucket) return;
+  const id = String(requested || '').trim().toLowerCase();
+  bucket.reforge = Object.hasOwn(FARMING_TOOL_REFORGE_ENTRY_IDS, id) ? id : null;
+  bucket.levels ||= {};
+  bucket.owned ||= {};
+  for (const entry of Object.values(FARMING_TOOL_REFORGE_ENTRY_IDS)) {
+    delete bucket.levels[entry];
+    delete bucket.owned[entry];
+  }
+  if (bucket.reforge) {
+    const entry = FARMING_TOOL_REFORGE_ENTRY_IDS[bucket.reforge];
+    bucket.levels[entry] = 1;
+    bucket.owned[entry] = true;
+  }
+}
+
 export function selectedVacuumReforge(bucket) {
   const explicit = String(bucket?.reforge || '').trim().toLowerCase();
   if (FARMING_REFORGES_BY_FAMILY.vacuum.some(option => option.id === explicit)) return explicit;

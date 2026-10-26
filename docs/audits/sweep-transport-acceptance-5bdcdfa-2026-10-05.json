@@ -1,0 +1,3261 @@
+{
+  "reviewDate": "2026-10-05",
+  "continuation": "12:21 CEST",
+  "sourceCommit": "5bdcdfabaa2db3c17d6d4a4b89282d34bef624d1",
+  "parentCommit": "353387dedf2f75aebf90b2a76e19ee4db1b9c066",
+  "pullRequest": 301,
+  "previousCounterexample": "sweep-market-access-failure-b54face-2026-10-05.json",
+  "scope": "Package 18 only; application runtime/research unchanged from accepted 4c51f53. Package 12 remains blocked by current live evidence.",
+  "local": {
+    "targetedTests": 18,
+    "nodeTests": 1398,
+    "pythonTests": 8,
+    "exit": 0,
+    "session": 89080,
+    "nativeBrowserAcceptance": false,
+    "initialFailure": "ENOENT creating /tmp/farming420-gate-XXXXXX; writable TMPDIR resolves it without editing the aggregation test"
+  },
+  "validate": {
+    "runId": 37297466792,
+    "jobId": 111721986547,
+    "conclusion": "success",
+    "selectedActualLogLines": [
+      "Immutable artifact PASS: build=5bdcdfabaa2db3c17d6d4a4b89282d34bef624d1, stamped entrypoints=52, resolved references=466",
+      "Browser smoke test passed: Dashboard, Loadouts picker, and canonical recombobulated rarity background render in headless Chrome.",
+      "Tool accordion scroll smoke passed: TOOL_SCROLL_OK drift=0.33 lateDrift=0.00 lateScrollDelta=0.00 beforeY=2700.00 afterY=446.00 maxY=3110.00",
+      "TRUSTED_TOOL_SCROLL_OK transitions=12 maxDrift=1.42 lateDrift=0.00 lateScroll=0.00 wheat:drift=1.00,y=0->1,max=3075 | carrot:drift=1.42,y=2293->75,max=3075 | potato:drift=1.42,y=2389->171,max=3075 | pumpkin:drift=1.42,y=2486->268,max=3075 | mushroom:drift=1.42,y=2666->448,max=3075 | cactus:drift=1.42,y=2756->538,max=3075 | sugar-cane:drift=1.42,y=2852->634,max=3075 | cocoa-beans:drift=1.42,y=2949->731,max=3075 | nether-wart:drift=1.42,y=3045->827,max=3075 | sunflower:drift=1.42,y=3075->857,max=3075 | wild-rose:drift=1.42,y=3075->857,max=3075 | melon:drift=1.00,y=357->358,max=3075",
+      "ℹ tests 1398",
+      "ℹ pass 1398",
+      "ℹ fail 0",
+      "Ran 8 tests in 0.032s"
+    ]
+  },
+  "browser": {
+    "runId": 37297466894,
+    "conclusion": "success",
+    "jobs": [
+      {
+        "jobId": 111721987836,
+        "engine": "chromium",
+        "conclusion": "success",
+        "counts": {
+          "PASS": 239,
+          "FAIL": 0,
+          "NOTE": 8,
+          "BLOCKED": 0
+        },
+        "failedCases": [],
+        "retainedControlCases": [
+          {
+            "engine": "chromium",
+            "viewport": "negative-control",
+            "check": "runtime-error-negative-control",
+            "status": "PASS",
+            "evidence": {
+              "runtimeErrors": [
+                "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+              ],
+              "marketTransportNotes": [],
+              "acceptanceExit": 1,
+              "rawPageErrors": [
+                "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+              ]
+            }
+          },
+          {
+            "engine": "chromium",
+            "viewport": "320-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "chromium",
+            "viewport": "360-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "chromium",
+            "viewport": "375-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "chromium",
+            "viewport": "390-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "chromium",
+            "viewport": "412-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "chromium",
+            "viewport": "568-landscape",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "chromium",
+            "viewport": "667-landscape",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "chromium",
+            "viewport": "800-landscape",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          }
+        ]
+      },
+      {
+        "jobId": 111721987940,
+        "engine": "webkit",
+        "conclusion": "success",
+        "counts": {
+          "PASS": 239,
+          "FAIL": 0,
+          "NOTE": 8,
+          "BLOCKED": 0
+        },
+        "failedCases": [],
+        "retainedControlCases": [
+          {
+            "engine": "webkit",
+            "viewport": "negative-control",
+            "check": "runtime-error-negative-control",
+            "status": "PASS",
+            "evidence": {
+              "runtimeErrors": [
+                "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+              ],
+              "marketTransportNotes": [],
+              "acceptanceExit": 1,
+              "rawPageErrors": [
+                "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+              ]
+            }
+          },
+          {
+            "engine": "webkit",
+            "viewport": "320-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "webkit",
+            "viewport": "360-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "webkit",
+            "viewport": "375-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "webkit",
+            "viewport": "390-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "webkit",
+            "viewport": "412-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "webkit",
+            "viewport": "568-landscape",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "webkit",
+            "viewport": "667-landscape",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "webkit",
+            "viewport": "800-landscape",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          }
+        ]
+      },
+      {
+        "jobId": 111721988100,
+        "engine": "firefox",
+        "conclusion": "success",
+        "counts": {
+          "PASS": 239,
+          "FAIL": 0,
+          "NOTE": 8,
+          "BLOCKED": 0
+        },
+        "failedCases": [],
+        "retainedControlCases": [
+          {
+            "engine": "firefox",
+            "viewport": "negative-control",
+            "check": "runtime-error-negative-control",
+            "status": "PASS",
+            "evidence": {
+              "runtimeErrors": [
+                "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+              ],
+              "marketTransportNotes": [],
+              "acceptanceExit": 1,
+              "rawPageErrors": [
+                "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+              ]
+            }
+          },
+          {
+            "engine": "firefox",
+            "viewport": "320-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "firefox",
+            "viewport": "360-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "firefox",
+            "viewport": "375-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "firefox",
+            "viewport": "390-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "firefox",
+            "viewport": "412-portrait",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "firefox",
+            "viewport": "568-landscape",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "firefox",
+            "viewport": "667-landscape",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          },
+          {
+            "engine": "firefox",
+            "viewport": "800-landscape",
+            "check": "phillip-preview-integer-count-cap-and-provenance",
+            "status": "PASS",
+            "evidence": {
+              "initialNote": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+              "counts": [
+                {
+                  "input": "0",
+                  "output": "+0 Farming Fortune (Alpha preview)",
+                  "note": "0 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "17",
+                  "output": "+85 Farming Fortune (Alpha preview)",
+                  "note": "17 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "40",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "80",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "200",
+                  "output": "+200 Farming Fortune (Alpha preview)",
+                  "note": "40 Pests in the Alpha calculation · preview cap at 40 · Live Pest cost and duration unverified",
+                  "valid": true
+                },
+                {
+                  "input": "1.5",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                },
+                {
+                  "input": "",
+                  "output": "—",
+                  "note": "Enter a whole Pest count",
+                  "valid": true
+                }
+              ],
+              "provenance": true,
+              "liveCurveVerified": false,
+              "liveCostVerified": false,
+              "liveDurationVerified": false
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "strict": {
+    "jobId": 111721987836,
+    "stepConclusion": "success",
+    "overlayExit": 0,
+    "distinctFindings": 0,
+    "overlay": {
+      "scrollEvidence": [
+        {
+          "viewport": "phone",
+          "page": "dashboard",
+          "requested": 0,
+          "actual": 0,
+          "max": 4748
+        },
+        {
+          "viewport": "phone",
+          "page": "dashboard",
+          "requested": 300,
+          "actual": 300,
+          "max": 4748
+        },
+        {
+          "viewport": "phone",
+          "page": "dashboard",
+          "requested": 700,
+          "actual": 700,
+          "max": 4748
+        },
+        {
+          "viewport": "phone",
+          "page": "setups",
+          "requested": 0,
+          "actual": 0,
+          "max": 1919
+        },
+        {
+          "viewport": "phone",
+          "page": "setups",
+          "requested": 300,
+          "actual": 300,
+          "max": 1919
+        },
+        {
+          "viewport": "phone",
+          "page": "setups",
+          "requested": 700,
+          "actual": 700,
+          "max": 1919
+        },
+        {
+          "viewport": "phone",
+          "page": "crops",
+          "requested": 0,
+          "actual": 0,
+          "max": 3299
+        },
+        {
+          "viewport": "phone",
+          "page": "crops",
+          "requested": 300,
+          "actual": 300,
+          "max": 3299
+        },
+        {
+          "viewport": "phone",
+          "page": "crops",
+          "requested": 700,
+          "actual": 700,
+          "max": 3299
+        },
+        {
+          "viewport": "phone",
+          "page": "buffs",
+          "requested": 0,
+          "actual": 0,
+          "max": 3094
+        },
+        {
+          "viewport": "phone",
+          "page": "buffs",
+          "requested": 300,
+          "actual": 300,
+          "max": 3094
+        },
+        {
+          "viewport": "phone",
+          "page": "buffs",
+          "requested": 700,
+          "actual": 700,
+          "max": 3094
+        },
+        {
+          "viewport": "phone",
+          "page": "tools",
+          "requested": 0,
+          "actual": 0,
+          "max": 4615
+        },
+        {
+          "viewport": "phone",
+          "page": "tools",
+          "requested": 300,
+          "actual": 300,
+          "max": 4615
+        },
+        {
+          "viewport": "phone",
+          "page": "tools",
+          "requested": 700,
+          "actual": 700,
+          "max": 4615
+        },
+        {
+          "viewport": "phone",
+          "page": "shards",
+          "requested": 0,
+          "actual": 0,
+          "max": 17506
+        },
+        {
+          "viewport": "phone",
+          "page": "shards",
+          "requested": 300,
+          "actual": 300,
+          "max": 17506
+        },
+        {
+          "viewport": "phone",
+          "page": "shards",
+          "requested": 700,
+          "actual": 700,
+          "max": 17506
+        },
+        {
+          "viewport": "phone",
+          "page": "planner",
+          "requested": 0,
+          "actual": 0,
+          "max": 4107
+        },
+        {
+          "viewport": "phone",
+          "page": "planner",
+          "requested": 300,
+          "actual": 300,
+          "max": 4107
+        },
+        {
+          "viewport": "phone",
+          "page": "planner",
+          "requested": 700,
+          "actual": 700,
+          "max": 4107
+        },
+        {
+          "viewport": "phone",
+          "page": "qol",
+          "requested": 0,
+          "actual": 0,
+          "max": 2502
+        },
+        {
+          "viewport": "phone",
+          "page": "qol",
+          "requested": 300,
+          "actual": 300,
+          "max": 2502
+        },
+        {
+          "viewport": "phone",
+          "page": "qol",
+          "requested": 700,
+          "actual": 700,
+          "max": 2502
+        },
+        {
+          "viewport": "phone",
+          "page": "focus",
+          "requested": 0,
+          "actual": 0,
+          "max": 151
+        },
+        {
+          "viewport": "phone",
+          "page": "focus",
+          "requested": 300,
+          "actual": 151,
+          "max": 151
+        },
+        {
+          "viewport": "phone",
+          "page": "focus",
+          "requested": 700,
+          "actual": 151,
+          "max": 151
+        },
+        {
+          "viewport": "phone",
+          "page": "info",
+          "requested": 0,
+          "actual": 0,
+          "max": 31055
+        },
+        {
+          "viewport": "phone",
+          "page": "info",
+          "requested": 300,
+          "actual": 300,
+          "max": 31055
+        },
+        {
+          "viewport": "phone",
+          "page": "info",
+          "requested": 700,
+          "actual": 700,
+          "max": 31055
+        },
+        {
+          "viewport": "phone-l",
+          "page": "dashboard",
+          "requested": 0,
+          "actual": 0,
+          "max": 4554
+        },
+        {
+          "viewport": "phone-l",
+          "page": "dashboard",
+          "requested": 300,
+          "actual": 300,
+          "max": 4554
+        },
+        {
+          "viewport": "phone-l",
+          "page": "dashboard",
+          "requested": 700,
+          "actual": 700,
+          "max": 4554
+        },
+        {
+          "viewport": "phone-l",
+          "page": "setups",
+          "requested": 0,
+          "actual": 0,
+          "max": 1848
+        },
+        {
+          "viewport": "phone-l",
+          "page": "setups",
+          "requested": 300,
+          "actual": 300,
+          "max": 1848
+        },
+        {
+          "viewport": "phone-l",
+          "page": "setups",
+          "requested": 700,
+          "actual": 700,
+          "max": 1848
+        },
+        {
+          "viewport": "phone-l",
+          "page": "crops",
+          "requested": 0,
+          "actual": 0,
+          "max": 3038
+        },
+        {
+          "viewport": "phone-l",
+          "page": "crops",
+          "requested": 300,
+          "actual": 300,
+          "max": 3038
+        },
+        {
+          "viewport": "phone-l",
+          "page": "crops",
+          "requested": 700,
+          "actual": 700,
+          "max": 3038
+        },
+        {
+          "viewport": "phone-l",
+          "page": "buffs",
+          "requested": 0,
+          "actual": 0,
+          "max": 2993
+        },
+        {
+          "viewport": "phone-l",
+          "page": "buffs",
+          "requested": 300,
+          "actual": 300,
+          "max": 2993
+        },
+        {
+          "viewport": "phone-l",
+          "page": "buffs",
+          "requested": 700,
+          "actual": 700,
+          "max": 2993
+        },
+        {
+          "viewport": "phone-l",
+          "page": "tools",
+          "requested": 0,
+          "actual": 0,
+          "max": 4476
+        },
+        {
+          "viewport": "phone-l",
+          "page": "tools",
+          "requested": 300,
+          "actual": 300,
+          "max": 4476
+        },
+        {
+          "viewport": "phone-l",
+          "page": "tools",
+          "requested": 700,
+          "actual": 700,
+          "max": 4476
+        },
+        {
+          "viewport": "phone-l",
+          "page": "shards",
+          "requested": 0,
+          "actual": 0,
+          "max": 17089
+        },
+        {
+          "viewport": "phone-l",
+          "page": "shards",
+          "requested": 300,
+          "actual": 300,
+          "max": 17089
+        },
+        {
+          "viewport": "phone-l",
+          "page": "shards",
+          "requested": 700,
+          "actual": 700,
+          "max": 17089
+        },
+        {
+          "viewport": "phone-l",
+          "page": "planner",
+          "requested": 0,
+          "actual": 0,
+          "max": 4036
+        },
+        {
+          "viewport": "phone-l",
+          "page": "planner",
+          "requested": 300,
+          "actual": 300,
+          "max": 4036
+        },
+        {
+          "viewport": "phone-l",
+          "page": "planner",
+          "requested": 700,
+          "actual": 700,
+          "max": 4036
+        },
+        {
+          "viewport": "phone-l",
+          "page": "qol",
+          "requested": 0,
+          "actual": 0,
+          "max": 2241
+        },
+        {
+          "viewport": "phone-l",
+          "page": "qol",
+          "requested": 300,
+          "actual": 300,
+          "max": 2241
+        },
+        {
+          "viewport": "phone-l",
+          "page": "qol",
+          "requested": 700,
+          "actual": 700,
+          "max": 2241
+        },
+        {
+          "viewport": "phone-l",
+          "page": "focus",
+          "requested": 0,
+          "actual": 0,
+          "max": 61
+        },
+        {
+          "viewport": "phone-l",
+          "page": "focus",
+          "requested": 300,
+          "actual": 61,
+          "max": 61
+        },
+        {
+          "viewport": "phone-l",
+          "page": "focus",
+          "requested": 700,
+          "actual": 61,
+          "max": 61
+        },
+        {
+          "viewport": "phone-l",
+          "page": "info",
+          "requested": 0,
+          "actual": 0,
+          "max": 29545
+        },
+        {
+          "viewport": "phone-l",
+          "page": "info",
+          "requested": 300,
+          "actual": 300,
+          "max": 29545
+        },
+        {
+          "viewport": "phone-l",
+          "page": "info",
+          "requested": 700,
+          "actual": 700,
+          "max": 29545
+        },
+        {
+          "viewport": "tablet",
+          "page": "dashboard",
+          "requested": 0,
+          "actual": 0,
+          "max": 4110
+        },
+        {
+          "viewport": "tablet",
+          "page": "dashboard",
+          "requested": 300,
+          "actual": 300,
+          "max": 4110
+        },
+        {
+          "viewport": "tablet",
+          "page": "dashboard",
+          "requested": 700,
+          "actual": 700,
+          "max": 4110
+        },
+        {
+          "viewport": "tablet",
+          "page": "setups",
+          "requested": 0,
+          "actual": 0,
+          "max": 1392
+        },
+        {
+          "viewport": "tablet",
+          "page": "setups",
+          "requested": 300,
+          "actual": 300,
+          "max": 1392
+        },
+        {
+          "viewport": "tablet",
+          "page": "setups",
+          "requested": 700,
+          "actual": 700,
+          "max": 1392
+        },
+        {
+          "viewport": "tablet",
+          "page": "crops",
+          "requested": 0,
+          "actual": 0,
+          "max": 2371
+        },
+        {
+          "viewport": "tablet",
+          "page": "crops",
+          "requested": 300,
+          "actual": 300,
+          "max": 2371
+        },
+        {
+          "viewport": "tablet",
+          "page": "crops",
+          "requested": 700,
+          "actual": 700,
+          "max": 2371
+        },
+        {
+          "viewport": "tablet",
+          "page": "buffs",
+          "requested": 0,
+          "actual": 0,
+          "max": 2551
+        },
+        {
+          "viewport": "tablet",
+          "page": "buffs",
+          "requested": 300,
+          "actual": 300,
+          "max": 2551
+        },
+        {
+          "viewport": "tablet",
+          "page": "buffs",
+          "requested": 700,
+          "actual": 700,
+          "max": 2551
+        },
+        {
+          "viewport": "tablet",
+          "page": "tools",
+          "requested": 0,
+          "actual": 0,
+          "max": 2634
+        },
+        {
+          "viewport": "tablet",
+          "page": "tools",
+          "requested": 300,
+          "actual": 300,
+          "max": 2634
+        },
+        {
+          "viewport": "tablet",
+          "page": "tools",
+          "requested": 700,
+          "actual": 700,
+          "max": 2634
+        },
+        {
+          "viewport": "tablet",
+          "page": "shards",
+          "requested": 0,
+          "actual": 0,
+          "max": 11545
+        },
+        {
+          "viewport": "tablet",
+          "page": "shards",
+          "requested": 300,
+          "actual": 300,
+          "max": 11545
+        },
+        {
+          "viewport": "tablet",
+          "page": "shards",
+          "requested": 700,
+          "actual": 700,
+          "max": 11545
+        },
+        {
+          "viewport": "tablet",
+          "page": "planner",
+          "requested": 0,
+          "actual": 0,
+          "max": 2647
+        },
+        {
+          "viewport": "tablet",
+          "page": "planner",
+          "requested": 300,
+          "actual": 300,
+          "max": 2647
+        },
+        {
+          "viewport": "tablet",
+          "page": "planner",
+          "requested": 700,
+          "actual": 700,
+          "max": 2647
+        },
+        {
+          "viewport": "tablet",
+          "page": "qol",
+          "requested": 0,
+          "actual": 0,
+          "max": 892
+        },
+        {
+          "viewport": "tablet",
+          "page": "qol",
+          "requested": 300,
+          "actual": 300,
+          "max": 892
+        },
+        {
+          "viewport": "tablet",
+          "page": "qol",
+          "requested": 700,
+          "actual": 700,
+          "max": 892
+        },
+        {
+          "viewport": "tablet",
+          "page": "focus",
+          "requested": 0,
+          "actual": 0,
+          "max": 0
+        },
+        {
+          "viewport": "tablet",
+          "page": "focus",
+          "requested": 300,
+          "actual": 0,
+          "max": 0
+        },
+        {
+          "viewport": "tablet",
+          "page": "focus",
+          "requested": 700,
+          "actual": 0,
+          "max": 0
+        },
+        {
+          "viewport": "tablet",
+          "page": "info",
+          "requested": 0,
+          "actual": 0,
+          "max": 19238
+        },
+        {
+          "viewport": "tablet",
+          "page": "info",
+          "requested": 300,
+          "actual": 300,
+          "max": 19238
+        },
+        {
+          "viewport": "tablet",
+          "page": "info",
+          "requested": 700,
+          "actual": 700,
+          "max": 19238
+        },
+        {
+          "viewport": "desktop",
+          "page": "dashboard",
+          "requested": 0,
+          "actual": 0,
+          "max": 1767
+        },
+        {
+          "viewport": "desktop",
+          "page": "dashboard",
+          "requested": 300,
+          "actual": 300,
+          "max": 1767
+        },
+        {
+          "viewport": "desktop",
+          "page": "dashboard",
+          "requested": 700,
+          "actual": 700,
+          "max": 1767
+        },
+        {
+          "viewport": "desktop",
+          "page": "setups",
+          "requested": 0,
+          "actual": 0,
+          "max": 657
+        },
+        {
+          "viewport": "desktop",
+          "page": "setups",
+          "requested": 300,
+          "actual": 300,
+          "max": 657
+        },
+        {
+          "viewport": "desktop",
+          "page": "setups",
+          "requested": 700,
+          "actual": 657,
+          "max": 657
+        },
+        {
+          "viewport": "desktop",
+          "page": "crops",
+          "requested": 0,
+          "actual": 0,
+          "max": 1194
+        },
+        {
+          "viewport": "desktop",
+          "page": "crops",
+          "requested": 300,
+          "actual": 300,
+          "max": 1194
+        },
+        {
+          "viewport": "desktop",
+          "page": "crops",
+          "requested": 700,
+          "actual": 700,
+          "max": 1194
+        },
+        {
+          "viewport": "desktop",
+          "page": "buffs",
+          "requested": 0,
+          "actual": 0,
+          "max": 639
+        },
+        {
+          "viewport": "desktop",
+          "page": "buffs",
+          "requested": 300,
+          "actual": 300,
+          "max": 639
+        },
+        {
+          "viewport": "desktop",
+          "page": "buffs",
+          "requested": 700,
+          "actual": 639,
+          "max": 639
+        },
+        {
+          "viewport": "desktop",
+          "page": "tools",
+          "requested": 0,
+          "actual": 0,
+          "max": 2279
+        },
+        {
+          "viewport": "desktop",
+          "page": "tools",
+          "requested": 300,
+          "actual": 300,
+          "max": 2279
+        },
+        {
+          "viewport": "desktop",
+          "page": "tools",
+          "requested": 700,
+          "actual": 700,
+          "max": 2279
+        },
+        {
+          "viewport": "desktop",
+          "page": "shards",
+          "requested": 0,
+          "actual": 0,
+          "max": 7256
+        },
+        {
+          "viewport": "desktop",
+          "page": "shards",
+          "requested": 300,
+          "actual": 300,
+          "max": 7256
+        },
+        {
+          "viewport": "desktop",
+          "page": "shards",
+          "requested": 700,
+          "actual": 700,
+          "max": 7256
+        },
+        {
+          "viewport": "desktop",
+          "page": "planner",
+          "requested": 0,
+          "actual": 0,
+          "max": 2872
+        },
+        {
+          "viewport": "desktop",
+          "page": "planner",
+          "requested": 300,
+          "actual": 300,
+          "max": 2872
+        },
+        {
+          "viewport": "desktop",
+          "page": "planner",
+          "requested": 700,
+          "actual": 700,
+          "max": 2872
+        },
+        {
+          "viewport": "desktop",
+          "page": "qol",
+          "requested": 0,
+          "actual": 0,
+          "max": 819
+        },
+        {
+          "viewport": "desktop",
+          "page": "qol",
+          "requested": 300,
+          "actual": 300,
+          "max": 819
+        },
+        {
+          "viewport": "desktop",
+          "page": "qol",
+          "requested": 700,
+          "actual": 700,
+          "max": 819
+        },
+        {
+          "viewport": "desktop",
+          "page": "focus",
+          "requested": 0,
+          "actual": 0,
+          "max": 0
+        },
+        {
+          "viewport": "desktop",
+          "page": "focus",
+          "requested": 300,
+          "actual": 0,
+          "max": 0
+        },
+        {
+          "viewport": "desktop",
+          "page": "focus",
+          "requested": 700,
+          "actual": 0,
+          "max": 0
+        },
+        {
+          "viewport": "desktop",
+          "page": "info",
+          "requested": 0,
+          "actual": 0,
+          "max": 12356
+        },
+        {
+          "viewport": "desktop",
+          "page": "info",
+          "requested": 300,
+          "actual": 300,
+          "max": 12356
+        },
+        {
+          "viewport": "desktop",
+          "page": "info",
+          "requested": 700,
+          "actual": 700,
+          "max": 12356
+        }
+      ],
+      "openedOverlays": 16,
+      "runtimeErrors": []
+    },
+    "sweepExit": 0,
+    "ordinaryAreas": [
+      "PASS  dashboard",
+      "PASS  crops",
+      "PASS  setups",
+      "PASS  buffs",
+      "PASS  qol",
+      "PASS  tools",
+      "PASS  focus",
+      "PASS  info",
+      "PASS  planner",
+      "PASS  shards"
+    ],
+    "ordinaryVariants": [
+      "[buffs] desktop-empty  ok (14 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[buffs] desktop-filled ok (14 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[buffs] phone-filled   ok (14 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[crops] desktop-empty  ok (8 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[crops] desktop-filled ok (8 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[crops] phone-filled   ok (8 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[dashboard] desktop-empty  ok (0 clicks)",
+      "[dashboard] desktop-filled ok (0 clicks)",
+      "[dashboard] phone-filled   ok (0 clicks)",
+      "[focus] desktop-empty  ok (1 clicks)",
+      "[focus] desktop-filled ok (1 clicks)",
+      "[focus] phone-filled   ok (1 clicks)",
+      "[info] desktop-empty  ok (5 clicks)",
+      "[info] desktop-filled ok (5 clicks)",
+      "[info] phone-filled   ok (5 clicks)",
+      "[planner] desktop-empty  ok (30 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[planner] desktop-filled ok (23 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[planner] phone-filled   ok (24 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[qol] desktop-empty  ok (0 clicks)",
+      "[qol] desktop-filled ok (0 clicks)",
+      "[qol] phone-filled   ok (0 clicks)",
+      "[setups] desktop-empty  ok (12 clicks)",
+      "[setups] desktop-filled ok (12 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/H/history/full\",\"external\":true},{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[setups] phone-filled   ok (12 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/H/history/full\",\"external\":true},{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[shards] desktop-empty  ok (40 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[shards] desktop-filled ok (40 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[shards] phone-filled   ok (40 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[tools] desktop-empty  ok (10 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[tools] desktop-filled ok (10 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]",
+      "[tools] phone-filled   ok (10 clicks) | EXTERNAL_HTTP_NOTE [{\"status\":400,\"url\":\"https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full\",\"external\":true}]"
+    ],
+    "actualPrintedFixtureExits": [
+      "Market failed fixture exit: 0",
+      "Market cors fixture exit: 0",
+      "Local failure fixture exit: 1"
+    ],
+    "runtimeNegative": {
+      "requiredExit": 1,
+      "enforcedByCompletedSuccessfulStrictStep": true,
+      "explanation": "The workflow requires FIX_NEGATIVE_EXIT=1 and an injected-runtime marker; actual marker is retained in all three native rows below. Unlike the other fixture exits, this exit has no separate printed log line."
+    },
+    "fixtureSelection": "All 12 variant headers, quote/cache/error results and failure diagnostics retained; full native transport messages/requests for the two explicit WHEAT/Rarefinder probes selected from each row. total note counts also retained; complete logs remain in the CI artifact.",
+    "nativeFixtures": [
+      {
+        "header": "[crops] desktop-empty  ok (8 clicks)",
+        "mode": "failed",
+        "fixture": {
+          "mode": "failed",
+          "results": [
+            {
+              "itemTag": "WHEAT",
+              "quote": null,
+              "cached": null,
+              "error": "Market history could not be loaded: Failed to fetch"
+            },
+            {
+              "itemTag": "RAREFINDER_CHIP",
+              "quote": null,
+              "cached": null,
+              "error": "Market history could not be loaded: Failed to fetch"
+            }
+          ],
+          "localUrl": null
+        },
+        "diagnostics": "[crops] desktop-empty  ok (8 clicks)",
+        "transportNotes": [
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A42%3A48.827Z&end=2026-10-05T10%3A42%3A48.827Z",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A42%3A48.827Z&end=2026-10-05T10%3A42%3A48.827Z"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A42%3A49.458Z&end=2026-10-05T10%3A42%3A49.458Z",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A42%3A49.458Z&end=2026-10-05T10%3A42%3A49.458Z"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full"
+          }
+        ],
+        "transportNoteCount": 118
+      },
+      {
+        "header": "[crops] desktop-filled ok (8 clicks)",
+        "mode": "failed",
+        "fixture": {
+          "mode": "failed",
+          "results": [
+            {
+              "itemTag": "WHEAT",
+              "quote": null,
+              "cached": null,
+              "error": "Market history could not be loaded: Failed to fetch"
+            },
+            {
+              "itemTag": "RAREFINDER_CHIP",
+              "quote": null,
+              "cached": null,
+              "error": "Market history could not be loaded: Failed to fetch"
+            }
+          ],
+          "localUrl": null
+        },
+        "diagnostics": "[crops] desktop-filled ok (8 clicks)",
+        "transportNotes": [
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A42%3A52.379Z&end=2026-10-05T10%3A42%3A52.379Z",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A42%3A52.379Z&end=2026-10-05T10%3A42%3A52.379Z"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A42%3A53.020Z&end=2026-10-05T10%3A42%3A53.020Z",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A42%3A53.020Z&end=2026-10-05T10%3A42%3A53.020Z"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full"
+          }
+        ],
+        "transportNoteCount": 118
+      },
+      {
+        "header": "[crops] phone-filled   ok (8 clicks)",
+        "mode": "failed",
+        "fixture": {
+          "mode": "failed",
+          "results": [
+            {
+              "itemTag": "WHEAT",
+              "quote": null,
+              "cached": null,
+              "error": "Market history could not be loaded: Failed to fetch"
+            },
+            {
+              "itemTag": "RAREFINDER_CHIP",
+              "quote": null,
+              "cached": null,
+              "error": "Market history could not be loaded: Failed to fetch"
+            }
+          ],
+          "localUrl": null
+        },
+        "diagnostics": "[crops] phone-filled   ok (8 clicks)",
+        "transportNotes": [
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A42%3A55.905Z&end=2026-10-05T10%3A42%3A55.905Z",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A42%3A55.905Z&end=2026-10-05T10%3A42%3A55.905Z"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A42%3A56.546Z&end=2026-10-05T10%3A42%3A56.546Z",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A42%3A56.546Z&end=2026-10-05T10%3A42%3A56.546Z"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full"
+          }
+        ],
+        "transportNoteCount": 118
+      },
+      {
+        "header": "[crops] desktop-empty  ok (8 clicks)",
+        "mode": "cors",
+        "fixture": {
+          "mode": "cors",
+          "results": [
+            {
+              "itemTag": "WHEAT",
+              "quote": null,
+              "cached": null,
+              "error": "Market history could not be loaded: Failed to fetch"
+            },
+            {
+              "itemTag": "RAREFINDER_CHIP",
+              "quote": null,
+              "cached": null,
+              "error": "Market history could not be loaded: Failed to fetch"
+            }
+          ],
+          "localUrl": null
+        },
+        "diagnostics": "[crops] desktop-empty  ok (8 clicks)",
+        "transportNotes": [
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A42%3A59.763Z&end=2026-10-05T10%3A42%3A59.763Z",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Access to fetch at 'https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A42%3A59.763Z&end=2026-10-05T10%3A42%3A59.763Z' from origin 'http://127.0.0.1:4173' has been blocked by CORS policy: The 'Access-Control-Allow-Origin' header has a value 'https://unrelated.invalid' that is not equal to the supplied origin. Have the server send the header with a valid value.",
+            "consoleUrl": "http://127.0.0.1:4173/?t=1791196979306"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A42%3A59.763Z&end=2026-10-05T10%3A42%3A59.763Z",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A42%3A59.763Z&end=2026-10-05T10%3A42%3A59.763Z"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Access to fetch at 'https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full' from origin 'http://127.0.0.1:4173' has been blocked by CORS policy: The 'Access-Control-Allow-Origin' header has a value 'https://unrelated.invalid' that is not equal to the supplied origin. Have the server send the header with a valid value.",
+            "consoleUrl": "http://127.0.0.1:4173/?t=1791196979306"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A00.439Z&end=2026-10-05T10%3A43%3A00.439Z",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Access to fetch at 'https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A00.439Z&end=2026-10-05T10%3A43%3A00.439Z' from origin 'http://127.0.0.1:4173' has been blocked by CORS policy: The 'Access-Control-Allow-Origin' header has a value 'https://unrelated.invalid' that is not equal to the supplied origin. Have the server send the header with a valid value.",
+            "consoleUrl": "http://127.0.0.1:4173/?t=1791196979306"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A00.439Z&end=2026-10-05T10%3A43%3A00.439Z",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A00.439Z&end=2026-10-05T10%3A43%3A00.439Z"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Access to fetch at 'https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full' from origin 'http://127.0.0.1:4173' has been blocked by CORS policy: The 'Access-Control-Allow-Origin' header has a value 'https://unrelated.invalid' that is not equal to the supplied origin. Have the server send the header with a valid value.",
+            "consoleUrl": "http://127.0.0.1:4173/?t=1791196979306"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full"
+          }
+        ],
+        "transportNoteCount": 236
+      },
+      {
+        "header": "[crops] desktop-filled ok (8 clicks)",
+        "mode": "cors",
+        "fixture": {
+          "mode": "cors",
+          "results": [
+            {
+              "itemTag": "WHEAT",
+              "quote": null,
+              "cached": null,
+              "error": "Market history could not be loaded: Failed to fetch"
+            },
+            {
+              "itemTag": "RAREFINDER_CHIP",
+              "quote": null,
+              "cached": null,
+              "error": "Market history could not be loaded: Failed to fetch"
+            }
+          ],
+          "localUrl": null
+        },
+        "diagnostics": "[crops] desktop-filled ok (8 clicks)",
+        "transportNotes": [
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A03.335Z&end=2026-10-05T10%3A43%3A03.335Z",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Access to fetch at 'https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A03.335Z&end=2026-10-05T10%3A43%3A03.335Z' from origin 'http://127.0.0.1:4173' has been blocked by CORS policy: The 'Access-Control-Allow-Origin' header has a value 'https://unrelated.invalid' that is not equal to the supplied origin. Have the server send the header with a valid value.",
+            "consoleUrl": "http://127.0.0.1:4173/?t=1791196983002"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A03.335Z&end=2026-10-05T10%3A43%3A03.335Z",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A03.335Z&end=2026-10-05T10%3A43%3A03.335Z"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Access to fetch at 'https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full' from origin 'http://127.0.0.1:4173' has been blocked by CORS policy: The 'Access-Control-Allow-Origin' header has a value 'https://unrelated.invalid' that is not equal to the supplied origin. Have the server send the header with a valid value.",
+            "consoleUrl": "http://127.0.0.1:4173/?t=1791196983002"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A03.978Z&end=2026-10-05T10%3A43%3A03.978Z",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Access to fetch at 'https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A03.978Z&end=2026-10-05T10%3A43%3A03.978Z' from origin 'http://127.0.0.1:4173' has been blocked by CORS policy: The 'Access-Control-Allow-Origin' header has a value 'https://unrelated.invalid' that is not equal to the supplied origin. Have the server send the header with a valid value.",
+            "consoleUrl": "http://127.0.0.1:4173/?t=1791196983002"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A03.978Z&end=2026-10-05T10%3A43%3A03.978Z",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A03.978Z&end=2026-10-05T10%3A43%3A03.978Z"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Access to fetch at 'https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full' from origin 'http://127.0.0.1:4173' has been blocked by CORS policy: The 'Access-Control-Allow-Origin' header has a value 'https://unrelated.invalid' that is not equal to the supplied origin. Have the server send the header with a valid value.",
+            "consoleUrl": "http://127.0.0.1:4173/?t=1791196983002"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full"
+          }
+        ],
+        "transportNoteCount": 236
+      },
+      {
+        "header": "[crops] phone-filled   ok (8 clicks)",
+        "mode": "cors",
+        "fixture": {
+          "mode": "cors",
+          "results": [
+            {
+              "itemTag": "WHEAT",
+              "quote": null,
+              "cached": null,
+              "error": "Market history could not be loaded: Failed to fetch"
+            },
+            {
+              "itemTag": "RAREFINDER_CHIP",
+              "quote": null,
+              "cached": null,
+              "error": "Market history could not be loaded: Failed to fetch"
+            }
+          ],
+          "localUrl": null
+        },
+        "diagnostics": "[crops] phone-filled   ok (8 clicks)",
+        "transportNotes": [
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A06.873Z&end=2026-10-05T10%3A43%3A06.873Z",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Access to fetch at 'https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A06.873Z&end=2026-10-05T10%3A43%3A06.873Z' from origin 'http://127.0.0.1:4173' has been blocked by CORS policy: The 'Access-Control-Allow-Origin' header has a value 'https://unrelated.invalid' that is not equal to the supplied origin. Have the server send the header with a valid value.",
+            "consoleUrl": "http://127.0.0.1:4173/?t=1791196986536"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A06.873Z&end=2026-10-05T10%3A43%3A06.873Z",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A06.873Z&end=2026-10-05T10%3A43%3A06.873Z"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Access to fetch at 'https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full' from origin 'http://127.0.0.1:4173' has been blocked by CORS policy: The 'Access-Control-Allow-Origin' header has a value 'https://unrelated.invalid' that is not equal to the supplied origin. Have the server send the header with a valid value.",
+            "consoleUrl": "http://127.0.0.1:4173/?t=1791196986536"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A07.537Z&end=2026-10-05T10%3A43%3A07.537Z",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Access to fetch at 'https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A07.537Z&end=2026-10-05T10%3A43%3A07.537Z' from origin 'http://127.0.0.1:4173' has been blocked by CORS policy: The 'Access-Control-Allow-Origin' header has a value 'https://unrelated.invalid' that is not equal to the supplied origin. Have the server send the header with a valid value.",
+            "consoleUrl": "http://127.0.0.1:4173/?t=1791196986536"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A07.537Z&end=2026-10-05T10%3A43%3A07.537Z",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A07.537Z&end=2026-10-05T10%3A43%3A07.537Z"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Access to fetch at 'https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full' from origin 'http://127.0.0.1:4173' has been blocked by CORS policy: The 'Access-Control-Allow-Origin' header has a value 'https://unrelated.invalid' that is not equal to the supplied origin. Have the server send the header with a valid value.",
+            "consoleUrl": "http://127.0.0.1:4173/?t=1791196986536"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full"
+          }
+        ],
+        "transportNoteCount": 236
+      },
+      {
+        "header": "[dashboard] desktop-empty  ok (0 clicks)",
+        "mode": "local",
+        "fixture": {
+          "mode": "local",
+          "results": [
+            {
+              "itemTag": "WHEAT",
+              "quote": null,
+              "cached": null,
+              "error": "Market history could not be loaded: Failed to fetch"
+            },
+            {
+              "itemTag": "RAREFINDER_CHIP",
+              "quote": null,
+              "cached": null,
+              "error": "Market history could not be loaded: Failed to fetch"
+            }
+          ],
+          "localUrl": "http://127.0.0.1:4173/api/bazaar/WHEAT/history"
+        },
+        "diagnostics": "[dashboard] desktop-empty  ok (0 clicks) | Failed to load resource: net::ERR_FAILED [http://127.0.0.1:4173/api/bazaar/WHEAT/history]",
+        "transportNotes": [
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A10.747Z&end=2026-10-05T10%3A43%3A10.747Z",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A10.747Z&end=2026-10-05T10%3A43%3A10.747Z"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A11.404Z&end=2026-10-05T10%3A43%3A11.404Z",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A11.404Z&end=2026-10-05T10%3A43%3A11.404Z"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full"
+          }
+        ],
+        "transportNoteCount": 118
+      },
+      {
+        "header": "[dashboard] desktop-filled ok (0 clicks)",
+        "mode": "local",
+        "fixture": {
+          "mode": "local",
+          "results": [
+            {
+              "itemTag": "WHEAT",
+              "quote": null,
+              "cached": null,
+              "error": "Market history could not be loaded: Failed to fetch"
+            },
+            {
+              "itemTag": "RAREFINDER_CHIP",
+              "quote": null,
+              "cached": null,
+              "error": "Market history could not be loaded: Failed to fetch"
+            }
+          ],
+          "localUrl": "http://127.0.0.1:4173/api/bazaar/WHEAT/history"
+        },
+        "diagnostics": "[dashboard] desktop-filled ok (0 clicks) | Failed to load resource: net::ERR_FAILED [http://127.0.0.1:4173/api/bazaar/WHEAT/history]",
+        "transportNotes": [
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A12.375Z&end=2026-10-05T10%3A43%3A12.375Z",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A12.375Z&end=2026-10-05T10%3A43%3A12.375Z"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A13.001Z&end=2026-10-05T10%3A43%3A13.001Z",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A13.001Z&end=2026-10-05T10%3A43%3A13.001Z"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full"
+          }
+        ],
+        "transportNoteCount": 118
+      },
+      {
+        "header": "[dashboard] phone-filled   ok (0 clicks)",
+        "mode": "local",
+        "fixture": {
+          "mode": "local",
+          "results": [
+            {
+              "itemTag": "WHEAT",
+              "quote": null,
+              "cached": null,
+              "error": "Market history could not be loaded: Failed to fetch"
+            },
+            {
+              "itemTag": "RAREFINDER_CHIP",
+              "quote": null,
+              "cached": null,
+              "error": "Market history could not be loaded: Failed to fetch"
+            }
+          ],
+          "localUrl": "http://127.0.0.1:4173/api/bazaar/WHEAT/history"
+        },
+        "diagnostics": "[dashboard] phone-filled   ok (0 clicks) | Failed to load resource: net::ERR_FAILED [http://127.0.0.1:4173/api/bazaar/WHEAT/history]",
+        "transportNotes": [
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A13.982Z&end=2026-10-05T10%3A43%3A13.982Z",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A13.982Z&end=2026-10-05T10%3A43%3A13.982Z"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A14.629Z&end=2026-10-05T10%3A43%3A14.629Z",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A14.629Z&end=2026-10-05T10%3A43%3A14.629Z"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full"
+          }
+        ],
+        "transportNoteCount": 118
+      },
+      {
+        "header": "[dashboard] desktop-empty  ok (0 clicks)",
+        "mode": "failed",
+        "fixture": {
+          "mode": "failed",
+          "results": [
+            {
+              "itemTag": "WHEAT",
+              "quote": null,
+              "cached": null,
+              "error": "Market history could not be loaded: Failed to fetch"
+            },
+            {
+              "itemTag": "RAREFINDER_CHIP",
+              "quote": null,
+              "cached": null,
+              "error": "Market history could not be loaded: Failed to fetch"
+            }
+          ],
+          "localUrl": null
+        },
+        "diagnostics": "[dashboard] desktop-empty  ok (0 clicks) | Error: AUDIT_INJECTED_RUNTIME_ERROR",
+        "transportNotes": [
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A16.086Z&end=2026-10-05T10%3A43%3A16.086Z",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A16.086Z&end=2026-10-05T10%3A43%3A16.086Z"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A16.756Z&end=2026-10-05T10%3A43%3A16.756Z",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A16.756Z&end=2026-10-05T10%3A43%3A16.756Z"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full"
+          }
+        ],
+        "transportNoteCount": 118
+      },
+      {
+        "header": "[dashboard] desktop-filled ok (0 clicks)",
+        "mode": "failed",
+        "fixture": {
+          "mode": "failed",
+          "results": [
+            {
+              "itemTag": "WHEAT",
+              "quote": null,
+              "cached": null,
+              "error": "Market history could not be loaded: Failed to fetch"
+            },
+            {
+              "itemTag": "RAREFINDER_CHIP",
+              "quote": null,
+              "cached": null,
+              "error": "Market history could not be loaded: Failed to fetch"
+            }
+          ],
+          "localUrl": null
+        },
+        "diagnostics": "[dashboard] desktop-filled ok (0 clicks) | Error: AUDIT_INJECTED_RUNTIME_ERROR",
+        "transportNotes": [
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A17.735Z&end=2026-10-05T10%3A43%3A17.735Z",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A17.735Z&end=2026-10-05T10%3A43%3A17.735Z"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A18.368Z&end=2026-10-05T10%3A43%3A18.368Z",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A18.368Z&end=2026-10-05T10%3A43%3A18.368Z"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full"
+          }
+        ],
+        "transportNoteCount": 118
+      },
+      {
+        "header": "[dashboard] phone-filled   ok (0 clicks)",
+        "mode": "failed",
+        "fixture": {
+          "mode": "failed",
+          "results": [
+            {
+              "itemTag": "WHEAT",
+              "quote": null,
+              "cached": null,
+              "error": "Market history could not be loaded: Failed to fetch"
+            },
+            {
+              "itemTag": "RAREFINDER_CHIP",
+              "quote": null,
+              "cached": null,
+              "error": "Market history could not be loaded: Failed to fetch"
+            }
+          ],
+          "localUrl": null
+        },
+        "diagnostics": "[dashboard] phone-filled   ok (0 clicks) | Error: AUDIT_INJECTED_RUNTIME_ERROR",
+        "transportNotes": [
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A19.320Z&end=2026-10-05T10%3A43%3A19.320Z",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A19.320Z&end=2026-10-05T10%3A43%3A19.320Z"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A19.926Z&end=2026-10-05T10%3A43%3A19.926Z",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-07T10%3A43%3A19.926Z&end=2026-10-05T10%3A43%3A19.926Z"
+          },
+          {
+            "kind": "market-transport",
+            "url": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full",
+            "method": "GET",
+            "resourceType": "fetch",
+            "requestFailure": "net::ERR_FAILED",
+            "message": "Failed to load resource: net::ERR_FAILED",
+            "consoleUrl": "https://sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full"
+          }
+        ],
+        "transportNoteCount": 118
+      }
+    ]
+  },
+  "acceptance": "Package 18's observed history-transport classification defect is fixed and source-accepted by deterministic native transport/CORS positive and concurrent local/runtime negative controls, plus the unchanged ordinary gates. Prior failure evidence remains. No external-delivery, live mechanic, physical-device, merge or deployment acceptance claimed.",
+  "nextStep": "Resolve documentation successor and its automatic CI from PR #301. Return to package 12 only with dated current live lore/first-party rate, cap, consumed Pest currency and duration/expiry evidence; preserve unknown fields and accepted safeguards. Packages 14/15/17 retain their blocks."
+}

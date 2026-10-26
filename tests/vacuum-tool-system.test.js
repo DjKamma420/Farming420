@@ -103,7 +103,8 @@ test('Pest-kill totals include Vacuum base Fortune, Buzzing, gems and Vacuum upg
   const kill = computeStatTotals(state, 'melon', 'pest-kill');
   assert.equal(kill.pestFortune, 161);
   assert.equal(kill.effectiveFortune, 161);
-  assert.equal(kill.overbloom, 5);
+  assert.equal(kill.overbloom, 0);
+  assert.ok(kill.incomplete.overbloom.some(row=>row.id==='attribute-shard-field-mouse-shard-pest-overbloom')); 
   assert.equal(kill.derived.vacuumBaseFarmingFortune, 25);
   assert.equal(kill.derived.vacuumBuzzingFarmingFortune, 11);
   assert.equal(kill.derived.vacuumPeridotFortune, 20);

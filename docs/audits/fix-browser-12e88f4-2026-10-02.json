@@ -1,0 +1,225 @@
+{
+  "commit": "12e88f4bbc2a6485821549e04f2bb4f42d225a6d",
+  "validate": {
+    "run": 36958392621,
+    "job": 110686398959,
+    "result": "success",
+    "node": 1384,
+    "python": 8,
+    "stampedEntrypoints": 52,
+    "references": 466
+  },
+  "browser": {
+    "run": 36958392562,
+    "engines": [
+      {
+        "job": 110686398551,
+        "engine": "chromium",
+        "counts": {
+          "PASS": 195,
+          "FAIL": 0,
+          "NOTE": 8,
+          "BLOCKED": 0
+        },
+        "negativeControl": {
+          "engine": "chromium",
+          "viewport": "negative-control",
+          "check": "runtime-error-negative-control",
+          "status": "PASS",
+          "evidence": {
+            "runtimeErrors": [
+              "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+            ],
+            "marketTransportNotes": [],
+            "acceptanceExit": 1,
+            "rawPageErrors": [
+              "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+            ]
+          }
+        },
+        "failed": [],
+        "passedChecks": [
+          "runtime-error-negative-control",
+          "settled-navigation-retries",
+          "normal-tap-navigation",
+          "cancel-set-blank",
+          "cancel-set-filled",
+          "add-set-escape",
+          "three-set-long-name-header",
+          "last-option-point-in-time-hit",
+          "last-option-stable-after-capture-and-anchor-expiry",
+          "pet-item-escape-close",
+          "declared-listbox-arrow-focus",
+          "last-option-actual-touch-selection-after-recovery",
+          "picker-petItem-home-end-tab-outside-focus",
+          "picker-petItem-same-state-zero-mutations",
+          "picker-pet-home-end-tab-outside-focus",
+          "picker-pet-same-state-zero-mutations",
+          "picker-helmet-home-end-tab-outside-focus",
+          "picker-helmet-same-state-zero-mutations",
+          "effects-drawer-escape-focus-tab",
+          "cropshot-valid-tree-one-write",
+          "manual-wheel-controlled-late-mutation",
+          "manual-key-controlled-late-mutation",
+          "touch-intent-controlled-late-mutation",
+          "runtime-page-errors",
+          "tater-pesthunter-clover-truthful-stable-fallback",
+          "export-preserves-actual-state",
+          "invalid-json-ui-rejection",
+          "future-inner-ui-rejection",
+          "future-envelope-ui-rejection",
+          "valid-current-ui-restore",
+          "future-raw-bytes-zero-writes-startup-navigation-editors-settings-sync"
+        ],
+        "correlatedMarketTransports": []
+      },
+      {
+        "job": 110686398765,
+        "engine": "firefox",
+        "counts": {
+          "PASS": 195,
+          "FAIL": 0,
+          "NOTE": 8,
+          "BLOCKED": 0
+        },
+        "negativeControl": {
+          "engine": "firefox",
+          "viewport": "negative-control",
+          "check": "runtime-error-negative-control",
+          "status": "PASS",
+          "evidence": {
+            "runtimeErrors": [
+              "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+            ],
+            "marketTransportNotes": [],
+            "acceptanceExit": 1,
+            "rawPageErrors": [
+              "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+            ]
+          }
+        },
+        "failed": [],
+        "passedChecks": [
+          "runtime-error-negative-control",
+          "settled-navigation-retries",
+          "normal-tap-navigation",
+          "cancel-set-blank",
+          "cancel-set-filled",
+          "add-set-escape",
+          "three-set-long-name-header",
+          "last-option-point-in-time-hit",
+          "last-option-stable-after-capture-and-anchor-expiry",
+          "pet-item-escape-close",
+          "declared-listbox-arrow-focus",
+          "last-option-actual-touch-selection-after-recovery",
+          "picker-petItem-home-end-tab-outside-focus",
+          "picker-petItem-same-state-zero-mutations",
+          "picker-pet-home-end-tab-outside-focus",
+          "picker-pet-same-state-zero-mutations",
+          "picker-helmet-home-end-tab-outside-focus",
+          "picker-helmet-same-state-zero-mutations",
+          "effects-drawer-escape-focus-tab",
+          "cropshot-valid-tree-one-write",
+          "manual-wheel-controlled-late-mutation",
+          "manual-key-controlled-late-mutation",
+          "touch-intent-controlled-late-mutation",
+          "runtime-page-errors",
+          "tater-pesthunter-clover-truthful-stable-fallback",
+          "export-preserves-actual-state",
+          "invalid-json-ui-rejection",
+          "future-inner-ui-rejection",
+          "future-envelope-ui-rejection",
+          "valid-current-ui-restore",
+          "future-raw-bytes-zero-writes-startup-navigation-editors-settings-sync"
+        ],
+        "correlatedMarketTransports": []
+      },
+      {
+        "job": 110686398826,
+        "engine": "webkit",
+        "counts": {
+          "PASS": 195,
+          "FAIL": 0,
+          "NOTE": 8,
+          "BLOCKED": 0
+        },
+        "negativeControl": {
+          "engine": "webkit",
+          "viewport": "negative-control",
+          "check": "runtime-error-negative-control",
+          "status": "PASS",
+          "evidence": {
+            "runtimeErrors": [
+              "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+            ],
+            "marketTransportNotes": [],
+            "acceptanceExit": 1,
+            "rawPageErrors": [
+              "Error: AUDIT_INJECTED_RUNTIME_ERROR"
+            ]
+          }
+        },
+        "failed": [],
+        "passedChecks": [
+          "runtime-error-negative-control",
+          "settled-navigation-retries",
+          "normal-tap-navigation",
+          "cancel-set-blank",
+          "cancel-set-filled",
+          "add-set-escape",
+          "three-set-long-name-header",
+          "last-option-point-in-time-hit",
+          "last-option-stable-after-capture-and-anchor-expiry",
+          "pet-item-escape-close",
+          "declared-listbox-arrow-focus",
+          "last-option-actual-touch-selection-after-recovery",
+          "picker-petItem-home-end-tab-outside-focus",
+          "picker-petItem-same-state-zero-mutations",
+          "picker-pet-home-end-tab-outside-focus",
+          "picker-pet-same-state-zero-mutations",
+          "picker-helmet-home-end-tab-outside-focus",
+          "picker-helmet-same-state-zero-mutations",
+          "effects-drawer-escape-focus-tab",
+          "cropshot-valid-tree-one-write",
+          "manual-wheel-controlled-late-mutation",
+          "manual-key-controlled-late-mutation",
+          "touch-intent-controlled-late-mutation",
+          "runtime-page-errors",
+          "tater-pesthunter-clover-truthful-stable-fallback",
+          "export-preserves-actual-state",
+          "invalid-json-ui-rejection",
+          "future-inner-ui-rejection",
+          "future-envelope-ui-rejection",
+          "valid-current-ui-restore",
+          "future-raw-bytes-zero-writes-startup-navigation-editors-settings-sync"
+        ],
+        "correlatedMarketTransports": []
+      }
+    ]
+  },
+  "overlay": {
+    "exit": 0,
+    "findings": 0,
+    "mainTargets": 120,
+    "openedOverlays": 16,
+    "runtimeErrors": []
+  },
+  "sweep": {
+    "exit": 0,
+    "areas": [
+      "dashboard",
+      "crops",
+      "setups",
+      "buffs",
+      "qol",
+      "tools",
+      "focus",
+      "info",
+      "planner",
+      "shards"
+    ],
+    "negativeExit": 1,
+    "negativeMarkerVariants": 3
+  },
+  "scope": "Linux engines, eight emulated phone/landscape viewports. External market data remains unavailable; live request success, physical devices, authenticated profiles and deployed Pages marker are not claimed."
+}

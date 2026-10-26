@@ -127,9 +127,9 @@
     "rarefinder_current_max_overbloom": 50,
     "lucky_clover_overbloom": 7,
     "poignant_lucky_clover_overbloom": 13,
-    "philip_fortune_per_pest_0_27": 5,
-    "philip_pest_cap_0_27": 200,
-    "philip_max_farming_fortune_0_27": 1000,
+    "philip_fortune_per_pest_0_27": null,
+    "philip_pest_cap_0_27": null,
+    "philip_max_farming_fortune_0_27": null,
     "normal_pest_feast_rare_crop_base_probability": 0.15,
     "field_mouse_feast_rare_crop_base_probability": 0.30,
     "chocolate_century_cake_farming_fortune": 5,
@@ -226,7 +226,29 @@
     "harvest_harbinger_potion":{"farming_fortune":50},
     "atmospheric_filter":{"spring":"+25 FF","summer":"+20 Farming Wisdom","autumn":"Pest spawn-frequency effect","winter":"Visitor Copper effect","garden_only":true,"wisdom_marker":true},
     "magic_8_ball":{"conditional":"season/state","possible":"+25 FF +1 Farming Wisdom","wisdom_marker":true},
-    "pesthunter_philip":{"current_0_27":"+5 FF per Pest, cap 200 = +1000 FF max","temporary":true},
+    "pesthunter_philip":{
+      "current_0_27":null,
+      "status":"VERIFY_LIVE",
+      "temporary":true,
+      "live_verified":false,
+      "last_live_verified":null,
+      "source_checked":"2026-10-05",
+      "runtime_authority":"src/farming-modifiers-data.js:TEMPORARY_FARMING_MODIFIERS.pesthunterPhillip",
+      "live_pest_cost_for_full_buff":null,
+      "live_duration_seconds":null,
+      "alpha_preview":{
+        "fortune_per_pest":5,
+        "pest_count_for_cap":40,
+        "count_rule":"Fortune cap divided by rate; an arithmetic preview threshold, not verified NPC currency consumption.",
+        "max_farming_fortune":200,
+        "confidence":"ALPHA_ONLY",
+        "source":"https://hypixel.net/threads/aug-3-0-27-alpha-changes-2.6134812/",
+        "source_date":"2026-08-03"
+      },
+      "live_release_source":"https://hypixel.net/threads/hypixel-skyblock-0-27-torrhus-canyon-critter-safari.6132090/",
+      "verification_gap":"The live release excludes unspecified Alpha Farming changes and does not establish this curve. The Alpha rate/cap do not establish actual Pest consumption or duration. Require dated current live lore or a first-party live statement covering rate, Fortune cap, Pest cost and duration/expiry before promotion.",
+      "activation_rule":"One observed integer Pest count and observed activation/expiry; no guessed live duration or stacking."
+    },
     "dark_cacao_truffle":{"status":"0.27 Cocoa-specific behavior requires exact live recheck before global use"}
   },
   "pests": {

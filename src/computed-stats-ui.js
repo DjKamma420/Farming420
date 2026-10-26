@@ -1,3 +1,4 @@
+import { readStoredAppState, writeStoredAppState } from './app-storage.js';
 import { STORAGE_KEY } from './config.js';
 import { CROPS } from './data.js';
 import { applyComputedStatsToState, computeStatTotals } from './computed-stats.js';
@@ -6,11 +7,11 @@ let applying = false;
 let scheduled = false;
 
 function load() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
+  try { return readStoredAppState({}); } catch { return {}; }
 }
 
 function save(raw) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(raw));
+  return writeStoredAppState(raw);
 }
 
 function sameJson(a, b) {
@@ -103,8 +104,7 @@ function syncDerivedCache(raw) {
     plannerEconomics: Object.fromEntries(CROPS.map(crop => [crop.id, raw.profile?.plannerEconomics?.[crop.id]?.overbloom])),
   };
   if (sameJson(before, after)) return false;
-  save(raw);
-  return true;
+  return save(raw);
 }
 
 function apply() {

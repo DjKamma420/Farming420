@@ -29,24 +29,28 @@ function pageId() {
   return document.querySelector('.sidebar .nav-link.active')?.dataset.page || '';
 }
 
+function philipPreviewNote(result) {
+  if (!result) return 'Enter a whole Pest count';
+  return `${formatNumber(result.previewPestCount)} Pests in the Alpha calculation${result.capped ? ` · preview cap at ${PESTHUNTER_PHILIP.pestCap}` : ''} · Live Pest cost and duration unverified`;
+}
+
 function philipMarkup(pests) {
   const result = philipFortuneFor(pests);
   const older = PESTHUNTER_PHILIP.supersededSnapshot;
   return `
     <label class="pest-philip-input">
-      <span>Pests to spend</span>
+      <span>Pests in Alpha preview</span>
       <input data-pest-philip type="number" min="0" step="1" value="${result ? result.requested : 0}">
     </label>
     <div class="pest-philip-result">
-      <strong data-pest-philip-out>${result ? `+${formatNumber(result.fortune)} Farming Fortune` : '—'}</strong>
-      <span data-pest-philip-note>${result
-        ? `${formatNumber(result.spent)} pests for ${PESTHUNTER_PHILIP.durationMinutes} minutes${result.capped ? ` · capped at ${PESTHUNTER_PHILIP.pestCap}` : ''}`
-        : 'Enter a pest count'}</span>
+      <strong data-pest-philip-out>${result ? `+${formatNumber(result.fortune)} Farming Fortune (Alpha preview)` : '—'}</strong>
+      <span data-pest-philip-note>${philipPreviewNote(result)}</span>
     </div>
     <p class="pest-note">${PESTHUNTER_PHILIP.fortunePerPest} Farming Fortune per pest, up to
       ${formatNumber(PESTHUNTER_PHILIP.maxFortune)} at ${PESTHUNTER_PHILIP.pestCap} pests
-      (version ${esc(PESTHUNTER_PHILIP.version)}). An earlier snapshot caps at
-      +${older.maxFortune} for ${older.pestCap} pests; if that is what you see in game, yours is the older one.</p>
+      (${esc(PESTHUNTER_PHILIP.version)}). The historical reference also records
+      +${older.maxFortune} for ${older.pestCap} pests. Matching caps do not verify
+      the live curve or identify a game version.</p>
     <p class="pest-note">${esc(PESTHUNTER_PHILIP.alternativeUseNote)}</p>`;
 }
 
@@ -174,10 +178,8 @@ function applyPestAnalysis() {
     // observed subtree: assigning the same string still replaces the text node
     // and emits another childList mutation. That is rule 2 of
     // docs/RENDER_FREEZE_SAFETY.md and the exact shape of the PR #90 freeze.
-    setTextIfChanged(out, result ? `+${formatNumber(result.fortune)} Farming Fortune` : '—');
-    setTextIfChanged(note, result
-      ? `${formatNumber(result.spent)} pests for ${PESTHUNTER_PHILIP.durationMinutes} minutes${result.capped ? ` · capped at ${PESTHUNTER_PHILIP.pestCap}` : ''}`
-      : 'Enter a pest count');
+    setTextIfChanged(out, result ? `+${formatNumber(result.fortune)} Farming Fortune (Alpha preview)` : '—');
+    setTextIfChanged(note, philipPreviewNote(result));
   });
 }
 

@@ -1,3 +1,4 @@
+import { assertSupportedStorage, readStoredAppState, writeStoredAppState } from './app-storage.js';
 import { DATA_SCHEMA_VERSION, STORAGE_KEY } from './config.js';
 import { ensureProgressBucket, migrateState } from './migrations.js';
 
@@ -32,9 +33,10 @@ const CROP_KEYS = new Map([
 ]);
 
 function readState() {
+  assertSupportedStorage();
   let stored = {};
   try {
-    stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    stored = readStoredAppState({});
   } catch {
     stored = {};
   }
@@ -50,8 +52,7 @@ function readState() {
 }
 
 function writeState(state) {
-  state.schemaVersion = DATA_SCHEMA_VERSION;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  return writeStoredAppState(state, { strict: true });
 }
 
 function normalizeCropKey(value) {

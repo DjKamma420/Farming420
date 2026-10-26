@@ -1,0 +1,137 @@
+{
+  "commit": "0d2a208d5ecd100508d50ce3789d61e094fb2979",
+  "validate": {
+    "run": 36957427909,
+    "job": 110683418760,
+    "result": "success",
+    "node": 1379,
+    "python": 8,
+    "artifact": {
+      "stampedEntrypoints": 52,
+      "references": 466
+    }
+  },
+  "browser": {
+    "run": 36957427906,
+    "jobs": [
+      110683418662,
+      110683418780,
+      110683418879
+    ],
+    "webkit": {
+      "counts": {
+        "PASS": 192,
+        "FAIL": 2,
+        "NOTE": 8,
+        "BLOCKED": 0
+      },
+      "failed": [
+        {
+          "engine": "webkit",
+          "viewport": "667-landscape",
+          "check": "runtime-page-errors",
+          "status": "FAIL",
+          "evidence": [
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/CACTUS_KNIFE/history?start=2026-07-04T02%3A54%3A06.061Z&end=2026-10-02T02%3A54%3A06.061Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/MELON_DICER/history?start=2026-07-04T02%3A54%3A05.568Z&end=2026-10-02T02%3A54%3A05.568Z due to access control checks."
+          ]
+        },
+        {
+          "engine": "webkit",
+          "viewport": "800-landscape",
+          "check": "runtime-page-errors",
+          "status": "FAIL",
+          "evidence": [
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/CARROT_ITEM/history?start=2026-07-04T02%3A54%3A14.712Z&end=2026-10-02T02%3A54%3A14.712Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/WHEAT/history?start=2026-07-04T02%3A54%3A14.711Z&end=2026-10-02T02%3A54%3A14.711Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/POTATO_ITEM/history?start=2026-07-04T02%3A54%3A14.712Z&end=2026-10-02T02%3A54%3A14.712Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/PUMPKIN/history?start=2026-07-04T02%3A54%3A14.712Z&end=2026-10-02T02%3A54%3A14.712Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/MELON/history?start=2026-07-04T02%3A54%3A14.939Z&end=2026-10-02T02%3A54%3A14.939Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/SUGAR_CANE/history?start=2026-07-04T02%3A54%3A14.948Z&end=2026-10-02T02%3A54%3A14.948Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/INK_SACK%3A3/history?start=2026-07-04T02%3A54%3A14.951Z&end=2026-10-02T02%3A54%3A14.951Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/CACTUS/history?start=2026-07-04T02%3A54%3A14.944Z&end=2026-10-02T02%3A54%3A14.944Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/SUNFLOWER/history?start=2026-07-04T02%3A54%3A15.115Z&end=2026-10-02T02%3A54%3A15.115Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/NETHER_STALK/history?start=2026-07-04T02%3A54%3A15.114Z&end=2026-10-02T02%3A54%3A15.114Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/MOONFLOWER/history?start=2026-07-04T02%3A54%3A15.126Z&end=2026-10-02T02%3A54%3A15.126Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/WILD_ROSE/history?start=2026-07-04T02%3A54%3A15.134Z&end=2026-10-02T02%3A54%3A15.134Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/CORNUCOPIA/history?start=2026-07-04T02%3A54%3A15.286Z&end=2026-10-02T02%3A54%3A15.286Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/CARROT_ZEST/history?start=2026-07-04T02%3A54%3A15.287Z&end=2026-10-02T02%3A54%3A15.287Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/DEEPFRIES/history?start=2026-07-04T02%3A54%3A15.295Z&end=2026-10-02T02%3A54%3A15.295Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/AGGOURDIAN/history?start=2026-07-04T02%3A54%3A15.305Z&end=2026-10-02T02%3A54%3A15.305Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/MELON_JUICE/history?start=2026-07-04T02%3A54%3A15.460Z&end=2026-10-02T02%3A54%3A15.460Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/FEASTFUNGUS/history?start=2026-07-04T02%3A54%3A15.461Z&end=2026-10-02T02%3A54%3A15.461Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/CACTUS_FLOWER/history?start=2026-07-04T02%3A54%3A15.475Z&end=2026-10-02T02%3A54%3A15.475Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/CANE_KNOT/history?start=2026-07-04T02%3A54%3A15.483Z&end=2026-10-02T02%3A54%3A15.483Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/DESIGNER_COFFEE_BEANS/history?start=2026-07-04T02%3A54%3A15.628Z&end=2026-10-02T02%3A54%3A15.628Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/BOTROOT/history?start=2026-07-04T02%3A54%3A15.636Z&end=2026-10-02T02%3A54%3A15.636Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/SALTED_SUNFLOWER_SEEDS/history?start=2026-07-04T02%3A54%3A15.653Z&end=2026-10-02T02%3A54%3A15.653Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/CRYSTALIZED_MOONLIGHT/history?start=2026-07-04T02%3A54%3A15.667Z&end=2026-10-02T02%3A54%3A15.667Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/FLORAL_GELATIN/history?start=2026-07-04T02%3A54%3A15.801Z&end=2026-10-02T02%3A54%3A15.801Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/SHARD_FIREFLY/history?start=2026-07-04T02%3A54%3A15.812Z&end=2026-10-02T02%3A54%3A15.812Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/SHARD_GALAXY_FISH/history?start=2026-07-04T02%3A54%3A15.838Z&end=2026-10-02T02%3A54%3A15.838Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/SHARD_TERMITE/history?start=2026-07-04T02%3A54%3A15.969Z&end=2026-10-02T02%3A54%3A15.969Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/SHARD_PEST/history?start=2026-07-04T02%3A54%3A15.979Z&end=2026-10-02T02%3A54%3A15.979Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/SHARD_CRICKET/history?start=2026-07-04T02%3A54%3A16.013Z&end=2026-10-02T02%3A54%3A16.013Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/SHARD_KEELED_SLUG/history?start=2026-07-04T02%3A54%3A16.037Z&end=2026-10-02T02%3A54%3A16.037Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/SHARD_RAT/history?start=2026-07-04T02%3A54%3A16.143Z&end=2026-10-02T02%3A54%3A16.143Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/SHARD_MUDWORM/history?start=2026-07-04T02%3A54%3A16.187Z&end=2026-10-02T02%3A54%3A16.187Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/SHARD_INVISIBUG/history?start=2026-07-04T02%3A54%3A16.202Z&end=2026-10-02T02%3A54%3A16.202Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/SHARD_LADYBUG/history?start=2026-07-04T02%3A54%3A16.311Z&end=2026-10-02T02%3A54%3A16.311Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/SHARD_DRAGONFLY/history?start=2026-07-04T02%3A54%3A16.363Z&end=2026-10-02T02%3A54%3A16.363Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/SHARD_MOTH/history?start=2026-07-04T02%3A54%3A16.371Z&end=2026-10-02T02%3A54%3A16.371Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/FERMENTO_ARTIFACT/history?start=2026-07-04T02%3A54%3A16.407Z&end=2026-10-02T02%3A54%3A16.407Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/HELIANTHUS_RELIC/history?start=2026-07-04T02%3A54%3A16.497Z&end=2026-10-02T02%3A54%3A16.497Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/OVERCLOCKER_3000/history?start=2026-07-04T02%3A54%3A16.570Z&end=2026-10-02T02%3A54%3A16.570Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/FARMING_FOR_DUMMIES/history?start=2026-07-04T02%3A54%3A16.579Z&end=2026-10-02T02%3A54%3A16.579Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/RECOMBOBULATOR_3000/history?start=2026-07-04T02%3A54%3A16.604Z&end=2026-10-02T02%3A54%3A16.604Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/PERFECT_PERIDOT_GEM/history?start=2026-07-04T02%3A54%3A16.680Z&end=2026-10-02T02%3A54%3A16.680Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/BLESSED_FRUIT/history?start=2026-07-04T02%3A54%3A16.750Z&end=2026-10-02T02%3A54%3A16.750Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/GOLDEN_BALL/history?start=2026-07-04T02%3A54%3A16.765Z&end=2026-10-02T02%3A54%3A16.765Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/LARGE_WALNUT/history?start=2026-07-04T02%3A54%3A16.794Z&end=2026-10-02T02%3A54%3A16.794Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/HASHBROWN/history?start=2026-07-04T02%3A54%3A16.870Z&end=2026-10-02T02%3A54%3A16.870Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/BEADY_EYES/history?start=2026-07-04T02%3A54%3A16.949Z&end=2026-10-02T02%3A54%3A16.949Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/OVERPRICED_DRINK/history?start=2026-07-04T02%3A54%3A16.936Z&end=2026-10-02T02%3A54%3A16.936Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/OVERGROWN_GRASS/history?start=2026-07-04T02%3A54%3A16.978Z&end=2026-10-02T02%3A54%3A16.978Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/BURROWING_SPORES/history?start=2026-07-04T02%3A54%3A17.053Z&end=2026-10-02T02%3A54%3A17.053Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/BLOOMING_THORNS/history?start=2026-07-04T02%3A54%3A17.119Z&end=2026-10-02T02%3A54%3A17.119Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/GREEN_BANDANA/history?start=2026-07-04T02%3A54%3A17.149Z&end=2026-10-02T02%3A54%3A17.149Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/POIGNANT_LUCKY_CLOVER/history?start=2026-07-04T02%3A54%3A17.184Z&end=2026-10-02T02%3A54%3A17.184Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/CROPSHOT_GARDEN_CHIP/history?start=2026-07-04T02%3A54%3A17.232Z&end=2026-10-02T02%3A54%3A17.232Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/HYPERCHARGE_GARDEN_CHIP/history?start=2026-07-04T02%3A54%3A17.315Z&end=2026-10-02T02%3A54%3A17.315Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/RAREFINDER_CHIP/history?start=2026-07-04T02%3A54%3A17.330Z&end=2026-10-02T02%3A54%3A17.330Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/item/price/RAREFINDER_CHIP/history/full due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/OVERDRIVE_GARDEN_CHIP/history?start=2026-07-04T02%3A54%3A17.419Z&end=2026-10-02T02%3A54%3A17.419Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/QUICKDRAW_GARDEN_CHIP/history?start=2026-07-04T02%3A54%3A17.505Z&end=2026-10-02T02%3A54%3A17.505Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/SYNTHESIS_GARDEN_CHIP/history?start=2026-07-04T02%3A54%3A17.520Z&end=2026-10-02T02%3A54%3A17.520Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/EVERGREEN_GARDEN_CHIP/history?start=2026-07-04T02%3A54%3A17.535Z&end=2026-10-02T02%3A54%3A17.535Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/VERMIN_VAPORIZER_GARDEN_CHIP/history?start=2026-07-04T02%3A54%3A17.603Z&end=2026-10-02T02%3A54%3A17.603Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/MECHAMIND_GARDEN_CHIP/history?start=2026-07-04T02%3A54%3A17.691Z&end=2026-10-02T02%3A54%3A17.691Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/SOWLEDGE_GARDEN_CHIP/history?start=2026-07-04T02%3A54%3A17.705Z&end=2026-10-02T02%3A54%3A17.705Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/PESTHUNTING_GUIDE/history?start=2026-07-04T02%3A54%3A17.722Z&end=2026-10-02T02%3A54%3A17.722Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/ENCHANTMENT_SUNSET_5/history?start=2026-07-04T02%3A54%3A17.776Z&end=2026-10-02T02%3A54%3A17.776Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/REFINED_DARK_CACOA_TRUFFLE/history?start=2026-07-04T02%3A54%3A17.901Z&end=2026-10-02T02%3A54%3A17.901Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/FILLED_ROSEWATER_FLASK/history?start=2026-07-04T02%3A54%3A17.908Z&end=2026-10-02T02%3A54%3A17.908Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/FEAST_BURGER/history?start=2026-07-04T02%3A54%3A17.908Z&end=2026-10-02T02%3A54%3A17.908Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/ENCHANTMENT_GREEN_THUMB_5/history?start=2026-07-04T02%3A54%3A18.015Z&end=2026-10-02T02%3A54%3A18.015Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/ENCHANTMENT_CULTIVATING_1/history?start=2026-07-04T02%3A54%3A18.085Z&end=2026-10-02T02%3A54%3A18.085Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/ENCHANTMENT_HARVESTING_6/history?start=2026-07-04T02%3A54%3A18.089Z&end=2026-10-02T02%3A54%3A18.089Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/ENCHANTMENT_DEDICATION_4/history?start=2026-07-04T02%3A54%3A18.088Z&end=2026-10-02T02%3A54%3A18.088Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/ENCHANTMENT_DEDICATION_1/history?start=2026-07-04T02%3A54%3A18.185Z&end=2026-10-02T02%3A54%3A18.185Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/ENCHANTMENT_DEDICATION_2/history?start=2026-07-04T02%3A54%3A18.257Z&end=2026-10-02T02%3A54%3A18.257Z due to access control checks.",
+            "Fetch API cannot load https: /sky.coflnet.com/api/bazaar/YELLOW_BANDANA/history?start=2026-07-04T02%3A54%3A24.160Z&end=2026-10-02T02%3A54%3A24.160Z due to access control checks."
+          ]
+        }
+      ]
+    },
+    "firefox": {
+      "counts": {
+        "PASS": 194,
+        "FAIL": 0,
+        "NOTE": 8,
+        "BLOCKED": 0
+      }
+    },
+    "chromium": "job success; individual logs reviewed in next checkpoint"
+  },
+  "classification": "WebKit emitted known SkyCofl market-history access-control transport messages through pageerror. Not accepted as final green. New classification requires exact known owner/path and a correlated requestfailed record; unknown/unmatched messages still fail."
+}

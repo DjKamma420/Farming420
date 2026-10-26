@@ -75,7 +75,9 @@ function showFallback(container, label, identity) {
   const node = fallbackNode(label, identity);
   container.prepend(node);
   container.classList.add('has-item-art-fallback');
-  if (identity) container.dataset.renderedItemArt = `fallback:${identity}`;
+  // Retain the attempted source identity. Otherwise every identical enhancement
+  // retries a failed remote image and replaces this truthful fallback again.
+  if (identity) container.dataset.renderedItemArt = identity;
   return node;
 }
 
@@ -253,7 +255,7 @@ function showCatalogOrLetterFallback(container, item, itemId, slotId, identity) 
   removeRenderedArt(container);
   container.prepend(node);
   container.classList.add('has-official-item-art');
-  container.dataset.renderedItemArt = `catalog:${itemId}`;
+  container.dataset.renderedItemArt = identity;
   return node;
 }
 
@@ -335,7 +337,7 @@ export function renderSetupItemArt({ root = document, rawState = readState(), ma
     // Armor uses a real rendered item icon when it is not a player-head helmet.
     // Synced helmet skins become a 3D voxel head instead of a flat face crop.
     const renderedIconUrl = mappedArt ? null : knownSkyblockRenderedIcon(itemId);
-    const identity = mappedArt
+    const sourceIdentity = mappedArt
       ? `mapped:${itemId}`
       : helmetTextureId
         ? `voxel:${helmetTextureId}`
@@ -344,6 +346,7 @@ export function renderSetupItemArt({ root = document, rawState = readState(), ma
           : textureId
             ? `skull:${textureId}`
             : itemId ? `item:${itemId}` : `unresolved:${setupId || 'active'}:${slotId}`;
+    const identity = `${sourceIdentity}:catalog:${catalogRecord?.id || ''}:${catalogTexture}`;
     if ((card.classList.contains('has-official-item-art') || card.classList.contains('has-item-art-fallback')) && card.dataset.renderedItemArt === identity) return;
     removeRenderedArt(card);
 
@@ -377,7 +380,7 @@ export function renderSetupItemArt({ root = document, rawState = readState(), ma
         if (skullFallback) {
           card.prepend(skullFallback);
           card.classList.add('has-official-item-art');
-          card.dataset.renderedItemArt = `skull:${textureId}`;
+          card.dataset.renderedItemArt = identity;
         } else {
           showCatalogOrLetterFallback(card, item, itemId, slotId, identity);
         }

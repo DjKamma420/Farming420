@@ -252,6 +252,13 @@ function renderedIconNode(item, label) {
   image.decoding = 'async';
   image.setAttribute('role', 'img');
   image.setAttribute('aria-label', `${label || item?.name || 'SkyBlock item'} item icon`);
+  image.addEventListener('error', () => {
+    // A broken remote icon must not leak its broken-image glyph or be retried
+    // by another owner. Continue to the existing physical material/pack model.
+    const fallback = isArmorItem(item) ? armorMaterialNode(item, label)
+      : packArtNodeFor(item, label) || genericMaterialSvg(item, label) || letterArtNode(item, label);
+    image.replaceWith(fallback);
+  }, { once: true });
   return image;
 }
 

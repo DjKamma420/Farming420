@@ -1,4 +1,7 @@
+import { readStoredAppState, writeStoredAppState } from './app-storage.js';
+import { applyComputedStatsToState } from './computed-stats.js';
 import { UPGRADES } from './data.js';
+import { applyFarmingToolReforge, FARMING_TOOL_REFORGE_ENTRY_IDS, selectedFarmingToolReforge } from './item-capabilities.js';
 import { STORAGE_KEY } from './config.js';
 import { toolKeyForCropId } from './migrations.js';
 import { EXCLUSIVE_ENTRY_GROUPS } from './exclusivity.js';
@@ -6,7 +9,7 @@ import { EXCLUSIVE_ENTRY_GROUPS } from './exclusivity.js';
 const DERIVED_ONLY_SECTIONS = new Set(['gear']);
 
 function load() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
+  try { return readStoredAppState({}); } catch { return {}; }
 }
 
 function cropId(raw) {
@@ -33,7 +36,12 @@ function bucket(raw, item) {
 }
 
 function level(raw, item) {
-  return Math.max(0, Math.min(Number(item.max || 1), Number(bucket(raw, item).levels[item.id] || 0)));
+  const target = bucket(raw, item);
+  if (Object.values(FARMING_TOOL_REFORGE_ENTRY_IDS).includes(item.id)) {
+    const selected = selectedFarmingToolReforge(target, raw.profile?.toolReforges?.[toolKeyForCropId(cropId(raw))]);
+    return selected && FARMING_TOOL_REFORGE_ENTRY_IDS[selected] === item.id ? 1 : 0;
+  }
+  return Math.max(0, Math.min(Number(item.max || 1), Number(target.levels[item.id] || 0)));
 }
 
 function clearExclusivePeers(raw, item) {
@@ -53,6 +61,12 @@ function clearExclusivePeers(raw, item) {
 function writeLevel(raw, item, value) {
   const target = bucket(raw, item);
   const next = Math.max(0, Math.min(Number(item.max || 1), Math.floor(Number(value) || 0)));
+  const reforge = Object.entries(FARMING_TOOL_REFORGE_ENTRY_IDS).find(([, id]) => id === item.id)?.[0];
+  if (reforge) {
+    applyFarmingToolReforge(target, next > 0 ? reforge : null);
+    applyComputedStatsToState(raw);
+    return writeStoredAppState(raw);
+  }
   if (next > 0) {
     clearExclusivePeers(raw, item);
     target.levels[item.id] = next;
@@ -61,7 +75,8 @@ function writeLevel(raw, item, value) {
     delete target.levels[item.id];
     delete target.owned[item.id];
   }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(raw));
+  applyComputedStatsToState(raw);
+  return writeStoredAppState(raw);
 }
 
 function commit(item, updater) {

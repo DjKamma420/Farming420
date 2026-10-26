@@ -1,0 +1,1074 @@
+{
+  "commit": "fb5a1a834081d54a0108a77648e50b16b6ebf0fb",
+  "validate": {
+    "run": 36956406576,
+    "job": 110680207480,
+    "exit": 0,
+    "node": 1379,
+    "python": 8,
+    "staticReferences": 466,
+    "idempotence": {
+      "pages": 10,
+      "reapply": 3,
+      "mutations": 0,
+      "negativeControls": [
+        "mutation",
+        "equal-length"
+      ]
+    },
+    "trustedToolTransitions": 12,
+    "maxDrift": 1.42
+  },
+  "browser": {
+    "run": 36956406582,
+    "jobs": [
+      110680207625,
+      110680207819,
+      110680207821
+    ],
+    "engines": [
+      {
+        "engine": "chromium",
+        "job": 110680207625,
+        "counts": {
+          "PASS": 194,
+          "FAIL": 0,
+          "NOTE": 8,
+          "BLOCKED": 0
+        },
+        "failed": [],
+        "passedChecks": [
+          "settled-navigation-retries",
+          "normal-tap-navigation",
+          "cancel-set-blank",
+          "cancel-set-filled",
+          "add-set-escape",
+          "three-set-long-name-header",
+          "last-option-point-in-time-hit",
+          "last-option-stable-after-capture-and-anchor-expiry",
+          "pet-item-escape-close",
+          "declared-listbox-arrow-focus",
+          "last-option-actual-touch-selection-after-recovery",
+          "picker-petItem-home-end-tab-outside-focus",
+          "picker-petItem-same-state-zero-mutations",
+          "picker-pet-home-end-tab-outside-focus",
+          "picker-pet-same-state-zero-mutations",
+          "picker-helmet-home-end-tab-outside-focus",
+          "picker-helmet-same-state-zero-mutations",
+          "effects-drawer-escape-focus-tab",
+          "cropshot-valid-tree-one-write",
+          "manual-wheel-controlled-late-mutation",
+          "manual-key-controlled-late-mutation",
+          "touch-intent-controlled-late-mutation",
+          "runtime-page-errors",
+          "tater-pesthunter-clover-truthful-stable-fallback",
+          "export-preserves-actual-state",
+          "invalid-json-ui-rejection",
+          "future-inner-ui-rejection",
+          "future-envelope-ui-rejection",
+          "valid-current-ui-restore",
+          "future-raw-bytes-zero-writes-startup-navigation-editors-settings-sync"
+        ]
+      },
+      {
+        "engine": "firefox",
+        "job": 110680207819,
+        "counts": {
+          "PASS": 194,
+          "FAIL": 0,
+          "NOTE": 8,
+          "BLOCKED": 0
+        },
+        "failed": [],
+        "passedChecks": [
+          "settled-navigation-retries",
+          "normal-tap-navigation",
+          "cancel-set-blank",
+          "cancel-set-filled",
+          "add-set-escape",
+          "three-set-long-name-header",
+          "last-option-point-in-time-hit",
+          "last-option-stable-after-capture-and-anchor-expiry",
+          "pet-item-escape-close",
+          "declared-listbox-arrow-focus",
+          "last-option-actual-touch-selection-after-recovery",
+          "picker-petItem-home-end-tab-outside-focus",
+          "picker-petItem-same-state-zero-mutations",
+          "picker-pet-home-end-tab-outside-focus",
+          "picker-pet-same-state-zero-mutations",
+          "picker-helmet-home-end-tab-outside-focus",
+          "picker-helmet-same-state-zero-mutations",
+          "effects-drawer-escape-focus-tab",
+          "cropshot-valid-tree-one-write",
+          "manual-wheel-controlled-late-mutation",
+          "manual-key-controlled-late-mutation",
+          "touch-intent-controlled-late-mutation",
+          "runtime-page-errors",
+          "tater-pesthunter-clover-truthful-stable-fallback",
+          "export-preserves-actual-state",
+          "invalid-json-ui-rejection",
+          "future-inner-ui-rejection",
+          "future-envelope-ui-rejection",
+          "valid-current-ui-restore",
+          "future-raw-bytes-zero-writes-startup-navigation-editors-settings-sync"
+        ]
+      },
+      {
+        "engine": "webkit",
+        "job": 110680207821,
+        "counts": {
+          "PASS": 194,
+          "FAIL": 0,
+          "NOTE": 8,
+          "BLOCKED": 0
+        },
+        "failed": [],
+        "passedChecks": [
+          "settled-navigation-retries",
+          "normal-tap-navigation",
+          "cancel-set-blank",
+          "cancel-set-filled",
+          "add-set-escape",
+          "three-set-long-name-header",
+          "last-option-point-in-time-hit",
+          "last-option-stable-after-capture-and-anchor-expiry",
+          "pet-item-escape-close",
+          "declared-listbox-arrow-focus",
+          "last-option-actual-touch-selection-after-recovery",
+          "picker-petItem-home-end-tab-outside-focus",
+          "picker-petItem-same-state-zero-mutations",
+          "picker-pet-home-end-tab-outside-focus",
+          "picker-pet-same-state-zero-mutations",
+          "picker-helmet-home-end-tab-outside-focus",
+          "picker-helmet-same-state-zero-mutations",
+          "effects-drawer-escape-focus-tab",
+          "cropshot-valid-tree-one-write",
+          "manual-wheel-controlled-late-mutation",
+          "manual-key-controlled-late-mutation",
+          "touch-intent-controlled-late-mutation",
+          "runtime-page-errors",
+          "tater-pesthunter-clover-truthful-stable-fallback",
+          "export-preserves-actual-state",
+          "invalid-json-ui-rejection",
+          "future-inner-ui-rejection",
+          "future-envelope-ui-rejection",
+          "valid-current-ui-restore",
+          "future-raw-bytes-zero-writes-startup-navigation-editors-settings-sync"
+        ]
+      }
+    ]
+  },
+  "scope": "Linux browser engines; eight emulated phone/landscape viewports; actual coordinate touch, synthetic touch intent; no physical devices or authenticated live-profile claim.",
+  "overlay": {
+    "exit": 0,
+    "findings": 0,
+    "scrollTargets": 120,
+    "openedOverlays": 16,
+    "runtimeErrors": [],
+    "scrollEvidence": [
+      {
+        "viewport": "phone",
+        "page": "dashboard",
+        "requested": 0,
+        "actual": 0,
+        "max": 4763
+      },
+      {
+        "viewport": "phone",
+        "page": "dashboard",
+        "requested": 300,
+        "actual": 300,
+        "max": 4763
+      },
+      {
+        "viewport": "phone",
+        "page": "dashboard",
+        "requested": 700,
+        "actual": 700,
+        "max": 4763
+      },
+      {
+        "viewport": "phone",
+        "page": "setups",
+        "requested": 0,
+        "actual": 0,
+        "max": 1919
+      },
+      {
+        "viewport": "phone",
+        "page": "setups",
+        "requested": 300,
+        "actual": 300,
+        "max": 1919
+      },
+      {
+        "viewport": "phone",
+        "page": "setups",
+        "requested": 700,
+        "actual": 700,
+        "max": 1919
+      },
+      {
+        "viewport": "phone",
+        "page": "crops",
+        "requested": 0,
+        "actual": 0,
+        "max": 3299
+      },
+      {
+        "viewport": "phone",
+        "page": "crops",
+        "requested": 300,
+        "actual": 300,
+        "max": 3299
+      },
+      {
+        "viewport": "phone",
+        "page": "crops",
+        "requested": 700,
+        "actual": 700,
+        "max": 3299
+      },
+      {
+        "viewport": "phone",
+        "page": "buffs",
+        "requested": 0,
+        "actual": 0,
+        "max": 3094
+      },
+      {
+        "viewport": "phone",
+        "page": "buffs",
+        "requested": 300,
+        "actual": 300,
+        "max": 3094
+      },
+      {
+        "viewport": "phone",
+        "page": "buffs",
+        "requested": 700,
+        "actual": 700,
+        "max": 3094
+      },
+      {
+        "viewport": "phone",
+        "page": "tools",
+        "requested": 0,
+        "actual": 0,
+        "max": 4615
+      },
+      {
+        "viewport": "phone",
+        "page": "tools",
+        "requested": 300,
+        "actual": 300,
+        "max": 4615
+      },
+      {
+        "viewport": "phone",
+        "page": "tools",
+        "requested": 700,
+        "actual": 700,
+        "max": 4615
+      },
+      {
+        "viewport": "phone",
+        "page": "shards",
+        "requested": 0,
+        "actual": 0,
+        "max": 17296
+      },
+      {
+        "viewport": "phone",
+        "page": "shards",
+        "requested": 300,
+        "actual": 300,
+        "max": 17296
+      },
+      {
+        "viewport": "phone",
+        "page": "shards",
+        "requested": 700,
+        "actual": 700,
+        "max": 17296
+      },
+      {
+        "viewport": "phone",
+        "page": "planner",
+        "requested": 0,
+        "actual": 0,
+        "max": 4012
+      },
+      {
+        "viewport": "phone",
+        "page": "planner",
+        "requested": 300,
+        "actual": 300,
+        "max": 4012
+      },
+      {
+        "viewport": "phone",
+        "page": "planner",
+        "requested": 700,
+        "actual": 700,
+        "max": 4012
+      },
+      {
+        "viewport": "phone",
+        "page": "qol",
+        "requested": 0,
+        "actual": 0,
+        "max": 2502
+      },
+      {
+        "viewport": "phone",
+        "page": "qol",
+        "requested": 300,
+        "actual": 300,
+        "max": 2502
+      },
+      {
+        "viewport": "phone",
+        "page": "qol",
+        "requested": 700,
+        "actual": 700,
+        "max": 2502
+      },
+      {
+        "viewport": "phone",
+        "page": "focus",
+        "requested": 0,
+        "actual": 0,
+        "max": 151
+      },
+      {
+        "viewport": "phone",
+        "page": "focus",
+        "requested": 300,
+        "actual": 151,
+        "max": 151
+      },
+      {
+        "viewport": "phone",
+        "page": "focus",
+        "requested": 700,
+        "actual": 151,
+        "max": 151
+      },
+      {
+        "viewport": "phone",
+        "page": "info",
+        "requested": 0,
+        "actual": 0,
+        "max": 31055
+      },
+      {
+        "viewport": "phone",
+        "page": "info",
+        "requested": 300,
+        "actual": 300,
+        "max": 31055
+      },
+      {
+        "viewport": "phone",
+        "page": "info",
+        "requested": 700,
+        "actual": 700,
+        "max": 31055
+      },
+      {
+        "viewport": "phone-l",
+        "page": "dashboard",
+        "requested": 0,
+        "actual": 0,
+        "max": 4554
+      },
+      {
+        "viewport": "phone-l",
+        "page": "dashboard",
+        "requested": 300,
+        "actual": 300,
+        "max": 4554
+      },
+      {
+        "viewport": "phone-l",
+        "page": "dashboard",
+        "requested": 700,
+        "actual": 700,
+        "max": 4554
+      },
+      {
+        "viewport": "phone-l",
+        "page": "setups",
+        "requested": 0,
+        "actual": 0,
+        "max": 1848
+      },
+      {
+        "viewport": "phone-l",
+        "page": "setups",
+        "requested": 300,
+        "actual": 300,
+        "max": 1848
+      },
+      {
+        "viewport": "phone-l",
+        "page": "setups",
+        "requested": 700,
+        "actual": 700,
+        "max": 1848
+      },
+      {
+        "viewport": "phone-l",
+        "page": "crops",
+        "requested": 0,
+        "actual": 0,
+        "max": 3038
+      },
+      {
+        "viewport": "phone-l",
+        "page": "crops",
+        "requested": 300,
+        "actual": 300,
+        "max": 3038
+      },
+      {
+        "viewport": "phone-l",
+        "page": "crops",
+        "requested": 700,
+        "actual": 700,
+        "max": 3038
+      },
+      {
+        "viewport": "phone-l",
+        "page": "buffs",
+        "requested": 0,
+        "actual": 0,
+        "max": 2993
+      },
+      {
+        "viewport": "phone-l",
+        "page": "buffs",
+        "requested": 300,
+        "actual": 300,
+        "max": 2993
+      },
+      {
+        "viewport": "phone-l",
+        "page": "buffs",
+        "requested": 700,
+        "actual": 700,
+        "max": 2993
+      },
+      {
+        "viewport": "phone-l",
+        "page": "tools",
+        "requested": 0,
+        "actual": 0,
+        "max": 4476
+      },
+      {
+        "viewport": "phone-l",
+        "page": "tools",
+        "requested": 300,
+        "actual": 300,
+        "max": 4476
+      },
+      {
+        "viewport": "phone-l",
+        "page": "tools",
+        "requested": 700,
+        "actual": 700,
+        "max": 4476
+      },
+      {
+        "viewport": "phone-l",
+        "page": "shards",
+        "requested": 0,
+        "actual": 0,
+        "max": 16879
+      },
+      {
+        "viewport": "phone-l",
+        "page": "shards",
+        "requested": 300,
+        "actual": 300,
+        "max": 16879
+      },
+      {
+        "viewport": "phone-l",
+        "page": "shards",
+        "requested": 700,
+        "actual": 700,
+        "max": 16879
+      },
+      {
+        "viewport": "phone-l",
+        "page": "planner",
+        "requested": 0,
+        "actual": 0,
+        "max": 3979
+      },
+      {
+        "viewport": "phone-l",
+        "page": "planner",
+        "requested": 300,
+        "actual": 300,
+        "max": 3979
+      },
+      {
+        "viewport": "phone-l",
+        "page": "planner",
+        "requested": 700,
+        "actual": 700,
+        "max": 3979
+      },
+      {
+        "viewport": "phone-l",
+        "page": "qol",
+        "requested": 0,
+        "actual": 0,
+        "max": 2241
+      },
+      {
+        "viewport": "phone-l",
+        "page": "qol",
+        "requested": 300,
+        "actual": 300,
+        "max": 2241
+      },
+      {
+        "viewport": "phone-l",
+        "page": "qol",
+        "requested": 700,
+        "actual": 700,
+        "max": 2241
+      },
+      {
+        "viewport": "phone-l",
+        "page": "focus",
+        "requested": 0,
+        "actual": 0,
+        "max": 61
+      },
+      {
+        "viewport": "phone-l",
+        "page": "focus",
+        "requested": 300,
+        "actual": 61,
+        "max": 61
+      },
+      {
+        "viewport": "phone-l",
+        "page": "focus",
+        "requested": 700,
+        "actual": 61,
+        "max": 61
+      },
+      {
+        "viewport": "phone-l",
+        "page": "info",
+        "requested": 0,
+        "actual": 0,
+        "max": 29545
+      },
+      {
+        "viewport": "phone-l",
+        "page": "info",
+        "requested": 300,
+        "actual": 300,
+        "max": 29545
+      },
+      {
+        "viewport": "phone-l",
+        "page": "info",
+        "requested": 700,
+        "actual": 700,
+        "max": 29545
+      },
+      {
+        "viewport": "tablet",
+        "page": "dashboard",
+        "requested": 0,
+        "actual": 0,
+        "max": 4110
+      },
+      {
+        "viewport": "tablet",
+        "page": "dashboard",
+        "requested": 300,
+        "actual": 300,
+        "max": 4110
+      },
+      {
+        "viewport": "tablet",
+        "page": "dashboard",
+        "requested": 700,
+        "actual": 700,
+        "max": 4110
+      },
+      {
+        "viewport": "tablet",
+        "page": "setups",
+        "requested": 0,
+        "actual": 0,
+        "max": 1392
+      },
+      {
+        "viewport": "tablet",
+        "page": "setups",
+        "requested": 300,
+        "actual": 300,
+        "max": 1392
+      },
+      {
+        "viewport": "tablet",
+        "page": "setups",
+        "requested": 700,
+        "actual": 700,
+        "max": 1392
+      },
+      {
+        "viewport": "tablet",
+        "page": "crops",
+        "requested": 0,
+        "actual": 0,
+        "max": 2371
+      },
+      {
+        "viewport": "tablet",
+        "page": "crops",
+        "requested": 300,
+        "actual": 300,
+        "max": 2371
+      },
+      {
+        "viewport": "tablet",
+        "page": "crops",
+        "requested": 700,
+        "actual": 700,
+        "max": 2371
+      },
+      {
+        "viewport": "tablet",
+        "page": "buffs",
+        "requested": 0,
+        "actual": 0,
+        "max": 2520
+      },
+      {
+        "viewport": "tablet",
+        "page": "buffs",
+        "requested": 300,
+        "actual": 300,
+        "max": 2520
+      },
+      {
+        "viewport": "tablet",
+        "page": "buffs",
+        "requested": 700,
+        "actual": 700,
+        "max": 2520
+      },
+      {
+        "viewport": "tablet",
+        "page": "tools",
+        "requested": 0,
+        "actual": 0,
+        "max": 2634
+      },
+      {
+        "viewport": "tablet",
+        "page": "tools",
+        "requested": 300,
+        "actual": 300,
+        "max": 2634
+      },
+      {
+        "viewport": "tablet",
+        "page": "tools",
+        "requested": 700,
+        "actual": 700,
+        "max": 2634
+      },
+      {
+        "viewport": "tablet",
+        "page": "shards",
+        "requested": 0,
+        "actual": 0,
+        "max": 11545
+      },
+      {
+        "viewport": "tablet",
+        "page": "shards",
+        "requested": 300,
+        "actual": 300,
+        "max": 11545
+      },
+      {
+        "viewport": "tablet",
+        "page": "shards",
+        "requested": 700,
+        "actual": 700,
+        "max": 11545
+      },
+      {
+        "viewport": "tablet",
+        "page": "planner",
+        "requested": 0,
+        "actual": 0,
+        "max": 2628
+      },
+      {
+        "viewport": "tablet",
+        "page": "planner",
+        "requested": 300,
+        "actual": 300,
+        "max": 2628
+      },
+      {
+        "viewport": "tablet",
+        "page": "planner",
+        "requested": 700,
+        "actual": 700,
+        "max": 2628
+      },
+      {
+        "viewport": "tablet",
+        "page": "qol",
+        "requested": 0,
+        "actual": 0,
+        "max": 892
+      },
+      {
+        "viewport": "tablet",
+        "page": "qol",
+        "requested": 300,
+        "actual": 300,
+        "max": 892
+      },
+      {
+        "viewport": "tablet",
+        "page": "qol",
+        "requested": 700,
+        "actual": 700,
+        "max": 892
+      },
+      {
+        "viewport": "tablet",
+        "page": "focus",
+        "requested": 0,
+        "actual": 0,
+        "max": 0
+      },
+      {
+        "viewport": "tablet",
+        "page": "focus",
+        "requested": 300,
+        "actual": 0,
+        "max": 0
+      },
+      {
+        "viewport": "tablet",
+        "page": "focus",
+        "requested": 700,
+        "actual": 0,
+        "max": 0
+      },
+      {
+        "viewport": "tablet",
+        "page": "info",
+        "requested": 0,
+        "actual": 0,
+        "max": 19238
+      },
+      {
+        "viewport": "tablet",
+        "page": "info",
+        "requested": 300,
+        "actual": 300,
+        "max": 19238
+      },
+      {
+        "viewport": "tablet",
+        "page": "info",
+        "requested": 700,
+        "actual": 700,
+        "max": 19238
+      },
+      {
+        "viewport": "desktop",
+        "page": "dashboard",
+        "requested": 0,
+        "actual": 0,
+        "max": 1767
+      },
+      {
+        "viewport": "desktop",
+        "page": "dashboard",
+        "requested": 300,
+        "actual": 300,
+        "max": 1767
+      },
+      {
+        "viewport": "desktop",
+        "page": "dashboard",
+        "requested": 700,
+        "actual": 700,
+        "max": 1767
+      },
+      {
+        "viewport": "desktop",
+        "page": "setups",
+        "requested": 0,
+        "actual": 0,
+        "max": 657
+      },
+      {
+        "viewport": "desktop",
+        "page": "setups",
+        "requested": 300,
+        "actual": 300,
+        "max": 657
+      },
+      {
+        "viewport": "desktop",
+        "page": "setups",
+        "requested": 700,
+        "actual": 657,
+        "max": 657
+      },
+      {
+        "viewport": "desktop",
+        "page": "crops",
+        "requested": 0,
+        "actual": 0,
+        "max": 1194
+      },
+      {
+        "viewport": "desktop",
+        "page": "crops",
+        "requested": 300,
+        "actual": 300,
+        "max": 1194
+      },
+      {
+        "viewport": "desktop",
+        "page": "crops",
+        "requested": 700,
+        "actual": 700,
+        "max": 1194
+      },
+      {
+        "viewport": "desktop",
+        "page": "buffs",
+        "requested": 0,
+        "actual": 0,
+        "max": 639
+      },
+      {
+        "viewport": "desktop",
+        "page": "buffs",
+        "requested": 300,
+        "actual": 300,
+        "max": 639
+      },
+      {
+        "viewport": "desktop",
+        "page": "buffs",
+        "requested": 700,
+        "actual": 639,
+        "max": 639
+      },
+      {
+        "viewport": "desktop",
+        "page": "tools",
+        "requested": 0,
+        "actual": 0,
+        "max": 2279
+      },
+      {
+        "viewport": "desktop",
+        "page": "tools",
+        "requested": 300,
+        "actual": 300,
+        "max": 2279
+      },
+      {
+        "viewport": "desktop",
+        "page": "tools",
+        "requested": 700,
+        "actual": 700,
+        "max": 2279
+      },
+      {
+        "viewport": "desktop",
+        "page": "shards",
+        "requested": 0,
+        "actual": 0,
+        "max": 7256
+      },
+      {
+        "viewport": "desktop",
+        "page": "shards",
+        "requested": 300,
+        "actual": 300,
+        "max": 7256
+      },
+      {
+        "viewport": "desktop",
+        "page": "shards",
+        "requested": 700,
+        "actual": 700,
+        "max": 7256
+      },
+      {
+        "viewport": "desktop",
+        "page": "planner",
+        "requested": 0,
+        "actual": 0,
+        "max": 2749
+      },
+      {
+        "viewport": "desktop",
+        "page": "planner",
+        "requested": 300,
+        "actual": 300,
+        "max": 2749
+      },
+      {
+        "viewport": "desktop",
+        "page": "planner",
+        "requested": 700,
+        "actual": 700,
+        "max": 2749
+      },
+      {
+        "viewport": "desktop",
+        "page": "qol",
+        "requested": 0,
+        "actual": 0,
+        "max": 819
+      },
+      {
+        "viewport": "desktop",
+        "page": "qol",
+        "requested": 300,
+        "actual": 300,
+        "max": 819
+      },
+      {
+        "viewport": "desktop",
+        "page": "qol",
+        "requested": 700,
+        "actual": 700,
+        "max": 819
+      },
+      {
+        "viewport": "desktop",
+        "page": "focus",
+        "requested": 0,
+        "actual": 0,
+        "max": 0
+      },
+      {
+        "viewport": "desktop",
+        "page": "focus",
+        "requested": 300,
+        "actual": 0,
+        "max": 0
+      },
+      {
+        "viewport": "desktop",
+        "page": "focus",
+        "requested": 700,
+        "actual": 0,
+        "max": 0
+      },
+      {
+        "viewport": "desktop",
+        "page": "info",
+        "requested": 0,
+        "actual": 0,
+        "max": 12356
+      },
+      {
+        "viewport": "desktop",
+        "page": "info",
+        "requested": 300,
+        "actual": 300,
+        "max": 12356
+      },
+      {
+        "viewport": "desktop",
+        "page": "info",
+        "requested": 700,
+        "actual": 700,
+        "max": 12356
+      }
+    ]
+  },
+  "sweep": {
+    "exit": 0,
+    "areas": [
+      "dashboard",
+      "crops",
+      "setups",
+      "buffs",
+      "tools",
+      "qol",
+      "focus",
+      "info",
+      "planner",
+      "shards"
+    ],
+    "variants": [
+      "[buffs] desktop-empty  ok (14 clicks)",
+      "[buffs] desktop-filled ok (14 clicks)",
+      "[buffs] phone-filled   ok (14 clicks)",
+      "[crops] desktop-empty  ok (8 clicks)",
+      "[crops] desktop-filled ok (8 clicks)",
+      "[crops] phone-filled   ok (8 clicks)",
+      "[dashboard] desktop-empty  ok (0 clicks)",
+      "[dashboard] desktop-filled ok (0 clicks)",
+      "[dashboard] phone-filled   ok (0 clicks)",
+      "[focus] desktop-empty  ok (1 clicks)",
+      "[focus] desktop-filled ok (1 clicks)",
+      "[focus] phone-filled   ok (1 clicks)",
+      "[info] desktop-empty  ok (5 clicks)",
+      "[info] desktop-filled ok (5 clicks)",
+      "[info] phone-filled   ok (5 clicks)",
+      "[planner] desktop-empty  ok (30 clicks)",
+      "[planner] desktop-filled ok (24 clicks)",
+      "[planner] phone-filled   ok (24 clicks)",
+      "[qol] desktop-empty  ok (0 clicks)",
+      "[qol] desktop-filled ok (0 clicks)",
+      "[qol] phone-filled   ok (0 clicks)",
+      "[setups] desktop-empty  ok (12 clicks)",
+      "[setups] desktop-filled ok (12 clicks)",
+      "[setups] phone-filled   ok (12 clicks)",
+      "[shards] desktop-empty  ok (40 clicks)",
+      "[shards] desktop-filled ok (40 clicks)",
+      "[shards] phone-filled   ok (40 clicks)",
+      "[tools] desktop-empty  ok (10 clicks)",
+      "[tools] desktop-filled ok (10 clicks)",
+      "[tools] phone-filled   ok (10 clicks)"
+    ],
+    "negativeExit": 1,
+    "negativeMarker": "AUDIT_INJECTED_RUNTIME_ERROR",
+    "negativeVariants": 3,
+    "marketScope": "External HTTP 403/429 and handled history 400 notes retain unknown market inputs; successful live-price delivery not claimed."
+  },
+  "additionalArtifactValidation": {
+    "commit": "b45d67413142ebd71c71cca754b6b087c094c991",
+    "run": 36957189235,
+    "job": 110682662088,
+    "result": "success",
+    "node": 1379,
+    "python": 8,
+    "buildMarker": "b45d67413142ebd71c71cca754b6b087c094c991",
+    "stampedEntrypoints": 52,
+    "resolvedReferences": 466,
+    "originalCheckoutUnchanged": true
+  }
+}

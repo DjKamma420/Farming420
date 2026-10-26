@@ -81,7 +81,7 @@ test('tool cards and shared item editors stay compact', () => {
 test('tools page keeps redundant copy hidden while the active tool remains tappable', () => {
   const src = read('skyblock-redesign.js');
   const css = read('skyblock-redesign.css').replace(/\/\*[\s\S]*?\*\//g, '');
-  assert.match(src, /content\.classList\.add\('sb-tools-page'\)/);
+  assert.match(src, /content\.classList\.toggle\('sb-tools-page', true\)/);
   assert.match(css, /\.sb-tools-page > \.page-head \{[^}]*display:\s*none/);
   assert.doesNotMatch(css, /\.sb-tools-page \.sb-tool-card\.selected \{[^}]*display:\s*none/);
   assert.doesNotMatch(

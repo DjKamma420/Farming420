@@ -17,6 +17,7 @@
  * reward table -- and the estimate is shown as a collection total.
  */
 import { cropModel } from './farming-mechanics-data.js';
+import { finiteNonNegative } from './finite-number.js';
 import {
   JACOB_CONTEST_DURATION_SECONDS,
   JACOB_PARTICIPATION_COLLECTION,
@@ -82,8 +83,8 @@ export function contestEstimate({
     directFarming: {
       breaksPerSecond: positive(measured.breaksPerSecond),
       baseUnitsPerBreak: positive(baseUnitsPerBreak),
-      farmingFortune: Number(stats.farmingFortune ?? 0),
-      cropFortune: Number(stats.cropFortune ?? 0),
+      farmingFortune: finiteNonNegative(stats.farmingFortune),
+      cropFortune: finiteNonNegative(stats.cropFortune),
       contestCropFortune: contestFortune,
       uptimeRatio: ratioFromPercent(measured.uptimePercent),
     },

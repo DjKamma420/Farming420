@@ -1,0 +1,278 @@
+{
+  "commit": "bbe5671b4dcc7b80115c6b71d608e277b26de47c",
+  "runId": 36949166626,
+  "scope": "Linux browser engines with emulated viewport/touch; not physical devices",
+  "engines": [
+    {
+      "engine": "chromium",
+      "counts": {
+        "PASS": 87,
+        "FAIL": 9,
+        "NOTE": 8,
+        "BLOCKED": 0
+      },
+      "failures": [
+        {
+          "engine": "chromium",
+          "viewport": "320-portrait",
+          "check": "add-set-escape",
+          "status": "FAIL",
+          "evidence": {}
+        },
+        {
+          "engine": "chromium",
+          "viewport": "360-portrait",
+          "check": "add-set-escape",
+          "status": "FAIL",
+          "evidence": {}
+        },
+        {
+          "engine": "chromium",
+          "viewport": "375-portrait",
+          "check": "add-set-escape",
+          "status": "FAIL",
+          "evidence": {}
+        },
+        {
+          "engine": "chromium",
+          "viewport": "390-portrait",
+          "check": "add-set-escape",
+          "status": "FAIL",
+          "evidence": {}
+        },
+        {
+          "engine": "chromium",
+          "viewport": "412-portrait",
+          "check": "add-set-escape",
+          "status": "FAIL",
+          "evidence": {}
+        },
+        {
+          "engine": "chromium",
+          "viewport": "568-landscape",
+          "check": "add-set-escape",
+          "status": "FAIL",
+          "evidence": {}
+        },
+        {
+          "engine": "chromium",
+          "viewport": "667-landscape",
+          "check": "add-set-escape",
+          "status": "FAIL",
+          "evidence": {}
+        },
+        {
+          "engine": "chromium",
+          "viewport": "800-landscape",
+          "check": "add-set-escape",
+          "status": "FAIL",
+          "evidence": {}
+        },
+        {
+          "engine": "chromium",
+          "viewport": "800-landscape",
+          "check": "three-set-long-name-header",
+          "status": "FAIL",
+          "evidence": {
+            "rows": [
+              {
+                "label": "FF Set",
+                "width": 63.09375,
+                "height": 28,
+                "clipped": false,
+                "hit": true,
+                "left": 129.390625,
+                "right": 192.484375
+              },
+              {
+                "label": "BPC Set",
+                "width": 73.453125,
+                "height": 28,
+                "clipped": false,
+                "hit": true,
+                "left": 196.484375,
+                "right": 269.9375
+              },
+              {
+                "label": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                "width": 220,
+                "height": 28,
+                "clipped": true,
+                "hit": true,
+                "left": 273.9375,
+                "right": 493.9375
+              },
+              {
+                "label": "Remove Set",
+                "width": 100.796875,
+                "height": 28,
+                "clipped": false,
+                "hit": true,
+                "left": 499.9375,
+                "right": 600.734375
+              }
+            ],
+            "noOverflow": true
+          }
+        }
+      ],
+      "passedChecks": [
+        "settled-navigation-retries",
+        "normal-tap-navigation",
+        "cancel-set-blank",
+        "cancel-set-filled",
+        "three-set-long-name-header",
+        "last-option-point-in-time-hit",
+        "last-option-stable-after-capture-and-anchor-expiry",
+        "pet-item-escape-close",
+        "declared-listbox-arrow-focus",
+        "last-option-actual-touch-selection-after-recovery",
+        "runtime-page-errors"
+      ]
+    },
+    {
+      "engine": "firefox",
+      "counts": {
+        "PASS": 95,
+        "FAIL": 1,
+        "NOTE": 8,
+        "BLOCKED": 0
+      },
+      "failures": [
+        {
+          "engine": "firefox",
+          "viewport": "800-landscape",
+          "check": "three-set-long-name-header",
+          "status": "FAIL",
+          "evidence": {
+            "rows": [
+              {
+                "label": "FF Set",
+                "width": 63.100006103515625,
+                "height": 29,
+                "clipped": false,
+                "hit": true,
+                "left": 129.38333129882812,
+                "right": 192.48333740234375
+              },
+              {
+                "label": "BPC Set",
+                "width": 73.44999694824219,
+                "height": 29,
+                "clipped": false,
+                "hit": true,
+                "left": 196.48333740234375,
+                "right": 269.93333435058594
+              },
+              {
+                "label": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                "width": 220,
+                "height": 29,
+                "clipped": true,
+                "hit": true,
+                "left": 273.933349609375,
+                "right": 493.933349609375
+              },
+              {
+                "label": "Remove Set",
+                "width": 100.76666259765625,
+                "height": 29,
+                "clipped": false,
+                "hit": true,
+                "left": 499.933349609375,
+                "right": 600.7000122070312
+              }
+            ],
+            "noOverflow": true
+          }
+        }
+      ],
+      "passedChecks": [
+        "settled-navigation-retries",
+        "normal-tap-navigation",
+        "cancel-set-blank",
+        "cancel-set-filled",
+        "add-set-escape",
+        "three-set-long-name-header",
+        "last-option-point-in-time-hit",
+        "last-option-stable-after-capture-and-anchor-expiry",
+        "pet-item-escape-close",
+        "declared-listbox-arrow-focus",
+        "last-option-actual-touch-selection-after-recovery",
+        "runtime-page-errors"
+      ]
+    },
+    {
+      "engine": "webkit",
+      "counts": {
+        "PASS": 95,
+        "FAIL": 1,
+        "NOTE": 8,
+        "BLOCKED": 0
+      },
+      "failures": [
+        {
+          "engine": "webkit",
+          "viewport": "800-landscape",
+          "check": "three-set-long-name-header",
+          "status": "FAIL",
+          "evidence": {
+            "rows": [
+              {
+                "label": "FF Set",
+                "width": 63.09375,
+                "height": 28,
+                "clipped": false,
+                "hit": true,
+                "left": 129.390625,
+                "right": 192.484375
+              },
+              {
+                "label": "BPC Set",
+                "width": 73.453125,
+                "height": 28,
+                "clipped": false,
+                "hit": true,
+                "left": 196.484375,
+                "right": 269.9375
+              },
+              {
+                "label": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                "width": 220,
+                "height": 28,
+                "clipped": true,
+                "hit": true,
+                "left": 273.9375,
+                "right": 493.9375
+              },
+              {
+                "label": "Remove Set",
+                "width": 100.796875,
+                "height": 28,
+                "clipped": false,
+                "hit": true,
+                "left": 499.9375,
+                "right": 600.734375
+              }
+            ],
+            "noOverflow": true
+          }
+        }
+      ],
+      "passedChecks": [
+        "settled-navigation-retries",
+        "normal-tap-navigation",
+        "cancel-set-blank",
+        "cancel-set-filled",
+        "add-set-escape",
+        "three-set-long-name-header",
+        "last-option-point-in-time-hit",
+        "last-option-stable-after-capture-and-anchor-expiry",
+        "pet-item-escape-close",
+        "declared-listbox-arrow-focus",
+        "last-option-actual-touch-selection-after-recovery",
+        "runtime-page-errors"
+      ]
+    }
+  ]
+}

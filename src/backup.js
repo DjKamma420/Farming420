@@ -41,20 +41,25 @@ export function validateBackupPayload(payload) {
   if (payload.format !== BACKUP_FORMAT) {
     throw new Error('This file is not a Farming420 backup.');
   }
-  if (Number(payload.backupVersion) > BACKUP_VERSION) {
+  const backupVersion = versionNumber(payload.backupVersion === undefined ? 1 : payload.backupVersion, 'backup format version');
+  if (backupVersion > BACKUP_VERSION) {
     throw new Error('This backup format is newer than this app version. Update Farming420 before restoring it.');
   }
   if (!payload.state || typeof payload.state !== 'object' || Array.isArray(payload.state)) {
     throw new Error('The backup does not contain application state.');
   }
 
-  const declared = Number(payload.schemaVersion || payload.state.schemaVersion || 1);
-  if (!Number.isFinite(declared) || declared < 1) {
-    throw new Error('The backup does not declare a valid data schema version.');
-  }
-  if (declared > DATA_SCHEMA_VERSION) {
+  const envelope = payload.schemaVersion === undefined ? null : versionNumber(payload.schemaVersion, 'data schema version');
+  const inner = payload.state.schemaVersion === undefined ? null : versionNumber(payload.state.schemaVersion, 'data schema version');
+  if (envelope > DATA_SCHEMA_VERSION || inner > DATA_SCHEMA_VERSION) {
     throw new Error('This backup uses a newer data schema. Update Farming420 before restoring it.');
   }
+  if (envelope !== null && inner !== null && envelope !== inner) {
+    throw new Error('The backup envelope and application state declare inconsistent data schema versions.');
+  }
+  // Legacy backups may omit one or both schema declarations, but an explicit
+  // invalid declaration is never treated as absent.
+  const declared = envelope ?? inner ?? 1;
 
   const result = migrateState({ ...structuredClone(payload.state), schemaVersion: declared });
   return {
@@ -63,6 +68,17 @@ export function validateBackupPayload(payload) {
     warnings: result.warnings,
     sourceSchemaVersion: declared,
   };
+}
+
+function versionNumber(value, label) {
+  if (!['number', 'string'].includes(typeof value) || String(value).trim() === '') {
+    throw new Error(`The backup does not declare a valid ${label}.`);
+  }
+  const version = Number(value);
+  if (!Number.isSafeInteger(version) || version < 1) {
+    throw new Error(`The backup does not declare a valid ${label}.`);
+  }
+  return version;
 }
 
 export function backupFilename(date = new Date()) {

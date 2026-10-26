@@ -26,9 +26,9 @@ function setCrop(id) {
 function simplifyTopbar() {
   const topbar = document.querySelector('.topbar');
   if (!topbar) return;
-  topbar.classList.add('topbar-simplified-addon');
+  topbar.classList.toggle('topbar-simplified-addon', true);
   const cropSwitch = topbar.querySelector('.crop-switch');
-  if (cropSwitch) cropSwitch.hidden = true;
+  if (cropSwitch && !cropSwitch.hidden) cropSwitch.hidden = true;
 }
 
 function uniqueTools() {

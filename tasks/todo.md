@@ -1,5 +1,7 @@
 # Farming420 — Foundation gap closure and current work
 
+Current audit implementation: [October 2 fix progress](fix-progress-2026-10-02.md). October 26's **package-12-only** native invalid-input count-preservation fix is accepted at **89af99e**. Local **26 targeted; 1,406 Node + 8 Python PASS**. Exact-source Validate and Browser attempt 2/all engines/strict Chromium gates are SUCCESS; each engine **249 PASS / zero FAIL / 8 NOTE / zero BLOCKED**. All 24 native preservation/recovery cases and three removed-guard controls prove the correction. Long-installation cancellations are retained; only incomplete Chromium was retried, with Firefox/WebKit carried forward. [Retained acceptance](../docs/audits/phillip-native-input-acceptance-89af99e-2026-10-26.json); [source/access review](../docs/audits/phillip-native-input-review-2026-10-26.md). Fourteen packages retain acceptance; **12/14/15/17 remain blocked**. Read this evidence-only successor's own CI, then keep package **12 first open** for dated current live rate/cap/Pest-cost/duration/expiry proof. Do not repeat accepted validation or unchanged source searches. Other work and original dirty files are preserved. No merge/deployment.
+
 This file records the concrete architecture/correctness gaps found during repository review and the work completed against them. It is intentionally kept in the repository so another development chat can resume from the actual code state instead of reconstructing context from conversation history.
 
 ## Foundation gaps found and closed

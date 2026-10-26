@@ -95,3 +95,29 @@ test('validation does not mutate the backup it was given', () => {
 test('the backup filename is dated and stable', () => {
   assert.equal(backupFilename(new Date('2026-09-15T22:10:00Z')), 'farming420-backup-2026-09-15.json');
 });
+
+test('either newer schema declaration is rejected before migration', () => {
+  for (const [outer, inner] of [[10, 11], [11, 10], [1, 11]]) {
+    const payload = backupOf({ schemaVersion: inner, opaque: { future: true } }, { schemaVersion: outer });
+    const bytes = JSON.stringify(payload);
+    assert.throws(() => validateBackupPayload(payload), /newer data schema/);
+    assert.equal(JSON.stringify(payload), bytes);
+  }
+});
+
+test('supported but conflicting declarations are rejected; legacy omissions still migrate', () => {
+  assert.throws(() => validateBackupPayload(backupOf({ schemaVersion: 1 }, { schemaVersion: 10 })), /inconsistent/);
+  const legacy = backupOf({ profile: {} }, { schemaVersion: 1 });
+  assert.equal(validateBackupPayload(legacy).state.schemaVersion, DATA_SCHEMA_VERSION);
+  delete legacy.schemaVersion;
+  assert.equal(validateBackupPayload(legacy).sourceSchemaVersion, 1);
+});
+
+test('explicit invalid versions never fall through to a default', () => {
+  for (const value of [null, '', ' ', false, [], {}, 0, -1, 1.5, 'broken']) {
+    for (const field of ['schemaVersion', 'backupVersion']) {
+      assert.throws(() => validateBackupPayload(backupOf({}, { [field]: value })), /valid/);
+    }
+    assert.throws(() => validateBackupPayload(backupOf({ schemaVersion: value })), /valid/);
+  }
+});

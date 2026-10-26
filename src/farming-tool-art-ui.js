@@ -47,6 +47,9 @@ function enhanceWorkspaceEditor(raw) {
   const cropId = select?.value || raw.selectedCrop || 'melon';
   const tool = toolForCropId(cropId);
   const key = artKey(raw, cropId);
+  // The presentation layer owns legacy pack fallbacks for other families. An
+  // unverified current model must not erase that fallback on every reapply.
+  if (!key) return;
   const portrait = document.querySelector('.sb-tool-card.selected[data-sb-tool-crop] .sb-tool-art');
   ensureArtHost(portrait, key, tool ? `${tool} texture` : null);
 }

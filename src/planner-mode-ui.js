@@ -1,3 +1,4 @@
+import { readStoredAppState, writeStoredAppState } from './app-storage.js';
 import { CROPS, UPGRADES } from './data.js';
 import { STORAGE_KEY } from './config.js';
 import { toolKeyForCropId } from './migrations.js';
@@ -22,10 +23,10 @@ function esc(value = '') {
 }
 
 function load() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
+  try { return readStoredAppState({}); } catch { return {}; }
 }
 
-function save(raw) { localStorage.setItem(STORAGE_KEY, JSON.stringify(raw)); }
+function save(raw) { return writeStoredAppState(raw); }
 
 function cropId(raw) { return document.querySelector('#cropSelect')?.value || raw.selectedCrop || 'melon'; }
 function crop(raw) { return CROPS.find(entry => entry.id === cropId(raw)) || CROPS[0]; }

@@ -32,7 +32,7 @@ test('exact setup gemstone edits repaint in place', () => {
 
 test('backup restore and local reset repaint without a hard reload', () => {
   const app = read('app.js');
-  assert.match(app, /localStorage\.setItem\(STORAGE_KEY, JSON\.stringify\(restored\.state\)\);\s*window\.dispatchEvent\(new Event\('farming420:state-changed'\)\);/);
+  assert.match(app, /writeStoredAppState\(restored\.state, \{ strict: true \}\);\s*window\.dispatchEvent\(new Event\('farming420:state-changed'\)\);/);
 
   const foundation = read('foundation.js');
   const restoreStart = foundation.indexOf("settingsDialog.querySelector('[data-backup-restore]')");

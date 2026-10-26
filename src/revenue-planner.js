@@ -1,3 +1,4 @@
+import { readStoredAppState, writeStoredAppState } from './app-storage.js';
 import { CROPS, UPGRADES } from './data.js';
 import { STORAGE_KEY } from './config.js';
 import { ACTIVITY_MODE, activityLabel, activityModeForState, setActivityModeOnState } from './activity-mode.js';
@@ -195,11 +196,11 @@ function esc(value = '') {
 }
 
 function load() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
+  try { return readStoredAppState({}); } catch { return {}; }
 }
 
 function save(raw) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(raw));
+  return writeStoredAppState(raw);
 }
 
 function selectedCropId(raw) {
