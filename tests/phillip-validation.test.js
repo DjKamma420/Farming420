@@ -54,7 +54,7 @@ const end = source.indexOf("  document.querySelector('[data-phillip-deactivate]'
 assert.ok(start >= 0 && end > start, 'Phillip handlers must be present');
 function harness(profile = {temporaryEffects:{pesthunterPhillip:{pestCount:17, active:true, durationSeconds:1800, activeUntilMs:1700001800000, observedSource:'preserved'}}}) {
   const handlers = {}, calls = [];
-  const input = {value:'', message:'', reports:0, setCustomValidity(message) { this.message=message; }, reportValidity() { this.reports++; }};
+  const input = {value:'', validity:{badInput:false}, message:'', reports:0, setCustomValidity(message) { this.message=message; }, reportValidity() { this.reports++; }};
   const state = {profile};
   const document = {querySelector(selector) {
     if (selector === '[data-phillip-duration]') return input;
@@ -79,6 +79,23 @@ test('invalid count changes preserve the exact saved activation and perform no o
   h.input.value='40'; h.count();
   assert.equal(h.state.profile.temporaryEffects.pesthunterPhillip.pestCount,40);
   assert.equal(h.input.message,'');
+  assert.deepEqual(h.calls,['compute','save','render']);
+});
+
+test('native bad input cannot clear a saved count as if it were an intentional blank', () => {
+  const h=harness(), before=JSON.stringify(h.state);
+  // Number inputs expose an incomplete exponent as empty value + badInput.
+  h.input.validity.badInput=true;
+  h.count();
+  assert.equal(JSON.stringify(h.state),before);
+  assert.deepEqual(h.calls,[]);
+  assert.equal(h.input.reports,1);
+  assert.match(h.input.message,/whole/);
+  h.input.value='40'; h.input.validity.badInput=false; h.count();
+  assert.equal(h.input.message,'');
+  assert.equal(h.state.profile.temporaryEffects.pesthunterPhillip.pestCount,40);
+  assert.equal(h.state.profile.temporaryEffects.pesthunterPhillip.activeUntilMs,1700001800000);
+  assert.equal(h.state.profile.temporaryEffects.pesthunterPhillip.observedSource,'preserved');
   assert.deepEqual(h.calls,['compute','save','render']);
 });
 

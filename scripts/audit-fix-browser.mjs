@@ -103,7 +103,54 @@ const toolValueRefresh = async page => {
       sameMain: main.isConnected && main === nextMain, focusPreserved: focus === document.activeElement};
   });
 };
+const phillipNativeBadInputAccepted = evidence => evidence.native.value === '' && evidence.native.badInput
+  && evidence.beforeCount === 17 && evidence.afterCount === 17 && evidence.preserved
+  && evidence.message.includes('whole');
+const phillipNativeBadInput = async page => {
+  const snapshot = () => page.evaluate(key => ({raw:localStorage.getItem(key), writes:window.auditMainWrites.length,
+    count:JSON.parse(localStorage.getItem(key)).profile.temporaryEffects?.pesthunterPhillip?.pestCount}), STORAGE_KEY);
+  const before = await snapshot();
+  const input = page.locator('[data-phillip-count]');
+  await input.fill('');
+  await input.pressSequentially('1e');
+  const native = await input.evaluate(e => ({value:e.value, badInput:e.validity.badInput}));
+  await input.press('Tab');
+  const after = await snapshot();
+  const message = await page.locator('[data-phillip-count]').evaluate(e => e.validationMessage);
+  return {native, message, beforeCount:before.count, afterCount:after.count,
+    writesBefore:before.writes, writesAfter:after.writes, preserved:before.raw === after.raw && before.writes === after.writes};
+};
 try {
+  {
+    // Remove only native bad-input protection; the same keyboard fixture must reject the former clear.
+    const currentSource = await readFile('src/app.js', 'utf8');
+    const guard = 'event.target.validity.badInput || ';
+    if (!currentSource.includes(guard)) throw new Error('Phillip negative control could not identify its single guard');
+    const context = await browser.newContext({viewport:{width:320,height:568},hasTouch:true});
+    const page = await context.newPage();
+    const capture = captureErrors(page);
+    await page.route('**/src/app.js*', route => route.fulfill({status:200,contentType:'text/javascript',body:currentSource.replace(guard,'')}));
+    await instrument(page, JSON.stringify({...seed, profile:{...seed.profile, temporaryEffects:{pesthunterPhillip:{
+      pestCount:17, active:true, durationSeconds:1800, activeUntilMs:Date.now()+1800000}}}}));
+    try {
+      await page.goto('http://127.0.0.1:4173',{waitUntil:'domcontentloaded'});
+      await page.locator('[data-nav-toggle]').waitFor();
+      await page.waitForTimeout(2200);
+      await navigate(page,'buffs');
+      await page.locator('button[data-open="temporary-buff-pesthunter-phillip-buff"]').tap();
+      const evidence = await phillipNativeBadInput(page);
+      const regressionExit = probeExitCode([{status:phillipNativeBadInputAccepted(evidence)?'PASS':'FAIL'}]);
+      add('phillip-native-negative-control','phillip-native-bad-input-rejects-former-clear',
+        evidence.native.badInput && evidence.native.value === '' && evidence.beforeCount === 17
+          && evidence.afterCount === null && evidence.writesAfter > evidence.writesBefore && regressionExit === 1 ? 'PASS':'FAIL',
+        {...evidence,regressionExit,source:'one native bad-input guard removed in disposable routed module'});
+      runtimeCase('phillip-native-negative-control',capture);
+    } catch(error) {
+      add('phillip-native-negative-control','probe-execution','BLOCKED',{message:String(error)});
+    } finally {
+      await context.close();
+    }
+  }
   {
     const context = await browser.newContext();
     const page = await context.newPage();
@@ -393,6 +440,7 @@ try {
         const message=await page.locator('[data-phillip-count]').evaluate(e=>e.validationMessage);
         invalidCounts.push({input,message,preserved:before.raw===after.raw&&before.writes===after.writes});
       }
+      const nativeBadInput=await phillipNativeBadInput(page);
       await page.locator('[data-phillip-count]').fill('40');
       await page.locator('[data-phillip-count]').press('Tab');
       const recoveredCount=await activationSnapshot();
@@ -417,9 +465,10 @@ try {
       add(name,'phillip-invalid-input-preserves-timer-and-valid-recovery',
         initialActivation.record?.pestCount===17&&initialActivation.record?.durationSeconds===1800
           &&invalidCounts.every(row=>row.preserved&&row.message.includes('whole'))
+          &&phillipNativeBadInputAccepted(nativeBadInput)
           &&recoveredCount.record?.pestCount===40&&recoveredCount.record.activeUntilMs===initialActivation.record.activeUntilMs
           &&invalidDurations.every(row=>row.preserved&&row.message.includes('observed potion duration'))&&timerValid?'PASS':'FAIL',
-        {initialActivation:initialActivation.record,invalidCounts,recoveredCount:recoveredCount.record,invalidDurations,
+        {initialActivation:initialActivation.record,invalidCounts,nativeBadInput,recoveredCount:recoveredCount.record,invalidDurations,
           recoveredActivation:record,activationBefore,activationAfter,timerValid,liveCurveVerified:false});
       await page.locator('.drawer .close').focus();
       await page.keyboard.press('Tab');

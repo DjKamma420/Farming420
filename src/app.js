@@ -3399,7 +3399,7 @@ function bind() {
   });
   document.querySelector('[data-phillip-count]')?.addEventListener('change', event => {
     const count = finiteNonNegativeInteger(event.target.value);
-    if (event.target.value !== '' && count === null) {
+    if (event.target.validity.badInput || (event.target.value !== '' && count === null)) {
       event.target.setCustomValidity('Enter a whole non-negative Pest count.');
       event.target.reportValidity(); return;
     }
