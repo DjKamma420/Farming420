@@ -1,25 +1,25 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-21T08:56:51.657Z",
+  "generatedAt": "2026-11-09T13:54:29.061Z",
   "catalogSource": "https://api.hypixel.net/v2/resources/skyblock/items",
   "pack": {
-    "deployId": "b3749f35-aa7e-4e8e-8ffa-edd5fba20a5b",
-    "hash": "262749fa15297f365f69b06cfa5aa6b0a258f4ea",
+    "deployId": "1b5b3899-cdc3-4c90-ac57-7d3867e099d5",
+    "hash": "526bd87b753a8c877a75b27bce6ac58ef8bc9bfe",
     "id": "SkyBlock",
-    "lastUpdated": 1789684384763,
+    "lastUpdated": 1793202047607,
     "packFormat": 97,
-    "url": "https://resourcepacks.hypixel.net/SkyBlock/b3749f35-aa7e-4e8e-8ffa-edd5fba20a5b/97.zip"
+    "url": "https://resourcepacks.hypixel.net/SkyBlock/1b5b3899-cdc3-4c90-ac57-7d3867e099d5/97.zip"
   },
   "totalFarmingPhysicalItems": 152,
   "resolved": 152,
   "unresolvedCount": 0,
-  "directModelCount": 43,
-  "fallbackModelCount": 109,
+  "directModelCount": 58,
+  "fallbackModelCount": 94,
   "bySource": {
     "official-skin": 0,
-    "resource-pack-item": 43,
-    "resource-pack-set": 18,
-    "vanilla-material": 91,
+    "resource-pack-item": 58,
+    "resource-pack-set": 10,
+    "vanilla-material": 84,
     "unresolved": 0
   },
   "unresolved": [],
@@ -175,11 +175,6 @@
       "source": "vanilla-material"
     },
     {
-      "id": "ZORROS_CAPE",
-      "name": "Zorro's Cape",
-      "source": "vanilla-material"
-    },
-    {
       "id": "LOTUS_SILVER",
       "name": "Silver Lotus",
       "source": "resource-pack-set"
@@ -197,11 +192,6 @@
     {
       "id": "MELON_JUICE",
       "name": "Melon Juice",
-      "source": "vanilla-material"
-    },
-    {
-      "id": "PEST_VEST",
-      "name": "Pest Vest",
       "source": "vanilla-material"
     },
     {
@@ -370,11 +360,6 @@
       "source": "vanilla-material"
     },
     {
-      "id": "PUMPKIN_GUTS",
-      "name": "Pumpkin Guts",
-      "source": "vanilla-material"
-    },
-    {
       "id": "MELON_PERSONALITY",
       "name": "Melon Minion Skin",
       "source": "vanilla-material"
@@ -383,66 +368,6 @@
       "id": "PUMPKIN_LEGGINGS",
       "name": "Sprout Leggings",
       "source": "vanilla-material"
-    },
-    {
-      "id": "BLOSSOM_BRACELET",
-      "name": "Blossom Bracelet",
-      "source": "resource-pack-set"
-    },
-    {
-      "id": "BLOSSOM_BELT",
-      "name": "Blossom Belt",
-      "source": "resource-pack-set"
-    },
-    {
-      "id": "BLOSSOM_NECKLACE",
-      "name": "Blossom Necklace",
-      "source": "resource-pack-set"
-    },
-    {
-      "id": "BLOSSOM_CLOAK",
-      "name": "Blossom Cloak",
-      "source": "resource-pack-set"
-    },
-    {
-      "id": "PESTHUNTERS_BELT",
-      "name": "Pesthunter's Belt",
-      "source": "vanilla-material"
-    },
-    {
-      "id": "PESTHUNTERS_GLOVES",
-      "name": "Pesthunter's Gloves",
-      "source": "vanilla-material"
-    },
-    {
-      "id": "PESTHUNTERS_NECKLACE",
-      "name": "Pesthunter's Necklace",
-      "source": "vanilla-material"
-    },
-    {
-      "id": "PESTHUNTERS_CLOAK",
-      "name": "Pesthunter's Cloak",
-      "source": "vanilla-material"
-    },
-    {
-      "id": "LOTUS_BRACELET",
-      "name": "Peony Bracelet",
-      "source": "resource-pack-set"
-    },
-    {
-      "id": "LOTUS_BELT",
-      "name": "Peony Belt",
-      "source": "resource-pack-set"
-    },
-    {
-      "id": "LOTUS_NECKLACE",
-      "name": "Peony Necklace",
-      "source": "resource-pack-set"
-    },
-    {
-      "id": "LOTUS_CLOAK",
-      "name": "Peony Cloak",
-      "source": "resource-pack-set"
     },
     {
       "id": "FERMENTO_HELMET",
@@ -1059,8 +984,9 @@
       "id": "ZORROS_CAPE",
       "name": "Zorro's Cape",
       "category": "CLOAK",
-      "source": "vanilla-material",
-      "material": "SKULL_ITEM"
+      "source": "resource-pack-item",
+      "packKey": "zorros_cape",
+      "texture": "textures/item/events/easter/zorros_cape.png"
     },
     {
       "id": "LOTUS_SILVER",
@@ -1097,8 +1023,9 @@
       "id": "PEST_VEST",
       "name": "Pest Vest",
       "category": "CLOAK",
-      "source": "vanilla-material",
-      "material": "SKULL_ITEM"
+      "source": "resource-pack-item",
+      "packKey": "pest_vest",
+      "texture": "textures/item/community_center/mayor/finnegan/pest_vest.png"
     },
     {
       "id": "PESTHUNTER_RELIC",
@@ -1336,8 +1263,9 @@
       "id": "PUMPKIN_GUTS",
       "name": "Pumpkin Guts",
       "category": null,
-      "source": "vanilla-material",
-      "material": "PUMPKIN_SEEDS"
+      "source": "resource-pack-item",
+      "packKey": "pumpkin_guts",
+      "texture": "textures/item/great_spook/pumpkin_guts.png"
     },
     {
       "id": "MELON_PERSONALITY",
@@ -1357,93 +1285,97 @@
       "id": "BLOSSOM_BRACELET",
       "name": "Blossom Bracelet",
       "category": "BRACELET",
-      "source": "resource-pack-set",
-      "packKey": "bachelors_rose",
-      "texture": "textures/item/island_relevant/garden/greenhouse/wild_rose/bachelors_rose.png"
+      "source": "resource-pack-item",
+      "packKey": "blossom_bracelet",
+      "texture": "textures/item/island_relevant/garden/equipment/blossom/blossom_bracelet.png"
     },
     {
       "id": "BLOSSOM_BELT",
       "name": "Blossom Belt",
       "category": "BELT",
-      "source": "resource-pack-set",
-      "packKey": "bachelors_rose",
-      "texture": "textures/item/island_relevant/garden/greenhouse/wild_rose/bachelors_rose.png"
+      "source": "resource-pack-item",
+      "packKey": "blossom_belt",
+      "texture": "textures/item/island_relevant/garden/equipment/blossom/blossom_belt.png"
     },
     {
       "id": "BLOSSOM_NECKLACE",
       "name": "Blossom Necklace",
       "category": "NECKLACE",
-      "source": "resource-pack-set",
-      "packKey": "bachelors_rose",
-      "texture": "textures/item/island_relevant/garden/greenhouse/wild_rose/bachelors_rose.png"
+      "source": "resource-pack-item",
+      "packKey": "blossom_necklace",
+      "texture": "textures/item/island_relevant/garden/equipment/blossom/blossom_necklace.png"
     },
     {
       "id": "BLOSSOM_CLOAK",
       "name": "Blossom Cloak",
       "category": "CLOAK",
-      "source": "resource-pack-set",
-      "packKey": "bachelors_rose",
-      "texture": "textures/item/island_relevant/garden/greenhouse/wild_rose/bachelors_rose.png"
+      "source": "resource-pack-item",
+      "packKey": "blossom_cloak",
+      "texture": "textures/item/island_relevant/garden/equipment/blossom/blossom_cloak.png"
     },
     {
       "id": "PESTHUNTERS_BELT",
       "name": "Pesthunter's Belt",
       "category": "BELT",
-      "source": "vanilla-material",
-      "material": "SKULL_ITEM"
+      "source": "resource-pack-item",
+      "packKey": "pesthunters_belt",
+      "texture": "textures/item/island_relevant/garden/equipment/pesthunters/pesthunters_belt.png"
     },
     {
       "id": "PESTHUNTERS_GLOVES",
       "name": "Pesthunter's Gloves",
       "category": "GLOVES",
-      "source": "vanilla-material",
-      "material": "SKULL_ITEM"
+      "source": "resource-pack-item",
+      "packKey": "pesthunters_gloves",
+      "texture": "textures/item/island_relevant/garden/equipment/pesthunters/pesthunters_gloves.png"
     },
     {
       "id": "PESTHUNTERS_NECKLACE",
       "name": "Pesthunter's Necklace",
       "category": "NECKLACE",
-      "source": "vanilla-material",
-      "material": "SKULL_ITEM"
+      "source": "resource-pack-item",
+      "packKey": "pesthunters_necklace",
+      "texture": "textures/item/island_relevant/garden/equipment/pesthunters/pesthunters_necklace.png"
     },
     {
       "id": "PESTHUNTERS_CLOAK",
       "name": "Pesthunter's Cloak",
       "category": "CLOAK",
-      "source": "vanilla-material",
-      "material": "SKULL_ITEM"
+      "source": "resource-pack-item",
+      "packKey": "pesthunters_cloak",
+      "texture": "textures/item/island_relevant/garden/equipment/pesthunters/pesthunters_cloak.png"
     },
     {
       "id": "LOTUS_BRACELET",
       "name": "Peony Bracelet",
       "category": "BRACELET",
-      "source": "resource-pack-set",
-      "packKey": "lotus",
-      "texture": "textures/item/collections/lotus/lotus.png"
+      "source": "resource-pack-item",
+      "packKey": "lotus_bracelet",
+      "texture": "textures/item/island_relevant/garden/equipment/lotus/lotus_bracelet.png"
     },
     {
       "id": "LOTUS_BELT",
       "name": "Peony Belt",
       "category": "BELT",
-      "source": "resource-pack-set",
-      "packKey": "lotus",
-      "texture": "textures/item/collections/lotus/lotus.png"
+      "source": "resource-pack-item",
+      "packKey": "lotus_belt",
+      "texture": "textures/item/island_relevant/garden/equipment/lotus/lotus_belt.png"
     },
     {
       "id": "LOTUS_NECKLACE",
       "name": "Peony Necklace",
       "category": "NECKLACE",
-      "source": "resource-pack-set",
-      "packKey": "lotus",
-      "texture": "textures/item/collections/lotus/lotus.png"
+      "source": "resource-pack-item",
+      "packKey": "lotus_necklace",
+      "texture": "textures/item/island_relevant/garden/equipment/lotus/lotus_necklace.png"
     },
     {
       "id": "LOTUS_CLOAK",
       "name": "Peony Cloak",
       "category": "CLOAK",
-      "source": "resource-pack-set",
-      "packKey": "lotus",
-      "texture": "textures/item/collections/lotus/lotus.png"
+      "source": "resource-pack-item",
+      "packKey": "lotus_cloak",
+      "texture": "textures/item/island_relevant/garden/equipment/lotus/lotus_cloak.png"
     },
     {
       "id": "INFINI_VACUUM",
